@@ -49,28 +49,7 @@ RowLayout {
 
     focus: true
 
-    onActiveFocusChanged: if (activeFocus) playbackBtn.forceActiveFocus()
-
-    Widgets.ButtonExt {
-        id: playbackBtn
-
-        text: qsTr("%1x").arg(+Player.rate.toFixed(2))
-        color: theme.fg.primary // redesign: the stock colour rendered invisible here
-
-        onPressed: {
-            trackMenuController.requestPlaybackSpeedPage()
-        }
-
-        T.ToolTip.visible: (hovered || visualFocus)
-        T.ToolTip.text: qsTr("Playback Speed")
-        T.ToolTip.delay: VLCStyle.delayToolTipAppear
-
-        Navigation.parentItem: root
-        Navigation.rightItem: row
-
-        Layout.alignment: Qt.AlignTop | Qt.AlignLeft
-        Layout.margins: VLCStyle.margin_large
-    }
+    onActiveFocusChanged: if (activeFocus) speedBtn.forceActiveFocus()
 
     ColumnLayout {
         Layout.fillHeight: true
@@ -119,6 +98,41 @@ RowLayout {
                     }
                 }
             }
+
+            T.AbstractButton {
+                id: speedBtn
+
+                implicitWidth: speedLabel.implicitWidth + VLCStyle.margin_normal * 2
+                implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+
+                text: qsTr("%1x").arg(+Player.rate.toFixed(2))
+
+                onClicked: trackMenuController.requestPlaybackSpeedPage()
+
+                T.ToolTip.visible: (hovered || visualFocus)
+                T.ToolTip.text: qsTr("Playback Speed")
+                T.ToolTip.delay: VLCStyle.delayToolTipAppear
+
+                Navigation.parentItem: root
+                Navigation.downItem: row
+
+                contentItem: Text {
+                    id: speedLabel
+
+                    text: speedBtn.text
+                    font.pixelSize: VLCStyle.fontSize_large
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    color: speedBtn.hovered ? theme.accent : theme.fg.secondary
+                }
+
+                background: Rectangle {
+                    radius: VLCStyle.button_radius
+                    color: "transparent"
+                    border.width: 1
+                    border.color: speedBtn.hovered ? theme.accent : theme.border
+                }
+            }
         }
 
     Widgets.NavigableRow {
@@ -127,7 +141,7 @@ RowLayout {
         Layout.fillHeight: true
         Layout.fillWidth: true
 
-        Navigation.leftItem: playbackBtn
+        Navigation.upItem: speedBtn
 
         TrackColumn {
             tabIndex: 0
