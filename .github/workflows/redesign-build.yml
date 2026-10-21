@@ -40,7 +40,7 @@ jobs:
           cat > /tmp/shot.sh <<'SH'
           export VLC_PLUGIN_PATH="$1/install/lib/vlc/plugins"
           export QT_QPA_PLATFORM=xcb
-          "$1/install/bin/vlc" --no-media-library -I qt >"$1/shots/vlc.log" 2>&1 &
+          "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask -I qt >"$1/shots/vlc.log" 2>&1 &
           VLC_PID=$!
           sleep 20
           import -window root "$1/shots/main.png" || true
