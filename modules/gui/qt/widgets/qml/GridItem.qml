@@ -324,6 +324,17 @@ T.ItemDelegate {
                 visible: opacity > 0
             }
 
+            // redesign: accent ring around the cover on hover/focus/selection
+            Rectangle {
+                anchors.fill: parent
+                z: 1
+                radius: picture.radius
+                color: "transparent"
+                border.width: VLCStyle.dp(2, VLCStyle.scale)
+                border.color: theme.accent
+                visible: root.highlighted || root.selected
+            }
+
             DoubleShadow {
                 id: selectedShadow
 
@@ -360,6 +371,10 @@ T.ItemDelegate {
                 color: root.selected
                     ? theme.fg.highlight
                     : theme.fg.primary
+
+                // redesign: regular weight, larger title (prototype .card-name)
+                font.weight: Font.Normal
+                font.pixelSize: VLCStyle.fontSize_large
             }
         }
 
