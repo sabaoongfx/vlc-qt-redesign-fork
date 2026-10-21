@@ -191,7 +191,7 @@ RowLayout {
         Widgets.MenuCaption {
             Layout.fillWidth: true
 
-            text: delayRow.audio ? qsTr("Audio delay") : qsTr("Subtitle delay")
+            text: qsTr("Delay") // the tab already says which track type
             color: theme.fg.primary
         }
 
@@ -200,7 +200,7 @@ RowLayout {
 
             property bool update: false
 
-            Layout.preferredWidth: VLCStyle.dp(128, VLCStyle.scale)
+            Layout.preferredWidth: VLCStyle.dp(112, VLCStyle.scale)
 
             stepSize: 50
             from: -10000
