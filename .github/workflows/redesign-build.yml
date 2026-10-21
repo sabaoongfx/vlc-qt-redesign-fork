@@ -72,6 +72,34 @@ jobs:
           done
           ls -la shots
 
+      - name: Player screenshots, day and night (best effort)
+        continue-on-error: true
+        run: |
+          apt-get install -y -qq ffmpeg xdotool
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=30 -f lavfi -i sine=frequency=440 \
+            -t 60 -pix_fmt yuv420p /tmp/test.mp4
+          chmod a+r /tmp/test.mp4
+          cat > /tmp/shot-player.sh <<'SH'
+          # $1 = workspace, $2 = name, $3 = color-scheme-index
+          mkdir -p "$HOME/.config/vlc"
+          printf '[MainWindow]\ncolor-scheme-index=%s\n' "$3" > "$HOME/.config/vlc/vlc-qt-interface.conf"
+          export VLC_PLUGIN_PATH="$1/install/lib/vlc/plugins"
+          export QT_QPA_PLATFORM=xcb
+          "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask --aout=dummy /tmp/test.mp4 >"$1/shots/$2.log" 2>&1 &
+          VLC_PID=$!
+          sleep 12
+          xdotool mousemove 600 300; sleep 1; xdotool mousemove 640 400; sleep 2
+          import -window root "$1/shots/$2.png" || true
+          kill $VLC_PID || true
+          sleep 2
+          SH
+          chmod +x /tmp/shot-player.sh
+          for mode in "player-day 1" "player-night 2"; do
+            set -- $mode
+            runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot-player.sh "$PWD" "$1" "$2"
+          done
+          ls -la shots
+
       - name: Upload build
         uses: actions/upload-artifact@v4
         with:
