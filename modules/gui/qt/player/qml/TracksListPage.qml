@@ -55,6 +55,7 @@ RowLayout {
         id: playbackBtn
 
         text: qsTr("%1x").arg(+Player.rate.toFixed(2))
+        color: theme.fg.primary // redesign: the stock colour rendered invisible here
 
         onPressed: {
             trackMenuController.requestPlaybackSpeedPage()
@@ -230,10 +231,32 @@ RowLayout {
             }
         }
 
-        Widgets.ActionButtonOverlay {
+        T.AbstractButton {
+            id: resetBtn
+
+            implicitWidth: resetLabel.implicitWidth + VLCStyle.margin_normal * 2
+            implicitHeight: VLCStyle.dp(28, VLCStyle.scale)
+
             text: qsTr("Reset")
 
             onClicked: delayRow.setDelay(0)
+
+            contentItem: Text {
+                id: resetLabel
+
+                text: resetBtn.text
+                font.pixelSize: VLCStyle.fontSize_normal
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: resetBtn.hovered ? theme.accent : theme.fg.primary
+            }
+
+            background: Rectangle {
+                radius: VLCStyle.button_radius
+                color: resetBtn.hovered ? Qt.alpha(theme.fg.primary, 0.1) : "transparent"
+                border.width: 1
+                border.color: theme.border
+            }
         }
     }
 
