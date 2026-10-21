@@ -163,6 +163,80 @@ RowLayout {
     }
     }
 
+    // redesign: inline delay control shown at the bottom of the Subtitles / Audio tabs
+    component DelayRow: RowLayout {
+        id: delayRow
+
+        property bool audio: false
+
+        readonly property int delayMS: audio ? Player.audioDelayMS : Player.subtitleDelayMS
+
+        function setDelay(value) {
+            if (audio)
+                Player.audioDelayMS = value
+            else
+                Player.subtitleDelayMS = value
+        }
+
+        function textFrom(value, locale) {
+            return qsTr("%1 ms").arg(Number(value).toLocaleString(locale, 'f', 0))
+        }
+
+        function valueFrom(text, locale) {
+            return Number.fromLocaleString(locale, text.substring(0, text.length - 3))
+        }
+
+        spacing: VLCStyle.margin_xsmall
+
+        Widgets.MenuCaption {
+            Layout.fillWidth: true
+
+            text: delayRow.audio ? qsTr("Audio delay") : qsTr("Subtitle delay")
+            color: theme.fg.primary
+        }
+
+        Widgets.SpinBoxExt {
+            id: delaySpin
+
+            property bool update: false
+
+            Layout.preferredWidth: VLCStyle.dp(128, VLCStyle.scale)
+
+            stepSize: 50
+            from: -10000
+            to: 10000
+
+            textFromValue: delayRow.textFrom
+            valueFromText: delayRow.valueFrom
+
+            Component.onCompleted: {
+                value = delayRow.delayMS
+                update = true
+            }
+
+            onValueChanged: {
+                if (update)
+                    delayRow.setDelay(value)
+            }
+
+            Connections {
+                target: delayRow
+
+                function onDelayMSChanged() {
+                    delaySpin.update = false
+                    delaySpin.value = delayRow.delayMS
+                    delaySpin.update = true
+                }
+            }
+        }
+
+        Widgets.ActionButtonOverlay {
+            text: qsTr("Reset")
+
+            onClicked: delayRow.setDelay(0)
+        }
+    }
+
     component TrackColumn: T.Container {
         // wrap the contentItem i.e Column into Container
         // so that we can get focusReason, also Container
@@ -265,7 +339,7 @@ RowLayout {
 
                 model: tracksListContainer.tracksModel
                 width: tracksListContainer.width
-                height: tracksListContainer.height - titleHeader.height
+                height: tracksListContainer.height - titleHeader.height - delayFooter.height
                 leftMargin: separator.width
                 focus: true
                 clip: !fadingEdge.implicitClipping && (height < contentHeight)
@@ -307,6 +381,27 @@ RowLayout {
                     }
 
                     Navigation.parentItem: tracksList
+                }
+            }
+
+            Item {
+                id: delayFooter
+
+                // subtitle (0) and audio (1) tabs only
+                visible: tracksListContainer.tabIndex < 2
+                width: tracksListContainer.width
+                height: visible ? delayInline.implicitHeight + VLCStyle.margin_large * 2 : 0
+
+                DelayRow {
+                    id: delayInline
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: VLCStyle.margin_large
+                    anchors.rightMargin: VLCStyle.margin_large
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    audio: tracksListContainer.tabIndex === 1
                 }
             }
         }
