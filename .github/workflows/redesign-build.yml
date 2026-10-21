@@ -31,6 +31,24 @@ jobs:
             ccache-${{ github.ref_name }}-
             ccache-
 
+      - name: Restore medialibrary contrib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            contrib/native
+            contrib/x86_64-linux-gnu
+            contrib/tarballs
+          key: contrib-medialibrary-${{ hashFiles('contrib/src/medialibrary/**', 'contrib/src/sqlite/**') }}
+
+      - name: Build medialibrary contrib
+        run: |
+          # The image has no medialibrary; without it VLC builds no Videos/Music library.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          cd contrib
+          mkdir -p native && cd native
+          ../bootstrap
+          make -j"$(getconf _NPROCESSORS_ONLN)" .medialibrary
+
       - name: Configure
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
