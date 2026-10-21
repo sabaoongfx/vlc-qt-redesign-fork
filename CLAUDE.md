@@ -38,6 +38,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
   (`contrib/src/medialibrary`, cached) before configuring VLC. Sample media is generated into the XDG Videos/Music dirs; the script
   clicks through the first-run wizard (Next x3, Finish at 979,587 on a 1280x800 screen), which adds those dirs, waits for the scan, then
   relaunches per theme. Nav click targets (1280x800): Home y=62, Video y=108, then All 154 / Playlists 200 / Music 246 / Browse 292.
+- Hover shots: `player-*-hover.png` (bottom-left control icon) and `lib-video-*-hover.png` (first video card).
 - Not screenshot-able yet: dialogs, menus.
 
 ## Where the Qt UI lives
@@ -60,7 +61,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 0 Foundation (fork, CI, token map) | done |
 | 1 Tokens and theme | colours and radii done; icons and Inter font deferred on purpose |
 | 2 Main window shell | sidebar done and verified in day+night screenshots (200px, 46px rows, 8px radius, 14px labels, accent icon + full-strength label mark the active row); floating rounded panel not done |
-| 3 Media library | baseline captured (home, video grid; music view pending verification); covers already pick up the 10px radius; prototype card text/hover ring not done |
+| 3 Media library | grid cards done and verified (10px covers, regular 14px titles, 2px accent hover/focus/selected ring in `widgets/qml/GridItem.qml`); library views captured for home, video, music; list views, album/artist pages, header/breadcrumb style not done |
 | 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; still to do: seek handle as wide bar, icon-button hover shape, top bar |
 | 5 Settings sidebar | not started (largest piece; needs backend wiring) |
 | 6 Dialogs and preferences | not started |
