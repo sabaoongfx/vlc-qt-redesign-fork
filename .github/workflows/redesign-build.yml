@@ -1,0 +1,54 @@
+name: Redesign build
+
+on:
+  push:
+    branches: [redesign]
+  workflow_dispatch:
+
+jobs:
+  linux-qt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    # Same image upstream VLC uses for its debian CI job (has Qt and all build deps).
+    container:
+      image: registry.videolan.org/vlc-debian-unstable:20260611225331
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          ./bootstrap
+          ./configure --prefix=$PWD/install --disable-nls
+
+      - name: Build
+        run: |
+          make -j"$(getconf _NPROCESSORS_ONLN)"
+          make install
+
+      - name: Screenshot main window (best effort)
+        continue-on-error: true
+        run: |
+          mkdir -p shots
+          export VLC_PLUGIN_PATH=$PWD/install/lib/vlc/plugins
+          export QT_QPA_PLATFORM=xcb
+          xvfb-run -a -s "-screen 0 1280x800x24" sh -c '
+            ./install/bin/vlc --no-media-library -I qt &
+            sleep 15
+            import -window root shots/main.png || xwd -root | convert xwd:- shots/main.png
+            kill %1
+          '
+
+      - name: Upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: vlc-linux-install
+          path: install/
+          retention-days: 7
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: shots/
+          if-no-files-found: ignore
