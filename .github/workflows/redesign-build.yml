@@ -93,6 +93,9 @@ jobs:
           sleep 12
           xdotool mousemove 700 400; sleep 0.3; xdotool mousemove 760 440; sleep 0.3; xdotool mousemove 800 470; sleep 0.4
           import -window root "$1/shots/$2.png" || true
+          # hover an icon button (bottom-left controls) to capture its hover state
+          xdotool mousemove 736 770; sleep 0.2; xdotool mousemove 737 771; sleep 0.5
+          import -window root "$1/shots/$2-hover.png" || true
           kill $VLC_PID || true
           sleep 2
           SH

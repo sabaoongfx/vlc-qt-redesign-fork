@@ -546,6 +546,8 @@ void SystemPalette::makeLightPalette()
     {
         C::ColorSet CS = C::ToolButton;
         setColor(CS, C::Bg, C::Primary, C::Normal, Qt::transparent);
+        setColor(CS, C::Bg, C::Primary, C::Hovered, QColor("#C8C8C7")); // redesign: prototype --hover
+        setColor(CS, C::Bg, C::Primary, C::Focused, QColor("#C8C8C7"));
         setColor(CS, C::Bg, C::Secondary, C::Normal, lightGrey400);
 
         setColor(CS, C::Fg, C::Primary, C::Normal, setColorAlpha(Qt::black, 0.6));
@@ -759,6 +761,8 @@ void SystemPalette::makeDarkPalette()
     {
         C::ColorSet CS = C::ToolButton;
         setColor(CS, C::Bg, C::Primary, C::Normal, Qt::transparent);
+        setColor(CS, C::Bg, C::Primary, C::Hovered, QColor("#1D1D1D")); // redesign: prototype --hover
+        setColor(CS, C::Bg, C::Primary, C::Focused, QColor("#1D1D1D"));
         setColor(CS, C::Bg, C::Secondary, C::Normal, Qt::black);
 
         setColor(CS, C::Fg, C::Primary, C::Normal, setColorAlpha(Qt::white, 0.6));
