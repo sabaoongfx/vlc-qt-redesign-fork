@@ -179,6 +179,7 @@ RowLayout {
 
                     text: tracksListContainer.title
                     color: theme.fg.primary
+                    font.weight: Font.Light // redesign: light section headers (prototype .hsec-h)
                 }
 
                 Widgets.IconTrackButton {
@@ -229,8 +230,7 @@ RowLayout {
                     width: tracksListContainer.width - VLCStyle.margin_xxxsmall
                     height: VLCStyle.dp(40, VLCStyle.scale)
                     opacity: hovered || activeFocus || checked ? 1 : .6
-                    font.weight: hovered
-                                 || activeFocus ? Font.DemiBold : Font.Normal
+                    font.weight: Font.Normal // redesign: no weight jump on hover
 
                     onIsModelCheckedChanged: {
                         if (model.checked !== checked)
