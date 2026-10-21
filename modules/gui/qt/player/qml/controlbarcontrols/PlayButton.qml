@@ -156,14 +156,8 @@ T.Control {
             if (!containsMouse)
                 return false
 
-            const center = (width / 2)
-            if (Helpers.pointInRadius( center - mouseX,
-                                       center - mouseY,
-                                       center )) {
-                return true
-            } else {
-                return false
-            }
+            // redesign: the button is a rounded rectangle, not a circle
+            return true
         }
 
         onCursorInsideChanged: {
@@ -217,8 +211,7 @@ T.Control {
                 return VLCIcons.play_filled
         }
 
-        color: cursorInside ? theme.accent
-                            : "black"  //foreground is always black
+        color: "#1A0E02" // redesign: dark glyph on the accent fill (prototype --on-accent)
 
         font.pixelSize: Math.round(parent.height / 1.7)
 
@@ -240,14 +233,14 @@ T.Control {
     }
 
     background: Item {
-        implicitWidth: height
-        implicitHeight: VLCStyle.icon_medium
+        implicitWidth: VLCStyle.dp(60, VLCStyle.scale)
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
 
         Widgets.AnimatedBackground {
             anchors.fill: parent
             anchors.margins: -border.width * 4
 
-            radius: width / 2
+            radius: VLCStyle.button_radius
             border.pixelAligned: false
 
             enabled: theme.initialized
@@ -258,12 +251,9 @@ T.Control {
         Rectangle {
             anchors.fill: parent
 
-            radius: width / 2
+            radius: VLCStyle.button_radius
 
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: "#e25b01" }
-                GradientStop { position: 1.0; color: "#f89a06" }
-            }
+            color: theme.accent
 
             Widgets.RoundedRectangleShadow {
                 id: hoverShadow
@@ -280,7 +270,7 @@ T.Control {
             Rectangle {
                 id: innerRectangle
 
-                color: "white"
+                color: (state === "diminished") ? "white" : "transparent"
 
                 anchors.fill: parent
                 anchors.margins: _diminished ? (parent.width / 2)
