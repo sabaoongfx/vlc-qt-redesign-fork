@@ -480,10 +480,10 @@ void SystemPalette::makeLightPalette()
     //base set
     {
         C::ColorSet CS = C::View;
-        setColor(CS, C::Bg, C::Primary, C::Normal, lightGrey100 );
-        setColor(CS, C::Bg, C::Secondary, C::Normal, Qt::white );
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#D2D2D1"));
+        setColor(CS, C::Bg, C::Secondary, C::Normal, QColor("#DEDEDE"));
 
-        setColor(CS, C::Fg, C::Primary, C::Normal, darkGrey300);
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#151515"));
         setColor(CS, C::Fg, C::Primary, C::Disabled, setColorAlpha(Qt::black, 0.3));
 
         setColor(CS, C::Fg, C::Secondary, C::Normal, setColorAlpha(Qt::black, 0.7));
@@ -505,7 +505,7 @@ void SystemPalette::makeLightPalette()
         setColor(CS, C::Decoration, C::Border, C::Hovered, setColorAlpha(Qt::black, 0.7) );
         setColor(CS, C::Decoration, C::Border, C::Disabled, setColorAlpha(Qt::black, 0.0) );
 
-        setColor(CS, C::Decoration, C::Separator, C::Normal, QColor("#E0E0E0")); //FIXME not a predef
+        setColor(CS, C::Decoration, C::Separator, C::Normal, QColor("#B0B0AF"));
 
         setColor(CS, C::Decoration, C::Shadow, C::Normal, setColorAlpha(Qt::black, 0.22));
 
@@ -516,9 +516,9 @@ void SystemPalette::makeLightPalette()
     //window banner & miniplayer
     {
         C::ColorSet CS = C::Window;
-        setColor(CS, C::Bg, C::Primary, C::Normal, lightGrey400); //looks not white in figma more like #FDFDFD
-        setColor(CS, C::Bg, C::Secondary, C::Normal, lightGrey400);
-        setColor(CS, C::Decoration, C::Border, C::Normal, QColor{"#E0E0E0"}); //FIXME not a predef
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#BEBEBD"));
+        setColor(CS, C::Bg, C::Secondary, C::Normal, QColor("#ABAAAA"));
+        setColor(CS, C::Decoration, C::Border, C::Normal, QColor{"#8D8D8C"});
     }
 
     //badges
@@ -593,10 +593,10 @@ void SystemPalette::makeLightPalette()
     {
         C::ColorSet CS = C::ButtonAccent;
         setColor(CS, C::Bg, C::Primary, C::Normal, orange800);
-        setColor(CS, C::Bg, C::Primary, C::Pressed, QColor("#e65609"));  //FIXME not a predef
+        setColor(CS, C::Bg, C::Primary, C::Pressed, QColor("#AB6314"));
         setColor(CS, C::Bg, C::Primary, C::Disabled, setColorAlpha(Qt::black, 0.2));
 
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::white);
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#1A0E02"));
         setColor(CS, C::Fg, C::Primary, C::Disabled, setColorAlpha(Qt::black, 0.3));
 
         setColor(CS, C::Decoration, C::Border, C::Normal, Qt::transparent);
@@ -693,10 +693,10 @@ void SystemPalette::makeDarkPalette()
 
     {
         C::ColorSet CS = C::View;
-        setColor(CS, C::Bg, C::Primary, C::Normal, darkGrey300 );
-        setColor(CS, C::Bg, C::Secondary, C::Normal, Qt::black );
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#0E0E0E"));
+        setColor(CS, C::Bg, C::Secondary, C::Normal, QColor("#090909"));
 
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::white );
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#E3E3E3"));
         setColor(CS, C::Fg, C::Primary, C::Disabled, setColorAlpha(Qt::white, 0.3) );
 
         setColor(CS, C::Fg, C::Secondary, C::Normal, setColorAlpha(Qt::white, 0.6));
@@ -720,7 +720,7 @@ void SystemPalette::makeDarkPalette()
 
         setColor(CS, C::Decoration, C::Shadow, C::Normal, setColorAlpha(Qt::black, 0.22));
 
-        setColor(CS, C::Decoration, C::Separator, C::Normal, darkGrey800);
+        setColor(CS, C::Decoration, C::Separator, C::Normal, QColor("#373737"));
 
         setColor(CS, C::Decoration, C::Accent, C::Normal, orange500);
         setColor(CS, C::Fg, C::Link, C::Normal, orange500);
@@ -729,9 +729,9 @@ void SystemPalette::makeDarkPalette()
     //window banner & miniplayer
     {
         C::ColorSet CS = C::Window;
-        setColor(CS, C::Bg, C::Primary, C::Normal, Qt::black); //FIXME
-        setColor(CS, C::Bg, C::Secondary, C::Normal, Qt::black);
-        setColor(CS, C::Decoration, C::Border, C::Normal, darkGrey800); //FIXME not a predef
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#191919"));
+        setColor(CS, C::Bg, C::Secondary, C::Normal, QColor("#1B1B1B"));
+        setColor(CS, C::Decoration, C::Border, C::Normal, darkGrey800);
     }
 
     //badges
@@ -805,10 +805,10 @@ void SystemPalette::makeDarkPalette()
     {
         C::ColorSet CS = C::ButtonAccent;
         setColor(CS, C::Bg, C::Primary, C::Normal, orange500);
-        setColor(CS, C::Bg, C::Primary, C::Pressed, QColor("#e67a30"));  //FIXME not a predef
+        setColor(CS, C::Bg, C::Primary, C::Pressed, QColor("#AB6314"));
         setColor(CS, C::Bg, C::Primary, C::Disabled, setColorAlpha(Qt::white, 0.2));
 
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::white);
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#1A0E02"));
         setColor(CS, C::Fg, C::Primary, C::Disabled, setColorAlpha(Qt::white, 0.3));
 
         setColor(CS, C::Decoration, C::Border, C::Normal, Qt::transparent);

@@ -14,40 +14,62 @@ jobs:
       image: registry.videolan.org/vlc-debian-unstable:20260611225331
       # The image's default user can't write the runner's temp dir (EACCES in checkout).
       options: --user root
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install ccache
+        run: apt-get update -qq && apt-get install -y -qq ccache
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ github.ref_name }}-
+            ccache-
 
       - name: Configure
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           ./bootstrap
-          ./configure --prefix=$PWD/install --disable-nls
+          CC="ccache gcc" CXX="ccache g++" ./configure --prefix=$PWD/install --disable-nls
 
       - name: Build
         run: |
           make -j"$(getconf _NPROCESSORS_ONLN)"
           make install
+          ccache -s
 
-      - name: Screenshot main window (best effort)
+      - name: Screenshots, day and night (best effort)
         continue-on-error: true
         run: |
-          apt-get update -qq && apt-get install -y -qq imagemagick x11-apps xvfb
+          apt-get install -y -qq imagemagick x11-apps xvfb
           # VLC refuses to run as root, so run it as an unprivileged user.
           id shotuser >/dev/null 2>&1 || useradd -m shotuser
           mkdir -p shots
           chown -R shotuser "$PWD/shots"
           chmod -R a+rX "$PWD/install"
           cat > /tmp/shot.sh <<'SH'
+          # $1 = workspace, $2 = name, $3 = color-scheme-index (0 system, 1 day, 2 night)
+          mkdir -p "$HOME/.config/vlc"
+          printf '[MainWindow]\ncolor-scheme-index=%s\n' "$3" > "$HOME/.config/vlc/vlc-qt-interface.conf"
           export VLC_PLUGIN_PATH="$1/install/lib/vlc/plugins"
           export QT_QPA_PLATFORM=xcb
-          "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask -I qt >"$1/shots/vlc.log" 2>&1 &
+          "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask -I qt >"$1/shots/$2.log" 2>&1 &
           VLC_PID=$!
           sleep 20
-          import -window root "$1/shots/main.png" || true
+          import -window root "$1/shots/$2.png" || true
           kill $VLC_PID || true
+          sleep 2
           SH
           chmod +x /tmp/shot.sh
-          runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot.sh "$PWD"
+          for mode in "day 1" "night 2"; do
+            set -- $mode
+            runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot.sh "$PWD" "$1" "$2"
+          done
           ls -la shots
 
       - name: Upload build
