@@ -57,7 +57,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 1 Tokens and theme | colours and radii done; icons and Inter font deferred on purpose |
 | 2 Main window shell | sidebar done and verified in day+night screenshots (200px, 46px rows, 8px radius, 14px labels, accent icon + full-strength label mark the active row); floating rounded panel not done |
 | 3 Media library | not started (needs a way to seed the library for screenshots) |
-| 4 Player | not started (baseline captured in `player-*.png`) |
+| 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; still to do: seek handle as wide bar, icon-button hover shape, top bar |
 | 5 Settings sidebar | not started (largest piece; needs backend wiring) |
 | 6 Dialogs and preferences | not started |
 | 7 Polish and release | not started |
