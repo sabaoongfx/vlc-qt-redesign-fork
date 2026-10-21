@@ -31,15 +31,24 @@ jobs:
       - name: Screenshot main window (best effort)
         continue-on-error: true
         run: |
+          apt-get update -qq && apt-get install -y -qq imagemagick x11-apps xvfb
+          # VLC refuses to run as root, so run it as an unprivileged user.
+          id shotuser >/dev/null 2>&1 || useradd -m shotuser
           mkdir -p shots
-          export VLC_PLUGIN_PATH=$PWD/install/lib/vlc/plugins
+          chown -R shotuser "$PWD/shots"
+          chmod -R a+rX "$PWD/install"
+          cat > /tmp/shot.sh <<'SH'
+          export VLC_PLUGIN_PATH="$1/install/lib/vlc/plugins"
           export QT_QPA_PLATFORM=xcb
-          xvfb-run -a -s "-screen 0 1280x800x24" sh -c '
-            ./install/bin/vlc --no-media-library -I qt &
-            sleep 15
-            import -window root shots/main.png || xwd -root | convert xwd:- shots/main.png
-            kill %1
-          '
+          "$1/install/bin/vlc" --no-media-library -I qt >"$1/shots/vlc.log" 2>&1 &
+          VLC_PID=$!
+          sleep 20
+          import -window root "$1/shots/main.png" || true
+          kill $VLC_PID || true
+          SH
+          chmod +x /tmp/shot.sh
+          runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot.sh "$PWD"
+          ls -la shots
 
       - name: Upload build
         uses: actions/upload-artifact@v4
