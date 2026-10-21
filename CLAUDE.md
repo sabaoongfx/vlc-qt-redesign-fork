@@ -55,7 +55,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 |---|---|
 | 0 Foundation (fork, CI, token map) | done |
 | 1 Tokens and theme | colours and radii done; icons and Inter font deferred on purpose |
-| 2 Main window shell | sidebar sizing done (200px, 46px rows, 8px radius, 14px labels, accent icon marks active row); floating rounded panel not done |
+| 2 Main window shell | sidebar done and verified in day+night screenshots (200px, 46px rows, 8px radius, 14px labels, accent icon + full-strength label mark the active row); floating rounded panel not done |
 | 3 Media library | not started (needs a way to seed the library for screenshots) |
 | 4 Player | not started (baseline captured in `player-*.png`) |
 | 5 Settings sidebar | not started (largest piece; needs backend wiring) |
@@ -66,6 +66,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 
 ## Decisions and gotchas
 
+- TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
+  `highlighted` (set by a Binding), not `checked`.
 - Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
   `MainDisplay.qml`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
