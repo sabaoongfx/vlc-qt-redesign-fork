@@ -12,6 +12,8 @@ jobs:
     # Same image upstream VLC uses for its debian CI job (has Qt and all build deps).
     container:
       image: registry.videolan.org/vlc-debian-unstable:20260611225331
+      # The image's default user can't write the runner's temp dir (EACCES in checkout).
+      options: --user root
     steps:
       - uses: actions/checkout@v4
 
