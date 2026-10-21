@@ -64,7 +64,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 2 Main window shell | sidebar done and verified in day+night screenshots (200px, 46px rows, 8px radius, 14px labels, accent icon + full-strength label mark the active row); floating rounded panel not done |
 | 3 Media library | grid cards done and verified (10px covers, regular 14px titles, 2px accent hover/focus/selected ring in `widgets/qml/GridItem.qml`); library views captured for home, video, music; list views, album/artist pages, header/breadcrumb style not done |
 | 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; still to do: seek handle as wide bar, icon-button hover shape, top bar |
-| 5 Settings sidebar | scope chosen: Subtitles + Audio tabs, no new backend. Done and verified: `TracksMenu` docks right (full height down to the seek bar) and `TracksListPage` has Subtitles/Audio/Video tabs (accent pill for the active tab). To do: inline subtitle/audio delay in the tabs (currently on sub-pages), check the speed button placement, day-theme check |
+| 5 Settings sidebar | done for the chosen scope (Subtitles + Audio tabs, no new backend), verified: `TracksMenu` docks right (full height down to the seek bar); `TracksListPage` has Subtitles/Audio/Video tabs (accent pill for the active tab), an inline Delay row (spin box + Reset) on the Subtitles and Audio tabs, and a drawn playback-speed pill at the end of the tab row. Not done: Video/Playback tabs, equalizer, bookmarks (would need backend wiring; the equalizer dialog is Qt Widgets) |
 | 6 Dialogs and preferences | not started |
 | 7 Polish and release | not started |
 
@@ -74,6 +74,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 
 - TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
   `highlighted` (set by a Binding), not `checked`.
+- Stock `Widgets.ButtonExt` / `ActionButtonOverlay` rendered invisible inside `TracksListPage` (the old speed button and Reset); the tracks panel uses small
+  hand-drawn `T.AbstractButton`s instead. The player overlay stays dark in the day theme.
 - The player track panel is `player/qml/TracksMenu.qml` (a `T.Popup` hosting a `StackView`) opened by `controlbarcontrols/LangButton.qml`;
   its pages are `TracksListPage` (tabs), `TracksPageAudio`, `TracksPageSubtitle`, `TracksPageSpeed`. The equalizer / video effects dialogs
   (`dialogs/extended`) are Qt Widgets `.ui` files, so QML tokens do not reach them.

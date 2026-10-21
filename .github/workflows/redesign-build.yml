@@ -118,7 +118,7 @@ jobs:
           xdotool mousemove 696 770; sleep 0.3; xdotool click 1; sleep 1.5
           import -window root "$1/shots/$2-tracks.png" || true
           # switch to the Audio tab
-          xdotool mousemove 1338 369; sleep 0.3; xdotool click 1; sleep 1
+          xdotool mousemove 1275 369; sleep 0.3; xdotool click 1; sleep 1
           import -window root "$1/shots/$2-tracks-audio.png" || true
           kill $VLC_PID || true
           sleep 2
