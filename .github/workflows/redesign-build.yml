@@ -180,7 +180,7 @@ jobs:
             import -window root "$1/shots/lib-home-$2.png" || true
             click 80 108; sleep 6
             import -window root "$1/shots/lib-video-$2.png" || true
-            click 80 154; sleep 6
+            click 80 246; sleep 6 # Music (Video is expanded: All, Playlists)
             import -window root "$1/shots/lib-music-$2.png" || true
             kill $PID || true; sleep 4
           done
