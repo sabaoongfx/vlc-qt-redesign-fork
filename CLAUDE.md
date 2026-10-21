@@ -38,6 +38,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
   (`contrib/src/medialibrary`, cached) before configuring VLC. Sample media is generated into the XDG Videos/Music dirs; the script
   clicks through the first-run wizard (Next x3, Finish at 979,587 on a 1280x800 screen), which adds those dirs, waits for the scan, then
   relaunches per theme. Nav click targets (1280x800): Home y=62, Video y=108, then All 154 / Playlists 200 / Music 246 / Browse 292.
+- Tracks panel shots: `player-*-tracks.png` (clicks the first bottom-left icon).
 - Hover shots: `player-*-hover.png` (bottom-left control icon) and `lib-video-*-hover.png` (first video card).
 - Not screenshot-able yet: dialogs, menus.
 
@@ -63,7 +64,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 2 Main window shell | sidebar done and verified in day+night screenshots (200px, 46px rows, 8px radius, 14px labels, accent icon + full-strength label mark the active row); floating rounded panel not done |
 | 3 Media library | grid cards done and verified (10px covers, regular 14px titles, 2px accent hover/focus/selected ring in `widgets/qml/GridItem.qml`); library views captured for home, video, music; list views, album/artist pages, header/breadcrumb style not done |
 | 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; still to do: seek handle as wide bar, icon-button hover shape, top bar |
-| 5 Settings sidebar | not started (largest piece; needs backend wiring) |
+| 5 Settings sidebar | scope chosen: Subtitles + Audio tabs, no new backend. Done and verified: `TracksMenu` docks right (full height down to the seek bar) and `TracksListPage` has Subtitles/Audio/Video tabs (accent pill for the active tab). To do: inline subtitle/audio delay in the tabs (currently on sub-pages), check the speed button placement, day-theme check |
 | 6 Dialogs and preferences | not started |
 | 7 Polish and release | not started |
 
@@ -73,6 +74,9 @@ Local edits are text only (QML/C++/YAML/Markdown).
 
 - TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
   `highlighted` (set by a Binding), not `checked`.
+- The player track panel is `player/qml/TracksMenu.qml` (a `T.Popup` hosting a `StackView`) opened by `controlbarcontrols/LangButton.qml`;
+  its pages are `TracksListPage` (tabs), `TracksPageAudio`, `TracksPageSubtitle`, `TracksPageSpeed`. The equalizer / video effects dialogs
+  (`dialogs/extended`) are Qt Widgets `.ui` files, so QML tokens do not reach them.
 - Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
   `MainDisplay.qml`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
