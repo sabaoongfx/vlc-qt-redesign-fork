@@ -152,7 +152,7 @@ T.ItemDelegate {
 
             verticalAlignment: Text.AlignVCenter
 
-            color: control.checked ? theme.fg.primary : theme.fg.secondary
+            color: (control.checked || control.highlighted) ? theme.fg.secondary : theme.fg.primary // TabButton: secondary is full-strength, primary is dimmed
 
             elide: Text.ElideRight
 
