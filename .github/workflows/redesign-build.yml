@@ -46,7 +46,7 @@ jobs:
       - name: Screenshots, day and night (best effort)
         continue-on-error: true
         run: |
-          apt-get install -y -qq imagemagick x11-apps xvfb
+          apt-get install -y -qq imagemagick x11-apps xvfb xdotool
           # VLC refuses to run as root, so run it as an unprivileged user.
           id shotuser >/dev/null 2>&1 || useradd -m shotuser
           mkdir -p shots
@@ -60,7 +60,10 @@ jobs:
           export QT_QPA_PLATFORM=xcb
           "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask -I qt >"$1/shots/$2.log" 2>&1 &
           VLC_PID=$!
-          sleep 20
+          sleep 12
+          WID=$(xdotool search --onlyvisible --class vlc | head -1)
+          xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
+          sleep 5
           import -window root "$1/shots/$2.png" || true
           kill $VLC_PID || true
           sleep 2
