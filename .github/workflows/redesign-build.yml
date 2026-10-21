@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
         run: |
           apt-get install -y -qq ffmpeg xdotool
-          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=30 -f lavfi -i sine=frequency=440 \
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=854x480:rate=30 -f lavfi -i sine=frequency=440 \
             -t 60 -pix_fmt yuv420p /tmp/test.mp4
           chmod a+r /tmp/test.mp4
           cat > /tmp/shot-player.sh <<'SH'
@@ -88,7 +88,7 @@ jobs:
           "$1/install/bin/vlc" --no-media-library --no-qt-privacy-ask --aout=dummy /tmp/test.mp4 >"$1/shots/$2.log" 2>&1 &
           VLC_PID=$!
           sleep 12
-          xdotool mousemove 600 300; sleep 1; xdotool mousemove 640 400; sleep 2
+          xdotool mousemove 700 400; sleep 0.3; xdotool mousemove 760 440; sleep 0.3; xdotool mousemove 800 470; sleep 0.4
           import -window root "$1/shots/$2.png" || true
           kill $VLC_PID || true
           sleep 2
@@ -96,7 +96,7 @@ jobs:
           chmod +x /tmp/shot-player.sh
           for mode in "player-day 1" "player-night 2"; do
             set -- $mode
-            runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot-player.sh "$PWD" "$1" "$2"
+            runuser -u shotuser -- xvfb-run -a -s "-screen 0 1920x1080x24" /tmp/shot-player.sh "$PWD" "$1" "$2"
           done
           ls -la shots
 

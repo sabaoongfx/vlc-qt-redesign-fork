@@ -35,7 +35,7 @@ T.ItemDelegate {
 
     property bool showText: true
 
-    property real radius: VLCStyle.button_radius
+    property real radius: VLCStyle.navBoxButton_radius
 
     // Settings
 
@@ -111,7 +111,7 @@ T.ItemDelegate {
                 verticalCenter: parent.verticalCenter
             }
             implicitHeight: parent.height / 2
-            visible: control.checked
+            visible: false // redesign: the active item is marked by the accent icon only
 
             radius: control.radius / 2
         }
@@ -152,15 +152,15 @@ T.ItemDelegate {
 
             verticalAlignment: Text.AlignVCenter
 
-            color: control.checked ? theme.fg.secondary : theme.fg.primary
+            color: control.checked ? theme.fg.primary : theme.fg.secondary
 
             elide: Text.ElideRight
 
             visible: control.showText
 
-            font.pixelSize: VLCStyle.fontSize_normal
+            font.pixelSize: VLCStyle.fontSize_large
 
-            font.weight: control.checked ? Font.DemiBold : Font.Normal
+            font.weight: Font.Normal
 
             //button text is already exposed
             Accessible.ignored: true
