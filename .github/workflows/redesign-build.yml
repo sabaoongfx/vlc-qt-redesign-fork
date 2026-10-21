@@ -114,6 +114,9 @@ jobs:
           # hover an icon button (bottom-left controls) to capture its hover state
           xdotool mousemove 736 770; sleep 0.2; xdotool mousemove 737 771; sleep 0.5
           import -window root "$1/shots/$2-hover.png" || true
+          # open the subtitles/tracks menu (bottom-left first icon)
+          xdotool mousemove 696 770; sleep 0.3; xdotool click 1; sleep 1.5
+          import -window root "$1/shots/$2-tracks.png" || true
           kill $VLC_PID || true
           sleep 2
           SH
