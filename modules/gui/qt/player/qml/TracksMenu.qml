@@ -37,7 +37,8 @@ T.Popup {
                           ? preferredWidth : Number.MAX_VALUE
                     , root.parent.width)
 
-    height: VLCStyle.dp(296, VLCStyle.scale)
+    // redesign: docked right panel, from the top down to the seek bar
+    height: root.parent.positionSliderY
 
     // Animations
 
@@ -61,9 +62,10 @@ T.Popup {
 
         Rectangle {
             anchors.left: parent.left
-            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
 
-            height: VLCStyle.margin_xxxsmall
+            width: VLCStyle.margin_xxxsmall
 
             color: popupTheme.border
         }

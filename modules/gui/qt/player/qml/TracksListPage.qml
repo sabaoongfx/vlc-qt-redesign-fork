@@ -41,6 +41,10 @@ RowLayout {
     //FIXME make TrackMenuController a proper type (see TrackMenu)
     required property QtObject trackMenuController
 
+    // redesign: docked right panel with tabs instead of three columns
+    property int currentTab: 0
+    property int preferredWidth: VLCStyle.dp(400, VLCStyle.scale)
+
     spacing: 0
 
     focus: true
@@ -67,6 +71,55 @@ RowLayout {
         Layout.margins: VLCStyle.margin_large
     }
 
+    ColumnLayout {
+        Layout.fillHeight: true
+        Layout.fillWidth: true
+
+        spacing: 0
+
+        Row {
+            id: tabBar
+
+            Layout.topMargin: VLCStyle.margin_large
+            Layout.leftMargin: VLCStyle.margin_large
+            spacing: VLCStyle.margin_xsmall
+
+            Repeater {
+                model: [qsTr("Subtitles"), qsTr("Audio"), qsTr("Video")]
+
+                delegate: T.AbstractButton {
+                    id: tab
+
+                    required property int index
+                    required property string modelData
+
+                    readonly property bool current: root.currentTab === index
+
+                    implicitWidth: tabLabel.implicitWidth + VLCStyle.margin_normal * 2
+                    implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+
+                    text: modelData
+                    onClicked: root.currentTab = index
+
+                    contentItem: Text {
+                        id: tabLabel
+
+                        text: tab.text
+                        font.pixelSize: VLCStyle.fontSize_large
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        color: tab.current ? theme.accent : (tab.hovered ? theme.fg.primary : theme.fg.secondary)
+                    }
+
+                    background: Rectangle {
+                        radius: VLCStyle.button_radius
+                        color: tab.current ? Qt.alpha(theme.accent, 0.16)
+                                           : (tab.hovered ? Qt.alpha(theme.fg.primary, 0.08) : "transparent")
+                    }
+                }
+            }
+        }
+
     Widgets.NavigableRow {
         id: row
 
@@ -76,6 +129,7 @@ RowLayout {
         Navigation.leftItem: playbackBtn
 
         TrackColumn {
+            tabIndex: 0
             title: qsTr("Subtitle")
             tracksModel: Player.subtitleTracks
             menuIcon: VLCIcons.expand
@@ -86,6 +140,7 @@ RowLayout {
         }
 
         TrackColumn {
+            tabIndex: 1
             title: qsTr("Audio")
             tracksModel: Player.audioTracks
             menuIcon: VLCIcons.expand
@@ -96,6 +151,7 @@ RowLayout {
         }
 
         TrackColumn {
+            tabIndex: 2
             title: qsTr("Video Tracks")
             tracksModel: Player.videoTracks
             menuIcon: VLCIcons.add
@@ -104,6 +160,7 @@ RowLayout {
                 DialogsProvider.loadVideoFile()
             }
         }
+    }
     }
 
     component TrackColumn: T.Container {
@@ -117,6 +174,7 @@ RowLayout {
         implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
                                  implicitContentHeight + topPadding + bottomPadding)
 
+        required property int tabIndex
         required property string title
         required property var tracksModel
         required property string menuIcon
@@ -126,7 +184,8 @@ RowLayout {
 
         focus: true
 
-        width: row.width / 3
+        visible: root.currentTab === tabIndex
+        width: row.width
         height: row.height
 
         onActiveFocusChanged: if (activeFocus) tracksList.forceActiveFocus(focusReason)
