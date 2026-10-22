@@ -52,6 +52,7 @@ extern "C" char **environ;
 #endif
 
 #include <QApplication>
+#include <QFontDatabase>
 #include <QDate>
 #include <QMutex>
 #include <QtQuickControls2/QQuickStyle>
@@ -1446,6 +1447,14 @@ static void *Thread( void *obj )
     /* Last settings */
     app.setQuitOnLastWindowClosed( false );
     app.setQuitLockEnabled( false );
+
+    /* redesign: bundled Inter (SIL OFL, see pixmaps/InterVariable-LICENSE.txt) as the application font */
+    if( QFontDatabase::addApplicationFont( QStringLiteral(":/InterVariable.ttf") ) >= 0 )
+    {
+        QFont appFont = QApplication::font();
+        appFont.setFamily( QStringLiteral("Inter") );
+        QApplication::setFont( appFont );
+    }
 
     /* Loads and tries to apply the preferred QStyle */
 #define QTSTYLE_KEY "MainWindow/QtStyle"
