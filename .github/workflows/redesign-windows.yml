@@ -32,6 +32,13 @@ jobs:
             contrib/tarballs
           key: win64-contrib-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
 
+      # The restored files keep their old mtimes, so make thinks every contrib is older than the freshly
+      # checked-out sources and rebuilds all of them. Make them newer than the checkout.
+      - name: Refresh contrib timestamps
+        if: steps.contribcache.outputs.cache-hit == 'true'
+        run: |
+          find contrib/contrib-win64 contrib/x86_64-w64-mingw32 contrib/tarballs -exec touch {} + 2>/dev/null || true
+
       - name: Build (release)
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
