@@ -475,7 +475,9 @@ void SystemPalette::updatePalette()
     emit paletteChanged();
 
     // redesign: make the Widgets dialogs (preferences, open media, ...) follow the selected scheme
-    if (m_source == ColorSchemeModel::Day || m_source == ColorSchemeModel::Night)
+    // only the main theme palette drives it: VLCStyle also has a fixed-Night "darkPalette" for dark overlays
+    if (objectName() == QLatin1String("themePalette")
+        && (m_source == ColorSchemeModel::Day || m_source == ColorSchemeModel::Night))
     {
         if (qobject_cast<QApplication*>(QCoreApplication::instance()))
             QApplication::setPalette(makeWidgetsPalette(m_source == ColorSchemeModel::Night, orange500, orange800));
