@@ -123,6 +123,12 @@ AboutDialog::AboutDialog( qt_intf_t *_p_intf)
     ui.creditsButton->setText( "<html><head/><body><p><span style=\" text-decoration: underline; color:#0057ae;\">"+qtr( "Credits" )+"</span></p></body></html>");
     ui.creditsButton->installEventFilter( this );
 
+    /* redesign: the rich text above hardcodes light-theme colours; follow the palette instead */
+    const QString textColor = palette().color( QPalette::Text ).name();
+    const QString linkColor = palette().color( QPalette::Link ).name();
+    for( QLabel *label : { ui.title, ui.MainBlabla, ui.licenseButton, ui.authorsButton, ui.creditsButton } )
+        label->setText( label->text().replace( "#353535", textColor ).replace( "#0057ae", linkColor ) );
+
     ui.version->installEventFilter( this );
 }
 
