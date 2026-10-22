@@ -89,15 +89,16 @@ jobs:
           xdotool key Escape; sleep 1
           xdotool mousemove 60 764; sleep 0.3; xdotool click 1; sleep 4
           import -window root "$1/shots/$2-prefs.png" || true
-          xdotool mousemove 315 397; sleep 0.3; xdotool click 1; sleep 3 # Customize Toolbar
-          import -window root "$1/shots/$2-toolbar.png" || true
-          xdotool key Escape; sleep 1
           xdotool mousemove 365 78; sleep 0.3; xdotool click 1; sleep 2 # Audio tab
           import -window root "$1/shots/$2-prefs-audio.png" || true
           xdotool mousemove 813 78; sleep 0.3; xdotool click 1; sleep 2 # Hotkeys tab
           import -window root "$1/shots/$2-prefs-hotkeys.png" || true
           xdotool mousemove 459 78; sleep 0.3; xdotool click 1; sleep 2 # Video tab
           import -window root "$1/shots/$2-prefs-video.png" || true
+          xdotool mousemove 270 78; sleep 0.3; xdotool click 1; sleep 2 # back to Interface
+          xdotool mousemove 315 397; sleep 0.3; xdotool click 1; sleep 3 # Customize Toolbar
+          import -window root "$1/shots/$2-toolbar.png" || true
+          xdotool key Escape; sleep 1
           kill $VLC_PID || true
           sleep 2
           SH
