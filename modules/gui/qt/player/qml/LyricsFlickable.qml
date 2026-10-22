@@ -127,7 +127,7 @@ Flickable {
                 // the current line; this is cheaper than re-rasterizing the
                 // font on every animation frame.
                 font.pixelSize: VLCStyle.fontSize_xlarge
-                font.weight: isCurrent ? Font.Bold : Font.Normal
+                font.weight: isCurrent ? Font.DemiBold : Font.Normal
 
                 color: lyricsFlickable.colorContext.fg.primary
                 opacity: isCurrent ? 1.0 : 0.45

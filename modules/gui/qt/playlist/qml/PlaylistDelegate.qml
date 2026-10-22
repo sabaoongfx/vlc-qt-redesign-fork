@@ -133,6 +133,7 @@ T.Control {
     }
 
     background: Widgets.AnimatedBackground {
+        radius: VLCStyle.button_radius
         color: selected ? theme.bg.highlight : theme.bg.primary
 
         enabled: theme.initialized
@@ -282,7 +283,7 @@ T.Control {
 
                 Layout.fillWidth: true
 
-                font.weight: delegate.isCurrent ? Font.Bold : Font.DemiBold
+                font.weight: delegate.isCurrent ? Font.DemiBold : Font.Normal
                 text: delegate.title || qsTr("Unknown Title")
                 color: theme.fg.primary
             }

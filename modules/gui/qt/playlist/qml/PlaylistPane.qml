@@ -147,7 +147,7 @@ T.Pane {
 
                     text: qsTr("Play Queue")
                     color: theme.fg.primary
-                    font.weight: Font.Bold
+                    font.weight: Font.DemiBold
                     font.pixelSize: VLCStyle.dp(24, VLCStyle.scale)
                 }
 
