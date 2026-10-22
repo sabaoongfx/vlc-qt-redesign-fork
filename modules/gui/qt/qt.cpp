@@ -1448,15 +1448,19 @@ static void *Thread( void *obj )
     app.setQuitOnLastWindowClosed( false );
     app.setQuitLockEnabled( false );
 
-    /* redesign: bundled Inter (SIL OFL, see pixmaps/InterVariable-LICENSE.txt) as the application font */
-    const int interFontId = QFontDatabase::addApplicationFont( QStringLiteral(":/InterVariable.ttf") );
-    const QStringList interFamilies = ( interFontId >= 0 )
-        ? QFontDatabase::applicationFontFamilies( interFontId ) : QStringList();
-    if( !interFamilies.isEmpty() )
+    /* redesign: bundled Inter (SIL OFL, see pixmaps/Inter-LICENSE.txt) as the application font.
+       Static weights, not the variable font: Qt only exposed its Regular instance, so every
+       bold/semibold label fell back to another family. */
+    bool interLoaded = false;
+    for( const char *weight : { "Light", "Regular", "Medium", "SemiBold", "Bold" } )
     {
-        /* the variable font registers as "Inter Variable" */
+        const QString file = QStringLiteral(":/Inter-") + QLatin1String( weight ) + QStringLiteral(".ttf");
+        interLoaded |= ( QFontDatabase::addApplicationFont( file ) >= 0 );
+    }
+    if( interLoaded )
+    {
         QFont appFont = QApplication::font();
-        appFont.setFamily( interFamilies.first() );
+        appFont.setFamily( QStringLiteral("Inter") );
         QApplication::setFont( appFont );
     }
 
