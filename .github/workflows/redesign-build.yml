@@ -212,11 +212,6 @@ jobs:
             click 1138 20; sleep 2 # overflow menu
             import -window root "$1/shots/lib-menu-$2.png" || true
             xdotool key Escape; sleep 1
-            for d in "shift+F1 about" "ctrl+j mediainfo" "ctrl+r convert" "ctrl+e effects"; do
-              xdotool key --clearmodifiers ${d%% *}; sleep 3
-              import -window root "$1/shots/dlg-${d##* }-$2.png" || true
-              xdotool key Escape; sleep 1
-            done
             kill $PID || true; sleep 4
           done
           SH
