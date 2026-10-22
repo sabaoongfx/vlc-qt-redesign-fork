@@ -480,7 +480,14 @@ void SystemPalette::updatePalette()
         && (m_source == ColorSchemeModel::Day || m_source == ColorSchemeModel::Night))
     {
         if (qobject_cast<QApplication*>(QCoreApplication::instance()))
-            QApplication::setPalette(makeWidgetsPalette(m_source == ColorSchemeModel::Night, orange500, orange800));
+            {
+                const QPalette widgetsPalette = makeWidgetsPalette(m_source == ColorSchemeModel::Night, orange500, orange800);
+                QApplication::setPalette(widgetsPalette);
+                // the platform theme can ship class specific palettes that win over the global one
+                QApplication::setPalette(widgetsPalette, "QMenu");
+                QApplication::setPalette(widgetsPalette, "QMenuBar");
+                QApplication::setPalette(widgetsPalette, "QToolTip");
+            }
     }
 
     bool hasCSDImage = m_palettePriv && m_palettePriv->hasCSDImages();
