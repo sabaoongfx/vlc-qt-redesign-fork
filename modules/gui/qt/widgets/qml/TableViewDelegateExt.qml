@@ -212,6 +212,7 @@ T.Control {
     background: AnimatedBackground {
         animationDuration: VLCStyle.duration_short
         enabled: theme.initialized
+        radius: VLCStyle.button_radius
         color: delegate.selected ? theme.bg.highlight : theme.bg.primary
         border.color: visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0.0)
     }
