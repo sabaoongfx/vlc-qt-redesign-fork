@@ -575,8 +575,10 @@ T.ProgressBar {
 
         implicitWidth: sliderHandle._size
         implicitHeight: sliderHandle._size
-        radius: VLCStyle.margin_small
-        color: theme.fg.primary
+        // redesign: a narrow accent bar instead of a round knob
+        width: implicitWidth * 0.3
+        radius: VLCStyle.dp(3, VLCStyle.scale)
+        color: theme.accent
 
         // We use dynamic mutability group because time interpolation
         // may induce rapid change:
