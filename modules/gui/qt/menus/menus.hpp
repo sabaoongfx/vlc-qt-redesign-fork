@@ -29,6 +29,7 @@
 #include "custom_menus.hpp"
 #include "widgets/native/qvlcframe.hpp"
 
+#include <QApplication>
 #include <QObject>
 
 class VLCMenu : public QMenu
@@ -39,6 +40,8 @@ public:
     explicit VLCMenu(qt_intf_t* p_intf) : QMenu()
     {
         assert(p_intf);
+        // redesign: use the Day/Night widgets palette even when the platform theme ships a menu palette
+        setPalette(QApplication::palette());
         if (isWindow())
         {
             QVLCDialog::setWindowTransientParent(this, nullptr, p_intf);

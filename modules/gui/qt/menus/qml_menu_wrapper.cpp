@@ -31,6 +31,7 @@
 #include "maininterface/navigationmodel.hpp"
 
 // Qt includes
+#include <QApplication>
 #include <QPainter>
 #include <QSignalMapper>
 #include <QScreen>
@@ -324,7 +325,9 @@ void QmlGlobalMenu::close()
 QmlMenuBarMenu::QmlMenuBarMenu(QmlMenuBar* menubar, QWidget* parent)
     : QMenu(parent)
     , m_menubar(menubar)
-{}
+{
+    setPalette(QApplication::palette());
+}
 
 QmlMenuBarMenu::~QmlMenuBarMenu()
 {
