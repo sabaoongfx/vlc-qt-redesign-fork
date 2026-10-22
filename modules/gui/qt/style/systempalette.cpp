@@ -17,6 +17,7 @@
  *****************************************************************************/
 #include "systempalette.hpp"
 #include <QGuiApplication>
+#include <QStyleHints>
 #include <QPalette>
 #include <QSettings>
 #include <QFile>
@@ -410,6 +411,19 @@ void SystemPalette::updatePalette()
             this, &SystemPalette::CSDMetricsChanged);
     }
     emit paletteChanged();
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // redesign: make the Widgets dialogs (preferences, open media, ...) follow the selected scheme
+    if (auto hints = QGuiApplication::styleHints())
+    {
+        switch (m_source)
+        {
+        case ColorSchemeModel::Day:   hints->setColorScheme(Qt::ColorScheme::Light);   break;
+        case ColorSchemeModel::Night: hints->setColorScheme(Qt::ColorScheme::Dark);    break;
+        default:                      hints->setColorScheme(Qt::ColorScheme::Unknown); break;
+        }
+    }
+#endif
 
     bool hasCSDImage = m_palettePriv && m_palettePriv->hasCSDImages();
     if (m_hasCSDImage != hasCSDImage)
