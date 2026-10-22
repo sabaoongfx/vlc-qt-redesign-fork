@@ -1462,6 +1462,19 @@ static void *Thread( void *obj )
         QFont appFont = QApplication::font();
         appFont.setFamily( QStringLiteral("Inter") );
         QApplication::setFont( appFont );
+
+        /* TEMP diagnostic: which face does Qt pick for each weight? */
+        msg_Err( p_intf, "Inter families: %s | styles: %s",
+                 qtu( QFontDatabase::families().filter( QStringLiteral("Inter") ).join( ',' ) ),
+                 qtu( QFontDatabase::styles( QStringLiteral("Inter") ).join( ',' ) ) );
+        for( int w : { 300, 400, 500, 600, 700 } )
+        {
+            QFont f( QStringLiteral("Inter") );
+            f.setWeight( QFont::Weight( w ) );
+            const QFontInfo info( f );
+            msg_Err( p_intf, "Inter weight %d -> family '%s' style '%s' weight %d",
+                     w, qtu( info.family() ), qtu( info.styleName() ), int( info.weight() ) );
+        }
     }
 
     /* Loads and tries to apply the preferred QStyle */
