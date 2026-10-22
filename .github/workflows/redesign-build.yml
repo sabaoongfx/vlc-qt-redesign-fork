@@ -214,6 +214,11 @@ jobs:
             xdotool key Escape; sleep 1
             click 1138 20; sleep 2; click 1155 233; sleep 2 # overflow menu > Help
             import -window root "$1/shots/lib-help-$2.png" || true
+            click 1021 277; sleep 4 # About
+            import -window root "$1/shots/dlg-about-$2.png" || true
+            xdotool key Escape; sleep 1
+            click 1138 20; sleep 2; click 1155 187; sleep 2 # overflow menu > Tools
+            import -window root "$1/shots/lib-tools-$2.png" || true
             xdotool key Escape; xdotool key Escape; sleep 1
             kill $PID || true; sleep 4
           done
