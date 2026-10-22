@@ -239,11 +239,11 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         QPixmap scaled = QPixmap( icon )
               .scaledToHeight( ICON_HEIGHT * dpr, Qt::SmoothTransformation );
         scaled.setDevicePixelRatio( dpr );
-        button->setIcon( scaled );
+        /* redesign: text pills instead of the cone icons */
+        Q_UNUSED( scaled );
         button->setText( label );
         button->setToolTip( ltooltip );
-        button->setToolButtonStyle( Qt::ToolButtonTextUnderIcon );
-        button->setIconSize( QSize( ICON_WIDTH, ICON_HEIGHT ) );
+        button->setToolButtonStyle( Qt::ToolButtonTextOnly );
         button->setMinimumWidth( 40 + ICON_WIDTH );
         button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
         button->setAutoRaise( true );
@@ -265,7 +265,14 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
 
     qobject_cast<QToolButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing( 1 );
+    layout->setSpacing( 6 );
+
+    /* palette roles follow the Day/Night application palette (see SystemPalette) */
+    setStyleSheet( QStringLiteral(
+        "QToolButton { padding: 9px 14px; border: 1px solid transparent; border-radius: 6px; }"
+        "QToolButton:hover { background: palette(button); border-color: palette(mid); }"
+        "QToolButton:checked { background: palette(highlight); color: palette(highlighted-text);"
+        " border-color: palette(highlight); }" ) );
 
     setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Preferred);
     setMinimumWidth( ICON_HEIGHT * 6 + 10 );
