@@ -41,7 +41,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Dialog shots: `{day,night}-open.png` (clicks the home Open File button) and `{day,night}-prefs.png` (clicks Preferences in the sidebar).
 - Tracks panel shots: `player-*-tracks.png` (clicks the first bottom-left icon).
 - Hover shots: `player-*-hover.png` (bottom-left control icon) and `lib-video-*-hover.png` (first video card).
-- Not screenshot-able yet: dialogs, menus.
+- Extra state shots in the library loop: `lib-browse-*`, `lib-discover-*` (the Discover click can land on Browse), `lib-sort-*`, `lib-search-*`, `lib-playlist-*` (Play Queue pane), `lib-albums/album/tracks/artist-*`, `lib-menu/help/tools-*`, `dlg-about/effects/messages/plugins-*`.
+- Workflow decided with the user: work in batches. Make several independent changes as separate local commits, push them together once the previous CI run is done, then review all the screenshots from that one run. Build changes to shared pieces (palette, fonts, `ListLabel`) on their own.
 
 ## Where the Qt UI lives
 
