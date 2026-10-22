@@ -10,7 +10,7 @@ on:
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
-# revision: 2
+# revision: 3
 jobs:
   win64:
     runs-on: ubuntu-latest
@@ -23,7 +23,8 @@ jobs:
 
       # The prebuilt contrib URL 404s, so contribs build from source (about an hour); cache the result.
       - name: Restore contrib cache
-        uses: actions/cache@v4
+        id: contribcache
+        uses: actions/cache/restore@v4
         with:
           path: |
             contrib/contrib-win64
@@ -36,11 +37,25 @@ jobs:
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           extras/package/win32/build.sh -r -a x86_64 -p
 
+      # Save right after the build so a later packaging failure does not throw away the contribs.
+      - name: Save contrib cache
+        if: success() && steps.contribcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            contrib/contrib-win64
+            contrib/x86_64-w64-mingw32
+            contrib/tarballs
+          key: win64-contrib-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
+
       - name: Package portable zip
         run: |
-          make -C x86_64 package-win32-zip
+          # build.sh names the build directory after the short arch (win64), find it instead of guessing
+          BUILD=$(dirname "$(find . -maxdepth 2 -name config.status -path './win*' | head -1)")
+          echo "build dir: $BUILD"
+          make -C "$BUILD" package-win32-zip
           mkdir -p out
-          cp -v x86_64/vlc-*-win*.zip out/
+          cp -v "$BUILD"/vlc-*-win*.zip out/
           ls -la out
 
       - name: Upload
