@@ -1450,12 +1450,13 @@ static void *Thread( void *obj )
 
     /* redesign: bundled Inter (SIL OFL, see pixmaps/InterVariable-LICENSE.txt) as the application font */
     const int interFontId = QFontDatabase::addApplicationFont( QStringLiteral(":/InterVariable.ttf") );
-    msg_Err( p_intf, "Inter font id %d, families: %s", interFontId,
-              qtu( QFontDatabase::applicationFontFamilies( interFontId ).join( ',' ) ) );
-    if( interFontId >= 0 )
+    const QStringList interFamilies = ( interFontId >= 0 )
+        ? QFontDatabase::applicationFontFamilies( interFontId ) : QStringList();
+    if( !interFamilies.isEmpty() )
     {
+        /* the variable font registers as "Inter Variable" */
         QFont appFont = QApplication::font();
-        appFont.setFamily( QStringLiteral("Inter") );
+        appFont.setFamily( interFamilies.first() );
         QApplication::setFont( appFont );
     }
 
