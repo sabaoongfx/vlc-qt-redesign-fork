@@ -327,6 +327,7 @@ QmlMenuBarMenu::QmlMenuBarMenu(QmlMenuBar* menubar, QWidget* parent)
     , m_menubar(menubar)
 {
     setPalette(QApplication::palette());
+    setStyleSheet(redesignMenuStyleSheet());
 }
 
 QmlMenuBarMenu::~QmlMenuBarMenu()

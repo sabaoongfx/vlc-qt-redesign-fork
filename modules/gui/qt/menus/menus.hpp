@@ -32,6 +32,18 @@
 #include <QApplication>
 #include <QObject>
 
+// redesign: Fusion draws the menu background as a lightened Window colour, which turns white in Day
+// mode; style menus from the palette roles instead (submenus inherit it from their parent menu)
+inline QString redesignMenuStyleSheet()
+{
+    return QStringLiteral(
+        "QMenu { background: palette(base); border: 1px solid palette(mid); padding: 4px; }"
+        "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 4px; }"
+        "QMenu::item:selected { background: palette(highlight); color: palette(highlighted-text); }"
+        "QMenu::item:disabled { color: palette(mid); }"
+        "QMenu::separator { height: 1px; background: palette(mid); margin: 4px 8px; }" );
+}
+
 class VLCMenu : public QMenu
 {
     Q_OBJECT
@@ -42,6 +54,7 @@ public:
         assert(p_intf);
         // redesign: use the Day/Night widgets palette even when the platform theme ships a menu palette
         setPalette(QApplication::palette());
+        setStyleSheet(redesignMenuStyleSheet());
         if (isWindow())
         {
             QVLCDialog::setWindowTransientParent(this, nullptr, p_intf);
