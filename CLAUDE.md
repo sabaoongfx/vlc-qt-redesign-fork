@@ -83,6 +83,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Widgets dialogs (Preferences, file pickers, message boxes) get their look from `makeWidgetsPalette()` in `style/systempalette.cpp`.
   `QStyleHints::setColorScheme` did nothing on this Fusion build. `VLCStyle.qml` has two `SystemPalette`s (`themePalette`, `darkPalette` = fixed Night);
   only `themePalette` may set the application palette or Day mode turns dark.
+- Widgets `QMenu` popups (`VLCMenu`, `QmlMenuBarMenu` in `menus/`): Fusion draws the menu background as a lightened `Window` colour, which went white in Day.
+  Class palettes (`setPalette(pal, "QMenu")`) did not help; `redesignMenuStyleSheet()` in `menus/menus.hpp` (palette-role stylesheet) fixed it, verified in `lib-menu-*`.
 - Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
   `MainDisplay.qml`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
