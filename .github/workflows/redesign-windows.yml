@@ -4,6 +4,11 @@ name: Redesign Windows build
 # VideoLAN's prebuilt contribs. There is nothing to screenshot here (no Windows runner),
 # so run it by hand when a change touches platform-specific code.
 on:
+  # The file only runs from the default branch via workflow_dispatch, so also run on pushes
+  # that touch this file; bump the comment below to re-run it.
+  push:
+    branches: [redesign]
+    paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
 jobs:
