@@ -85,6 +85,7 @@ Dialog {
 
     background: Rectangle {
         color: theme.bg.primary
+        radius: VLCStyle.dp(10, VLCStyle.scale) // redesign: rounded dialog
 
         Widgets.RoundedRectangleShadow {
             yOffset: VLCStyle.dp(4, VLCStyle.scale)
@@ -103,14 +104,12 @@ Dialog {
         text: control.title
         visible: control.title
         elide: Label.ElideRight
-        font.bold: true
+        font.weight: Font.DemiBold
         color: theme.fg.primary
         padding: 6
+        // redesign: transparent so the rounded dialog background shows through at the corners
         background: Rectangle {
-            x: 1; y: 1
-            width: parent.width - 2
-            height: parent.height - 1
-            color: theme.bg.primary
+            color: "transparent"
         }
     }
 
