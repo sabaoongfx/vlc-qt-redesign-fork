@@ -36,6 +36,7 @@ T.ComboBox {
 
     padding: VLCStyle.margin_xxsmall
     font.pixelSize: VLCStyle.fontSize_large
+    font.family: VLCStyle.fontFamily
 
     readonly property ColorContext colorContext: ColorContext {
         id: theme

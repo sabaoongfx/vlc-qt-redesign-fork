@@ -40,6 +40,7 @@ TextField {
     placeholderTextColor: theme.fg.secondary
 
     font.pixelSize: VLCStyle.fontSize_normal
+    font.family: VLCStyle.fontFamily
 
     verticalAlignment: Text.AlignVCenter
 

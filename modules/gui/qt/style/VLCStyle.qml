@@ -75,6 +75,10 @@ QtObject {
     readonly property int fontSize_xxlarge: fontMetrics_xxlarge.font.pixelSize
     readonly property int fontSize_xxxlarge: fontMetrics_xxxlarge.font.pixelSize
 
+    // redesign: Qt Quick Controls take their default font from the platform theme, not from
+    // QApplication::setFont(), so base components set the bundled family explicitly
+    readonly property string fontFamily: "Inter"
+
     readonly property int fontHeight_xsmall: Math.ceil(fontMetrics_xsmall.lineSpacing)
     readonly property int fontHeight_small:  Math.ceil(fontMetrics_small.lineSpacing)
     readonly property int fontHeight_normal: Math.ceil(fontMetrics_normal.lineSpacing)

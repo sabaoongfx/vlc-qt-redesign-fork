@@ -42,6 +42,7 @@ T.SpinBox {
     }
 
     font.pixelSize: VLCStyle.fontSize_large
+    font.family: VLCStyle.fontFamily
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                               contentItem.implicitWidth + 2 * padding +

@@ -26,6 +26,7 @@ T.ToolButton {
     id: control
 
     font.pixelSize: VLCStyle.fontSize_normal
+    font.family: VLCStyle.fontFamily
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
