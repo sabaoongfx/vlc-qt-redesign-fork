@@ -269,6 +269,8 @@ T.ItemDelegate {
 
         enabled: theme.initialized
 
+        radius: VLCStyle.gridCover_radius + selectedBorderWidth // redesign: follows the rounded cover
+
         //don't show the backgroud unless selected
         color: root.selected ?  theme.bg.highlight : theme.bg.primary
         border.color: visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0.0)
