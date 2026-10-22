@@ -38,6 +38,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
   (`contrib/src/medialibrary`, cached) before configuring VLC. Sample media is generated into the XDG Videos/Music dirs; the script
   clicks through the first-run wizard (Next x3, Finish at 979,587 on a 1280x800 screen), which adds those dirs, waits for the scan, then
   relaunches per theme. Nav click targets (1280x800): Home y=62, Video y=108, then All 154 / Playlists 200 / Music 246 / Browse 292.
+- Dialog shots: `{day,night}-open.png` (clicks the home Open File button) and `{day,night}-prefs.png` (clicks Preferences in the sidebar).
 - Tracks panel shots: `player-*-tracks.png` (clicks the first bottom-left icon).
 - Hover shots: `player-*-hover.png` (bottom-left control icon) and `lib-video-*-hover.png` (first video card).
 - Not screenshot-able yet: dialogs, menus.
@@ -65,7 +66,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 3 Media library | grid cards done and verified (10px covers, regular 14px titles, 2px accent hover/focus/selected ring in `widgets/qml/GridItem.qml`); library views captured for home, video, music; list views, album/artist pages, header/breadcrumb style not done |
 | 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; still to do: seek handle as wide bar, icon-button hover shape, top bar |
 | 5 Settings sidebar | done for the chosen scope (Subtitles + Audio tabs, no new backend), verified: `TracksMenu` docks right (full height down to the seek bar); `TracksListPage` has Subtitles/Audio/Video tabs (accent pill for the active tab), an inline Delay row (spin box + Reset) on the Subtitles and Audio tabs, and a drawn playback-speed pill at the end of the tab row. Not done: Video/Playback tabs, equalizer, bookmarks (would need backend wiring; the equalizer dialog is Qt Widgets) |
-| 6 Dialogs and preferences | not started |
+| 6 Dialogs and preferences | done via palette, verified day+night for Preferences and the Open File dialog: `SystemPalette::updatePalette` builds a `QPalette` from the redesign tokens and applies it with `QApplication::setPalette` (only for the `themePalette` instance, in Day/Night). Not done: Preferences layout still has the stock cone-icon toolbar; about/convert/stream/media-info dialogs not captured |
 | 7 Polish and release | not started |
 
 `redesign/TOKENS.md` holds the prototype-to-Qt token map and the Phase 1 decisions.
@@ -79,6 +80,9 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - The player track panel is `player/qml/TracksMenu.qml` (a `T.Popup` hosting a `StackView`) opened by `controlbarcontrols/LangButton.qml`;
   its pages are `TracksListPage` (tabs), `TracksPageAudio`, `TracksPageSubtitle`, `TracksPageSpeed`. The equalizer / video effects dialogs
   (`dialogs/extended`) are Qt Widgets `.ui` files, so QML tokens do not reach them.
+- Widgets dialogs (Preferences, file pickers, message boxes) get their look from `makeWidgetsPalette()` in `style/systempalette.cpp`.
+  `QStyleHints::setColorScheme` did nothing on this Fusion build. `VLCStyle.qml` has two `SystemPalette`s (`themePalette`, `darkPalette` = fixed Night);
+  only `themePalette` may set the application palette or Day mode turns dark.
 - Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
   `MainDisplay.qml`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
