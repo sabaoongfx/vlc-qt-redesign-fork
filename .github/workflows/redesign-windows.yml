@@ -1,0 +1,35 @@
+name: Redesign Windows build
+
+# Compile check only: cross-builds VLC (with the redesigned Qt UI) for Windows x64 using
+# VideoLAN's prebuilt contribs. There is nothing to screenshot here (no Windows runner),
+# so run it by hand when a change touches platform-specific code.
+on:
+  workflow_dispatch:
+
+jobs:
+  win64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      image: registry.videolan.org/vlc-debian-win64-posix:20260611225331
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (prebuilt contribs)
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          extras/package/win32/build.sh -a x86_64 -p
+
+      - name: Collect the Qt plugin
+        run: |
+          mkdir -p out
+          find . -name 'libqt_plugin.dll' -exec cp -v {} out/ \; || true
+          ls -la out
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: vlc-win64-qt-plugin
+          path: out/
+          retention-days: 7
