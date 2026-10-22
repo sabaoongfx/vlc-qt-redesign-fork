@@ -200,6 +200,12 @@ jobs:
             import -window root "$1/shots/lib-videolist-$2.png" || true
             xdotool mousemove 600 150; sleep 0.3; xdotool mousemove 602 152; sleep 0.6
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
+            click 80 246; sleep 4; click 80 246; sleep 5 # Music > Albums
+            import -window root "$1/shots/lib-albums-$2.png" || true
+            click 300 200; sleep 5 # first album
+            import -window root "$1/shots/lib-album-$2.png" || true
+            click 80 292; sleep 5 # Tracks
+            import -window root "$1/shots/lib-tracks-$2.png" || true
             kill $PID || true; sleep 4
           done
           SH
