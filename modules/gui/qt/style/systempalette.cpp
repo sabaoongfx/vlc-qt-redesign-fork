@@ -705,8 +705,8 @@ void SystemPalette::makeLightPalette()
     //tooltip
     {
         C::ColorSet CS = C::Tooltip;
-        setColor(CS, C::Bg, C::Primary, C::Normal, lightGrey200);
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::black);
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#E6E6E5"));
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#151515"));
     }
 
     //slider
@@ -919,8 +919,8 @@ void SystemPalette::makeDarkPalette()
     //tooltip
     {
         C::ColorSet CS = C::Tooltip;
-        setColor(CS, C::Bg, C::Primary, C::Normal, darkGrey200);
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::white);
+        setColor(CS, C::Bg, C::Primary, C::Normal, QColor("#232323"));
+        setColor(CS, C::Fg, C::Primary, C::Normal, QColor("#E3E3E3"));
     }
 
     //slider
