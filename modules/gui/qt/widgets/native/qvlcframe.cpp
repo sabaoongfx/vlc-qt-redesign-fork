@@ -278,5 +278,12 @@ QVLCDialog::QVLCDialog(QWindow *parent, qt_intf_t *_p_intf)
         "QScrollBar::handle:vertical { min-height: 24px; border-radius: 5px; background: palette(mid); }"
         "QScrollBar::handle:horizontal { min-width: 24px; border-radius: 5px; background: palette(mid); }"
         "QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }"
-        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }" ) );
+        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }"
+        /* sliders (equalizer, synchronization, ...): thin groove, accent handle */
+        "QSlider::groove:vertical { width: 4px; border-radius: 2px; background: palette(mid); }"
+        "QSlider::groove:horizontal { height: 4px; border-radius: 2px; background: palette(mid); }"
+        "QSlider::sub-page:horizontal { border-radius: 2px; background: palette(highlight); }"
+        "QSlider::add-page:vertical { border-radius: 2px; background: palette(highlight); }"
+        "QSlider::handle:vertical { height: 14px; margin: 0 -5px; border-radius: 7px; background: palette(highlight); }"
+        "QSlider::handle:horizontal { width: 14px; margin: -5px 0; border-radius: 7px; background: palette(highlight); }" ) );
 }
