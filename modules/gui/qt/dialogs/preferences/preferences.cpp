@@ -56,19 +56,6 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     setWindowRole( "vlc-preferences" );
     setWindowModality( Qt::WindowModal );
 
-    /* redesign: rounded buttons and text fields, coloured from the Day/Night palette.
-       Combo boxes and spin boxes are left alone: a border rule replaces their native drawing. */
-    setStyleSheet( QStringLiteral(
-        "QPushButton { padding: 6px 16px; border: 1px solid palette(mid); border-radius: 6px;"
-        " background: palette(button); }"
-        "QPushButton:hover { border-color: palette(highlight); }"
-        "QPushButton:pressed { background: palette(mid); }"
-        "QPushButton:default { border-color: palette(highlight); }"
-        "QPushButton:disabled { color: palette(mid); }"
-        "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
-        " background: palette(base); }"
-        "QLineEdit:focus { border-color: palette(highlight); }" ) );
-
     /* Whether we want it or not, we need to destroy on close to get
        consistency when reset */
     setAttribute( Qt::WA_DeleteOnClose );

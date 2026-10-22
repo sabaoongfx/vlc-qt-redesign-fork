@@ -248,4 +248,18 @@ QVLCDialog::QVLCDialog(QWindow *parent, qt_intf_t *_p_intf)
                     Qt::WindowSystemMenuHint|Qt::WindowCloseButtonHint );
 
     setWindowTransientParent(this, parent, p_intf);
+
+    /* redesign: rounded buttons and text fields for every Widgets dialog, coloured from the
+       Day/Night palette. Combo boxes and spin boxes are left alone: a border rule replaces
+       their native drawing. */
+    setStyleSheet( QStringLiteral(
+        "QPushButton { padding: 6px 16px; border: 1px solid palette(mid); border-radius: 6px;"
+        " background: palette(button); }"
+        "QPushButton:hover { border-color: palette(highlight); }"
+        "QPushButton:pressed { background: palette(mid); }"
+        "QPushButton:default { border-color: palette(highlight); }"
+        "QPushButton:disabled { color: palette(mid); }"
+        "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
+        " background: palette(base); }"
+        "QLineEdit:focus { border-color: palette(highlight); }" ) );
 }
