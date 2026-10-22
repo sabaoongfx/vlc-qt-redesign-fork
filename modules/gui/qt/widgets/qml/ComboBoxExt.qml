@@ -93,7 +93,7 @@ T.ComboBox {
         color: control.bgColor
         border.color: theme.border
         border.width: VLCStyle.dp(2, VLCStyle.scale)
-        radius: VLCStyle.dp(2, VLCStyle.scale)
+        radius: VLCStyle.button_radius
     }
 
     popup: Popup {
