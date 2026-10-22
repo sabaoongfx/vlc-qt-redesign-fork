@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 #include "systempalette.hpp"
+#include <QApplication>
 #include <QGuiApplication>
-#include <QStyleHints>
 #include <QPalette>
 #include <QSettings>
 #include <QFile>
@@ -383,6 +383,68 @@ void SystemPalette::setCtx(MainCtx* ctx)
     updatePalette();
 }
 
+// Palette for QWidget based dialogs, built from the redesign tokens (see redesign/TOKENS.md).
+static QPalette makeWidgetsPalette(bool dark, const QColor& accent, const QColor& accentLight)
+{
+    QPalette pal;
+    auto all = [&](QPalette::ColorRole role, const QColor& c) { pal.setColor(role, c); };
+    auto disabled = [&](QPalette::ColorRole role, const QColor& c) { pal.setColor(QPalette::Disabled, role, c); };
+
+    if (dark)
+    {
+        all(QPalette::Window,          "#1A1A1A");
+        all(QPalette::WindowText,      "#E3E3E3");
+        all(QPalette::Base,            "#0E0E0E");
+        all(QPalette::AlternateBase,   "#141414");
+        all(QPalette::Text,            "#E3E3E3");
+        all(QPalette::Button,          "#262626");
+        all(QPalette::ButtonText,      "#E3E3E3");
+        all(QPalette::BrightText,      "#FFFFFF");
+        all(QPalette::ToolTipBase,     "#232323");
+        all(QPalette::ToolTipText,     "#E3E3E3");
+        all(QPalette::PlaceholderText, "#8F8F8F");
+        all(QPalette::Light,           "#3A3A3A");
+        all(QPalette::Midlight,        "#303030");
+        all(QPalette::Mid,             "#373737");
+        all(QPalette::Dark,            "#0A0A0A");
+        all(QPalette::Shadow,          "#000000");
+        all(QPalette::Link,            accent);
+        all(QPalette::LinkVisited,     accentLight);
+        disabled(QPalette::WindowText, "#5F5F5F");
+        disabled(QPalette::Text,       "#5F5F5F");
+        disabled(QPalette::ButtonText, "#5F5F5F");
+    }
+    else
+    {
+        all(QPalette::Window,          "#D6D6D5");
+        all(QPalette::WindowText,      "#151515");
+        all(QPalette::Base,            "#E9E9E8");
+        all(QPalette::AlternateBase,   "#DEDEDE");
+        all(QPalette::Text,            "#151515");
+        all(QPalette::Button,          "#BEBEBD");
+        all(QPalette::ButtonText,      "#151515");
+        all(QPalette::BrightText,      "#000000");
+        all(QPalette::ToolTipBase,     "#E6E6E5");
+        all(QPalette::ToolTipText,     "#151515");
+        all(QPalette::PlaceholderText, "#6D6D6D");
+        all(QPalette::Light,           "#F0F0EF");
+        all(QPalette::Midlight,        "#E0E0DF");
+        all(QPalette::Mid,             "#B0B0AF");
+        all(QPalette::Dark,            "#8D8D8C");
+        all(QPalette::Shadow,          "#6A6A69");
+        all(QPalette::Link,            accentLight);
+        all(QPalette::LinkVisited,     accent);
+        disabled(QPalette::WindowText, "#8F8F8F");
+        disabled(QPalette::Text,       "#8F8F8F");
+        disabled(QPalette::ButtonText, "#8F8F8F");
+    }
+
+    all(QPalette::Highlight,       accent);
+    all(QPalette::HighlightedText, "#1A0E02");
+    disabled(QPalette::Highlight,  dark ? QColor("#373737") : QColor("#B0B0AF"));
+    return pal;
+}
+
 void SystemPalette::updatePalette()
 {
     m_palettePriv.reset();
@@ -412,18 +474,12 @@ void SystemPalette::updatePalette()
     }
     emit paletteChanged();
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
     // redesign: make the Widgets dialogs (preferences, open media, ...) follow the selected scheme
-    if (auto hints = QGuiApplication::styleHints())
+    if (m_source == ColorSchemeModel::Day || m_source == ColorSchemeModel::Night)
     {
-        switch (m_source)
-        {
-        case ColorSchemeModel::Day:   hints->setColorScheme(Qt::ColorScheme::Light);   break;
-        case ColorSchemeModel::Night: hints->setColorScheme(Qt::ColorScheme::Dark);    break;
-        default:                      hints->setColorScheme(Qt::ColorScheme::Unknown); break;
-        }
+        if (qobject_cast<QApplication*>(QCoreApplication::instance()))
+            QApplication::setPalette(makeWidgetsPalette(m_source == ColorSchemeModel::Night, orange500, orange800));
     }
-#endif
 
     bool hasCSDImage = m_palettePriv && m_palettePriv->hasCSDImages();
     if (m_hasCSDImage != hasCSDImage)
