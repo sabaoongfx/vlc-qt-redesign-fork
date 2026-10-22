@@ -196,8 +196,50 @@ bool QVLCTools::restoreWidgetPosition(qt_intf_t *p_intf,
     return defaultUsed;
 }
 
+/* redesign: one stylesheet for every Widgets window (dialogs and frames), coloured from the Day/Night
+   palette. Combo boxes and spin boxes are left alone: a border rule replaces their native drawing. */
+static QString redesignWidgetsStyleSheet()
+{
+    return QStringLiteral(
+        "QPushButton { padding: 6px 16px; border: 1px solid palette(mid); border-radius: 6px;"
+        " background: palette(button); }"
+        "QPushButton:hover { border-color: palette(highlight); }"
+        "QPushButton:pressed { background: palette(mid); }"
+        "QPushButton:default { border-color: palette(highlight); }"
+        "QPushButton:disabled { color: palette(mid); }"
+        "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
+        " background: palette(base); }"
+        "QLineEdit:focus { border-color: palette(highlight); }"
+        /* tabs: same pill look as the Preferences category bar */
+        "QTabWidget::pane { border: 1px solid palette(mid); border-radius: 6px; top: -1px; }"
+        "QTabBar::tab { padding: 6px 14px; margin-right: 4px; border: 1px solid transparent;"
+        " border-radius: 6px; }"
+        "QTabBar::tab:hover { border-color: palette(mid); }"
+        "QTabBar::tab:selected { background: palette(highlight); color: palette(highlighted-text);"
+        " border-color: palette(highlight); }"
+        /* group boxes */
+        "QGroupBox { border: 1px solid palette(mid); border-radius: 6px; margin-top: 10px; padding-top: 6px; }"
+        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 4px; }"
+        /* thin rounded scroll bars */
+        "QScrollBar:vertical { width: 10px; margin: 0; background: transparent; }"
+        "QScrollBar:horizontal { height: 10px; margin: 0; background: transparent; }"
+        "QScrollBar::handle:vertical { min-height: 24px; border-radius: 5px; background: palette(mid); }"
+        "QScrollBar::handle:horizontal { min-width: 24px; border-radius: 5px; background: palette(mid); }"
+        "QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }"
+        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }"
+        /* sliders (equalizer, synchronization, ...): thin groove, accent handle */
+        "QSlider::groove:vertical { width: 4px; border-radius: 2px; background: palette(mid); }"
+        "QSlider::groove:horizontal { height: 4px; border-radius: 2px; background: palette(mid); }"
+        "QSlider::sub-page:horizontal { border-radius: 2px; background: palette(highlight); }"
+        "QSlider::add-page:vertical { border-radius: 2px; background: palette(highlight); }"
+        "QSlider::handle:vertical { height: 14px; margin: 0 -5px; border-radius: 7px; background: palette(highlight); }"
+        "QSlider::handle:horizontal { width: 14px; margin: -5px 0; border-radius: 7px; background: palette(highlight); }" );
+}
+
 QVLCFrame::QVLCFrame(qt_intf_t *_p_intf) : QWidget( NULL ), p_intf( _p_intf )
 {
+    setStyleSheet( redesignWidgetsStyleSheet() );
+
     assert(_p_intf);
 
     if (isWindow())
@@ -249,41 +291,6 @@ QVLCDialog::QVLCDialog(QWindow *parent, qt_intf_t *_p_intf)
 
     setWindowTransientParent(this, parent, p_intf);
 
-    /* redesign: rounded buttons and text fields for every Widgets dialog, coloured from the
-       Day/Night palette. Combo boxes and spin boxes are left alone: a border rule replaces
-       their native drawing. */
-    setStyleSheet( QStringLiteral(
-        "QPushButton { padding: 6px 16px; border: 1px solid palette(mid); border-radius: 6px;"
-        " background: palette(button); }"
-        "QPushButton:hover { border-color: palette(highlight); }"
-        "QPushButton:pressed { background: palette(mid); }"
-        "QPushButton:default { border-color: palette(highlight); }"
-        "QPushButton:disabled { color: palette(mid); }"
-        "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
-        " background: palette(base); }"
-        "QLineEdit:focus { border-color: palette(highlight); }"
-        /* tabs: same pill look as the Preferences category bar */
-        "QTabWidget::pane { border: 1px solid palette(mid); border-radius: 6px; top: -1px; }"
-        "QTabBar::tab { padding: 6px 14px; margin-right: 4px; border: 1px solid transparent;"
-        " border-radius: 6px; }"
-        "QTabBar::tab:hover { border-color: palette(mid); }"
-        "QTabBar::tab:selected { background: palette(highlight); color: palette(highlighted-text);"
-        " border-color: palette(highlight); }"
-        /* group boxes */
-        "QGroupBox { border: 1px solid palette(mid); border-radius: 6px; margin-top: 10px; padding-top: 6px; }"
-        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 4px; }"
-        /* thin rounded scroll bars */
-        "QScrollBar:vertical { width: 10px; margin: 0; background: transparent; }"
-        "QScrollBar:horizontal { height: 10px; margin: 0; background: transparent; }"
-        "QScrollBar::handle:vertical { min-height: 24px; border-radius: 5px; background: palette(mid); }"
-        "QScrollBar::handle:horizontal { min-width: 24px; border-radius: 5px; background: palette(mid); }"
-        "QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }"
-        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }"
-        /* sliders (equalizer, synchronization, ...): thin groove, accent handle */
-        "QSlider::groove:vertical { width: 4px; border-radius: 2px; background: palette(mid); }"
-        "QSlider::groove:horizontal { height: 4px; border-radius: 2px; background: palette(mid); }"
-        "QSlider::sub-page:horizontal { border-radius: 2px; background: palette(highlight); }"
-        "QSlider::add-page:vertical { border-radius: 2px; background: palette(highlight); }"
-        "QSlider::handle:vertical { height: 14px; margin: 0 -5px; border-radius: 7px; background: palette(highlight); }"
-        "QSlider::handle:horizontal { width: 14px; margin: -5px 0; border-radius: 7px; background: palette(highlight); }" ) );
+    /* redesign: see redesignWidgetsStyleSheet() */
+    setStyleSheet( redesignWidgetsStyleSheet() );
 }
