@@ -10,7 +10,7 @@ on:
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
-# revision: 4
+# revision: 5
 jobs:
   win64:
     runs-on: ubuntu-latest
@@ -30,14 +30,16 @@ jobs:
             contrib/contrib-win64
             contrib/x86_64-w64-mingw32
             contrib/tarballs
-          key: win64-contrib-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
+            contrib/python-venv
+            extras/tools
+          key: win64-contrib-v2-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
 
       # The restored files keep their old mtimes, so make thinks every contrib is older than the freshly
       # checked-out sources and rebuilds all of them. Make them newer than the checkout.
       - name: Refresh contrib timestamps
         if: steps.contribcache.outputs.cache-hit == 'true'
         run: |
-          find contrib/contrib-win64 contrib/x86_64-w64-mingw32 contrib/tarballs -exec touch {} + 2>/dev/null || true
+          find contrib/contrib-win64 contrib/x86_64-w64-mingw32 contrib/tarballs contrib/python-venv extras/tools -exec touch {} + 2>/dev/null || true
 
       - name: Build (release)
         run: |
@@ -53,7 +55,9 @@ jobs:
             contrib/contrib-win64
             contrib/x86_64-w64-mingw32
             contrib/tarballs
-          key: win64-contrib-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
+            contrib/python-venv
+            extras/tools
+          key: win64-contrib-v2-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
 
       - name: Package portable zip
         run: |
