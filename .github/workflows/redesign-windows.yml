@@ -1,40 +1,51 @@
 name: Redesign Windows build
 
-# Compile check only: cross-builds VLC (with the redesigned Qt UI) for Windows x64 using
-# VideoLAN's prebuilt contribs. There is nothing to screenshot here (no Windows runner),
-# so run it by hand when a change touches platform-specific code.
+# Cross-builds VLC (with the redesigned Qt UI) for Windows x64 and uploads a portable zip.
+# There is no Windows runner step, so this is a build only; run the zip on a Windows machine yourself.
 on:
   # The file only runs from the default branch via workflow_dispatch, so also run on pushes
-  # that touch this file; bump the comment below to re-run it.
+  # that touch this file; edit it (e.g. bump the revision below) to re-run.
   push:
     branches: [redesign]
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
+# revision: 2
 jobs:
   win64:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     container:
       image: registry.videolan.org/vlc-debian-win64-posix:20260611225331
       options: --user root
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build (prebuilt contribs)
+      # The prebuilt contrib URL 404s, so contribs build from source (about an hour); cache the result.
+      - name: Restore contrib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            contrib/contrib-win64
+            contrib/x86_64-w64-mingw32
+            contrib/tarballs
+          key: win64-contrib-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
+
+      - name: Build (release)
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          extras/package/win32/build.sh -a x86_64 -p
+          extras/package/win32/build.sh -r -a x86_64 -p
 
-      - name: Collect the Qt plugin
+      - name: Package portable zip
         run: |
+          make -C x86_64 package-win32-zip
           mkdir -p out
-          find . -name 'libqt_plugin.dll' -exec cp -v {} out/ \; || true
+          cp -v x86_64/vlc-*-win*.zip out/
           ls -la out
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: vlc-win64-qt-plugin
+          name: vlc-win64-portable
           path: out/
-          retention-days: 7
+          retention-days: 14
