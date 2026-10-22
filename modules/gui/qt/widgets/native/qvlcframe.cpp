@@ -261,5 +261,22 @@ QVLCDialog::QVLCDialog(QWindow *parent, qt_intf_t *_p_intf)
         "QPushButton:disabled { color: palette(mid); }"
         "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
         " background: palette(base); }"
-        "QLineEdit:focus { border-color: palette(highlight); }" ) );
+        "QLineEdit:focus { border-color: palette(highlight); }"
+        /* tabs: same pill look as the Preferences category bar */
+        "QTabWidget::pane { border: 1px solid palette(mid); border-radius: 6px; top: -1px; }"
+        "QTabBar::tab { padding: 6px 14px; margin-right: 4px; border: 1px solid transparent;"
+        " border-radius: 6px; }"
+        "QTabBar::tab:hover { border-color: palette(mid); }"
+        "QTabBar::tab:selected { background: palette(highlight); color: palette(highlighted-text);"
+        " border-color: palette(highlight); }"
+        /* group boxes */
+        "QGroupBox { border: 1px solid palette(mid); border-radius: 6px; margin-top: 10px; padding-top: 6px; }"
+        "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 4px; }"
+        /* thin rounded scroll bars */
+        "QScrollBar:vertical { width: 10px; margin: 0; background: transparent; }"
+        "QScrollBar:horizontal { height: 10px; margin: 0; background: transparent; }"
+        "QScrollBar::handle:vertical { min-height: 24px; border-radius: 5px; background: palette(mid); }"
+        "QScrollBar::handle:horizontal { min-width: 24px; border-radius: 5px; background: palette(mid); }"
+        "QScrollBar::add-line, QScrollBar::sub-line { width: 0; height: 0; }"
+        "QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }" ) );
 }
