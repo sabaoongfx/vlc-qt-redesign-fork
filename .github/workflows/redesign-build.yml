@@ -83,6 +83,12 @@ jobs:
           xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
           sleep 5
           import -window root "$1/shots/$2.png" || true
+          # dialogs: Open Media (Ctrl+O), then Preferences (sidebar button)
+          xdotool mousemove 640 400; sleep 0.3; xdotool key ctrl+o; sleep 3
+          import -window root "$1/shots/$2-open.png" || true
+          xdotool key Escape; sleep 1
+          xdotool mousemove 60 764; sleep 0.3; xdotool click 1; sleep 4
+          import -window root "$1/shots/$2-prefs.png" || true
           kill $VLC_PID || true
           sleep 2
           SH
