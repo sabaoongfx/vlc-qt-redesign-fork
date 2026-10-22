@@ -209,6 +209,18 @@ jobs:
             click 80 200; sleep 5 # Artists
             xdotool mousemove 297 190; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first artist
             import -window root "$1/shots/lib-artist-$2.png" || true
+            click 80 431; sleep 5 # Browse
+            import -window root "$1/shots/lib-browse-$2.png" || true
+            click 80 477; sleep 5 # Discover
+            import -window root "$1/shots/lib-discover-$2.png" || true
+            click 80 108; sleep 5; click 1182 78; sleep 2 # Video, sort menu
+            import -window root "$1/shots/lib-sort-$2.png" || true
+            xdotool key Escape; sleep 1; click 1226 78; sleep 2 # search field
+            import -window root "$1/shots/lib-search-$2.png" || true
+            xdotool key Escape; sleep 1
+            click 1094 20; sleep 3 # playlist pane
+            import -window root "$1/shots/lib-playlist-$2.png" || true
+            click 1094 20; sleep 2
             click 1138 20; sleep 2 # overflow menu
             import -window root "$1/shots/lib-menu-$2.png" || true
             xdotool key Escape; sleep 1

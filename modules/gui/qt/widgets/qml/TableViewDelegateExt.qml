@@ -209,6 +209,10 @@ T.Control {
         }
     }
 
+    // redesign: inset so the rounded row background is visible
+    leftInset: VLCStyle.margin_xsmall
+    rightInset: VLCStyle.margin_xsmall
+
     background: AnimatedBackground {
         animationDuration: VLCStyle.duration_short
         enabled: theme.initialized
