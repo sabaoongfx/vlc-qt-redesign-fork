@@ -86,6 +86,16 @@ Local edits are text only (QML/C++/YAML/Markdown).
   only `themePalette` may set the application palette or Day mode turns dark.
 - Widgets `QMenu` popups (`VLCMenu`, `QmlMenuBarMenu` in `menus/`): Fusion draws the menu background as a lightened `Window` colour, which went white in Day.
   Class palettes (`setPalette(pal, "QMenu")`) did not help; `redesignMenuStyleSheet()` in `menus/menus.hpp` (palette-role stylesheet) fixed it, verified in `lib-menu-*`.
+- Fonts: Inter ships as static Light/Regular/Medium/SemiBold/Bold (`pixmaps/Inter-*.ttf`), not the variable font (Qt exposed only its Regular
+  instance). Qt resolves every weight correctly (checked with a diagnostic in CI), but Qt Quick Controls do not always follow
+  `QApplication::setFont()`: some DemiBold/Bold labels inside Controls (Home section headings, the Open File button) kept the platform font.
+  The base components (`LabelExt`, `ButtonExt`, `TextToolButton`, `ComboBoxExt`, `TextFieldExt`, `SpinBoxExt`) therefore set
+  `font.family: VLCStyle.fontFamily` explicitly.
+- Widgets windows: `redesignWidgetsStyleSheet()` in `widgets/native/qvlcframe.cpp` styles every `QVLCDialog` and `QVLCFrame` (rounded buttons and
+  line edits, accent pill tabs, group boxes, thin scroll bars, accent sliders). Combo/spin boxes are left alone on purpose (a border rule drops
+  their native drawing). The About dialog has its own stylesheet in `about.ui`.
+- Windows build: `.github/workflows/redesign-windows.yml` (release, cross-built, artifact `vlc-win64-portable`). `build.sh` names the build dir `win64`.
+  The Home page "Open File" row is clipped under the header in CI screenshots, also in old runs; probably a layout artefact of resizing the window after launch.
 - Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
   `MainDisplay.qml`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
