@@ -797,6 +797,9 @@ libqt_plugin_la_RES = \
 	pixmaps/Inter-SemiBold.ttf \
 	pixmaps/Inter-Bold.ttf \
 	pixmaps/Inter-LICENSE.txt \
+	pixmaps/prefs/redesign-check.svg \
+	pixmaps/prefs/redesign-chevron.svg \
+	pixmaps/prefs/redesign-chevron-up.svg \
 	pixmaps/addons/addon_default.svg \
 	pixmaps/addons/addon_broken.svg \
 	pixmaps/addons/addon_blue.svg \
