@@ -105,9 +105,9 @@
         <file alias="Inter-Medium.ttf">pixmaps/Inter-Medium.ttf</file>
         <file alias="Inter-SemiBold.ttf">pixmaps/Inter-SemiBold.ttf</file>
         <file alias="Inter-Bold.ttf">pixmaps/Inter-Bold.ttf</file>
-        <file alias="redesign-check.svg">pixmaps/prefs/redesign-check.svg</file>
-        <file alias="redesign-chevron.svg">pixmaps/prefs/redesign-chevron.svg</file>
-        <file alias="redesign-chevron-up.svg">pixmaps/prefs/redesign-chevron-up.svg</file>
+        <file alias="redesign-check.png">pixmaps/prefs/redesign-check.png</file>
+        <file alias="redesign-chevron.png">pixmaps/prefs/redesign-chevron.png</file>
+        <file alias="redesign-chevron-up.png">pixmaps/prefs/redesign-chevron-up.png</file>
     </qresource>
     <qresource prefix="/prefsmenu">
         <file alias="advprefs_audio.svg">pixmaps/prefs/advprefs_audio.svg</file>
