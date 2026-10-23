@@ -10,7 +10,7 @@ on:
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
-# revision: 6
+# revision: 7
 jobs:
   win64:
     runs-on: ubuntu-latest
