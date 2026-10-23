@@ -36,108 +36,75 @@ FocusScope {
     Accessible.name: qsTr("Home View")
 
 
-    component ConeNButtons: FocusScope {
-        id: coneNButtons
+    // redesign: empty start screen as in the prototype, a dim cone and a hint instead of a big button
 
-        property int orientation: Qt.Vertical
+    component KeyChip: Rectangle {
+        property alias text: chipLabel.text
 
-        property real spacing: VLCStyle.margin_large
+        implicitWidth: chipLabel.implicitWidth + VLCStyle.margin_xsmall * 2
+        implicitHeight: chipLabel.implicitHeight + 2
 
-        implicitWidth: orientation === Qt.Vertical ? Math.max(cone.implicitWidth, button.implicitWidth)
-                                                   : cone.implicitWidth + spacing + button.implicitWidth
-        implicitHeight: orientation === Qt.Vertical ? cone.implicitHeight + spacing + button.implicitHeight
-                                                    : cone.implicitHeight
+        radius: VLCStyle.dp(4, VLCStyle.scale)
+        color: "transparent"
+        border.width: 1
+        border.color: Qt.alpha(theme.fg.secondary, 0.35)
 
-        states: [
-            State {
-                name: "vertical"
-                AnchorChanges {
-                    target: cone
+        Text {
+            id: chipLabel
 
-                    anchors.left: undefined
-                    anchors.horizontalCenter: coneNButtons.horizontalCenter
-                }
-                AnchorChanges {
-                    target: button
+            anchors.centerIn: parent
 
-                    anchors.left: undefined
-                    anchors.verticalCenter: undefined
-                    anchors.top: cone.bottom
-                    anchors.horizontalCenter: coneNButtons.horizontalCenter
-                }
-                PropertyChanges {
-                    target: button
-
-                    anchors.topMargin: coneNButtons.spacing
-                }
-            },
-            State {
-                name: "horizontal"
-                AnchorChanges {
-                    target: cone
-
-                    anchors.horizontalCenter: undefined
-                    anchors.left: coneNButtons.left
-                }
-                AnchorChanges {
-                    target: button
-
-                    anchors.top: undefined
-                    anchors.horizontalCenter: undefined
-                    anchors.left: cone.right
-                    anchors.verticalCenter: coneNButtons.verticalCenter
-                }
-                PropertyChanges {
-                    target: button
-
-                    anchors.leftMargin: coneNButtons.spacing
-                }
-            }
-        ]
-
-        state: orientation === Qt.Vertical ? "vertical" : "horizontal"
-
-
-        Image {
-            id: cone
-
-            property real _eDPR: MainCtx.effectiveDevicePixelRatio(Window.window)
-
-            sourceSize: Qt.size(0, orientation === Qt.Vertical ? VLCStyle.colWidth(1)
-                                                               : button.implicitHeight * 1.618 * _eDPR) // 1.618 = golden ratio approximation
-
-            source: MainCtx.useXmasCone() ? "qrc:///logo/vlc48-xmas.png" // TODO: new xmas cone designs
-                                          : "qrc:///misc/cone.svg"
-
-            Connections {
-                target: MainCtx
-
-                function onIntfDevicePixelRatioChanged() {
-                    // Update the DPR:
-                    // Normally, this is not done, as we display the images at the size we
-                    // want, and we don't want to re-load all images on DPR change. But
-                    // in this case we depend on the implicit size, so we should re-load
-                    // the image with the updated DPR:
-                    cone._eDPR = MainCtx.effectiveDevicePixelRatio(cone.Window.window)
-                }
-            }
-        }
-
-        OpenFileSplitButton {
-            id: button
-
-            focus: true
-
-            Navigation.parentItem: coneNButtons
+            color: theme.fg.secondary
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_small
         }
     }
 
+    Image {
+        id: cone
 
-    ConeNButtons {
-        focus: true
+        property real _eDPR: MainCtx.effectiveDevicePixelRatio(Window.window)
 
-        anchors.centerIn: root
+        anchors.centerIn: parent
+        anchors.verticalCenterOffset: -VLCStyle.margin_large
 
-        Navigation.parentItem: root
+        opacity: 0.12
+
+        sourceSize: Qt.size(0, Math.min(root.height * 0.5, VLCStyle.colWidth(1) * 2) * _eDPR)
+
+        source: MainCtx.useXmasCone() ? "qrc:///logo/vlc48-xmas.png"
+                                      : "qrc:///misc/cone.svg"
+    }
+
+    Row {
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: VLCStyle.margin_large
+
+        spacing: VLCStyle.margin_xxsmall
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: qsTr("Drop a video or music file here, or press")
+            color: theme.fg.secondary
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_normal
+        }
+        KeyChip { text: "Ctrl"; anchors.verticalCenter: parent.verticalCenter }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "+"
+            color: theme.fg.secondary
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_normal
+        }
+        KeyChip { text: "O"; anchors.verticalCenter: parent.verticalCenter }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: qsTr("to open one.")
+            color: theme.fg.secondary
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_normal
+        }
     }
 }

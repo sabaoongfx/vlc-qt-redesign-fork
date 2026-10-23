@@ -36,15 +36,13 @@ ControlBar {
 
     height: _delayedImplicitHeight
 
-    state: Player.isStarted ? "inViewport"
-                            : "outViewport"
+    state: "inViewport" // redesign: the control bar is always visible, like in the prototype
 
     Binding on state {
         id: stateBinding
         when: false
         delayed: true
-        value: Player.isStarted ? "inViewport"
-                                : "outViewport"
+        value: "inViewport"
     }
 
     Component.onCompleted: {
