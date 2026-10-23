@@ -1,7 +1,7 @@
 name: Redesign Windows build
 
 # Cross-builds VLC (with the redesigned Qt UI) for Windows x64 and uploads a portable zip.
-# There is no Windows runner step, so this is a build only; run the zip on a Windows machine yourself.
+# The second job runs the portable build on a Windows runner and uploads screenshots of it.
 on:
   # The file only runs from the default branch via workflow_dispatch, so also run on pushes
   # that touch this file; edit it (e.g. bump the revision below) to re-run.
@@ -10,7 +10,7 @@ on:
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
-# revision: 5
+# revision: 6
 jobs:
   win64:
     runs-on: ubuntu-latest
@@ -75,3 +75,36 @@ jobs:
           name: vlc-win64-portable
           path: out/
           retention-days: 14
+
+  shots:
+    needs: win64
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vlc-win64-portable
+          path: dl
+
+      - name: Unpack
+        shell: pwsh
+        run: |
+          Get-ChildItem dl
+          Expand-Archive (Get-ChildItem dl -Filter *.zip | Select-Object -First 1).FullName -DestinationPath app
+          Get-ChildItem app
+
+      - name: Screenshots
+        shell: pwsh
+        run: |
+          $dir = (Get-ChildItem app -Directory | Select-Object -First 1).FullName
+          .github/scripts/win-shots.ps1 $dir "$PWD/shots"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-screenshots
+          path: shots/
+          retention-days: 14
+
