@@ -79,7 +79,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - `cargo-c` is installed by `cargo install` into the cargo home, which is not cached, but its `.cargo-c` marker is. rav1e then fails with
   `no such command: capi`. The touch step deletes `contrib/contrib-win64/.cargo-c` so it is rebuilt.
 - A job failure skips the cache save and the cache key is immutable once saved; the v2 key holds a complete cache.
-- The Windows shots job must start VLC with a fresh `%APPDATA%lc` each time or a "restore the playlist" prompt appears after a force-kill.
+- The Windows shots job must start VLC with a fresh `%APPDATA%\vlc` each time or a "restore the playlist" prompt appears after a force-kill.
 
 ## Decisions and gotchas
 
@@ -104,7 +104,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
   line edits, accent pill tabs, group boxes, thin scroll bars, accent sliders). Combo/spin boxes, check boxes, radio buttons, item views and group titles are styled too (the tick and chevrons are PNGs,
   `pixmaps/prefs/redesign-*.png`: SVG `image:` urls did not render in CI). The About dialog has its own stylesheet in `about.ui`.
 - The Widgets palette is applied in System mode too (dark/light from `QStyleHints::colorScheme`), not only Day/Night: Windows defaults to System and
-  showed native blue/white before. On Windows the Qt settings file is `%APPDATA%lclc-qt-interface.ini`.
+  showed native blue/white before. On Windows the Qt settings file is `%APPDATA%\vlclc-qt-interface.ini`.
 - Start screen (no media library): `NoMedialibHome.qml` is a dim cone plus the "Drop a video... Ctrl+O" hint like the prototype; `MiniPlayer` is always
   in view (control bar visible while idle), `ArtworkInfoWidget` is hidden until something plays. The cone SVG does not render in the Linux CI shots.
 - Windows build: `.github/workflows/redesign-windows.yml` (release, cross-built, artifact `vlc-win64-portable`). `build.sh` names the build dir `win64`.
