@@ -36,6 +36,9 @@ T.AbstractButton {
 
     property bool paintOnly: false
 
+    // redesign: no empty placeholder cover while nothing is playing
+    visible: Player.isStarted
+
     Layout.minimumWidth: height
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,

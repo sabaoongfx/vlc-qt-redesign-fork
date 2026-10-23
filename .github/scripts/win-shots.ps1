@@ -59,7 +59,12 @@ foreach ($scheme in @(@('system', 0), @('day', 1), @('night', 2))) {
     $tag = $scheme[0]
     Get-Process vlc -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Sleep -Seconds 2
-    Set-Content "$conf\vlc-qt-interface.conf" "[MainWindow]`ncolor-scheme-index=$($scheme[1])`n"
+    # a fresh config each time: no "restore the playlist after a crash" prompt, and the scheme comes from here
+    Remove-Item -Recurse -Force $conf -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force $conf | Out-Null
+    foreach ($name in @('vlc-qt-interface.ini', 'vlc-qt-interface.conf')) {
+        Set-Content "$conf\$name" "[MainWindow]`ncolor-scheme-index=$($scheme[1])`n"
+    }
 
     $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', '--verbose=1', '--file-logging', "--logfile=$Out\vlc-$tag.log" -PassThru
     Start-Sleep -Seconds 12
@@ -83,9 +88,18 @@ foreach ($scheme in @(@('system', 0), @('day', 1), @('night', 2))) {
     Get-Process vlc -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Sleep -Seconds 2
 
+    Remove-Item -Recurse -Force $conf -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory -Force $conf | Out-Null
+    foreach ($name in @('vlc-qt-interface.ini', 'vlc-qt-interface.conf')) {
+        Set-Content "$conf\$name" "[MainWindow]`ncolor-scheme-index=$($scheme[1])`n"
+    }
     # player: capture the desktop as a video source so the player UI has something to show
     $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', 'screen://' -PassThru
     Start-Sleep -Seconds 12
+    # the controls auto-hide over video: wake them up by moving the mouse
+    $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
+    foreach ($dy in 40, 80, 120) { [void][Native]::SetCursorPos([int]($b.Width / 2), [int]($b.Height - $dy)); Start-Sleep -Milliseconds 400 }
+    Start-Sleep -Seconds 1
     Shot "$tag-player"
     Get-Process vlc -ErrorAction SilentlyContinue | Stop-Process -Force
 }
