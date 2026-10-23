@@ -68,7 +68,7 @@ FocusScope {
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -VLCStyle.margin_large
 
-        opacity: 0.12
+        opacity: 0.22
 
         sourceSize: Qt.size(0, Math.min(root.height * 0.5, VLCStyle.colWidth(1) * 2) * _eDPR)
 
