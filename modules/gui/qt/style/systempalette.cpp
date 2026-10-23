@@ -18,6 +18,7 @@
 #include "systempalette.hpp"
 #include <QApplication>
 #include <QGuiApplication>
+#include <QStyleHints>
 #include <QPalette>
 #include <QSettings>
 #include <QFile>
@@ -476,12 +477,15 @@ void SystemPalette::updatePalette()
 
     // redesign: make the Widgets dialogs (preferences, open media, ...) follow the selected scheme
     // only the main theme palette drives it: VLCStyle also has a fixed-Night "darkPalette" for dark overlays
-    if (objectName() == QLatin1String("themePalette")
-        && (m_source == ColorSchemeModel::Day || m_source == ColorSchemeModel::Night))
+    if (objectName() == QLatin1String("themePalette"))
     {
         if (qobject_cast<QApplication*>(QCoreApplication::instance()))
             {
-                const QPalette widgetsPalette = makeWidgetsPalette(m_source == ColorSchemeModel::Night, orange500, orange800);
+                // System: follow the OS preference (the platform palette would give Windows blue and white)
+                bool dark = (m_source == ColorSchemeModel::Night);
+                if (m_source == ColorSchemeModel::System)
+                    dark = (QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark);
+                const QPalette widgetsPalette = makeWidgetsPalette(dark, orange500, orange800);
                 QApplication::setPalette(widgetsPalette);
                 // the platform theme can ship class specific palettes that win over the global one
                 QApplication::setPalette(widgetsPalette, "QMenu");
