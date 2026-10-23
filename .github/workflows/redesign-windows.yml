@@ -10,7 +10,7 @@ on:
     paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
 
-# revision: 7
+# revision: 8
 jobs:
   win64:
     runs-on: ubuntu-latest
@@ -39,7 +39,11 @@ jobs:
       - name: Refresh contrib timestamps
         if: steps.contribcache.outputs.cache-hit == 'true'
         run: |
-          find contrib/contrib-win64 contrib/x86_64-w64-mingw32 contrib/tarballs contrib/python-venv extras/tools -exec touch {} + 2>/dev/null || true
+          # one single timestamp for every file (touching them one by one leaves make with random newer/older pairs)
+          T=$(date +%s)
+          find contrib/contrib-win64 contrib/x86_64-w64-mingw32 contrib/tarballs contrib/python-venv extras/tools -exec touch -h -d "@$T" {} + 2>/dev/null || true
+          # cargo-c is installed by `cargo install` into the cargo home, which is not cached, so rav1e needs it rebuilt
+          rm -f contrib/contrib-win64/.cargo-c
 
       - name: Build (release)
         run: |
