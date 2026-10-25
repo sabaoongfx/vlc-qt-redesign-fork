@@ -512,6 +512,19 @@ T.ProgressBar {
                     }
                 },
                 State {
+                    // redesign: nothing loaded (e.g. after the end of playback): no bouncing
+                    // loading bar
+                    name: "idle"
+                    when: control.visible && !Player.isStarted
+                    PropertyChanges {
+                        target: bufferRect
+                        width: bufferAnimWidth
+                        visible: false
+                        x: 0
+                        animateLoading: false
+                    }
+                },
+                State {
                     name: "buffering not started"
                     when: control.visible && Player.buffering === 0
                     PropertyChanges {

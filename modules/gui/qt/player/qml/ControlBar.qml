@@ -311,7 +311,7 @@ T.Pane {
             anchors.leftMargin: root._inline ? VLCStyle.margin_normal : 0
             anchors.rightMargin: root._inline ? VLCStyle.margin_normal : 0
 
-            visible: children.length > 0
+            visible: children.length > 0 && (!root._inline || Player.isStarted)
 
             spacing: VLCStyle.margin_xsmall
 

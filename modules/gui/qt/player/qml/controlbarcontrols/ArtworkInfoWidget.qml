@@ -221,6 +221,9 @@ T.AbstractButton {
         ColumnLayout {
             id: infoColumn
 
+            // redesign: no "--:-- / 0 ms" placeholder while nothing is playing
+            visible: Player.isStarted
+
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumWidth: 0.1 // FIXME: Qt layout bug

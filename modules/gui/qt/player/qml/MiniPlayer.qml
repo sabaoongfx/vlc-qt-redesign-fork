@@ -49,8 +49,8 @@ ControlBar {
         Qt.callLater(() => { stateBinding.when = true })
     }
 
-    textPosition: (MainCtx.pinVideoControls) ? ControlBar.TimeTextPosition.LeftRightSlider
-                                             : ControlBar.TimeTextPosition.Hide
+    // redesign: one row like the player bar (transport left, time + seek field + time in the middle)
+    textPosition: ControlBar.TimeTextPosition.InlineControls
 
     sliderHeight: (MainCtx.pinVideoControls) ? VLCStyle.heightBar_xxsmall
                                              : VLCStyle.dp(3, VLCStyle.scale)
