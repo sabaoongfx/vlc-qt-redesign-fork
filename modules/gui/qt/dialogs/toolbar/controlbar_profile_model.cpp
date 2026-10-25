@@ -113,7 +113,7 @@ decltype (ControlbarProfileModel::m_defaults)
                                     ControlListModel::VOLUME,
                                     ControlListModel::LANG_BUTTON,
                                     ControlListModel::EXTENDED_BUTTON,
-                                    ControlListModel::FULLSCREEN_BUTTON
+                                    ControlListModel::PLAYLIST_BUTTON
                                 }
                             }
                         }
@@ -133,7 +133,7 @@ decltype (ControlbarProfileModel::m_defaults)
                                     ControlListModel::VOLUME,
                                     ControlListModel::LANG_BUTTON,
                                     ControlListModel::EXTENDED_BUTTON,
-                                    ControlListModel::FULLSCREEN_BUTTON
+                                    ControlListModel::PLAYLIST_BUTTON
                                 }
                             }
                         }

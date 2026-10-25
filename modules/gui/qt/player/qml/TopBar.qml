@@ -270,38 +270,145 @@ FocusScope{
             visible: (root._showTopBar && root.resumeVisible === false)
 
             implicitHeight: VLCStyle.icon_banner + VLCStyle.margin_xxsmall * 2
-            implicitWidth: backBtn.implicitWidth + logo.implicitWidth + VLCStyle.margin_xxsmall
+            implicitWidth: logoRow.implicitWidth
 
-            Widgets.IconToolButton {
-                id: backBtn
-
-                anchors.verticalCenter: parent.verticalCenter
-                anchors.left: parent.left
-
-                objectName: "IconToolButton"
-                font.pixelSize: VLCStyle.icon_banner
-                text: VLCIcons.back
-                description: qsTr("Back")
-
-                AccessibleCompat.id: "topBarBackButton"
-
-                focus: true
-
-                Navigation.parentItem: root
-                Navigation.rightItem: menuSelector
-                onClicked: root.backRequested()
-
-                onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
-            }
-
-            Widgets.BannerCone {
-                id: logo
+            // redesign: Figma player top bar, cone, menu, divider and a folder crumb that returns to
+            // the library; there is no back arrow in the player
+            Row {
+                id: logoRow
 
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.left: backBtn.right
-                anchors.leftMargin: VLCStyle.margin_xxsmall
+                spacing: VLCStyle.margin_xsmall
 
-                color: theme.accent
+                Widgets.BannerCone {
+                    id: logo
+
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    color: theme.accent
+                }
+
+                Widgets.IconToolButton {
+                    id: menuSelector
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: !root.showToolbar
+                    enabled: visible
+                    focus: visible
+                    font.pixelSize: VLCStyle.icon_banner
+
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+
+                    text: VLCIcons.more
+                    description: qsTr("Menu")
+
+                    // redesign: horizontal dots like the Figma player top bar
+                    rotation: 90
+
+                    AccessibleCompat.id: "topBarMenuButton"
+
+                    checked: contextMenu.shown
+
+                    Navigation.parentItem: root
+                    Navigation.rightItem: backBtn
+
+                    // mapped from the parent: this button is rotated
+                    onClicked: contextMenu.popup(parent.mapToGlobal(x, y + height))
+
+                    onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
+
+                    Menus.QmlGlobalMenu {
+                        id: contextMenu
+
+                        ctx: MainCtx
+
+                        onAboutToShow: root.requestLockUnlockAutoHide(true)
+                        onAboutToHide: root.requestLockUnlockAutoHide(false)
+                    }
+
+                    Connections {
+                        target: root
+
+                        function onForceUnlock() {
+                            contextMenu.close()
+                        }
+                    }
+                }
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: VLCStyle.border
+                    height: VLCStyle.dp(20, VLCStyle.scale)
+                    color: theme.separator
+                }
+
+                T.AbstractButton {
+                    id: backBtn
+
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    // name of the folder holding the current media, the library otherwise
+                    readonly property string folderName: {
+                        const url = Player.url ? Player.url.toString() : ""
+                        if (!url.startsWith("file://"))
+                            return qsTr("Library")
+                        const parts = decodeURIComponent(url.replace(/\/+$/, "")).split("/")
+                        return (parts.length > 1 && parts[parts.length - 2] !== "") ? parts[parts.length - 2]
+                                                                                     : qsTr("Library")
+                    }
+
+                    text: folderName
+
+                    objectName: "IconToolButton"
+                    Accessible.name: qsTr("Back to %1").arg(folderName)
+                    AccessibleCompat.id: "topBarBackButton"
+
+                    focus: true
+
+                    implicitWidth: crumbRow.implicitWidth + leftPadding + rightPadding
+                    implicitHeight: VLCStyle.bannerButton_height
+
+                    leftPadding: VLCStyle.margin_xxsmall
+                    rightPadding: VLCStyle.margin_xsmall
+
+                    background: Rectangle {
+                        radius: VLCStyle.button_radius
+                        color: backBtn.hovered ? Qt.alpha(theme.fg.primary, 0.08) : Qt.alpha(theme.fg.primary, 0)
+                        border.width: VLCStyle.focus_border
+                        border.color: backBtn.visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0)
+                    }
+
+                    contentItem: Row {
+                        id: crumbRow
+
+                        spacing: VLCStyle.margin_xsmall
+
+                        Widgets.IconLabel {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: VLCIcons.ic_fluent_folder_open_24_regular
+                            font.pixelSize: VLCStyle.icon_banner
+                            color: backBtn.hovered ? theme.fg.primary : theme.fg.secondary
+                        }
+
+                        T.Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: backBtn.text
+                            color: backBtn.hovered ? theme.fg.primary : theme.fg.secondary
+                            font.family: VLCStyle.fontFamily
+                            font.pixelSize: VLCStyle.fontSize_large
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    Navigation.parentItem: root
+                    Navigation.leftItem: menuSelector.visible ? menuSelector : null
+                    Navigation.rightItem: fullscreenBtn
+
+                    onClicked: root.backRequested()
+
+                    onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
+                }
             }
         }
 
@@ -440,48 +547,23 @@ FocusScope{
         visible: root._showTopBar
 
         Widgets.IconToolButton {
-            id: menuSelector
+            id: fullscreenBtn
 
             anchors.verticalCenter: parent.verticalCenter
-            visible: !root.showToolbar
-            enabled: visible
-            focus: visible
             font.pixelSize: VLCStyle.icon_banner
 
             width: VLCStyle.bannerButton_width
             height: VLCStyle.bannerButton_height
 
-            text: VLCIcons.more
-            description: qsTr("Menu")
-
-            AccessibleCompat.id: "topBarMenuButton"
-
-            checked: contextMenu.shown
+            text: Player.fullscreen ? VLCIcons.defullscreen : VLCIcons.fullscreen
+            description: qsTr("Fullscreen")
 
             Navigation.parentItem: root
             Navigation.leftItem: backBtn
-            Navigation.rightItem: playlistButton
 
-            onClicked: contextMenu.popup(this.mapToGlobal(0, height))
+            onClicked: Player.fullscreen = !Player.fullscreen
 
             onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
-
-            Menus.QmlGlobalMenu {
-                id: contextMenu
-
-                ctx: MainCtx
-
-                onAboutToShow: root.requestLockUnlockAutoHide(true)
-                onAboutToHide: root.requestLockUnlockAutoHide(false)
-            }
-
-            Connections {
-                target: root
-
-                function onForceUnlock() {
-                    contextMenu.close()
-                }
-            }
         }
 
         PlaylistPane.PlaylistToggleButton {
@@ -494,6 +576,9 @@ FocusScope{
             description: qsTr("Play Queue")
 
             AccessibleCompat.id: "topBarPlayqueueButton"
+
+            // redesign: the play queue button lives at the end of the bottom bar
+            visible: false
 
             focus: root.showToolbar
 
