@@ -1,0 +1,22 @@
+[General]
+count=1
+rules=1
+
+[1]
+Description=vlc
+wmclass=vlc
+wmclassmatch=2
+maximizehoriz=true
+maximizehorizrule=2
+maximizevert=true
+maximizevertrule=2
+noborder=true
+noborderrule=2
+types=1
+maximizehoriz=true
+title=^(?!.*(Preferences|Open Media|Adjustments|Customize|Information|Welcome|Messages|Plugins|Synchronization|Convert|Stream|Open|Select|Save|About)).*$
+titlematch=3
+size=__W__,__H__
+sizerule=2
+position=0,0
+positionrule=2

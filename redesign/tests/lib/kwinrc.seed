@@ -1,0 +1,16 @@
+[Desktops]
+Id_1=930f128b-9be6-484e-b6e1-9cb03e9d88b2
+Id_2=ce547f8a-49a6-46d5-8fe3-6a8b0525ae1c
+Rows=2
+
+[Tiling][930f128b-9be6-484e-b6e1-9cb03e9d88b2][bbf473b7-43fd-422b-b2f6-bb13cab14af2]
+padding=4
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Tiling][ce547f8a-49a6-46d5-8fe3-6a8b0525ae1c][bbf473b7-43fd-422b-b2f6-bb13cab14af2]
+padding=4
+tiles={"layoutDirection":"horizontal","tiles":[{"width":0.25},{"width":0.5},{"width":0.25}]}
+
+[Xwayland]
+Scale=1
+XwaylandEisNoPromptApps=xdotool
