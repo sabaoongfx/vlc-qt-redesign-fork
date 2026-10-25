@@ -88,9 +88,27 @@ T.Pane {
         }
     }
 
-    background: Widgets.AcrylicBackground {
-        enabled: root.useAcrylic
-        tintColor: theme.bg.primary
+    // redesign: Figma floating sidebar, a rounded card inset from the window edges on the
+    // content background
+    readonly property real cardMargin: VLCStyle.margin_xsmall
+
+    background: Rectangle {
+        color: viewTheme.bg.primary
+
+        readonly property ColorContext viewTheme: ColorContext {
+            colorSet: ColorContext.View
+        }
+
+        // a plain rectangle: AcrylicBackground (Windows blur) cannot round its corners
+        Rectangle {
+            anchors.fill: parent
+            anchors.leftMargin: root.cardMargin
+            anchors.topMargin: root.cardMargin
+            anchors.bottomMargin: root.cardMargin
+
+            color: theme.bg.primary
+            radius: VLCStyle.dp(10, VLCStyle.scale)
+        }
     }
 
     contentItem:  Item {
