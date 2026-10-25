@@ -1,6 +1,5 @@
-
 /*****************************************************************************
- * Copyright (C) 2023 VLC authors and VideoLAN
+ * Copyright (C) 2020 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +18,6 @@
 import QtQuick
 import QtQuick.Templates as T
 import QtQuick.Layouts
-import QtQml.Models
 
 
 import VLC.MainInterface
@@ -29,452 +27,420 @@ import VLC.Widgets as Widgets
 import VLC.Util
 import VLC.Dialogs
 
-RowLayout {
+// redesign: the Figma / prototype right options panel: a tab row (Subtitles, Audio, Video,
+// Playback) with a close button, then rounded cards (TRACK, TIMING) on the panel background.
+FocusScope {
     id: root
-
-    readonly property ColorContext colorContext: ColorContext {
-        id: theme
-
-        colorSet: ColorContext.View
-    }
 
     //FIXME make TrackMenuController a proper type (see TrackMenu)
     required property QtObject trackMenuController
 
-    // redesign: docked right panel with tabs instead of three columns
     property int currentTab: 0
-    property int preferredWidth: VLCStyle.dp(400, VLCStyle.scale)
+    property int preferredWidth: VLCStyle.dp(390, VLCStyle.scale)
 
-    spacing: 0
+    readonly property ColorContext colorContext: ColorContext {
+        id: theme
+        colorSet: ColorContext.View
+    }
 
+    // prototype tokens: --side (panel), --card, --field
+    readonly property bool _dark: theme.palette?.isDark ?? true
+    readonly property color cardColor: _dark ? "#1B1B1B" : "#B9B9B8"
+    readonly property color fieldColor: _dark ? "#090909" : "#DEDEDE"
+
+    implicitWidth: preferredWidth
     focus: true
 
-    onActiveFocusChanged: if (activeFocus) speedBtn.forceActiveFocus()
-
     ColumnLayout {
-        Layout.fillHeight: true
+        anchors.fill: parent
+        anchors.margins: VLCStyle.margin_xsmall
+        spacing: VLCStyle.margin_xsmall
+
+        // tab row
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: VLCStyle.dp(40, VLCStyle.scale)
+            radius: VLCStyle.dp(8, VLCStyle.scale)
+            color: root.cardColor
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: VLCStyle.margin_xxsmall
+                spacing: VLCStyle.margin_xxsmall
+
+                Repeater {
+                    model: [
+                        { label: qsTr("Subtitles"), icon: VLCIcons.audiosub },
+                        { label: qsTr("Audio"), icon: VLCIcons.visualization },
+                        { label: qsTr("Video"), icon: VLCIcons.tv },
+                        { label: qsTr("Playback"), icon: VLCIcons.play }
+                    ]
+
+                    delegate: T.AbstractButton {
+                        id: tab
+
+                        required property int index
+                        required property var modelData
+
+                        readonly property bool current: root.currentTab === index
+
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        text: modelData.label
+                        Accessible.name: modelData.label
+
+                        onClicked: root.currentTab = index
+
+                        background: Rectangle {
+                            radius: VLCStyle.dp(6, VLCStyle.scale)
+                            color: tab.current ? Qt.alpha(theme.accent, 0.18)
+                                               : (tab.hovered ? Qt.alpha(theme.fg.primary, 0.06) : "transparent")
+                        }
+
+                        contentItem: Item {
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: VLCStyle.margin_xsmall
+
+                                Widgets.IconLabel {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: tab.modelData.icon
+                                    font.pixelSize: VLCStyle.icon_normal * 0.75
+                                    color: tab.current ? theme.accent : theme.fg.secondary
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: tab.current
+                                    text: tab.text
+                                    color: theme.accent
+                                    font.family: VLCStyle.fontFamily
+                                    font.pixelSize: VLCStyle.fontSize_normal
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Widgets.IconToolButton {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: VLCIcons.close
+                    description: qsTr("Close")
+                    font.pixelSize: VLCStyle.icon_normal * 0.75
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+                    onClicked: root.trackMenuController.requestClose()
+                }
+            }
+        }
+
+        // Subtitles / Audio / Video: track card and (subtitles, audio) timing card
+        Repeater {
+            model: [
+                { tracks: Player.subtitleTracks, title: qsTr("Subtitle track"), add: qsTr("Add subtitles…") },
+                { tracks: Player.audioTracks, title: qsTr("Audio track"), add: qsTr("Add audio track…") },
+                { tracks: Player.videoTracks, title: qsTr("Video track"), add: qsTr("Add video track…") }
+            ]
+
+            delegate: ColumnLayout {
+                required property int index
+                required property var modelData
+
+                visible: root.currentTab === index
+                Layout.fillWidth: true
+                spacing: VLCStyle.margin_xsmall
+
+                Card {
+                    title: qsTr("Track")
+
+                    Caption { text: modelData.title }
+
+                    TrackCombo {
+                        Layout.fillWidth: true
+                        tracksModel: modelData.tracks
+                    }
+
+                    LinkButton {
+                        text: modelData.add
+                        iconText: VLCIcons.add
+                        onClicked: {
+                            if (index === 0)
+                                DialogsProvider.loadSubtitlesFile()
+                            else if (index === 1)
+                                DialogsProvider.loadAudioFile()
+                            else
+                                DialogsProvider.loadVideoFile()
+                        }
+                    }
+                }
+
+                Card {
+                    visible: index < 2
+                    title: qsTr("Timing")
+
+                    DelayEditor {
+                        Layout.fillWidth: true
+                        audio: index === 1
+                    }
+                }
+            }
+        }
+
+        // Playback: speed
+        Card {
+            visible: root.currentTab === 3
+            title: qsTr("Playback")
+
+            RowLayout {
+                Layout.fillWidth: true
+                Caption { text: qsTr("Playback speed"); Layout.fillWidth: true }
+                Caption { text: qsTr("%1×").arg(Player.rate.toFixed(2)); color: theme.fg.primary }
+            }
+
+            FieldSlider {
+                Layout.fillWidth: true
+                from: 0.25
+                to: 4
+                stepSize: 0.05
+                value: Player.rate
+                onMoved: Player.rate = value
+            }
+
+            LinkButton {
+                text: qsTr("More speed settings…")
+                iconText: VLCIcons.settings
+                onClicked: root.trackMenuController.requestPlaybackSpeedPage()
+            }
+        }
+
+        Item { Layout.fillHeight: true }
+    }
+
+    // ---- building blocks ----
+
+    component Card: Rectangle {
+        id: card
+
+        property string title
+        default property alias content: cardColumn.data
+
         Layout.fillWidth: true
+        implicitHeight: cardColumn.implicitHeight + VLCStyle.margin_normal * 2
+        radius: VLCStyle.dp(8, VLCStyle.scale)
+        color: root.cardColor
 
-        spacing: 0
+        ColumnLayout {
+            id: cardColumn
 
-        Row {
-            id: tabBar
-
-            Layout.topMargin: VLCStyle.margin_large
-            Layout.leftMargin: VLCStyle.margin_large
+            anchors.fill: parent
+            anchors.margins: VLCStyle.margin_normal
             spacing: VLCStyle.margin_xsmall
 
-            Repeater {
-                model: [qsTr("Subtitles"), qsTr("Audio"), qsTr("Video")]
-
-                delegate: T.AbstractButton {
-                    id: tab
-
-                    required property int index
-                    required property string modelData
-
-                    readonly property bool current: root.currentTab === index
-
-                    implicitWidth: tabLabel.implicitWidth + VLCStyle.margin_normal * 2
-                    implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
-
-                    text: modelData
-                    onClicked: root.currentTab = index
-
-                    contentItem: Text {
-                        id: tabLabel
-
-                        text: tab.text
-                        font.pixelSize: VLCStyle.fontSize_large
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        color: tab.current ? theme.accent : (tab.hovered ? theme.fg.primary : theme.fg.secondary)
-                    }
-
-                    background: Rectangle {
-                        radius: VLCStyle.button_radius
-                        color: tab.current ? Qt.alpha(theme.accent, 0.16)
-                                           : (tab.hovered ? Qt.alpha(theme.fg.primary, 0.08) : "transparent")
-                    }
-                }
-            }
-
-            T.AbstractButton {
-                id: speedBtn
-
-                implicitWidth: speedLabel.implicitWidth + VLCStyle.margin_normal * 2
-                implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
-
-                text: qsTr("%1x").arg(+Player.rate.toFixed(2))
-
-                onClicked: trackMenuController.requestPlaybackSpeedPage()
-
-                T.ToolTip.visible: (hovered || visualFocus)
-                T.ToolTip.text: qsTr("Playback Speed")
-                T.ToolTip.delay: VLCStyle.delayToolTipAppear
-
-                Navigation.parentItem: root
-                Navigation.downItem: row
-
-                contentItem: Text {
-                    id: speedLabel
-
-                    text: speedBtn.text
-                    font.pixelSize: VLCStyle.fontSize_large
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                    color: speedBtn.hovered ? theme.accent : theme.fg.secondary
-                }
-
-                background: Rectangle {
-                    radius: VLCStyle.button_radius
-                    color: "transparent"
-                    border.width: 1
-                    border.color: speedBtn.hovered ? theme.accent : theme.border
-                }
+            Text {
+                text: card.title.toUpperCase()
+                color: Qt.alpha(theme.fg.secondary, 0.8)
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_small
+                font.letterSpacing: 1
             }
         }
+    }
 
-    Widgets.NavigableRow {
-        id: row
+    component Caption: Text {
+        color: theme.fg.secondary
+        font.family: VLCStyle.fontFamily
+        font.pixelSize: VLCStyle.fontSize_normal
+        elide: Text.ElideRight
+    }
 
-        Layout.fillHeight: true
+    component LinkButton: T.AbstractButton {
+        id: link
+
+        property string iconText
+
         Layout.fillWidth: true
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
 
-        Navigation.upItem: speedBtn
-
-        TrackColumn {
-            tabIndex: 0
-            title: qsTr("Subtitle")
-            tracksModel: Player.subtitleTracks
-            menuIcon: VLCIcons.expand
-            menuText: qsTr("Menu")
-            onMenuAction: (menuPos)  => {
-                menuSubtitle.popup(menuPos)
-            }
+        background: Rectangle {
+            radius: VLCStyle.dp(6, VLCStyle.scale)
+            color: link.hovered ? Qt.alpha(theme.fg.primary, 0.06) : "transparent"
         }
 
-        TrackColumn {
-            tabIndex: 1
-            title: qsTr("Audio")
-            tracksModel: Player.audioTracks
-            menuIcon: VLCIcons.expand
-            menuText: qsTr("Menu")
-            onMenuAction: (menuPos)  => {
-                menuAudio.popup(menuPos)
-            }
-        }
+        contentItem: Row {
+            spacing: VLCStyle.margin_xsmall
+            leftPadding: VLCStyle.margin_xsmall
 
-        TrackColumn {
-            tabIndex: 2
-            title: qsTr("Video Tracks")
-            tracksModel: Player.videoTracks
-            menuIcon: VLCIcons.add
-            menuText: qsTr("Add")
-            onMenuAction: (menuPos) => {
-                DialogsProvider.loadVideoFile()
+            Widgets.IconLabel {
+                anchors.verticalCenter: parent.verticalCenter
+                text: link.iconText
+                font.pixelSize: VLCStyle.icon_normal * 0.66
+                color: theme.fg.secondary
+            }
+
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                text: link.text
+                color: theme.fg.primary
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_normal
             }
         }
     }
+
+    // field slider: dark well, dim accent fill, tick marks, narrow accent handle (prototype)
+    component FieldSlider: T.Slider {
+        id: fs
+
+        implicitHeight: VLCStyle.dp(24, VLCStyle.scale)
+
+        background: Rectangle {
+            x: fs.leftPadding
+            y: (fs.height - height) / 2
+            width: fs.availableWidth
+            height: VLCStyle.dp(14, VLCStyle.scale)
+            radius: VLCStyle.dp(4, VLCStyle.scale)
+            color: root.fieldColor
+
+            Rectangle {
+                width: fs.visualPosition * parent.width
+                height: parent.height
+                radius: parent.radius
+                color: Qt.alpha(theme.accent, 0.3)
+            }
+
+            Repeater {
+                model: 7
+                delegate: Rectangle {
+                    required property int index
+                    x: (index + 1) * parent.width / 8
+                    y: VLCStyle.dp(4, VLCStyle.scale)
+                    width: 1
+                    height: parent.height - y * 2
+                    color: Qt.alpha(theme.fg.primary, 0.18)
+                }
+            }
+        }
+
+        handle: Rectangle {
+            x: fs.leftPadding + fs.visualPosition * (fs.availableWidth - width)
+            y: (fs.height - height) / 2
+            width: VLCStyle.dp(6, VLCStyle.scale)
+            height: VLCStyle.dp(20, VLCStyle.scale)
+            radius: VLCStyle.dp(3, VLCStyle.scale)
+            color: theme.accent
+        }
     }
 
-    // redesign: inline delay control shown at the bottom of the Subtitles / Audio tabs
-    component DelayRow: RowLayout {
-        id: delayRow
+    // dropdown of the tracks of one kind; the checked track is the current one
+    component TrackCombo: Widgets.ComboBoxExt {
+        id: combo
+
+        property var tracksModel
+
+        model: tracksModel
+        textRole: "display"
+        displayText: (count === 0) ? qsTr("None") : currentText
+
+        // follow the checked track
+        Repeater {
+            id: checkedTracker
+            model: combo.tracksModel
+            delegate: Item {
+                required property int index
+                required property bool checked
+                required property var model
+                onCheckedChanged: if (checked) combo.currentIndex = index
+                Component.onCompleted: if (checked) combo.currentIndex = index
+            }
+        }
+
+        onActivated: (index) => {
+            const item = checkedTracker.itemAt(index)
+            if (item)
+                item.model.checked = true
+        }
+    }
+
+    component DelayEditor: ColumnLayout {
+        id: delay
 
         property bool audio: false
-
         readonly property int delayMS: audio ? Player.audioDelayMS : Player.subtitleDelayMS
 
-        function setDelay(value) {
+        function setDelay(ms) {
+            ms = Math.max(-10000, Math.min(10000, Math.round(ms)))
             if (audio)
-                Player.audioDelayMS = value
+                Player.audioDelayMS = ms
             else
-                Player.subtitleDelayMS = value
-        }
-
-        function textFrom(value, locale) {
-            return qsTr("%1 ms").arg(Number(value).toLocaleString(locale, 'f', 0))
-        }
-
-        function valueFrom(text, locale) {
-            return Number.fromLocaleString(locale, text.substring(0, text.length - 3))
+                Player.subtitleDelayMS = ms
         }
 
         spacing: VLCStyle.margin_xsmall
 
-        Widgets.MenuCaption {
+        RowLayout {
             Layout.fillWidth: true
 
-            text: qsTr("Delay") // the tab already says which track type
-            color: theme.fg.primary
+            Caption {
+                Layout.fillWidth: true
+                text: delay.audio ? qsTr("Audio delay") : qsTr("Subtitle delay")
+            }
+
+            Caption {
+                text: qsTr("%1 s").arg((delay.delayMS / 1000).toFixed(1))
+                color: theme.fg.primary
+            }
         }
 
-        Widgets.SpinBoxExt {
-            id: delaySpin
-
-            property bool update: false
-
-            Layout.preferredWidth: VLCStyle.dp(112, VLCStyle.scale)
-
+        FieldSlider {
+            Layout.fillWidth: true
+            from: -5000
+            to: 5000
             stepSize: 50
-            from: -10000
-            to: 10000
+            value: delay.delayMS
+            onMoved: delay.setDelay(value)
+        }
 
-            textFromValue: delayRow.textFrom
-            valueFromText: delayRow.valueFrom
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: VLCStyle.margin_xxsmall
 
-            Component.onCompleted: {
-                value = delayRow.delayMS
-                update = true
-            }
+            Repeater {
+                model: [-500, -100, 100, 500]
 
-            onValueChanged: {
-                if (update)
-                    delayRow.setDelay(value)
-            }
+                delegate: T.AbstractButton {
+                    id: step
 
-            Connections {
-                target: delayRow
+                    required property int modelData
 
-                function onDelayMSChanged() {
-                    delaySpin.update = false
-                    delaySpin.value = delayRow.delayMS
-                    delaySpin.update = true
+                    Layout.fillWidth: true
+                    implicitHeight: VLCStyle.dp(30, VLCStyle.scale)
+
+                    text: (modelData > 0 ? "+" : "−") + (Math.abs(modelData) / 1000).toFixed(1) + " s"
+                    onClicked: delay.setDelay(delay.delayMS + modelData)
+
+                    background: Rectangle {
+                        radius: VLCStyle.dp(6, VLCStyle.scale)
+                        color: step.hovered ? Qt.alpha(theme.fg.primary, 0.1) : Qt.alpha(theme.fg.primary, 0.04)
+                    }
+
+                    contentItem: Text {
+                        text: step.text
+                        color: theme.fg.secondary
+                        font.family: VLCStyle.fontFamily
+                        font.pixelSize: VLCStyle.fontSize_small
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
                 }
             }
         }
 
-        T.AbstractButton {
-            id: resetBtn
-
-            implicitWidth: resetLabel.implicitWidth + VLCStyle.margin_normal * 2
-            implicitHeight: VLCStyle.dp(28, VLCStyle.scale)
-
+        LinkButton {
             text: qsTr("Reset")
-
-            onClicked: delayRow.setDelay(0)
-
-            contentItem: Text {
-                id: resetLabel
-
-                text: resetBtn.text
-                font.pixelSize: VLCStyle.fontSize_normal
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-                color: theme.fg.primary // redesign: plain
-            }
-
-            background: Rectangle {
-                radius: VLCStyle.button_radius
-                color: resetBtn.hovered ? Qt.alpha(theme.fg.primary, 0.1) : "transparent"
-                border.width: 1
-                border.color: theme.border
-            }
-        }
-    }
-
-    component TrackColumn: T.Container {
-        // wrap the contentItem i.e Column into Container
-        // so that we can get focusReason, also Container
-        // is a FocusScope
-        id: tracksListContainer
-
-        implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
-                                implicitContentWidth + leftPadding + rightPadding)
-        implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
-                                 implicitContentHeight + topPadding + bottomPadding)
-
-        required property int tabIndex
-        required property string title
-        required property var tracksModel
-        required property string menuIcon
-        required property string menuText
-
-        signal menuAction(point position)
-
-        focus: true
-
-        visible: root.currentTab === tabIndex
-        width: row.width
-        height: row.height
-
-        onActiveFocusChanged: if (activeFocus) tracksList.forceActiveFocus(focusReason)
-
-        // this is required to initialize attached Navigation property
-        Navigation.parentItem: row
-
-        contentItem: Column {
-            anchors.fill: parent
-
-            focus: true
-
-            Accessible.role: Accessible.Pane
-            Accessible.name: tracksListContainer.title
-
-            Item {
-                // keep it inside so "Column" doesn't mess with it
-               Rectangle {
-                   id: separator
-
-                   x: 0
-                   y: 0
-                   width: VLCStyle.margin_xxxsmall
-
-                   height: tracksListContainer.height
-                   color: theme.border
-               }
-            }
-
-            Row {
-                id: titleHeader
-
-                width: tracksListContainer.width
-                height: implicitHeight
-
-                padding: VLCStyle.margin_xsmall
-
-                topPadding: VLCStyle.margin_large
-                leftPadding: VLCStyle.margin_xxlarge + separator.width
-
-                focus: true
-
-                clip: true
-
-                Widgets.SubtitleLabel {
-                    id: titleText
-
-                    width: parent.width - button.width - parent.leftPadding
-                           - parent.rightPadding
-
-                    text: tracksListContainer.title
-                    color: theme.fg.primary
-                    font.weight: Font.Light // redesign: light section headers (prototype .hsec-h)
-                }
-
-                Widgets.IconTrackButton {
-                    id: button
-
-                    font.pixelSize: VLCStyle.icon_track
-
-                    focus: true
-
-                    description: tracksListContainer.menuText
-                    text: tracksListContainer.menuIcon
-
-                    Navigation.parentItem: tracksListContainer
-                    Navigation.downItem: tracksList
-
-                    onClicked: {
-                        tracksListContainer.menuAction(mapToGlobal(0, height))
-                    }
-                }
-            }
-
-            Widgets.ListViewExt {
-                id: tracksList
-
-                model: tracksListContainer.tracksModel
-                width: tracksListContainer.width
-                height: tracksListContainer.height - titleHeader.height - delayFooter.height
-                leftMargin: separator.width
-                focus: true
-                clip: !fadingEdge.implicitClipping && (height < contentHeight)
-
-                fadingEdge.backgroundColor: theme.bg.primary
-
-                Accessible.role: Accessible.List
-                Accessible.name: qsTr("Track list")
-
-                Navigation.parentItem: tracksListContainer
-                Navigation.upItem: button
-                Keys.priority: Keys.AfterItem
-                Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
-
-                delegate: Widgets.CheckedDelegate {
-                    readonly property bool isModelChecked: model.checked
-                    clip: true
-
-                    focus: true
-                    text: model.display
-                    width: tracksListContainer.width - VLCStyle.margin_xxxsmall
-                    height: VLCStyle.dp(40, VLCStyle.scale)
-                    opacity: hovered || activeFocus || checked ? 1 : .6
-                    font.weight: Font.Normal // redesign: no weight jump on hover
-
-                    onIsModelCheckedChanged: {
-                        if (model.checked !== checked)
-                            checked = model.checked
-                    }
-
-                    onCheckedChanged: {
-                        if (model.checked !== checked)
-                            model.checked = checked
-                    }
-
-                    onClicked: {
-                        tracksList.currentIndex = index
-                        tracksList.setCurrentItemFocus(Qt.MouseFocusReason)
-                    }
-
-                    Navigation.parentItem: tracksList
-                }
-            }
-
-            Item {
-                id: delayFooter
-
-                // subtitle (0) and audio (1) tabs only
-                visible: tracksListContainer.tabIndex < 2
-                width: tracksListContainer.width
-                height: visible ? delayInline.implicitHeight + VLCStyle.margin_large * 2 : 0
-
-                DelayRow {
-                    id: delayInline
-
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.leftMargin: VLCStyle.margin_large
-                    anchors.rightMargin: VLCStyle.margin_large
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    audio: tracksListContainer.tabIndex === 1
-                }
-            }
-        }
-    }
-
-    QmlSubtitleMenu {
-        id: menuSubtitle
-
-        player: Player
-        ctx: MainCtx
-
-        onTriggered: {
-            if (action === QmlSubtitleMenu.Open) {
-                DialogsProvider.loadSubtitlesFile()
-            }
-            else if (action === QmlSubtitleMenu.Synchronize) {
-                trackMenuController.requestSubtitlePage()
-            }
-            else if (action === QmlSubtitleMenu.Download) {
-                Player.openVLsub()
-            }
-        }
-    }
-
-    QmlAudioMenu {
-        id: menuAudio
-
-        ctx: MainCtx
-
-        onTriggered: {
-            if (action === QmlSubtitleMenu.Open) {
-                DialogsProvider.loadAudioFile()
-            }
-            else if (action === QmlSubtitleMenu.Synchronize) {
-                trackMenuController.requestAudioPage()
-            }
+            iconText: VLCIcons.history
+            visible: delay.delayMS !== 0
+            onClicked: delay.setDelay(0)
         }
     }
 }

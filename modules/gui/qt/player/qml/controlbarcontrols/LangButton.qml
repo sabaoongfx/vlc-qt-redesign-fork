@@ -68,8 +68,9 @@ Widgets.IconToolButton {
 
             parent: root._parentItem
 
-            x: parent.width - width
-            y: 0
+            // redesign: right side, 10px from the window edge, below the top bar
+            x: parent.width - width - VLCStyle.dp(10, VLCStyle.scale)
+            y: _topBarHeight
             z: 1
 
             focus: true

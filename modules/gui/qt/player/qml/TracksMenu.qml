@@ -37,8 +37,9 @@ T.Popup {
                           ? preferredWidth : Number.MAX_VALUE
                     , root.parent.width)
 
-    // redesign: docked right panel, from the top down to the seek bar
-    height: root.parent.positionSliderY
+    // redesign: docked right panel between the top bar and the bottom bar (Figma / prototype)
+    readonly property real _topBarHeight: VLCStyle.dp(40, VLCStyle.scale)
+    height: root.parent.positionSliderY - _topBarHeight - VLCStyle.dp(6, VLCStyle.scale)
 
     // Animations
 
@@ -56,19 +57,10 @@ T.Popup {
         colorSet: ColorContext.Window
     }
 
+    // prototype --side: a solid panel, not a translucent overlay
     background: Rectangle {
-        // NOTE: The opacity should be stronger on a light background for readability.
-        color: popupTheme.bg.primary.alpha(popupTheme.palette.isDark ? 0.8 : 0.96)
-
-        Rectangle {
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-
-            width: VLCStyle.margin_xxxsmall
-
-            color: popupTheme.border
-        }
+        radius: VLCStyle.dp(8, VLCStyle.scale)
+        color: popupTheme.palette.isDark ? "#161616" : "#C6C6C5"
     }
 
     contentItem: T.StackView {
@@ -126,6 +118,9 @@ T.Popup {
       signal requestSubtitlePage()
       signal requestPlaybackSpeedPage()
       signal requestBack()
+      signal requestClose()
+
+      onRequestClose: root.close()
 
       onRequestBack: {
           stackView.pop()
