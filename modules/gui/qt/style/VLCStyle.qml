@@ -119,7 +119,7 @@ QtObject {
     readonly property int icon_track: icon_normal
     readonly property int icon_tableHeader: icon_normal
     readonly property int icon_playlistHeader: icon_normal
-    readonly property int icon_banner: MainCtx.dp(28, scale)
+    readonly property int icon_banner: MainCtx.dp(24, scale) // redesign: icons are drawn at 24px in the Figma frames
     readonly property int icon_play: MainCtx.dp(28, scale)
     readonly property int icon_addressBar: icon_normal
     readonly property int icon_actionButton: icon_normal

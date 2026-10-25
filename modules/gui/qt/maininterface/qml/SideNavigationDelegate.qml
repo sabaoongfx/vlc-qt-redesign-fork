@@ -136,7 +136,8 @@ T.ItemDelegate {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
 
-                color: (control.highlighted || control.checked) ? theme.accent : theme.fg.primary
+                // redesign: plain icons, the active row is marked by its background and label
+                color: theme.fg.primary
 
                 font.pixelSize: VLCStyle.icon_banner
             }

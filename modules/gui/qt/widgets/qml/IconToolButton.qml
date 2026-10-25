@@ -34,7 +34,8 @@ T.ToolButton {
 
     required property string description
 
-    property color color: (control.checked) ? theme.accent : theme.fg.primary
+    // redesign: plain icons, no accent tint for the checked state
+    property color color: theme.fg.primary
 
     property color backgroundColor: theme.bg.primary
 
@@ -100,7 +101,8 @@ T.ToolButton {
 
         color: control.backgroundColor
 
-        border.color: visualFocus ? theme.visualFocus : theme.border
+        // redesign: no frame around icon buttons, only the keyboard focus ring
+        border.color: visualFocus ? theme.visualFocus : "transparent"
 
         radius: control.radius
     }
