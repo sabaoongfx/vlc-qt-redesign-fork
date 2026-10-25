@@ -37,9 +37,10 @@
 inline QString redesignMenuStyleSheet()
 {
     return QStringLiteral(
-        "QMenu { background: palette(base); border: 1px solid palette(mid); padding: 4px; }"
-        "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 4px; }"
-        "QMenu::item:selected { background: palette(highlight); color: palette(highlighted-text); }"
+        // prototype `.menu`: --menu background, subtle --menu-hover rows (not the accent), 7px row radius
+        "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); padding: 5px; }"
+        "QMenu::item { padding: 7px 28px 7px 12px; border-radius: 7px; color: palette(text); }"
+        "QMenu::item:selected { background: palette(midlight); color: palette(text); }"
         "QMenu::item:disabled { color: palette(mid); }"
         "QMenu::separator { height: 1px; background: palette(mid); margin: 4px 8px; }" );
 }

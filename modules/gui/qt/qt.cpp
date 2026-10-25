@@ -415,12 +415,10 @@ vlc_module_begin ()
               QT_DISABLE_VOLUME_KEYS_LONGTEXT      /* longtext */)
 #endif
 
+    /* redesign: client side decorations everywhere by default, so the window buttons
+       sit in VLC's own top bar like the prototype (one bar instead of two) */
     add_bool( "qt-titlebar",
-#ifdef _WIN32
-              false                              /* use CSD by default on windows */,
-#else
-              true                               /* but not on linux */,
-#endif
+              false                              /* use CSD by default */,
               QT_CLIENT_SIDE_DECORATION_TEXT, QT_CLIENT_SIDE_DECORATION_LONGTEXT )
 
     add_bool( "qt-menubar", false, QT_MENUBAR_TEXT, QT_MENUBAR_LONGTEXT )
@@ -1447,6 +1445,10 @@ static void *Thread( void *obj )
     /* Last settings */
     app.setQuitOnLastWindowClosed( false );
     app.setQuitLockEnabled( false );
+
+    /* redesign: the legacy menu icons are multicolour bitmaps that clash with the flat look;
+       the prototype menus are text first, so hide action icons in Widgets menus */
+    app.setAttribute( Qt::AA_DontShowIconsInMenus );
 
     /* redesign: bundled Inter (SIL OFL, see pixmaps/Inter-LICENSE.txt) as the application font.
        Static weights, not the variable font: Qt only exposed its Regular instance, so every
