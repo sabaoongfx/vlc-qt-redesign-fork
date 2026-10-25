@@ -42,10 +42,13 @@ T.Button {
     baselineOffset: contentItem ? contentItem.y + contentItem.baselineOffset : 0
 
 
+    // redesign: 6px radius pill around each crumb, prototype `.crumbs .crumb` padding 4px 6px
     padding: VLCStyle.margin_xxsmall
+    leftPadding: (display === T.Button.IconOnly) ? VLCStyle.margin_xxsmall : VLCStyle.dp(6, VLCStyle.scale)
+    rightPadding: leftPadding
 
     font.pixelSize: (display === T.Button.IconOnly) ? VLCStyle.icon_normal
-                                                    : VLCStyle.fontSize_large
+                                                    : VLCStyle.fontSize_xlarge
 
     // Children
 
@@ -64,6 +67,7 @@ T.Button {
     background: Widgets.AnimatedBackground {
         enabled: theme.initialized
         color: button.backgroundColor
+        radius: VLCStyle.button_radius
         border.color: visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0.0)
     }
 
@@ -110,6 +114,7 @@ T.Button {
 
             color: button.foregroundColor
 
+            font.pixelSize: button.font.pixelSize
             font.weight: (highlighted) ? Font.DemiBold : Font.Normal
         }
     }

@@ -44,7 +44,7 @@ T.Control {
     onPathChanged: createContentModel()
     onAvailableWidthChanged: createContentModel()
     implicitWidth: VLCStyle.bannerTabButton_width_large * 4
-    implicitHeight: VLCStyle.dp(24, VLCStyle.scale)
+    implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
     focus: true
     onActiveFocusChanged: if (activeFocus) contentItem.forceActiveFocus(focusReason)
 
@@ -191,8 +191,8 @@ T.Control {
                     Layout.fillHeight: true
                     visible: index !== contentRepeater.count - 1
                     text: VLCIcons.breadcrumb_sep
-                    font.pixelSize: VLCStyle.icon_addressBar
-                    color: theme.fg.secondary
+                    font.pixelSize: VLCStyle.icon_small
+                    color: Qt.alpha(theme.fg.secondary, 0.6)
                     verticalAlignment: Text.AlignVCenter
                 }
             }
@@ -205,7 +205,7 @@ T.Control {
 
     FontMetrics {
         id: fontMetrics
-        font.pixelSize: VLCStyle.fontSize_xxxlarge
+        font.pixelSize: VLCStyle.fontSize_xlarge
     }
 
     FontMetrics {
