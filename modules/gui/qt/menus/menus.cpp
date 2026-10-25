@@ -743,6 +743,42 @@ QMenu* VLCMenuBar::MiscPopupMenu( qt_intf_t *p_intf, bool show )
 }
 
 /* Main Menu that sticks everything together  */
+/* redesign: duotone icons from the Figma right-click menu on the top-level entries
+ * (matched by their translated label) */
+static void applyRedesignPopupIcons( QMenu *menu )
+{
+    const std::pair<QString, const char*> icons[] = {
+        { qtr( "Play" ), ":/menu/redesign-play.svg" },
+        { qtr( "Pause" ), ":/menu/redesign-play.svg" },
+        { qtr( "Stop" ), ":/menu/redesign-stop.svg" },
+        { qtr( "Previous" ), ":/menu/redesign-previous.svg" },
+        { qtr( "Next" ), ":/menu/redesign-next.svg" },
+        { qtr( "Record" ), ":/menu/redesign-record.svg" },
+        { qtr( "Fullscreen" ), ":/menu/redesign-hideui.svg" },
+        { qtr( "Playback" ), ":/menu/redesign-playback.svg" },
+        { qtr( "Video" ), ":/menu/redesign-video.svg" },
+        { qtr( "Audio" ), ":/menu/redesign-audio.svg" },
+        { qtr( "Subtitle" ), ":/menu/redesign-subtitle.svg" },
+        { qtr( "Tools" ), ":/menu/redesign-moresettings.svg" },
+        { qtr( "View" ), ":/menu/redesign-playlist.svg" },
+        { qtr( "Open Media" ), ":/menu/redesign-openmedia.svg" },
+        { qtr( "Quit" ), ":/menu/redesign-quit.svg" },
+    };
+    for( QAction *action : menu->actions() )
+    {
+        const QString label = action->text().remove( QLatin1Char( '&' ) );
+        for( const auto& icon : icons )
+        {
+            if( label == icon.first )
+            {
+                action->setIcon( QIcon( QString::fromLatin1( icon.second ) ) );
+                action->setIconVisibleInMenu( true );
+                break;
+            }
+        }
+    }
+}
+
 QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
 {
     /* */
@@ -866,6 +902,8 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
     }
     else
         PopupMenuStaticEntries( menu );
+
+    applyRedesignPopupIcons( menu );
 
     if( show )
         menu->popup( QCursor::pos() );
