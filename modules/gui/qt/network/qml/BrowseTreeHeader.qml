@@ -66,6 +66,17 @@ T.Pane {
 
     background: Rectangle {
         color: theme.bg.primary
+
+        // redesign: hairline under the page header, inside the content margins (prototype `.lib-head`)
+        Rectangle {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: root.leftPadding
+            anchors.rightMargin: root.rightPadding
+            height: VLCStyle.border
+            color: theme.separator
+        }
     }
 
     RowLayout {
