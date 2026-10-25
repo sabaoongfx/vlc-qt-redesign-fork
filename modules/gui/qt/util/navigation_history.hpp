@@ -11,6 +11,8 @@ class NavigationHistory : public QObject
     Q_OBJECT
 public:
     Q_PROPERTY(bool previousEmpty READ isPreviousEmpty NOTIFY previousEmptyChanged FINAL)
+    // redesign: forward navigation for the library header arrows
+    Q_PROPERTY(bool nextEmpty READ isNextEmpty NOTIFY nextEmptyChanged FINAL)
     /**
      * current path
      */
@@ -33,6 +35,7 @@ public:
 
     QVariant getCurrent();
     bool isPreviousEmpty();
+    bool isNextEmpty() const;
     QStringList viewPath() const;
     QQmlPropertyMap* viewProp() const;
 
@@ -42,6 +45,7 @@ public:
 signals:
     void navigate(Qt::FocusReason);
     void previousEmptyChanged(bool empty);
+    void nextEmptyChanged(bool empty);
     void viewPathChanged(const QStringList& viewPath);
     void viewPropChanged(QQmlPropertyMap*);
 
@@ -79,8 +83,14 @@ public slots:
     /// Go to previous page
     void previous(Qt::FocusReason = Qt::OtherFocusReason);
 
+    /// Go to the page left with previous(), if no other page was pushed since
+    void next(Qt::FocusReason = Qt::OtherFocusReason);
+
 private:
     void updateCurrent();
+    void clearForward();
+
+    std::vector<std::pair<QStringList, std::unique_ptr<QQmlPropertyMap>>> m_forward;
 
     std::vector<std::pair<QStringList, std::unique_ptr<QQmlPropertyMap>>> m_history;
     QStringList m_viewPath;
