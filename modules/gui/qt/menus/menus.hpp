@@ -30,17 +30,32 @@
 #include "widgets/native/qvlcframe.hpp"
 
 #include <QApplication>
+#include <QProxyStyle>
 #include <QObject>
 
 // redesign: Fusion draws the menu background as a lightened Window colour, which turns white in Day
 // mode; style menus from the palette roles instead (submenus inherit it from their parent menu)
+/* redesign: 20px menu icons like the Figma menus (Qt menus use the style's small icon size) */
+class RedesignMenuStyle : public QProxyStyle
+{
+public:
+    RedesignMenuStyle() : QProxyStyle() {}
+    int pixelMetric(PixelMetric metric, const QStyleOption* option = nullptr,
+                    const QWidget* widget = nullptr) const override
+    {
+        if (metric == PM_SmallIconSize)
+            return 20;
+        return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+};
+
 inline QString redesignMenuStyleSheet()
 {
     return QStringLiteral(
         // prototype `.menu`: --menu background, subtle --menu-hover rows (not the accent), 7px row radius
         "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); border-radius: 10px; padding: 6px; font-size: 14px; }"
         "QMenu::item { padding: 14px 24px 14px 14px; border-radius: 7px; color: palette(text); min-width: 260px; }"
-        "QMenu::icon { padding-left: 14px; width: 20px; height: 20px; }"
+
         "QMenu::item:selected { background: palette(midlight); color: palette(text); }"
         "QMenu::item:disabled { color: palette(mid); }"
         "QMenu::separator { height: 1px; background: palette(mid); margin: 4px 8px; }" );
@@ -56,6 +71,8 @@ public:
         assert(p_intf);
         // redesign: use the Day/Night widgets palette even when the platform theme ships a menu palette
         setPalette(QApplication::palette());
+        static RedesignMenuStyle* menuStyle = new RedesignMenuStyle();
+        setStyle(menuStyle);
         setStyleSheet(redesignMenuStyleSheet());
         // rounded corners need a translucent popup window
         setAttribute(Qt::WA_TranslucentBackground);

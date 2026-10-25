@@ -277,9 +277,7 @@ static QIcon redesignGlyphIcon(QChar glyph, const QWidget* widget)
     pix.fill(Qt::transparent);
     QPainter painter(&pix);
     QFont font(QStringLiteral("VLCIcons"));
-    // menus show icons at the style's small icon size (16px): draw the glyph a bit larger so
-    // its artwork fills the icon like the design's 20px icons
-    font.setPixelSize(qRound(size * 1.2));
+    font.setPixelSize(size);
     painter.setFont(font);
     painter.setPen(widget->palette().color(QPalette::Text));
     painter.drawText(QRect(0, 0, size, size), Qt::AlignCenter, QString(glyph));
