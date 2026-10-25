@@ -30,7 +30,9 @@ T.Button {
     // Properties
 
     property color foregroundColor: theme.fg.primary
-    property color backgroundColor: theme.bg.primary
+    // redesign: prototype `.crumbs .crumb:hover` rounded hover fill; the current crumb has none
+    property color backgroundColor: (button.hovered && !button.highlighted && display !== T.Button.IconOnly)
+                                    ? Qt.alpha(theme.fg.primary, 0.08) : Qt.alpha(theme.fg.primary, 0)
 
     // Settings
 
