@@ -303,9 +303,6 @@ FocusScope{
                     text: VLCIcons.more
                     description: qsTr("Menu")
 
-                    // redesign: horizontal dots like the Figma player top bar
-                    rotation: 90
-
                     AccessibleCompat.id: "topBarMenuButton"
 
                     checked: contextMenu.shown
@@ -313,8 +310,7 @@ FocusScope{
                     Navigation.parentItem: root
                     Navigation.rightItem: backBtn
 
-                    // mapped from the parent: this button is rotated
-                    onClicked: contextMenu.popup(parent.mapToGlobal(x, y + height))
+                    onClicked: contextMenu.popup(this.mapToGlobal(0, height))
 
                     onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
 

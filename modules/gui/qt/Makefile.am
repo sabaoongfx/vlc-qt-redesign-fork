@@ -903,6 +903,63 @@ libqt_plugin_la_RES = \
 	pixmaps/icons/ic_fluent_arrow_sync_24_regular.svg \
 	pixmaps/icons/regex.svg \
 	pixmaps/icons/ic_fluent_text_change_case_24_regular.svg \
+	pixmaps/icons/redesign/add.svg \
+	pixmaps/icons/redesign/audiosub.svg \
+	pixmaps/icons/redesign/back.svg \
+	pixmaps/icons/redesign/bookmark.svg \
+	pixmaps/icons/redesign/check.svg \
+	pixmaps/icons/redesign/chevron_down.svg \
+	pixmaps/icons/redesign/chevron_up.svg \
+	pixmaps/icons/redesign/close.svg \
+	pixmaps/icons/redesign/defullscreen.svg \
+	pixmaps/icons/redesign/effect_filter.svg \
+	pixmaps/icons/redesign/ellipsis.svg \
+	pixmaps/icons/redesign/enqueue.svg \
+	pixmaps/icons/redesign/fullscreen.svg \
+	pixmaps/icons/redesign/grid.svg \
+	pixmaps/icons/redesign/history.svg \
+	pixmaps/icons/redesign/home.svg \
+	pixmaps/icons/redesign/ic_fluent_arrow_sync_24_regular.svg \
+	pixmaps/icons/redesign/ic_fluent_chevron_down_24.svg \
+	pixmaps/icons/redesign/ic_fluent_chevron_left_24.svg \
+	pixmaps/icons/redesign/ic_fluent_chevron_right_24.svg \
+	pixmaps/icons/redesign/ic_fluent_chevron_up_24.svg \
+	pixmaps/icons/redesign/ic_fluent_folder_open_24_regular.svg \
+	pixmaps/icons/redesign/info.svg \
+	pixmaps/icons/redesign/list.svg \
+	pixmaps/icons/redesign/medialibrary_add.svg \
+	pixmaps/icons/redesign/more.svg \
+	pixmaps/icons/redesign/next.svg \
+	pixmaps/icons/redesign/ok.svg \
+	pixmaps/icons/redesign/panel_left.svg \
+	pixmaps/icons/redesign/pause_filled.svg \
+	pixmaps/icons/redesign/play.svg \
+	pixmaps/icons/redesign/play_filled.svg \
+	pixmaps/icons/redesign/playlist.svg \
+	pixmaps/icons/redesign/previous.svg \
+	pixmaps/icons/redesign/record.svg \
+	pixmaps/icons/redesign/remove.svg \
+	pixmaps/icons/redesign/repeat_all.svg \
+	pixmaps/icons/redesign/search.svg \
+	pixmaps/icons/redesign/settings.svg \
+	pixmaps/icons/redesign/shuffle.svg \
+	pixmaps/icons/redesign/skip_back.svg \
+	pixmaps/icons/redesign/skip_for.svg \
+	pixmaps/icons/redesign/stop.svg \
+	pixmaps/icons/redesign/topbar_music.svg \
+	pixmaps/icons/redesign/topbar_network.svg \
+	pixmaps/icons/redesign/topbar_sort.svg \
+	pixmaps/icons/redesign/topbar_video.svg \
+	pixmaps/icons/redesign/tv.svg \
+	pixmaps/icons/redesign/visualization.svg \
+	pixmaps/icons/redesign/volume_high.svg \
+	pixmaps/icons/redesign/volume_low.svg \
+	pixmaps/icons/redesign/volume_medium.svg \
+	pixmaps/icons/redesign/volume_muted.svg \
+	pixmaps/icons/redesign/volume_zero.svg \
+	pixmaps/icons/redesign/window_close.svg \
+	pixmaps/icons/redesign/window_maximize.svg \
+	pixmaps/icons/redesign/window_minimize.svg \
 	pixmaps/menu/add.svg \
 	pixmaps/menu/capture-card.svg \
 	pixmaps/menu/clear.svg \
