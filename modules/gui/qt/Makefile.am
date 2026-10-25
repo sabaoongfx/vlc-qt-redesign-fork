@@ -975,6 +975,32 @@ libqt_plugin_la_RES = \
 	pixmaps/menu/exit.svg \
 	pixmaps/menu/ic_fluent_fast_forward.svg \
 	pixmaps/menu/file.svg \
+	pixmaps/menu/redesign-about.svg \
+	pixmaps/menu/redesign-audio.svg \
+	pixmaps/menu/redesign-capture.svg \
+	pixmaps/menu/redesign-convert.svg \
+	pixmaps/menu/redesign-customize.svg \
+	pixmaps/menu/redesign-disc.svg \
+	pixmaps/menu/redesign-file.svg \
+	pixmaps/menu/redesign-folder.svg \
+	pixmaps/menu/redesign-hideui.svg \
+	pixmaps/menu/redesign-keyboard.svg \
+	pixmaps/menu/redesign-moresettings.svg \
+	pixmaps/menu/redesign-network.svg \
+	pixmaps/menu/redesign-next.svg \
+	pixmaps/menu/redesign-openmedia.svg \
+	pixmaps/menu/redesign-play.svg \
+	pixmaps/menu/redesign-playback.svg \
+	pixmaps/menu/redesign-playlist.svg \
+	pixmaps/menu/redesign-previous.svg \
+	pixmaps/menu/redesign-profile.svg \
+	pixmaps/menu/redesign-quit.svg \
+	pixmaps/menu/redesign-recent.svg \
+	pixmaps/menu/redesign-record.svg \
+	pixmaps/menu/redesign-settings.svg \
+	pixmaps/menu/redesign-stop.svg \
+	pixmaps/menu/redesign-subtitle.svg \
+	pixmaps/menu/redesign-video.svg \
 	pixmaps/menu/folder.svg \
 	pixmaps/menu/help.svg \
 	pixmaps/menu/info.svg \

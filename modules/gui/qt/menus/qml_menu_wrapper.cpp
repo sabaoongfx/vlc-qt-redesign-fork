@@ -310,20 +310,21 @@ void QmlGlobalMenu::popup(QPoint pos)
     /* redesign: the Figma main menu, a flat list (open entries, recent, shortcuts, customize,
      * settings, about) with plain icons; the classic menus stay reachable under "More" */
     QMenu* menu = m_menu.get();
-    const auto entry = [menu](QChar glyph, const QString& text, auto member, const char* shortcut = nullptr) {
-        QAction* action = menu->addAction(redesignGlyphIcon(glyph, menu), text, THEDP, member);
+    // duotone icons from the Figma menu (grey outline, accent details)
+    const auto entry = [menu](const char* icon, const QString& text, auto member, const char* shortcut = nullptr) {
+        QAction* action = menu->addAction(QIcon(QString::fromLatin1(icon)), text, THEDP, member);
         action->setIconVisibleInMenu(true);
         if (shortcut)
             action->setShortcut(QKeySequence(QString::fromLatin1(shortcut)));
         return action;
     };
 
-    entry(VLCIcons::menu_file, qtr("Open File(s)"), []() { THEDP->simpleOpenDialog(); }, "Ctrl+O");
-    entry(VLCIcons::ic_fluent_folder_open_24_regular, qtr("Open Folder"), &DialogsProvider::PLOpenDir, "Ctrl+F");
-    entry(VLCIcons::topbar_network, qtr("Open Network Stream"), &DialogsProvider::openNetDialog, "Ctrl+N");
-    entry(VLCIcons::menu_disc, qtr("Open Disc"), &DialogsProvider::openDiscDialog, "Ctrl+D");
-    entry(VLCIcons::menu_capture, qtr("Open Capture Device"), &DialogsProvider::openCaptureDialog, "Ctrl+C");
-    entry(VLCIcons::menu_convert, qtr("Convert"), &DialogsProvider::openAndTranscodingDialogs, "Ctrl+R");
+    entry(":/menu/redesign-file.svg", qtr("Open File(s)"), []() { THEDP->simpleOpenDialog(); }, "Ctrl+O");
+    entry(":/menu/redesign-folder.svg", qtr("Open Folder"), &DialogsProvider::PLOpenDir, "Ctrl+F");
+    entry(":/menu/redesign-network.svg", qtr("Open Network Stream"), &DialogsProvider::openNetDialog, "Ctrl+N");
+    entry(":/menu/redesign-disc.svg", qtr("Open Disc"), &DialogsProvider::openDiscDialog, "Ctrl+D");
+    entry(":/menu/redesign-capture.svg", qtr("Open Capture Device"), &DialogsProvider::openCaptureDialog, "Ctrl+C");
+    entry(":/menu/redesign-convert.svg", qtr("Convert"), &DialogsProvider::openAndTranscodingDialogs, "Ctrl+R");
 
     if (m_ctx->hasMediaLibrary() && var_InheritBool(p_intf, "save-recentplay"))
     {
@@ -332,16 +333,16 @@ void QmlGlobalMenu::popup(QPoint pos)
         recentModel->setLimit(10);
         QMenu* recentsMenu = new RecentMenu(recentModel, m_ctx->getMediaLibrary(), menu);
         recentsMenu->setTitle(qtr("Open Recent"));
-        recentsMenu->setIcon(redesignGlyphIcon(VLCIcons::history, menu));
+        recentsMenu->setIcon(QIcon(QStringLiteral(":/menu/redesign-recent.svg")));
         recentsMenu->menuAction()->setIconVisibleInMenu(true);
         recentModel->setParent(recentsMenu);
         menu->addMenu(recentsMenu);
     }
 
-    entry(VLCIcons::menu_keyboard, qtr("Keyboard Shortcuts"), &DialogsProvider::prefsDialog);
-    entry(VLCIcons::menu_brush, qtr("Customize Player"), &DialogsProvider::showToolbarEditorDialog);
-    entry(VLCIcons::settings, qtr("Settings"), &DialogsProvider::prefsDialog, "Ctrl+P");
-    entry(VLCIcons::info, qtr("About VLC"), &DialogsProvider::aboutDialog, "Shift+F1");
+    entry(":/menu/redesign-keyboard.svg", qtr("Keyboard Shortcuts"), &DialogsProvider::prefsDialog);
+    entry(":/menu/redesign-customize.svg", qtr("Customize Player"), &DialogsProvider::showToolbarEditorDialog);
+    entry(":/menu/redesign-settings.svg", qtr("Settings"), &DialogsProvider::prefsDialog, "Ctrl+P");
+    entry(":/menu/redesign-about.svg", qtr("About VLC"), &DialogsProvider::aboutDialog, "Shift+F1");
 
     menu->addSeparator();
     QMenu* more = menu->addMenu(redesignGlyphIcon(VLCIcons::more, menu), qtr("More"));
