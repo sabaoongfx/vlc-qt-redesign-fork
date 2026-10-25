@@ -28,7 +28,11 @@ import VLC.MainInterface
 T.ProgressBar {
     id: control
 
-    readonly property real _hoveredScalingFactor: 1.8
+    // redesign: prototype `.seek` field, a tall rounded well with an inset dim fill and an accent bar handle
+    property bool fieldStyle: false
+    readonly property real _fieldInset: VLCStyle.dp(2, VLCStyle.scale)
+
+    readonly property real _hoveredScalingFactor: fieldStyle ? 1 : 1.8
     property int barHeight: VLCStyle.dp(5, VLCStyle.scale)
     readonly property real _scaledBarHeight: control.barHeight * _hoveredScalingFactor
     readonly property real _scaledY: (-control.barHeight / 2) * (control._hoveredScalingFactor - 1)
@@ -322,9 +326,9 @@ T.ProgressBar {
         Rectangle {
             id: sliderRect
             visible: !Player.hasChapters
-            color: control.backgroundColor
+            color: control.fieldStyle ? (theme.palette.isDark ? "#090909" : "#DEDEDE") : control.backgroundColor
             anchors.fill: parent
-            radius: implicitHeight
+            radius: control.fieldStyle ? VLCStyle.dp(6, VLCStyle.scale) : implicitHeight
         }
 
         Repeater {
@@ -429,11 +433,14 @@ T.ProgressBar {
 
         Rectangle {
             id: progressRect
-            width: control.visualPosition * parent.width
+            x: control.fieldStyle ? control._fieldInset : 0
+            y: control.fieldStyle ? control._fieldInset : 0
+            width: control.fieldStyle ? Math.max(0, control.visualPosition * parent.width - control._fieldInset)
+                                      : control.visualPosition * parent.width
             visible: !Player.hasChapters
-            color: theme.fg.primary
-            height: control.barHeight
-            radius: control._seekPointsRadius
+            color: control.fieldStyle ? Qt.alpha(theme.accent, 0.3) : theme.fg.primary
+            height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : control.barHeight
+            radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : control._seekPointsRadius
 
             // We use dynamic mutability group because time interpolation
             // may induce rapid change:
@@ -570,14 +577,16 @@ T.ProgressBar {
 
         property int _size: control.barHeight * 3
 
-        x: (control.visualPosition * control.availableWidth) - width / 2
+        x: control.fieldStyle ? Math.min(Math.max(control.visualPosition * control.availableWidth - width / 2, control._fieldInset),
+                                         control.availableWidth - width - control._fieldInset)
+                              : (control.visualPosition * control.availableWidth) - width / 2
         y: (control.barHeight - height) / 2
 
-        implicitWidth: sliderHandle._size
-        implicitHeight: sliderHandle._size
+        implicitWidth: control.fieldStyle ? VLCStyle.dp(8, VLCStyle.scale) : sliderHandle._size
+        implicitHeight: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : sliderHandle._size
         // redesign: a narrow accent bar instead of a round knob
-        width: implicitWidth * 0.3
-        radius: VLCStyle.dp(3, VLCStyle.scale)
+        width: control.fieldStyle ? implicitWidth : implicitWidth * 0.3
+        radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : VLCStyle.dp(3, VLCStyle.scale)
         color: theme.accent
 
         // We use dynamic mutability group because time interpolation

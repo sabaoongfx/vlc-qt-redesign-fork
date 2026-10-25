@@ -36,6 +36,9 @@ FocusScope {
 
     property int identifier: -1
 
+    // redesign: the stretch between the left and right controls, for ControlBar's inline seek row
+    readonly property Item middleSlot: loaderLeftRight.item?.middleSlot ?? null
+
     readonly property PlayerControlbarModel model: {
         if (!!MainCtx.controlbarProfileModel.currentModel)
             return MainCtx.controlbarProfileModel.currentModel.getModel(identifier)
@@ -86,6 +89,8 @@ FocusScope {
 
             focus: true
 
+            property alias middleSlot: middleSlot
+
             // TODO: Qt >= 5.13 Use QConcatenateTablesProxyModel
             //       instead of multiple repeaters
 
@@ -118,6 +123,10 @@ FocusScope {
             }
 
             Item {
+                id: middleSlot
+
+                Layout.fillHeight: true
+
                 function containsVisibleItem(repeater) {
                     for (let i = 0; i < repeater.count; ++i) {
                         const item = repeater.itemAt(i)
