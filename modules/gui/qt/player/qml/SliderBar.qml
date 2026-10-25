@@ -438,7 +438,8 @@ T.ProgressBar {
             width: control.fieldStyle ? Math.max(0, control.visualPosition * parent.width - control._fieldInset)
                                       : control.visualPosition * parent.width
             visible: !Player.hasChapters
-            color: control.fieldStyle ? Qt.alpha(theme.accent, 0.3) : theme.fg.primary
+            // redesign: Figma accent-dim #371F06 in the dark theme
+            color: control.fieldStyle ? (theme.palette.isDark ? "#371F06" : Qt.alpha(theme.accent, 0.3)) : theme.fg.primary
             height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : control.barHeight
             radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : control._seekPointsRadius
 

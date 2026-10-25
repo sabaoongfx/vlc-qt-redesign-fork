@@ -141,7 +141,7 @@ T.Pane {
                     const length = Player.length
                     return Player.time.formatHMS(length.isSubSecond() ? VLCTick.SubSecondFormattedAsMS : 0)
                 }
-                color: theme.fg.primary
+                color: theme.fg.secondary // redesign: dim time labels as in the Figma bar
                 font: timeTextMetrics.font
                 horizontalAlignment: Text.AlignHCenter
 
