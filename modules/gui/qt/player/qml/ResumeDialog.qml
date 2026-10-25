@@ -33,7 +33,8 @@ FocusScope {
     property int maxWidth
 
     implicitHeight: continueBtn.y + continueBtn.implicitHeight
-    implicitWidth: maxWidth
+    // redesign: fit the content (shown as a floating card), never wider than maxWidth
+    implicitWidth: Math.min(maxWidth, Math.max(label.x + label.implicitWidth, closeBtn.x + closeBtn.implicitWidth))
 
     baselineOffset: label.baselineOffset
 
@@ -45,8 +46,12 @@ FocusScope {
 
     signal hidden()
 
+    // redesign: explicit state, `visible` reads false while the floating card around it is hidden
+    property bool shown: false
+
     function showResumePanel ()
     {
+        resumePanel.shown = true
         resumePanel.visible = true
         continueBtn.forceActiveFocus()
         resumeTimeout.start()
@@ -54,6 +59,7 @@ FocusScope {
 
     function hideResumePanel() {
         resumeTimeout.stop()
+        resumePanel.shown = false
         resumePanel.visible = false
         Player.acknowledgeRestoreCallback()
         hidden()
@@ -63,6 +69,7 @@ FocusScope {
         id: resumeTimeout
         interval: 10000
         onTriggered: {
+            resumePanel.shown = false
             resumePanel.visible = false
             hidden()
         }

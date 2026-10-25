@@ -67,7 +67,7 @@ FocusScope{
 
     // Aliases
 
-    property alias resumeVisible: resumeDialog.visible
+    property alias resumeVisible: resumeDialog.shown
 
     property alias playlistVisible: playlistButton.checked
 
@@ -243,22 +243,11 @@ FocusScope{
         anchors.top: root.top
         anchors.leftMargin:  root._sideMargin
 
-        implicitWidth: resumeVisible ? resumeDialog.implicitWidth
-                                     : logoGroup.implicitWidth
+        // redesign: the resume prompt is a floating card below the bar (resumeToast), the bar
+        // keeps its cone, menu and folder crumb
+        implicitWidth: logoGroup.implicitWidth
 
-        implicitHeight: {
-            if (root.resumeVisible) {
-                // Only if there are multiple lines use `resumeDialog`'s implicit height, otherwise the video
-                // window may get resized by few pixels unnecessarily when `resumeDialog` is no longer visible.
-                if (resumeDialog.implicitHeight >= (logoGroup.implicitHeight + resumeDialog.baselineOffset))
-                    return resumeDialog.implicitHeight
-                else
-                    return logoGroup.implicitHeight
-            } else if (_showTopBar)
-                return logoGroup.implicitHeight
-            else
-                return 0
-        }
+        implicitHeight: _showTopBar ? logoGroup.implicitHeight : 0
 
         onImplicitHeightChanged: root._layout()
 
@@ -267,7 +256,7 @@ FocusScope{
 
             anchors.fill: parent
 
-            visible: (root._showTopBar && root.resumeVisible === false)
+            visible: root._showTopBar
 
             implicitHeight: VLCStyle.icon_banner + VLCStyle.margin_xxsmall * 2
             implicitWidth: logoRow.implicitWidth
@@ -408,31 +397,48 @@ FocusScope{
             }
         }
 
-        ResumeDialog {
-            id: resumeDialog
+    }
 
-            anchors.fill: parent
-            //add aditional margin so it align with menubar text when visible (see MenuBar.qml)
-            anchors.leftMargin: VLCStyle.margin_xsmall
+    // redesign: the resume prompt as a floating card centred below the top bar
+    Rectangle {
+        id: resumeToast
 
-            maxWidth: ((root.showCSD && !root.pinControls) ? csdDecorations : playlistGroup).x
-                - VLCStyle.applicationHorizontalMargin
-                - VLCStyle.margin_large
+        parent: root.parent
+        z: 3
+        visible: resumeDialog.shown
 
-            colorContext.palette: theme.palette
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: root.y + root.height + VLCStyle.margin_small
 
-            Navigation.parentItem: rootPlayer
+        width: resumeDialog.implicitWidth + VLCStyle.margin_normal * 2
+        height: resumeDialog.implicitHeight + VLCStyle.margin_xsmall + VLCStyle.margin_small
+        radius: VLCStyle.dp(8, VLCStyle.scale)
+        color: theme.bg.primary
+        border.width: VLCStyle.border
+        border.color: theme.separator
 
-            onHidden: {
-                if (activeFocus) {
-                    backBtn.forceActiveFocus()
+            ResumeDialog {
+                id: resumeDialog
+
+                x: VLCStyle.margin_normal
+                y: VLCStyle.margin_xxsmall
+
+                maxWidth: Math.min(root.width - VLCStyle.margin_xxlarge * 2, VLCStyle.dp(620, VLCStyle.scale))
+
+                colorContext.palette: theme.palette
+
+                Navigation.parentItem: rootPlayer
+
+                onHidden: {
+                    if (activeFocus) {
+                        backBtn.forceActiveFocus()
+                    }
+                }
+
+                onVisibleChanged: {
+                    root.requestLockUnlockAutoHide(visible)
                 }
             }
-
-            onVisibleChanged: {
-                root.requestLockUnlockAutoHide(visible)
-            }
-        }
     }
 
     //FIXME use the the right class
@@ -450,7 +456,7 @@ FocusScope{
         // in every layout, instead of the large title below the logo
         anchors.verticalCenter: _showCenterText ? undefined : logoOrResume.verticalCenter
 
-        visible: ((_showCenterText || root._showTopBar) && root.resumeVisible === false)
+        visible: (_showCenterText || root._showTopBar)
 
         enabled: visible
 
