@@ -144,8 +144,15 @@ T.ItemDelegate {
         }
     }
 
+    // redesign: inset rounded row like the sidebar and the list rows
+    leftInset: VLCStyle.margin_xxsmall
+    rightInset: VLCStyle.margin_xxsmall
+    topInset: VLCStyle.margin_xxxsmall
+    bottomInset: VLCStyle.margin_xxxsmall
+
     background: Widgets.AnimatedBackground {
         enabled: theme.initialized
+        radius: VLCStyle.navBoxButton_radius
         color: (root.isCurrent || root.selected) ? theme.bg.highlight : theme.bg.primary
         border.color: visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0.0)
 
