@@ -37,6 +37,8 @@
 #include <QApplication>
 #include <QAction>
 #include <QUrl>
+#include <QPainter>
+#include <QIcon>
 
 #include <math.h>
 #include <cassert>
@@ -112,7 +114,21 @@ void CoverArtLabel::showArtUpdate( const QString& url )
     }
     else
     {
-        pix = QPixmap( ":/placeholder/noart.png" );
+        /* redesign: flat placeholder tile in palette colours with the faded cone
+         * (as on the start screen) instead of the glossy noart.png */
+        const qreal dpr = devicePixelRatioF();
+        const int w = minimumWidth(), h = minimumHeight();
+        pix = QPixmap( QSize( w, h ) * dpr );
+        pix.setDevicePixelRatio( dpr );
+        pix.fill( Qt::transparent );
+        QPainter painter( &pix );
+        painter.setRenderHint( QPainter::Antialiasing );
+        painter.setPen( Qt::NoPen );
+        painter.setBrush( palette().color( QPalette::Base ) );
+        painter.drawRoundedRect( QRectF( 0, 0, w, h ), 10, 10 );
+        painter.setOpacity( 0.3 );
+        const int s = w / 2;
+        QIcon( ":/misc/cone.svg" ).paint( &painter, QRect( ( w - s ) / 2, ( h - s ) / 2, s, s ) );
     }
     setPixmap( pix );
 }
