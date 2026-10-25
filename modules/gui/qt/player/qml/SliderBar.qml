@@ -599,7 +599,10 @@ T.ProgressBar {
         implicitWidth: control.fieldStyle ? VLCStyle.dp(8, VLCStyle.scale) : sliderHandle._size
         implicitHeight: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : sliderHandle._size
         // redesign: a narrow accent bar instead of a round knob
-        width: control.fieldStyle ? implicitWidth : implicitWidth * 0.3
+        // redesign: the field-style handle keeps its 8px bar shape; the hover animations below
+        // drive implicitWidth/Height (up to 3x the bar height) and turned it into a large square
+        width: control.fieldStyle ? VLCStyle.dp(8, VLCStyle.scale) : implicitWidth * 0.3
+        height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : implicitHeight
         radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : VLCStyle.dp(3, VLCStyle.scale)
         color: theme.accent
 
