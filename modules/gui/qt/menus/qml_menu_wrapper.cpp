@@ -29,6 +29,9 @@
 #include "dialogs/dialogs_provider.hpp"
 #include "util/colorizedsvgicon.hpp"
 #include "maininterface/navigationmodel.hpp"
+#include "menus/custom_menus.hpp"
+#include "medialibrary/mlrecentmediamodel.hpp"
+#include "style/vlcicons.hpp"
 
 // Qt includes
 #include <QApplication>
@@ -264,6 +267,25 @@ QmlGlobalMenu::QmlGlobalMenu(QObject *parent)
 {
 }
 
+/* redesign: a plain menu icon drawn from the VLCIcons font, in the menu's text colour */
+static QIcon redesignGlyphIcon(QChar glyph, const QWidget* widget)
+{
+    const qreal dpr = widget->devicePixelRatioF();
+    const int size = 20;
+    QPixmap pix(QSize(size, size) * dpr);
+    pix.setDevicePixelRatio(dpr);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    QFont font(QStringLiteral("VLCIcons"));
+    // menus show icons at the style's small icon size (16px): draw the glyph a bit larger so
+    // its artwork fills the icon like the design's 20px icons
+    font.setPixelSize(qRound(size * 1.2));
+    painter.setFont(font);
+    painter.setPen(widget->palette().color(QPalette::Text));
+    painter.drawText(QRect(0, 0, size, size), Qt::AlignCenter, QString(glyph));
+    return QIcon(pix);
+}
+
 void QmlGlobalMenu::popup(QPoint pos)
 {
     if (!m_ctx)
@@ -287,30 +309,69 @@ void QmlGlobalMenu::popup(QPoint pos)
         aboutToHide();
     });
 
-    submenu = m_menu->addMenu(qtr( "&Media" ));
+    /* redesign: the Figma main menu, a flat list (open entries, recent, shortcuts, customize,
+     * settings, about) with plain icons; the classic menus stay reachable under "More" */
+    QMenu* menu = m_menu.get();
+    const auto entry = [menu](QChar glyph, const QString& text, auto member, const char* shortcut = nullptr) {
+        QAction* action = menu->addAction(redesignGlyphIcon(glyph, menu), text, THEDP, member);
+        action->setIconVisibleInMenu(true);
+        if (shortcut)
+            action->setShortcut(QKeySequence(QString::fromLatin1(shortcut)));
+        return action;
+    };
+
+    entry(VLCIcons::menu_file, qtr("Open File(s)"), []() { THEDP->simpleOpenDialog(); }, "Ctrl+O");
+    entry(VLCIcons::ic_fluent_folder_open_24_regular, qtr("Open Folder"), &DialogsProvider::PLOpenDir, "Ctrl+F");
+    entry(VLCIcons::topbar_network, qtr("Open Network Stream"), &DialogsProvider::openNetDialog, "Ctrl+N");
+    entry(VLCIcons::menu_disc, qtr("Open Disc"), &DialogsProvider::openDiscDialog, "Ctrl+D");
+    entry(VLCIcons::menu_capture, qtr("Open Capture Device"), &DialogsProvider::openCaptureDialog, "Ctrl+C");
+    entry(VLCIcons::menu_convert, qtr("Convert"), &DialogsProvider::openAndTranscodingDialogs, "Ctrl+R");
+
+    if (m_ctx->hasMediaLibrary() && var_InheritBool(p_intf, "save-recentplay"))
+    {
+        MLRecentMediaModel* recentModel = new MLRecentMediaModel(nullptr);
+        recentModel->setMl(m_ctx->getMediaLibrary());
+        recentModel->setLimit(10);
+        QMenu* recentsMenu = new RecentMenu(recentModel, m_ctx->getMediaLibrary(), menu);
+        recentsMenu->setTitle(qtr("Open Recent"));
+        recentsMenu->setIcon(redesignGlyphIcon(VLCIcons::history, menu));
+        recentsMenu->menuAction()->setIconVisibleInMenu(true);
+        recentModel->setParent(recentsMenu);
+        menu->addMenu(recentsMenu);
+    }
+
+    entry(VLCIcons::menu_keyboard, qtr("Keyboard Shortcuts"), &DialogsProvider::prefsDialog);
+    entry(VLCIcons::menu_brush, qtr("Customize Player"), &DialogsProvider::showToolbarEditorDialog);
+    entry(VLCIcons::settings, qtr("Settings"), &DialogsProvider::prefsDialog, "Ctrl+P");
+    entry(VLCIcons::info, qtr("About VLC"), &DialogsProvider::aboutDialog, "Shift+F1");
+
+    menu->addSeparator();
+    QMenu* more = menu->addMenu(redesignGlyphIcon(VLCIcons::more, menu), qtr("More"));
+    more->menuAction()->setIconVisibleInMenu(true);
+
+    submenu = more->addMenu(qtr( "&Media" ));
     FileMenu( p_intf, submenu );
 
     /* Dynamic menus, rebuilt before being showed */
-    submenu = m_menu->addMenu(qtr( "P&layback" ));
+    submenu = more->addMenu(qtr( "P&layback" ));
     NavigMenu( p_intf, submenu );
 
-    submenu = m_menu->addMenu(qtr( "&Audio" ));
+    submenu = more->addMenu(qtr( "&Audio" ));
     AudioMenu( p_intf, submenu );
 
-    submenu = m_menu->addMenu(qtr( "&Video" ));
+    submenu = more->addMenu(qtr( "&Video" ));
     VideoMenu( p_intf, submenu );
 
-    submenu = m_menu->addMenu(qtr( "Subti&tle" ));
+    submenu = more->addMenu(qtr( "Subti&tle" ));
     SubtitleMenu( p_intf, submenu );
 
-    submenu = m_menu->addMenu(qtr( "Tool&s" ));
+    submenu = more->addMenu(qtr( "Tool&s" ));
     ToolsMenu( p_intf, submenu );
 
-    /* View menu, a bit different */
-    submenu = m_menu->addMenu(qtr( "V&iew" ));
+    submenu = more->addMenu(qtr( "V&iew" ));
     ViewMenu( p_intf, submenu );
 
-    submenu = m_menu->addMenu(qtr( "&Help" ));
+    submenu = more->addMenu(qtr( "&Help" ));
     HelpMenu( p_intf, submenu );
 
     m_menu->popup(pos);

@@ -111,6 +111,12 @@ class VLCIcons : public QObject {
     Q_PROPERTY(QChar medialibrary_remove MEMBER medialibrary_remove CONSTANT FINAL)
     Q_PROPERTY(QChar regex MEMBER regex CONSTANT FINAL)
     Q_PROPERTY(QChar ic_fluent_text_change_case_24_regular MEMBER ic_fluent_text_change_case_24_regular CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_file MEMBER menu_file CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_keyboard MEMBER menu_keyboard CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_brush MEMBER menu_brush CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_disc MEMBER menu_disc CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_capture MEMBER menu_capture CONSTANT FINAL)
+    Q_PROPERTY(QChar menu_convert MEMBER menu_convert CONSTANT FINAL)
 
 
 public:
@@ -218,6 +224,12 @@ public:
     static constexpr inline QChar medialibrary_remove{ u'\ue05e' };
     static constexpr inline QChar regex{ u'\ue05f' };
     static constexpr inline QChar ic_fluent_text_change_case_24_regular{ u'\ue060' };
+    static constexpr inline QChar menu_file{ u'\ue061' };
+    static constexpr inline QChar menu_keyboard{ u'\ue062' };
+    static constexpr inline QChar menu_brush{ u'\ue063' };
+    static constexpr inline QChar menu_disc{ u'\ue064' };
+    static constexpr inline QChar menu_capture{ u'\ue065' };
+    static constexpr inline QChar menu_convert{ u'\ue066' };
 
 };
 

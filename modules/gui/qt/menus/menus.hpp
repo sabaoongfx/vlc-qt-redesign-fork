@@ -38,8 +38,9 @@ inline QString redesignMenuStyleSheet()
 {
     return QStringLiteral(
         // prototype `.menu`: --menu background, subtle --menu-hover rows (not the accent), 7px row radius
-        "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); padding: 5px; }"
-        "QMenu::item { padding: 7px 28px 7px 12px; border-radius: 7px; color: palette(text); }"
+        "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); border-radius: 10px; padding: 6px; font-size: 14px; }"
+        "QMenu::item { padding: 14px 24px 14px 14px; border-radius: 7px; color: palette(text); min-width: 260px; }"
+        "QMenu::icon { padding-left: 14px; width: 20px; height: 20px; }"
         "QMenu::item:selected { background: palette(midlight); color: palette(text); }"
         "QMenu::item:disabled { color: palette(mid); }"
         "QMenu::separator { height: 1px; background: palette(mid); margin: 4px 8px; }" );
@@ -56,6 +57,8 @@ public:
         // redesign: use the Day/Night widgets palette even when the platform theme ships a menu palette
         setPalette(QApplication::palette());
         setStyleSheet(redesignMenuStyleSheet());
+        // rounded corners need a translucent popup window
+        setAttribute(Qt::WA_TranslucentBackground);
         if (isWindow())
         {
             QVLCDialog::setWindowTransientParent(this, nullptr, p_intf);

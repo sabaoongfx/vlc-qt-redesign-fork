@@ -928,6 +928,12 @@ libqt_plugin_la_RES = \
 	pixmaps/icons/redesign/info.svg \
 	pixmaps/icons/redesign/list.svg \
 	pixmaps/icons/redesign/medialibrary_add.svg \
+	pixmaps/icons/redesign/menu_brush.svg \
+	pixmaps/icons/redesign/menu_capture.svg \
+	pixmaps/icons/redesign/menu_convert.svg \
+	pixmaps/icons/redesign/menu_disc.svg \
+	pixmaps/icons/redesign/menu_file.svg \
+	pixmaps/icons/redesign/menu_keyboard.svg \
 	pixmaps/icons/redesign/more.svg \
 	pixmaps/icons/redesign/next.svg \
 	pixmaps/icons/redesign/ok.svg \
