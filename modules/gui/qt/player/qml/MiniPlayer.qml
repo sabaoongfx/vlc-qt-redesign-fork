@@ -36,13 +36,14 @@ ControlBar {
 
     height: _delayedImplicitHeight
 
-    state: "inViewport" // redesign: the control bar is always visible, like in the prototype
+    // redesign: the library shows the floating mini player card instead of this bar
+    state: "outViewport"
 
     Binding on state {
         id: stateBinding
         when: false
         delayed: true
-        value: "inViewport"
+        value: "outViewport"
     }
 
     Component.onCompleted: {

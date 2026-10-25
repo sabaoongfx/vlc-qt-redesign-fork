@@ -470,7 +470,8 @@ FocusScope {
 
                     z: 99
                     color: sidebar.background.color
-                    visible: sidebar.visible && (stackViewTopLeftRadiusRectangle.topLeftRadius !== undefined)
+                    // redesign: the sidebar is a floating card now, no rounded content corner
+                    visible: false
 
                     anchors.left: stackView.left
                     anchors.leftMargin: -1
@@ -573,10 +574,11 @@ FocusScope {
 
             property int maximumWidth: Math.max(minimumWidth, (g_mainDisplay.width + sidebarResizeHandle.width) / 3)
 
-            topPadding: 0
-            leftPadding: 0
+            // redesign: room for the floating card's margins
+            topPadding: VLCStyle.margin_xsmall * 2
+            leftPadding: VLCStyle.margin_xsmall
             rightPadding: sidebarResizeHandle.visible ? sidebarResizeHandle.visualBorder.width : 0.0
-            bottomPadding: VLCStyle.applicationVerticalMargin + VLCStyle.margin_small
+            bottomPadding: VLCStyle.applicationVerticalMargin + VLCStyle.margin_small + VLCStyle.margin_xsmall
 
             safeAreaLeftMargin: VLCStyle.applicationHorizontalMargin
 
@@ -673,7 +675,8 @@ FocusScope {
                 atRight: true
 
                 resizeHandle.visible: (sidebar.state === "expanded") && !VLCStyle.isScreenSmall
-                visualBorder.visible: !topLeftCornerBackground.visible
+                // redesign: the floating sidebar card needs no divider line
+                visualBorder.visible: false
 
                 minimumWidth: sidebar.minimumWidth
                 maximumWidth: sidebar.maximumWidth
@@ -981,15 +984,11 @@ FocusScope {
 
         PIPPlayer {
             id: playerPip
-            anchors {
-                bottom: loaderUpdatePane.top
-                left: parent.left
-                bottomMargin: VLCStyle.margin_normal
-                leftMargin: VLCStyle.margin_normal + VLCStyle.applicationHorizontalMargin
-            }
-
-            width: VLCStyle.dp(320, VLCStyle.scale)
-            height: VLCStyle.dp(180, VLCStyle.scale)
+            // redesign: the video is shown inside the floating mini player card
+            x: floatingMiniPlayer.x + floatingMiniPlayer.leftPadding + floatingMiniPlayer.previewArea.x
+            y: floatingMiniPlayer.y + floatingMiniPlayer.topPadding + floatingMiniPlayer.previewArea.y
+            width: floatingMiniPlayer.previewArea.width
+            height: floatingMiniPlayer.previewArea.height
             z: 4
             visible: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
             enabled: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
@@ -1005,10 +1004,11 @@ FocusScope {
                 Qt.callLater(() => { visibleBinding.when = true })
             }
 
-            dragXMin: VLCStyle.applicationHorizontalMargin
-            dragXMax: g_mainDisplay.width - playerPip.width - VLCStyle.applicationHorizontalMargin
-            dragYMin: localTopbar.y + localTopbar.height
-            dragYMax: loaderUpdatePane.y - playerPip.height
+            // locked to the card
+            dragXMin: x
+            dragXMax: x
+            dragYMin: y
+            dragYMax: y
 
             //keep the player visible on resize
             Connections {
@@ -1046,6 +1046,20 @@ FocusScope {
             right: parent.right
             margins: VLCStyle.margin_large
         }
+    }
+
+    FloatingMiniPlayer {
+        id: floatingMiniPlayer
+
+        z: 4
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.margins: VLCStyle.margin_xsmall
+
+        visible: Player.isStarted
+        hasVideo: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
+
+        onTogglePlayqueue: pannelVisiblity.togglePlayqueueVisibility()
     }
 
     MiniPlayer {

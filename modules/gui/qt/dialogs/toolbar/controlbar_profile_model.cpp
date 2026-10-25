@@ -152,6 +152,7 @@ decltype (ControlbarProfileModel::m_defaults)
                                 {
                                     ControlListModel::ARTWORK_INFO,
                                     ControlListModel::VOLUME,
+                                    ControlListModel::PLAYLIST_BUTTON,
                                     ControlListModel::PLAYER_SWITCH_BUTTON
                                 }
                             }
