@@ -26,6 +26,7 @@ import QtQuick.Window
 import VLC.MainInterface
 import VLC.Style
 import VLC.Playlist
+import VLC.Player
 import VLC.Widgets as Widgets
 import VLC.Menus as Menus
 import VLC.Util
@@ -101,6 +102,40 @@ T.ToolBar {
                 Navigation.parentItem: root
                 Navigation.rightItem: playqueueButtonsTop
 
+                // redesign: Figma library top bar, cone and menu on the left; back/forward live in
+                // the page header, the play queue button in the mini player
+                Widgets.BannerCone {
+                    id: logo
+
+                    sourceSize.width: VLCStyle.bannerButton_height
+                    sourceSize.height: VLCStyle.bannerButton_height
+                    color: theme.accent
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Widgets.IconToolButton {
+                    id: menuBtn
+
+                    visible: !MainCtx.hasToolbarMenu
+                    font.pixelSize: VLCStyle.icon_banner
+                    text: VLCIcons.more
+                    description: qsTr("Menu")
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+                    checked: contextMenu.shown
+
+                    Navigation.parentItem: navigationButtons
+                    Navigation.leftItem: logo
+                    Navigation.rightItem: navigationVisibilty
+
+                    onClicked: contextMenu.popup(this.mapToGlobal(0, height))
+
+                    Menus.QmlGlobalMenu {
+                        id: contextMenu
+                        ctx: MainCtx
+                    }
+                }
+
                 Widgets.IconToolButton {
                     id: navigationVisibilty
 
@@ -135,6 +170,7 @@ T.ToolBar {
 
                     onClicked: History.previous()
                     enabled: !History.previousEmpty
+                    visible: false
 
                     onEnabledChanged: {
                         if (historyBack.activeFocus)
@@ -146,13 +182,6 @@ T.ToolBar {
                     Navigation.rightItem: playlistBtn
                 }
 
-                Widgets.BannerCone {
-                    id: logo
-
-                    sourceSize.width: VLCStyle.bannerButton_height
-                    sourceSize.height: VLCStyle.bannerButton_height
-                    color: theme.accent
-                }
             }
         }
 
@@ -186,6 +215,8 @@ T.ToolBar {
                 PlaylistPane.PlaylistToggleButton {
                     id: playlistBtn
 
+                    visible: false
+
                     plListView: root.plListView
 
                     Navigation.parentItem: playqueueButtonsTop
@@ -195,28 +226,27 @@ T.ToolBar {
                     onClicked:  root.togglePlayqueueVisibility()
                 }
 
-                Widgets.IconToolButton {
-                    id: menuBtn
-
-                    visible: !MainCtx.hasToolbarMenu
-                    font.pixelSize: VLCStyle.icon_banner
-                    text: VLCIcons.more
-                    description: qsTr("Menu")
-                    width: VLCStyle.bannerButton_width
-                    height: VLCStyle.bannerButton_height
-                    checked: contextMenu.shown
-
-                    Navigation.parentItem: playqueueButtonsTop
-                    Navigation.leftItem: playlistBtn
-
-                    onClicked: contextMenu.popup(this.mapToGlobal(0, height))
-
-                    Menus.QmlGlobalMenu {
-                        id: contextMenu
-                        ctx: MainCtx
-                    }
-                }
             }
+        }
+
+        TextMetrics {
+            id: titleMetrics
+            font: centerTitle.font
+            text: centerTitle.text
+        }
+
+        T.Label {
+            id: centerTitle
+
+            anchors.centerIn: parent
+            width: Math.min(Math.ceil(titleMetrics.advanceWidth) + 1, parent.width / 2)
+
+            text: Player.isStarted ? (Player.title !== "" ? Player.title : Player.name)
+                                   : qsTr("VLC Media Player")
+            color: theme.fg.secondary
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_large
+            elide: Text.ElideRight
         }
 
         Loader {
