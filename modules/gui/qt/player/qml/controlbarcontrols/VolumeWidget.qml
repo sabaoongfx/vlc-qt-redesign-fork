@@ -98,7 +98,76 @@ T.Pane {
             id: volControl
 
             // FIXME: use VLCStyle
-            implicitWidth: VLCStyle.dp(100, VLCStyle.scale)
+            // redesign: prototype volume cone (89x28 wedge, gradient fill) instead of a flat slider
+            implicitWidth: VLCStyle.dp(89, VLCStyle.scale)
+
+            handle: Item { }
+
+            background: Canvas {
+                id: coneCanvas
+
+                readonly property real level: volControl.visualPosition
+                readonly property bool dark: volControl.colorContext.palette?.isDark ?? true
+
+                onLevelChanged: requestPaint()
+                onDarkChanged: requestPaint()
+                onWidthChanged: requestPaint()
+                onHeightChanged: requestPaint()
+
+                // paths from the prototype (js/chrome-icons.js), viewBox 1627 1038 91 30
+                readonly property string trackPath: "M1631.6 1058.36C1629.55 1058.16 1628 1056.44 1628 1054.38V1051.62C1628 1049.56 1629.55 1047.84 1631.6 1047.64L1713.7 1039.33C1715.47 1039.16 1717 1040.54 1717 1042.32V1063.68C1717 1065.46 1715.47 1066.84 1713.7 1066.67L1631.6 1058.36Z"
+                readonly property string fillPath: "M1631.29 1056.69C1630.27 1056.58 1629.5 1055.72 1629.5 1054.7V1051.3C1629.5 1050.28 1630.27 1049.42 1631.29 1049.31L1713.29 1040.73C1714.47 1040.61 1715.5 1041.53 1715.5 1042.72V1063.28C1715.5 1064.47 1714.47 1065.39 1713.29 1065.27L1631.29 1056.69Z"
+
+                function _toCone(ctx) {
+                    const h = Math.min(height, VLCStyle.dp(30, VLCStyle.scale))
+                    ctx.translate(0, (height - h) / 2)
+                    ctx.scale(width / 91, h / 30)
+                    ctx.translate(-1627, -1038)
+                }
+
+                onPaint: {
+                    const ctx = getContext("2d")
+                    ctx.reset()
+                    _toCone(ctx)
+                    ctx.path = trackPath
+                    ctx.fillStyle = dark ? "#090909" : "#DEDEDE"
+                    ctx.fill()
+                }
+
+                // Fill on its own layer, so the part above the level can be erased
+                // without touching the track
+                Canvas {
+                    id: coneFill
+
+                    anchors.fill: parent
+
+                    readonly property real level: coneCanvas.level
+                    onLevelChanged: requestPaint()
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
+
+                    onPaint: {
+                        const ctx = getContext("2d")
+                        ctx.reset()
+                        coneCanvas._toCone(ctx)
+
+                        // prototype gradient (#vg)
+                        const g = ctx.createLinearGradient(1627, 1053, 1717, 1053)
+                        g.addColorStop(0, "#95D318")
+                        g.addColorStop(0.5788, "#B2A918")
+                        g.addColorStop(0.7924, "#D37918")
+                        g.addColorStop(1, "#FF3737")
+                        ctx.path = coneCanvas.fillPath
+                        ctx.fillStyle = g
+                        ctx.fill()
+
+                        ctx.globalCompositeOperation = "destination-out"
+                        ctx.fillStyle = "black"
+                        const levelX = 1629.5 + 86 * Math.min(Math.max(level, 0), 1)
+                        ctx.fillRect(levelX, 1030, 1720 - levelX, 45)
+                    }
+                }
+            }
 
             // WARNING: Directly setting the insets break handle and background positioning.
             Binding on topInset {
@@ -112,6 +181,8 @@ T.Pane {
 
             Layout.fillHeight: true
             Layout.margins: VLCStyle.margin_xsmall
+            Layout.topMargin: 0 // redesign: the cone uses the full bar height (28px like the prototype)
+            Layout.bottomMargin: 0
 
             property bool _inhibitPlayerVolumeUpdate: false
 
@@ -246,7 +317,8 @@ T.Pane {
                 radius: VLCStyle.dp(2, VLCStyle.scale)
 
                 // NOTE: This shouldn't be visible when the volume stops before a 100.
-                visible: (root._maxvol > 100)
+                // redesign: the prototype cone has no 100% tick mark
+                visible: false
 
                 // FIXME: tick mark is not visible when it's over slider
                 color: root.sliderColor
