@@ -213,7 +213,7 @@ T.Control {
 
         color: "#1A0E02" // redesign: dark glyph on the accent fill (prototype --on-accent)
 
-        font.pixelSize: Math.round(parent.height / 1.6)
+        font.pixelSize: Math.round(parent.height * 0.82) // redesign: Figma glyph is about half the pill height
 
         font.family: VLCIcons.fontFamily
 

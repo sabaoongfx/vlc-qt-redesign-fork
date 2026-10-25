@@ -30,7 +30,7 @@ FocusScope {
 
     // Properties
 
-    property real spacing: VLCStyle.margin_normal // spacing between controls
+    property real spacing: VLCStyle.dp(10, VLCStyle.scale) // spacing between controls (redesign: Figma bar gaps)
 
     property real layoutSpacing: VLCStyle.margin_xxlarge // spacing between layouts (left, center, and right)
 
