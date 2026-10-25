@@ -111,8 +111,12 @@ Local edits are text only (QML/C++/YAML/Markdown).
   in view (control bar visible while idle), `ArtworkInfoWidget` is hidden until something plays. The cone SVG does not render in the Linux CI shots.
 - Windows build: `.github/workflows/redesign-windows.yml` (release, cross-built, artifact `vlc-win64-portable`). `build.sh` names the build dir `win64`.
   The Home page "Open File" row is clipped under the header in CI screenshots, also in old runs; probably a layout artefact of resizing the window after launch.
-- Do not replace `AcrylicBackground` on the sidebar/top bar: it provides the blur on Windows. A floating panel needs layout changes in
-  `MainDisplay.qml`.
+- Library shell follows the Figma frames: the sidebar is a floating rounded card (`SideNavigationPane` background, a plain
+  `Rectangle`: `AcrylicBackground` cannot round its corners, so the sidebar has no Windows blur any more; the top bar keeps it).
+  The library has no full-width mini player bar (`MiniPlayer` state is `outViewport`); `maininterface/qml/FloatingMiniPlayer.qml`
+  is the bottom-right card and `MainDisplay` places the PIP video over its preview. Page headers (`PageExt`) have back/forward
+  (`History.next()` / `nextEmpty` were added in `util/navigation_history.*`), the page crumb, the item count and an always-visible
+  search field (`GridSortFilterControls`).
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
 - Text on accent buttons is dark (`#1A0E02`), as in the prototype.
 - Icons: Qt's set is already filled Fluent-style outlines close to the prototype's; only 18 of 97 names match. Add individual glyphs
