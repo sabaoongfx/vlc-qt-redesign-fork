@@ -36,6 +36,9 @@ Widgets.IconToolButton {
     }
     checked: MainCtx.playqueuePanel.visible
 
+    // redesign: accent while the play queue is shown (Figma active state)
+    color: checked ? colorContext.accent : colorContext.fg.primary
+
     description: qsTr("Play Queue")
 
     AccessibleCompat.id: "playqueueButton"

@@ -33,4 +33,7 @@ Widgets.IconToolButton {
     AccessibleCompat.id: "extendedSettingsButton"
 
     onClicked: DialogsProvider.extendedDialog()
+
+    // redesign: accent while the effects dialog is open (Figma active state)
+    color: DialogsProvider.extendedDialogVisible ? colorContext.accent : colorContext.fg.primary
 }

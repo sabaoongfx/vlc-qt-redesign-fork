@@ -213,7 +213,7 @@ T.Control {
 
         color: "#1A0E02" // redesign: dark glyph on the accent fill (prototype --on-accent)
 
-        font.pixelSize: Math.round(parent.height / 1.7)
+        font.pixelSize: Math.round(parent.height / 1.6)
 
         font.family: VLCIcons.fontFamily
 
@@ -233,8 +233,8 @@ T.Control {
     }
 
     background: Item {
-        implicitWidth: VLCStyle.dp(60, VLCStyle.scale)
-        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+        implicitWidth: VLCStyle.dp(54, VLCStyle.scale) // redesign: Figma play pill 54x28, 6px radius
+        implicitHeight: VLCStyle.dp(28, VLCStyle.scale)
 
         Widgets.AnimatedBackground {
             anchors.fill: parent
