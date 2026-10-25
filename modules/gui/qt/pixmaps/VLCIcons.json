@@ -107,6 +107,10 @@
         {"key": "menu_brush", "path": "./icons/redesign/menu_brush.svg"},
         {"key": "menu_disc", "path": "./icons/redesign/menu_disc.svg"},
         {"key": "menu_capture", "path": "./icons/redesign/menu_capture.svg"},
-        {"key": "menu_convert", "path": "./icons/redesign/menu_convert.svg"}
+        {"key": "menu_convert", "path": "./icons/redesign/menu_convert.svg"},
+        {"key": "home_filled", "path": "./icons/redesign/home_filled.svg"},
+        {"key": "topbar_video_filled", "path": "./icons/redesign/topbar_video_filled.svg"},
+        {"key": "topbar_music_filled", "path": "./icons/redesign/topbar_music_filled.svg"},
+        {"key": "topbar_network_filled", "path": "./icons/redesign/topbar_network_filled.svg"}
     ]
 }

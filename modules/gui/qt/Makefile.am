@@ -918,6 +918,7 @@ libqt_plugin_la_RES = \
 	pixmaps/icons/redesign/fullscreen.svg \
 	pixmaps/icons/redesign/grid.svg \
 	pixmaps/icons/redesign/history.svg \
+	pixmaps/icons/redesign/home_filled.svg \
 	pixmaps/icons/redesign/home.svg \
 	pixmaps/icons/redesign/ic_fluent_arrow_sync_24_regular.svg \
 	pixmaps/icons/redesign/ic_fluent_chevron_down_24.svg \
@@ -953,9 +954,12 @@ libqt_plugin_la_RES = \
 	pixmaps/icons/redesign/skip_for.svg \
 	pixmaps/icons/redesign/stop.svg \
 	pixmaps/icons/redesign/topbar_music.svg \
+	pixmaps/icons/redesign/topbar_music_filled.svg \
 	pixmaps/icons/redesign/topbar_network.svg \
+	pixmaps/icons/redesign/topbar_network_filled.svg \
 	pixmaps/icons/redesign/topbar_sort.svg \
 	pixmaps/icons/redesign/topbar_video.svg \
+	pixmaps/icons/redesign/topbar_video_filled.svg \
 	pixmaps/icons/redesign/tv.svg \
 	pixmaps/icons/redesign/visualization.svg \
 	pixmaps/icons/redesign/volume_high.svg \

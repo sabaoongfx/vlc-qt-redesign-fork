@@ -65,6 +65,19 @@ Widgets.IconToolButton {
 
     text: VLCIcons.topbar_sort
 
+    // redesign: Figma marks an applied sort with a small accent dot
+    Rectangle {
+        visible: (root.sortKey !== undefined && root.sortKey !== null && root.sortKey !== "")
+        width: VLCStyle.dp(5, VLCStyle.scale)
+        height: width
+        radius: width / 2
+        color: root.colorContext.accent
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: VLCStyle.dp(2, VLCStyle.scale)
+        anchors.rightMargin: VLCStyle.dp(2, VLCStyle.scale)
+    }
+
     checked: _menu && _menu.shown
 
     Keys.priority: Keys.AfterItem

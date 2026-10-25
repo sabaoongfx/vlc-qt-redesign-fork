@@ -117,6 +117,10 @@ class VLCIcons : public QObject {
     Q_PROPERTY(QChar menu_disc MEMBER menu_disc CONSTANT FINAL)
     Q_PROPERTY(QChar menu_capture MEMBER menu_capture CONSTANT FINAL)
     Q_PROPERTY(QChar menu_convert MEMBER menu_convert CONSTANT FINAL)
+    Q_PROPERTY(QChar home_filled MEMBER home_filled CONSTANT FINAL)
+    Q_PROPERTY(QChar topbar_video_filled MEMBER topbar_video_filled CONSTANT FINAL)
+    Q_PROPERTY(QChar topbar_music_filled MEMBER topbar_music_filled CONSTANT FINAL)
+    Q_PROPERTY(QChar topbar_network_filled MEMBER topbar_network_filled CONSTANT FINAL)
 
 
 public:
@@ -230,6 +234,10 @@ public:
     static constexpr inline QChar menu_disc{ u'\ue064' };
     static constexpr inline QChar menu_capture{ u'\ue065' };
     static constexpr inline QChar menu_convert{ u'\ue066' };
+    static constexpr inline QChar home_filled{ u'\ue067' };
+    static constexpr inline QChar topbar_video_filled{ u'\ue068' };
+    static constexpr inline QChar topbar_music_filled{ u'\ue069' };
+    static constexpr inline QChar topbar_network_filled{ u'\ue06a' };
 
 };
 

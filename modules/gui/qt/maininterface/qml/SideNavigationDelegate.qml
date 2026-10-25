@@ -131,13 +131,24 @@ T.ItemDelegate {
 
                 anchors.centerIn: parent
 
-                text: control.iconTxt
+                // redesign: like the Figma sidebar, the active page shows the filled icon in the
+                // accent colour, the other rows plain outline icons
+                text: {
+                    if (!control.highlighted)
+                        return control.iconTxt
+                    switch (control.iconTxt) {
+                    case VLCIcons.home: return VLCIcons.home_filled
+                    case VLCIcons.topbar_video: return VLCIcons.topbar_video_filled
+                    case VLCIcons.topbar_music: return VLCIcons.topbar_music_filled
+                    case VLCIcons.topbar_network: return VLCIcons.topbar_network_filled
+                    default: return control.iconTxt
+                    }
+                }
 
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
 
-                // redesign: plain icons, the active row is marked by its background and label
-                color: theme.fg.primary
+                color: control.highlighted ? theme.accent : theme.fg.primary
 
                 font.pixelSize: VLCStyle.icon_banner
             }
