@@ -38,6 +38,104 @@ FocusScope {
 
     // redesign: empty start screen as in the prototype, a dim cone and a hint instead of a big button
 
+    // Used by the media library HomePage (cone + Open File row); keep it even though
+    // this start screen no longer shows it.
+    component ConeNButtons: FocusScope {
+        id: coneNButtons
+
+        property int orientation: Qt.Vertical
+
+        property real spacing: VLCStyle.margin_large
+
+        implicitWidth: orientation === Qt.Vertical ? Math.max(cone.implicitWidth, button.implicitWidth)
+                                                   : cone.implicitWidth + spacing + button.implicitWidth
+        implicitHeight: orientation === Qt.Vertical ? cone.implicitHeight + spacing + button.implicitHeight
+                                                    : cone.implicitHeight
+
+        states: [
+            State {
+                name: "vertical"
+                AnchorChanges {
+                    target: cone
+
+                    anchors.left: undefined
+                    anchors.horizontalCenter: coneNButtons.horizontalCenter
+                }
+                AnchorChanges {
+                    target: button
+
+                    anchors.left: undefined
+                    anchors.verticalCenter: undefined
+                    anchors.top: cone.bottom
+                    anchors.horizontalCenter: coneNButtons.horizontalCenter
+                }
+                PropertyChanges {
+                    target: button
+
+                    anchors.topMargin: coneNButtons.spacing
+                }
+            },
+            State {
+                name: "horizontal"
+                AnchorChanges {
+                    target: cone
+
+                    anchors.horizontalCenter: undefined
+                    anchors.left: coneNButtons.left
+                }
+                AnchorChanges {
+                    target: button
+
+                    anchors.top: undefined
+                    anchors.horizontalCenter: undefined
+                    anchors.left: cone.right
+                    anchors.verticalCenter: coneNButtons.verticalCenter
+                }
+                PropertyChanges {
+                    target: button
+
+                    anchors.leftMargin: coneNButtons.spacing
+                }
+            }
+        ]
+
+        state: orientation === Qt.Vertical ? "vertical" : "horizontal"
+
+
+        Image {
+            id: cone
+
+            property real _eDPR: MainCtx.effectiveDevicePixelRatio(Window.window)
+
+            sourceSize: Qt.size(0, orientation === Qt.Vertical ? VLCStyle.colWidth(1)
+                                                               : button.implicitHeight * 1.618 * _eDPR) // 1.618 = golden ratio approximation
+
+            source: MainCtx.useXmasCone() ? "qrc:///logo/vlc48-xmas.png" // TODO: new xmas cone designs
+                                          : "qrc:///misc/cone.svg"
+
+            Connections {
+                target: MainCtx
+
+                function onIntfDevicePixelRatioChanged() {
+                    // Update the DPR:
+                    // Normally, this is not done, as we display the images at the size we
+                    // want, and we don't want to re-load all images on DPR change. But
+                    // in this case we depend on the implicit size, so we should re-load
+                    // the image with the updated DPR:
+                    cone._eDPR = MainCtx.effectiveDevicePixelRatio(cone.Window.window)
+                }
+            }
+        }
+
+        OpenFileSplitButton {
+            id: button
+
+            focus: true
+
+            Navigation.parentItem: coneNButtons
+        }
+    }
+
     component KeyChip: Rectangle {
         property alias text: chipLabel.text
 
