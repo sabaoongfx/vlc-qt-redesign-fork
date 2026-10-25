@@ -3,6 +3,7 @@
 set -e
 T=$(cd "$(dirname "$0")" && pwd)
 FIX=${FIX:-$T/out/fixtures}
+export VLC=${VLC:-$(cd "$T/../.." && pwd)/build/vlc}
 mkdir -p "$FIX"
 cd "$FIX"
 ff() { ffmpeg -loglevel error -y "$@"; }
@@ -40,6 +41,7 @@ if [ ! -d "$P/home" ]; then
            "$P/home/Videos/Shows/The Wand/S01/The_Wand_S01E$i.mp4"
     done
     cp sample.mp4 "$P/home/Videos/Sample Movie.mp4"
+    cp sample.mp4 "$P/home/Videos/long_movie.mp4"  # indexed, no spaces: resume tests
     for a in "Aurora Lane|Paper Lanterns|#2a3d5c-#8fb8de" "Static Bloom|Night Drive|#3b1d4a-#d37918"; do
         IFS='|' read artist album grad <<< "$a"
         magick -size 600x600 gradient:"$grad" "$FIX/cover-$album.jpg"

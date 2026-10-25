@@ -9,5 +9,11 @@ sed "s/__W__/${RES_W:-1920}/;s/__H__/${RES_H:-1080}/" "$L/kwinrulesrc" > "$CFG/k
 cp "$L/kwinrc.seed" "$CFG/kwinrc"
 env -u WAYLAND_DISPLAY -u DISPLAY -u XAUTHORITY timeout ${TIMEOUT:-120} dbus-run-session kwin_wayland --virtual --xwayland \
     --width ${RES_W:-1920} --height ${RES_H:-1080} --socket wl-vlc-$NAME --exit-with-session "$L/inner.sh" >/dev/null 2>&1
+# KDE helpers started on the nested D-Bus (ksecretd, xdg-desktop-portal-kde) outlive the session and keep
+# writing into the profile: kill everything that still carries this scene's CFG
+for d in /proc/[0-9]*; do
+    [ -r $d/environ ] && { tr '\0' '\n' < $d/environ; } 2>/dev/null | grep -qx "CFG=$CFG" && kill ${d#/proc/} 2>/dev/null
+done
+sleep 0.5
 [ -z "$PROFILE" ] && rm -rf "$CFG" 2>/dev/null
 exit 0

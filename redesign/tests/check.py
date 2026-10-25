@@ -103,7 +103,14 @@ if im:
     n = count_color(im, (200, 1030, 1900, 1080), ACCENT, 4)
     (ok if n < 2000 else fail)('lib-after-end', f'accent pixels in the bottom row after the end: {n}')
 
-# 6. every scene produced its screenshots
+# 6. the resume prompt must not replace the top bar
+g = geom('resume-prompt', 'b')
+if g:
+    crumb = [k for k in g if k.startswith('Back to ')]
+    (ok if crumb else fail)('resume-prompt', 'folder crumb visible while the resume prompt is shown')
+    (ok if 'Continue' in g else fail)('resume-prompt', 'resume prompt shown')
+
+# 7. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):

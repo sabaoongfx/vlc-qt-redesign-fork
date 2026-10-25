@@ -13,7 +13,7 @@ export HOME=$CFG/home; mkdir -p "$HOME/Videos/Shows/The Wand/S01" "$HOME/Videos/
 fi
 Q="$CFG/vlc/vlc-qt-interface.conf"
 if grep -q '^color-scheme-index=' "$Q" 2>/dev/null; then sed -i "s/^color-scheme-index=.*/color-scheme-index=$THEME/" "$Q"; else printf '[MainWindow]\ncolor-scheme-index=%s\n' "$THEME" >> "$Q"; fi
-setsid "$VLC" $ML ${WIZ:---no-qt-privacy-ask} --no-qt-backdrop-blur $MEDIA > "$OUT/$NAME.log" 2>&1 &
+setsid "$VLC" ${VLCARGS} $ML ${WIZ:---no-qt-privacy-ask} --no-qt-backdrop-blur $MEDIA > "$OUT/$NAME.log" 2>&1 &
 VPID=$!
 for i in $(seq 40); do W=$(xdotool search --onlyvisible --class vlc 2>/dev/null | tail -1); [ -n "$W" ] && break; sleep 0.25; done
 sleep 1
@@ -28,6 +28,7 @@ for a in $ACTIONS; do
        [ -n "$WIDTH" ] && magick "$f" -crop ${WIDTH}x${HEIGHT}+${X}+${Y} +repage "$f" ;;
     shot*) spectacle -b -n -f -o "$OUT/$NAME-${a#shot:}.png" >/dev/null 2>&1 ;;
     sleep:*) sleep ${a#sleep:} ;;
+    term) kill -TERM -- -$VPID 2>/dev/null; for i in $(seq 40); do kill -0 $VPID 2>/dev/null || break; sleep 0.25; done ;;
     click:*) xy=${a#click:}; xdotool mousemove ${xy%,*} ${xy#*,} click 1 ;;
     rclick:*) xy=${a#rclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click 3 ;;
     dclick:*) xy=${a#dclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click --repeat 2 --delay 60 1 ;;
