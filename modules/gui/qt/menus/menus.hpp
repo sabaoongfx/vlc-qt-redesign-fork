@@ -54,7 +54,10 @@ inline QString redesignMenuStyleSheet()
     return QStringLiteral(
         // prototype `.menu`: --menu background, subtle --menu-hover rows (not the accent), 7px row radius
         "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); border-radius: 10px; padding: 6px; font-size: 14px; }"
-        "QMenu::item { padding: 14px 24px 14px 14px; border-radius: 7px; color: palette(text); min-width: 260px; }"
+        // the icon is placed independently of the item padding: shift them so
+        // the icon gets room on its left without running into the label
+        "QMenu::item { padding: 14px 24px 14px 20px; border-radius: 7px; color: palette(text); min-width: 260px; }"
+        "QMenu::icon { padding-left: 16px; }"
 
         "QMenu::item:selected { background: palette(midlight); color: palette(text); }"
         "QMenu::item:disabled { color: palette(mid); }"
