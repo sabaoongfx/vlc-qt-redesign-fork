@@ -188,12 +188,57 @@ T.Page {
 
             anchors.fill: parent
 
-            SubtitleLabel {
+            // redesign: Figma library header, back/forward, the page as a crumb, the item
+            // count, then sort / view / search
+            spacing: VLCStyle.margin_xsmall
+
+            IconToolButton {
+                id: historyBack
+
+                text: VLCIcons.back
+                description: qsTr("Back")
+                font.pixelSize: VLCStyle.icon_banner
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                enabled: !History.previousEmpty
+                onClicked: History.previous(Qt.MouseFocusReason)
+            }
+
+            IconToolButton {
+                id: historyForward
+
+                text: VLCIcons.back
+                rotation: 180 // no forward glyph in the icon font
+                description: qsTr("Forward")
+                font.pixelSize: VLCStyle.icon_banner
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                enabled: !History.nextEmpty
+                onClicked: History.next(Qt.MouseFocusReason)
+            }
+
+            LabelExt {
                 id: label
 
                 Layout.fillWidth: true
+                Layout.leftMargin: VLCStyle.margin_xsmall
 
+                elide: Text.ElideRight
+                textFormat: Text.PlainText
+                font.pixelSize: VLCStyle.fontSize_xlarge
                 color: theme.fg.primary
+            }
+
+            LabelExt {
+                readonly property var _count: root._firstChild?.model?.count
+
+                visible: (_count !== undefined && _count !== null)
+                text: qsTr("%1 items").arg(_count ?? 0)
+                font.pixelSize: VLCStyle.fontSize_large
+                color: theme.fg.secondary
+                Layout.rightMargin: VLCStyle.margin_small
             }
 
             GridSortFilterControls {

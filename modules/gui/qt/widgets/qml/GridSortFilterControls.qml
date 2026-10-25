@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Templates as T
 
 import VLC.MainInterface
 import VLC.Style
@@ -15,21 +16,6 @@ NavigableRow {
     required property SortCtx sort
     required property SearchCtx search
 
-
-    //TODO: visible value of root.sort.available and MainCtx.hasGridListMode is initialised correctly but on first load still shows up
-    IconToolButton {
-        id: gridListBtn
-
-        visible: MainCtx.hasGridListMode
-
-        enabled: visible
-        width: VLCStyle.bannerButton_width
-        height: VLCStyle.bannerButton_height
-        font.pixelSize: VLCStyle.icon_banner
-        text: MainCtx.gridView ? VLCIcons.list : VLCIcons.grid
-        description: qsTr("List/Grid")
-        onClicked: MainCtx.gridView = !MainCtx.gridView
-    }
 
     SortControl {
         id: sortControl
@@ -56,13 +42,104 @@ NavigableRow {
         }
     }
 
-    SearchBox {
+    //TODO: visible value of root.sort.available and MainCtx.hasGridListMode is initialised correctly but on first load still shows up
+    IconToolButton {
+        id: gridListBtn
+
+        visible: MainCtx.hasGridListMode
+
+        enabled: visible
+        width: VLCStyle.bannerButton_width
+        height: VLCStyle.bannerButton_height
+        font.pixelSize: VLCStyle.icon_banner
+        text: MainCtx.gridView ? VLCIcons.list : VLCIcons.grid
+        description: qsTr("List/Grid")
+        onClicked: MainCtx.gridView = !MainCtx.gridView
+    }
+
+    // redesign: always-visible search field (Figma library header) instead of the
+    // icon that expands into a popup
+    FocusScope {
         id: searchBox
 
-        //TODO: initialise visible value with MainCtx
         visible: root.search.available
-        height: VLCStyle.bannerButton_height
-        buttonWidth: VLCStyle.bannerButton_width
+
+        width: VLCStyle.dp(324, VLCStyle.scale)
+        height: VLCStyle.dp(34, VLCStyle.scale)
+        anchors.verticalCenter: parent.verticalCenter
+
+        property alias searchPattern: searchField.text
+
+        function expandAndFocus() {
+            searchField.forceActiveFocus(Qt.OtherFocusReason)
+        }
+
+        Accessible.role: Accessible.EditableText
+        Accessible.name: qsTr("Search")
+
+        readonly property ColorContext colorContext: ColorContext {
+            id: searchTheme
+            colorSet: ColorContext.TextField
+            focused: searchField.activeFocus
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            radius: VLCStyle.dp(6, VLCStyle.scale)
+            color: searchTheme.palette?.isDark ?? true ? "#151515" : "#DEDEDE"
+            border.width: searchField.activeFocus ? VLCStyle.border : 0
+            border.color: searchTheme.accent
+        }
+
+        IconLabel {
+            id: searchIcon
+
+            anchors.left: parent.left
+            anchors.leftMargin: VLCStyle.margin_small
+            anchors.verticalCenter: parent.verticalCenter
+
+            text: VLCIcons.search
+            font.pixelSize: VLCStyle.icon_normal
+            color: searchTheme.fg.secondary
+        }
+
+        T.TextField {
+            id: searchField
+
+            anchors.left: searchIcon.right
+            anchors.leftMargin: VLCStyle.margin_xsmall
+            anchors.right: parent.right
+            anchors.rightMargin: VLCStyle.margin_xsmall
+            anchors.verticalCenter: parent.verticalCenter
+
+            focus: true
+
+            // the Templates TextField does not draw its placeholder
+            Text {
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                visible: searchField.text === "" && !searchField.activeFocus
+                text: qsTr("Search")
+                color: searchTheme.fg.secondary
+                font: searchField.font
+            }
+            color: searchTheme.fg.primary
+            selectionColor: searchTheme.accent
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_large
+            verticalAlignment: TextInput.AlignVCenter
+
+            background: null
+
+            Keys.onEscapePressed: (event) => {
+                if (text !== "") {
+                    text = ""
+                    event.accepted = true
+                } else {
+                    event.accepted = false
+                }
+            }
+        }
 
         Binding {
             target: root.search
