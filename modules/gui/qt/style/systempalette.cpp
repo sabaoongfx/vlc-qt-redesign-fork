@@ -1001,18 +1001,16 @@ void SystemPalette::makeSystemPalette()
     }
 
     m_colorMap.clear();
-    int ret = palette->update();
-    if (ret != VLC_SUCCESS)
-    {
-        if (palette->isThemeDark())
-            makeDarkPalette();
-        else
-            makeLightPalette();
-    }
+    palette->update();
+
+    /* redesign: System follows the OS light/dark preference but paints with the
+     * redesign tokens; the platform provider's own colours (KDE: outlined tool
+     * buttons, stock #FF8800 accent) are not used. The provider is kept for the
+     * dark/light detection, its change notifications and the CSD images. */
+    if (palette->isThemeDark())
+        makeDarkPalette();
     else
-    {
-        m_isDark = palette->isThemeDark();
-    }
+        makeLightPalette();
 
     m_palettePriv = std::move(palette);
 }
