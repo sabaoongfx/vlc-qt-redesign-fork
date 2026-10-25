@@ -60,8 +60,10 @@ T.Popup {
     // prototype --side: a solid panel, not a translucent overlay
     background: Rectangle {
         radius: VLCStyle.dp(8, VLCStyle.scale)
-        color: popupTheme.palette.isDark ? "#161616" : "#C6C6C5"
+        color: popupTheme.palette.isDark ? "#191919" : "#C1C1C0"
     }
+
+    padding: 0
 
     contentItem: T.StackView {
         id: stackView
