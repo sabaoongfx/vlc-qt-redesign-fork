@@ -343,7 +343,11 @@ FocusScope{
         readonly property bool _alignHCenter: _centerX > _leftLimit
                                               && _centerX + centerTitleText.implicitWidth < _rightLimit
 
-        visible: (_showCenterText && root.resumeVisible === false)
+        // redesign: the prototype keeps a small centered title in the top bar,
+        // in every layout, instead of the large title below the logo
+        anchors.verticalCenter: _showCenterText ? undefined : logoOrResume.verticalCenter
+
+        visible: ((_showCenterText || root._showTopBar) && root.resumeVisible === false)
 
         enabled: visible
 
@@ -353,9 +357,10 @@ FocusScope{
         rightPadding: VLCStyle.margin_small
 
         text: root.title
-        color: theme.fg.primary
-        font.pixelSize: VLCStyle.dp(13, VLCStyle.scale)
-        font.weight: Font.DemiBold
+        color: theme.fg.secondary
+        font.family: VLCStyle.fontFamily
+        font.pixelSize: VLCStyle.fontSize_large
+        font.weight: Font.Normal
         elide: Text.ElideRight
         verticalAlignment: Text.AlignVCenter
 
@@ -383,7 +388,7 @@ FocusScope{
 
         width: root.textWidth - VLCStyle.margin_normal
 
-        visible: !root.pinControls
+        visible: !root.pinControls && !centerTitleText.visible
 
         enabled: visible
 

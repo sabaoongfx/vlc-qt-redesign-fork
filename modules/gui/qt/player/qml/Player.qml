@@ -954,7 +954,9 @@ FocusScope {
                   resumeVisible)
 
         focus: true
-        title: Player.title
+        // redesign: most local files carry no title meta; fall back to the
+        // formatted name (file name) like the window title does
+        title: Player.title !== "" ? Player.title : Player.name
 
         pinControls: MainCtx.pinVideoControls
 
