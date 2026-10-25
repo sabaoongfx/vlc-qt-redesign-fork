@@ -36,9 +36,6 @@ T.AbstractButton {
 
     property bool paintOnly: false
 
-    // redesign: no empty placeholder cover while nothing is playing
-    visible: Player.isStarted
-
     Layout.minimumWidth: height
 
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
@@ -162,6 +159,10 @@ T.AbstractButton {
 
         Image {
             id: coverImage
+
+            // redesign: no empty placeholder cover while nothing is playing.
+            // Set here, not on root: ControlRepeater rebinds root.visible to its loader
+            visible: Player.isStarted
 
             Layout.fillHeight: true
             Layout.preferredWidth: height
