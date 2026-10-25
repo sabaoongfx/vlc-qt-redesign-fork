@@ -258,7 +258,7 @@ T.Control {
 
                 anchors.centerIn: parent
                 visible: (delegate.isCurrent && text !== "")
-                color: theme.accent
+                color: theme.fg.primary // redesign: plain icon
                 text: {
                     if (Player.playingState === Player.PLAYING_STATE_PLAYING)
                         return VLCIcons.volume_high

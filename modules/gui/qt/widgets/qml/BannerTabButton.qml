@@ -120,9 +120,8 @@ T.TabButton {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
 
-            color: (control.selected || control.activeFocus || control.hovered)
-                    ? theme.accent
-                    : theme.fg.primary
+            // redesign: plain icon, the selected tab is marked by its label
+            color: theme.fg.primary
 
             font.pixelSize: VLCStyle.icon_banner
 

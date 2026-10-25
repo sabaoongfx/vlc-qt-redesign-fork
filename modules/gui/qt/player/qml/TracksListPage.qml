@@ -262,7 +262,7 @@ RowLayout {
                 font.pixelSize: VLCStyle.fontSize_normal
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                color: resetBtn.hovered ? theme.accent : theme.fg.primary
+                color: theme.fg.primary // redesign: plain
             }
 
             background: Rectangle {

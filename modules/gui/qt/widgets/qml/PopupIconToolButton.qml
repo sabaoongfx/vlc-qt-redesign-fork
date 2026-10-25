@@ -40,7 +40,8 @@ Widgets.IconToolButton {
 
     // Settings
 
-    color: (popup.visible) ? control.colorContext.accent : control.colorContext.fg.primary
+    // redesign: plain icon, no accent tint while the popup is open
+    color: control.colorContext.fg.primary
 
     // FIXME: We can't use upItem because a Popup is not an Item.
     Navigation.upAction: function() {

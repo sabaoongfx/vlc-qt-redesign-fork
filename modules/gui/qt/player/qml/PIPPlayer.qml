@@ -37,7 +37,8 @@ T.Control {
     property real dragYMin: undefined
     property real dragYMax: undefined
 
-    property int textStyle: Text.Outline
+    // redesign: plain icons over the video, no outline
+    property int textStyle: Text.Normal
 
     // `hideControls` being `false` does not necessarily mean that the buttons are shown:
     property bool hideControls: MainCtx.usingTouch // By default controls are hidden with touch

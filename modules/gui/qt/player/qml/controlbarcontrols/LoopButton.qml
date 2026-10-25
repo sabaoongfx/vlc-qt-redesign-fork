@@ -26,6 +26,8 @@ import VLC.Util
 Widgets.IconToolButton {
     id: repeatBtn
 
+    // the on state is shown in the accent colour, as in the icon sheet
+    color: checked ? colorContext.accent : colorContext.fg.primary
     checked: MainPlaylistController.repeatMode !== PlaylistController.PLAYBACK_REPEAT_NONE
     text: (MainPlaylistController.repeatMode === PlaylistController.PLAYBACK_REPEAT_CURRENT)
           ? VLCIcons.repeat_one
