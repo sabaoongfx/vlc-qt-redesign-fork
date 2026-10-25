@@ -798,6 +798,12 @@ libqt_plugin_la_RES = \
 	pixmaps/Inter-Bold.ttf \
 	pixmaps/Inter-LICENSE.txt \
 	pixmaps/prefs/redesign-check.png \
+	pixmaps/prefs/redesign-toggle-on.png \
+	pixmaps/prefs/redesign-toggle-on@2x.png \
+	pixmaps/prefs/redesign-toggle-off.png \
+	pixmaps/prefs/redesign-toggle-off@2x.png \
+	pixmaps/prefs/redesign-toggle-off-light.png \
+	pixmaps/prefs/redesign-toggle-off-light@2x.png \
 	pixmaps/prefs/redesign-chevron.png \
 	pixmaps/prefs/redesign-chevron-up.png \
 	pixmaps/addons/addon_default.svg \

@@ -99,7 +99,8 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
 
     /* Simple view (panel) */
     simple_split_widget = new QWidget();
-    simple_split_widget->setLayout( new QVBoxLayout );
+    /* redesign: category sidebar on the left of the panels (Figma settings) */
+    simple_split_widget->setLayout( new QHBoxLayout );
 
     simple_tree_panel = new QWidget;
     simple_tree_panel->setLayout( new QVBoxLayout );
@@ -162,6 +163,17 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
 
     /* Layout  */
     main_layout->addWidget( stack, 0, 0, 3, 3 );
+
+    /* redesign: settings rows like the Figma frames, group boxes as plain section titles and
+     * check boxes as ON / OFF toggles */
+    setStyleSheet( styleSheet() + QStringLiteral(
+        "QGroupBox { border: none; margin-top: 28px; padding-top: 8px; font-size: 16px; }"
+        "QGroupBox::title { subcontrol-origin: margin; left: 0px; padding: 0px; color: palette(text); }"
+        "QCheckBox { spacing: 12px; }"
+        "QCheckBox::indicator { width: 66px; height: 30px; }"
+        "QCheckBox::indicator:unchecked { image: url(:/redesign-toggle-off%1.png); }"
+        "QCheckBox::indicator:checked { image: url(:/redesign-toggle-on.png); }" )
+        .arg( palette().color( QPalette::Window ).lightness() < 128 ? QString() : QStringLiteral( "-light" ) ) );
     main_layout->addWidget( types, 3, 0, 2, 1 );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );
@@ -182,7 +194,8 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     BUTTONACT( all, &PrefsDialog::setAdvanced );
     BUTTONACT( expert, &PrefsDialog::setExpert );
 
-    QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, QSize( 850, 700 ) );
+    /* redesign: Figma settings window size */
+    QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, QSize( 1078, 860 ) );
 }
 
 PrefsDialog::~PrefsDialog()

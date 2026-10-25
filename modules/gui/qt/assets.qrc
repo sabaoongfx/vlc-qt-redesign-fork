@@ -132,6 +132,12 @@
         <file alias="Inter-SemiBold.ttf">pixmaps/Inter-SemiBold.ttf</file>
         <file alias="Inter-Bold.ttf">pixmaps/Inter-Bold.ttf</file>
         <file alias="redesign-check.png">pixmaps/prefs/redesign-check.png</file>
+        <file alias="redesign-toggle-on.png">pixmaps/prefs/redesign-toggle-on.png</file>
+        <file alias="redesign-toggle-on@2x.png">pixmaps/prefs/redesign-toggle-on@2x.png</file>
+        <file alias="redesign-toggle-off.png">pixmaps/prefs/redesign-toggle-off.png</file>
+        <file alias="redesign-toggle-off@2x.png">pixmaps/prefs/redesign-toggle-off@2x.png</file>
+        <file alias="redesign-toggle-off-light.png">pixmaps/prefs/redesign-toggle-off-light.png</file>
+        <file alias="redesign-toggle-off-light@2x.png">pixmaps/prefs/redesign-toggle-off-light@2x.png</file>
         <file alias="redesign-chevron.png">pixmaps/prefs/redesign-chevron.png</file>
         <file alias="redesign-chevron-up.png">pixmaps/prefs/redesign-chevron-up.png</file>
     </qresource>

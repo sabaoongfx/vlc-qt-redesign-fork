@@ -27,6 +27,8 @@
 #endif
 
 #include "simple_preferences.hpp"
+#include "style/vlcicons.hpp"
+#include <QPainter>
 #include "preferences_widgets.hpp"
 #include "dialogs/dialogs_provider.hpp"
 #include "maininterface/mainctx.hpp"
@@ -220,62 +222,91 @@ private:
 /*********************************************************************
  * The List of categories
  *********************************************************************/
+/* redesign: a plain sidebar icon from the VLCIcons font, grey normally and accent when the
+ * category is current (Figma settings sidebar) */
+static QIcon redesignCategoryIcon( QChar glyph, const QPalette& palette, qreal dpr )
+{
+    const int size = 20;
+    QIcon icon;
+    for( const bool on : { false, true } )
+    {
+        QPixmap pix( QSize( size, size ) * dpr );
+        pix.setDevicePixelRatio( dpr );
+        pix.fill( Qt::transparent );
+        QPainter painter( &pix );
+        QFont font( QStringLiteral( "VLCIcons" ) );
+        font.setPixelSize( size );
+        painter.setFont( font );
+        painter.setPen( on ? palette.color( QPalette::Highlight ) : palette.color( QPalette::PlaceholderText ) );
+        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( glyph ) );
+        icon.addPixmap( pix, QIcon::Normal, on ? QIcon::On : QIcon::Off );
+    }
+    return icon;
+}
+
 SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
                                   QWidget( _parent ), p_intf( _p_intf )
 {
-    QHBoxLayout *layout = new QHBoxLayout();
+    /* redesign: the Figma settings sidebar, a vertical card of categories grouped under
+     * headings, plain icons, the current one highlighted */
+    QVBoxLayout *layout = new QVBoxLayout();
 
     /* Use autoExclusive buttons and a mapper as QButtonGroup can't
        set focus (keys) when it manages the buttons's exclusivity.
        See QT bugs 131 & 816 and QAbstractButton's source code. */
     QSignalMapper *mapper = new QSignalMapper( layout );
     connect( mapper, &QSignalMapper::mappedInt, this, &SPrefsCatList::switchPanel );
-    qreal dpr = devicePixelRatioF();
+    const qreal dpr = devicePixelRatioF();
 
-    auto addCategory = [&]( QString label, QString ltooltip, QString icon, int numb) {
-        QToolButton * button = new QToolButton( this );
-        /* Scale icon to non native size outside of toolbutton to avoid widget size */
-        /* computation using native size */
-        QPixmap scaled = QPixmap( icon )
-              .scaledToHeight( ICON_HEIGHT * dpr, Qt::SmoothTransformation );
-        scaled.setDevicePixelRatio( dpr );
-        /* redesign: text pills instead of the cone icons */
-        Q_UNUSED( scaled );
+    auto addHeading = [&]( const QString& text ) {
+        QLabel *heading = new QLabel( text, this );
+        heading->setObjectName( QStringLiteral( "categoryHeading" ) );
+        layout->addWidget( heading );
+    };
+
+    auto addCategory = [&]( QString label, QString ltooltip, QChar glyph, int numb ) {
+        QPushButton *button = new QPushButton( this );
         button->setText( label );
         button->setToolTip( ltooltip );
-        button->setToolButtonStyle( Qt::ToolButtonTextOnly );
-        button->setMinimumWidth( 40 + ICON_WIDTH );
-        button->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-        button->setAutoRaise( true );
+        button->setIcon( redesignCategoryIcon( glyph, QApplication::palette(), dpr ) );
+        button->setIconSize( QSize( 20, 20 ) );
+        button->setFlat( true );
         button->setCheckable( true );
         button->setAutoExclusive( true );
-        connect( button, &QToolButton::clicked, mapper, QOverload<>::of(&QSignalMapper::map) );
+        button->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+        connect( button, &QPushButton::clicked, mapper, QOverload<>::of(&QSignalMapper::map) );
         mapper->setMapping( button, numb );
         layout->addWidget( button );
     };
 
-    addCategory( qfut(INTF_TITLE), qfut(INTF_TOOLTIP), ":/prefsmenu/spref_interface.png" , SPrefsInterface );
-    addCategory( qfut(AUDIO_TITLE), qfut(AUDIO_TOOLTIP), ":/prefsmenu/spref_audio.png", SPrefsAudio );
-    addCategory( qfut(VIDEO_TITLE), qfut(VIDEO_TOOLTIP), ":/prefsmenu/spref_video.png", SPrefsVideo );
-    addCategory( qfut(SUBPIC_TITLE), qfut(SUBPIC_TOOLTIP), ":/prefsmenu/spref_subtitles.png", SPrefsSubtitles );
-    addCategory( qfut(INPUT_TITLE), qfut(INPUT_TOOLTIP), ":/prefsmenu/spref_input.png", SPrefsInputAndCodecs );
-    addCategory( qfut(HOTKEYS_TITLE), qfut(HOTKEYS_TOOLTIP), ":/prefsmenu/spref_hotkeys.png", SPrefsHotkeys );
+    addHeading( qtr( "App" ) );
+    addCategory( qtr( "Interface" ), qfut(INTF_TOOLTIP), VLCIcons::settings, SPrefsInterface );
+    addCategory( qtr( "Controls" ), qfut(HOTKEYS_TOOLTIP), VLCIcons::menu_keyboard, SPrefsHotkeys );
+    addHeading( qtr( "Media" ) );
+    addCategory( qtr( "Playback" ), qfut(INPUT_TOOLTIP), VLCIcons::play, SPrefsInputAndCodecs );
+    addCategory( qtr( "Video" ), qfut(VIDEO_TOOLTIP), VLCIcons::topbar_video, SPrefsVideo );
+    addCategory( qtr( "Audio" ), qfut(AUDIO_TOOLTIP), VLCIcons::visualization, SPrefsAudio );
+    addCategory( qtr( "Subtitles" ), qfut(SUBPIC_TOOLTIP), VLCIcons::audiosub, SPrefsSubtitles );
     if ( vlc_ml_instance_get( p_intf ) != nullptr )
-        addCategory( qfut(ML_TITLE), qfut(ML_TOOLTIP), ":/prefsmenu/spref_medialibrary.png", SPrefsMediaLibrary );
+        addCategory( qtr( "Library" ), qfut(ML_TOOLTIP), VLCIcons::ic_fluent_folder_open_24_regular, SPrefsMediaLibrary );
+    layout->addStretch( 1 );
 
-    qobject_cast<QToolButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing( 6 );
+    qobject_cast<QPushButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
+    layout->setContentsMargins( 8, 8, 8, 8 );
+    layout->setSpacing( 2 );
 
     /* palette roles follow the Day/Night application palette (see SystemPalette) */
+    setAttribute( Qt::WA_StyledBackground, true );
     setStyleSheet( QStringLiteral(
-        "QToolButton { padding: 9px 14px; border: 1px solid transparent; border-radius: 6px; }"
-        "QToolButton:hover { background: palette(button); border-color: palette(mid); }"
-        "QToolButton:checked { background: palette(highlight); color: palette(highlighted-text);"
-        " border-color: palette(highlight); }" ) );
+        "SPrefsCatList { background: palette(alternate-base); border-radius: 8px; }"
+        "QLabel#categoryHeading { color: palette(placeholder-text); padding: 12px 10px 4px 10px; }"
+        "QPushButton { text-align: left; padding: 10px 10px; border: none; border-radius: 6px;"
+        " background: transparent; color: palette(text); }"
+        "QPushButton:hover { background: palette(button); }"
+        "QPushButton:checked { background: palette(button); }" ) );
 
-    setSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::Preferred);
-    setMinimumWidth( ICON_HEIGHT * 6 + 10 );
+    setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Expanding );
+    setFixedWidth( 220 );
     setLayout( layout );
 }
 
