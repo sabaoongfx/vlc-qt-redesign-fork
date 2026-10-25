@@ -329,7 +329,7 @@ QtObject {
 
     // Player control layout
     readonly property int controlLayoutHeight: MainCtx.dp(64, scale)
-    readonly property int controlLayoutHeightPinned: MainCtx.dp(32, scale)
+    readonly property int controlLayoutHeightPinned: MainCtx.dp(40, scale) // redesign: 54px bottom bar like the Figma player
 
     // Scroll bar (size means width or height, depending on the orientation):
     readonly property real scrollBarInteractingSize: MainCtx.dp(8, scale)

@@ -56,6 +56,10 @@ FocusScope {
 
     // Private
 
+    // redesign: Figma video stage between solid bars (pinned controls, windowed)
+    readonly property bool _videoStage: MainCtx.hasEmbededVideo && _controlsUnderVideo
+                                        && !Player.fullscreen
+
     property bool _controlsUnderVideo: (MainCtx.pinVideoControls
                                         &&
                                         (MainCtx.intfMainWindow.visibility !== Window.FullScreen))
@@ -185,6 +189,9 @@ FocusScope {
             right: parent.right
             top: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? topBar.bottom : parent.top
             bottom: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? controlBar.top : parent.bottom
+            // redesign: the video sits in a stage inset 10px from the window sides (Figma player)
+            leftMargin: rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0
+            rightMargin: rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0
         }
 
         sourceComponent: MainCtx.hasEmbededVideo ? videoComponent : audioComponent
@@ -925,6 +932,62 @@ FocusScope {
                     }
 
                 }
+            }
+        }
+    }
+
+    // redesign: the stage margins left and right of the video, in the bar colour (a background
+    // rectangle cannot go behind the video surface)
+    Repeater {
+        model: rootPlayer._videoStage ? 2 : 0
+
+        delegate: Rectangle {
+            required property int index
+
+            z: 1
+            x: (index === 0) ? 0 : playerSpecializationLoader.x + playerSpecializationLoader.width
+            y: playerSpecializationLoader.y
+            width: (index === 0) ? playerSpecializationLoader.x
+                                 : rootPlayer.width - (playerSpecializationLoader.x + playerSpecializationLoader.width)
+            height: playerSpecializationLoader.height
+            color: controlBar.background ? controlBar.background.color : "black"
+        }
+    }
+
+    // redesign: rounded stage corners; the video surface cannot be clipped, so the corners are
+    // covered with the bar colour
+    Repeater {
+        model: rootPlayer._videoStage ? 4 : 0
+
+        delegate: Canvas {
+            id: corner
+
+            required property int index
+
+            readonly property real r: VLCStyle.dp(8, VLCStyle.scale)
+            readonly property color fill: controlBar.background ? controlBar.background.color : "black"
+
+            z: 1
+            width: r
+            height: r
+            x: (index % 2 === 0) ? playerSpecializationLoader.x
+                                 : playerSpecializationLoader.x + playerSpecializationLoader.width - r
+            y: (index < 2) ? playerSpecializationLoader.y
+                           : playerSpecializationLoader.y + playerSpecializationLoader.height - r
+
+            onFillChanged: requestPaint()
+
+            onPaint: {
+                const ctx = getContext("2d")
+                ctx.reset()
+                ctx.fillStyle = fill
+                ctx.fillRect(0, 0, r, r)
+                ctx.globalCompositeOperation = "destination-out"
+                ctx.beginPath()
+                const cx = (index % 2 === 0) ? r : 0
+                const cy = (index < 2) ? r : 0
+                ctx.arc(cx, cy, r, 0, Math.PI * 2)
+                ctx.fill()
             }
         }
     }
