@@ -145,7 +145,8 @@ void FirstRunWizard::finish()
     config_PutInt( "qt-menubar", ui.layoutGroup->checkedId() );
     config_PutInt( "qt-titlebar", ui.layoutGroup->checkedId() );
 
-    config_PutInt( "qt-pin-controls", ui.layoutGroup->checkedId() );
+    /* redesign: both layouts keep the solid bars above and below the video */
+    config_PutInt( "qt-pin-controls", 1 );
 
     {
         ControlbarProfileModel* controlbarModel = p_intf->p_mi->controlbarProfileModel();
@@ -327,7 +328,7 @@ void FirstRunWizard::reject()
     /* Layout Page settings */
     config_PutInt( "qt-menubar", 0 );
     config_PutInt( "qt-titlebar", 0 );
-    p_intf->p_mi->setPinVideoControls( 0 );
+    p_intf->p_mi->setPinVideoControls( 1 ); /* redesign: solid bars */
 
     if( p_intf->p_mi->getMediaLibrary() )
         p_intf->p_mi->getMediaLibrary()->reload();
