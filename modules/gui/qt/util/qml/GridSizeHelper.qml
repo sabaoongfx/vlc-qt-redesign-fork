@@ -44,7 +44,8 @@ QtObject{
                                                        : (nbItemPerRow === 3 ? VLCStyle.margin_large + VLCStyle.margin_xxsmall
                                                                              : _defaultHorizontalSpacing)
 
-    readonly property int _defaultHorizontalSpacing: VLCStyle.column_spacing
+    // redesign: 20px between grid cards (Figma library frames)
+    readonly property int _defaultHorizontalSpacing: VLCStyle.dp(20, VLCStyle.scale)
 
     property var maxNbItemPerRow
     readonly property int nbItemPerRow: {

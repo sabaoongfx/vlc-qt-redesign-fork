@@ -152,7 +152,8 @@ QtObject {
     readonly property int defaultWidthPlaylist: MainCtx.dp(300, scale);
     readonly property int closedWidthPlaylist: MainCtx.dp(20, scale);
 
-    readonly property int expandNavigationPaneWidth: MainCtx.dp(200, scale);
+    // redesign: the Figma sidebar card spans x 8-208 (the card is inset 8px on its left)
+    readonly property int expandNavigationPaneWidth: MainCtx.dp(209, scale);
     readonly property int buttonHeightNavigationPane: MainCtx.dp(46, scale);
 
     readonly property int widthSearchInput: MainCtx.dp(200, scale);
@@ -204,7 +205,8 @@ QtObject {
     readonly property int gridCover_music_border: MainCtx.dp(3, scale)
 
     readonly property int gridCover_video_width: colWidth(2)
-    readonly property int gridCover_video_height: ( gridCover_video_width * 10.0 ) / 16
+    // redesign: 16:9 video covers like the Figma library frames (was 16:10)
+    readonly property int gridCover_video_height: ( gridCover_video_width * 9.0 ) / 16
     readonly property int gridCover_video_border: MainCtx.dp(4, scale)
 
     readonly property int gridCover_radius: MainCtx.dp(10, scale)
@@ -242,9 +244,14 @@ QtObject {
 
     readonly property int layoutTitle_top_padding: margin_large
     readonly property int layoutTitle_bottom_padding: margin_normal + margin_xxxsmall
+    // redesign: library page headers (Figma): controls 20px under the top bar, separator 17px under them
+    readonly property int pageHeader_top_padding: MainCtx.dp(20, scale)
+    readonly property int pageHeader_bottom_padding: layoutTitle_bottom_padding + MainCtx.dp(7, scale)
 
-    readonly property int layout_left_margin: margin_normal
-    readonly property int layout_right_margin: layout_left_margin
+    // redesign: with the dynamic app margin (24px wide) pages start 28px after the sidebar card and
+    // end 24px before the window edge, like the Figma library frames
+    readonly property int layout_left_margin: margin_xxsmall
+    readonly property int layout_right_margin: 0
 
     readonly property int table_cover_border: MainCtx.dp(2, scale)
 

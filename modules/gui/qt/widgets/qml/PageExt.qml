@@ -144,8 +144,8 @@ T.Page {
 
         position: T.ToolBar.Header
 
-        topPadding: VLCStyle.layoutTitle_top_padding
-        bottomPadding: VLCStyle.layoutTitle_bottom_padding
+        topPadding: VLCStyle.pageHeader_top_padding
+        bottomPadding: VLCStyle.pageHeader_bottom_padding
 
         // FIXME: `GridItem`'s background extends beyond its
         //        bounding rect, violating the hypothetical

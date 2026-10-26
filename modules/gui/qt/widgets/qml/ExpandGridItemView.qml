@@ -57,6 +57,9 @@ Widgets.ExpandGridView {
 
     horizontalSpacing: gridHelper.horizontalSpacing
 
+    // redesign: Figma library grids start 20px under the page header (the cards add the other 10)
+    topMargin: VLCStyle.dp(10, VLCStyle.scale)
+
     // Children
 
     Util.GridSizeHelper {

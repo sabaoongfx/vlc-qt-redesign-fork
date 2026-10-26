@@ -168,7 +168,39 @@ if g and im:
     c = im.getpixel((600, 1075))
     (ok if near(c, (0x1B, 0x1B, 0x1B), 2) else fail)('player-playing', f'bar colour {hexc(c)} (want #1B1B1B)')
 
-# 13. every scene produced its screenshots
+# 13. library grid measured on the Figma Player-4 frame: sidebar card x 8-208, 16:9 covers from x 237
+#     20px apart, header separator at y 110, search field y 60-93, first covers at y 131
+im = img('video-grid')
+if im:
+    bg = im.getpixel((1000, 1060))
+    differs = lambda p, t=30: sum(abs(a - b) for a, b in zip(p, bg)) > t
+    card = [x for x in range(0, 240) if im.getpixel((x, 600)) == im.getpixel((100, 600))]
+    (ok if card and abs(card[0] - 8) <= 1 and abs(card[-1] - 208) <= 1 else fail)('video-grid', f'sidebar card x {card[0] if card else None}-{card[-1] if card else None} (want 8-208)')
+    xs = [x for x in range(212, 1920) if differs(im.getpixel((x, 250)))]
+    runs, s, p = [], None, None
+    for x in xs:
+        if s is None: s = p = x
+        elif x - p > 3: runs.append((s, p)); s = x
+        p = x
+    if s is not None: runs.append((s, p))
+    if len(runs) >= 2:
+        w, gap = runs[0][1] - runs[0][0] + 1, runs[1][0] - runs[0][1] - 1
+        (ok if abs(runs[0][0] - 237) <= 2 and abs(gap - 20) <= 2 else fail)('video-grid', f'first cover x {runs[0][0]}, gap {gap} (want 237, 20)')
+        col = [y for y in range(100, 400) if differs(im.getpixel((runs[0][0] + w // 2, y)))]
+        segs, s, p = [], None, None
+        for y in col:
+            if s is None: s = p = y
+            elif y - p > 2: segs.append((s, p)); s = y
+            p = y
+        if s is not None: segs.append((s, p))
+        cover = max(segs, key=lambda a: a[1] - a[0])
+        h = cover[1] - cover[0] + 1
+        (ok if abs(h - round(w * 9 / 16)) <= 2 else fail)('video-grid', f'cover {w}x{h} (want 16:9)')
+        (ok if abs(cover[0] - 131) <= 2 else fail)('video-grid', f'first cover y {cover[0]} (want 131)')
+    line = next((y for y in range(55, 125) if differs(im.getpixel((1000, y)), 6)), None)
+    (ok if line is not None and abs(line - 110) <= 1 else fail)('video-grid', f'header separator y {line} (want 110)')
+
+# 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):
