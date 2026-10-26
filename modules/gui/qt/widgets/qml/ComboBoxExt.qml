@@ -51,6 +51,8 @@ T.ComboBox {
     property color color: theme.fg.primary
     property color bgColor: theme.bg.primary
     property color borderColor: theme.border
+    // size of the displayed text (ListLabel's 12px by default)
+    property int labelPixelSize: VLCStyle.fontSize_normal
 
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
@@ -83,6 +85,7 @@ T.ComboBox {
     contentItem: Widgets.ListLabel {
         rightPadding: control.spacing + control.indicator.width
 
+        font.pixelSize: control.labelPixelSize
         text: control.displayText
         color: control.color
         verticalAlignment: Text.AlignVCenter
@@ -92,7 +95,7 @@ T.ComboBox {
     background: Widgets.AnimatedBackground {
         enabled: theme.initialized
         color: control.bgColor
-        border.color: theme.border
+        border.color: control.borderColor
         border.width: VLCStyle.dp(2, VLCStyle.scale)
         radius: VLCStyle.button_radius
     }

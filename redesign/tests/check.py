@@ -100,7 +100,9 @@ if im:
     c = dominant(im, (W - 300, 60, W - 120, 70))
     (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('panel-tabs', f'tab bar {hexc(c)} (want #090909)')
     c = dominant(im, (W - 380, 1010, W - 40, 1020))
-    (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('panel-tabs', f'footer {hexc(c)} (want #090909)')
+    (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('panel-tabs', f'footer {hexc(c)} (want #0E0E0E)')
+    c = dominant(im, (W - 380, 700, W - 40, 720))
+    (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('panel-tabs', f'panel below the sections {hexc(c)} (want #0E0E0E)')
 
 # 5. idle mini player / library after the end of playback: no loading animation, no placeholders
 im = img('lib-after-end')

@@ -48,7 +48,8 @@ FocusScope {
     readonly property bool _dark: theme.palette?.isDark ?? true
     readonly property color barColor: _dark ? "#090909" : "#BDBDBC"     // tab bar, footer
     readonly property color sectionColor: _dark ? "#0E0E0E" : "#D2D2D1" // section blocks
-    readonly property color gapColor: _dark ? "#191919" : "#C1C1C0"     // between sections
+    readonly property color gapColor: _dark ? "#191919" : "#C1C1C0"     // line between sections
+    readonly property color footerLineColor: _dark ? "#222222" : "#BDBDBC"
     readonly property color fieldColor: _dark ? "#090909" : "#E9E9E8"   // value fields
     readonly property color labelColor: _dark ? "#8F8F8F" : "#4A4A4A"
     readonly property color textColor: _dark ? "#E3E3E3" : "#151515"
@@ -56,9 +57,10 @@ FocusScope {
     implicitWidth: preferredWidth
     focus: true
 
+    // Figma: the whole panel is the section colour, 2px lines divide the sections
     Rectangle {
         anchors.fill: parent
-        color: root.gapColor
+        color: root.sectionColor
     }
 
     ColumnLayout {
@@ -281,11 +283,19 @@ FocusScope {
             }
         }
 
-        // ---- footer ----
+        // ---- footer ---- (Figma: on the panel colour under a 1px line)
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: VLCStyle.dp(64, VLCStyle.scale)
-            color: root.barColor
+            color: root.sectionColor
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                height: VLCStyle.dp(1, VLCStyle.scale)
+                color: root.footerLineColor
+            }
 
             T.AbstractButton {
                 id: advanced
@@ -338,9 +348,19 @@ FocusScope {
         default property alias content: sectionColumn.data
 
         Layout.fillWidth: true
-        Layout.bottomMargin: visible ? VLCStyle.dp(8, VLCStyle.scale) : 0
-        implicitHeight: sectionColumn.implicitHeight + VLCStyle.margin_normal * 2
+        // Figma: sections are divided by a 2px line, not a gap
+        implicitHeight: sectionColumn.implicitHeight + VLCStyle.margin_normal * 2 + separator.height
         color: root.sectionColor
+
+        Rectangle {
+            id: separator
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            height: VLCStyle.dp(2, VLCStyle.scale)
+            color: root.gapColor
+        }
 
         ColumnLayout {
             id: sectionColumn
@@ -348,6 +368,7 @@ FocusScope {
             anchors.fill: parent
             anchors.margins: VLCStyle.margin_normal
             anchors.leftMargin: VLCStyle.margin_large
+            anchors.bottomMargin: VLCStyle.margin_normal + separator.height
             spacing: VLCStyle.margin_small
 
             Text {
@@ -429,6 +450,11 @@ FocusScope {
 
             Layout.preferredWidth: VLCStyle.dp(218, VLCStyle.scale)
             Layout.preferredHeight: VLCStyle.dp(44, VLCStyle.scale)
+
+            // Figma: a flat #191919 field without an outline, 14px regular text
+            bgColor: root._dark ? "#191919" : "#E9E9E8"
+            borderColor: "transparent"
+            labelPixelSize: VLCStyle.fontSize_large
 
             model: comboRow.choices
             textRole: "display"

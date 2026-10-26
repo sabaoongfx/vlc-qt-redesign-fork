@@ -60,7 +60,8 @@ T.Popup {
     // prototype --side: a solid panel, not a translucent overlay
     background: Rectangle {
         radius: VLCStyle.dp(8, VLCStyle.scale)
-        color: popupTheme.palette.isDark ? "#191919" : "#C1C1C0"
+        // Figma: the panel is #0E0E0E below its sections too
+        color: popupTheme.palette.isDark ? "#0E0E0E" : "#D2D2D1"
     }
 
     padding: 0
