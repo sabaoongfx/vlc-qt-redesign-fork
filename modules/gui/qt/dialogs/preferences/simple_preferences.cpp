@@ -1159,7 +1159,10 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsInterface:
         {
             auto& ui = m_interfaceUI;
-            ui.setupUi( panel );
+            /* redesign: the classic page (layout, style, skins, colour scheme...) stays whole
+             * under Advanced Options */
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
             panel_label->setText( qtr("Interface Settings") );
 
 #ifndef _WIN32
@@ -1386,6 +1389,31 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
                 connect( ui.clearRecent, &QPushButton::clicked, recentsModel, &MLRecentMediaModel::clearHistory );
             }
 
+            /* redesign: Figma "Interface" rows; the custom skin and the fullscreen screen stay on
+             * the classic page, its Save code writes them */
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Window" ) );
+            rows.option( qtr( "Play video inside the main window" ), "embedded-video" );
+            rows.option( qtr( "Resize the window to fit the video" ), "qt-video-autoresize" );
+            rows.option( qtr( "Show window decorations" ), "qt-titlebar" );
+            rows.option( qtr( "Show the menu bar" ), "qt-menubar" );
+
+            rows.section( qtr( "Playback Controls" ) );
+            rows.option( qtr( "Start in compact mode" ), "qt-minimal-view" );
+            rows.option( qtr( "Keep the controls below the video" ), "qt-pin-controls" );
+            if( rows.option( qtr( "Hide the mouse and controls after" ), "mouse-hide-timeout" ) )
+                if( QSpinBox *spin = rows.last<QSpinBox>() )
+                    spin->setSuffix( qtr( " ms" ) );
+            rows.option( qtr( "Show controls in fullscreen" ), "qt-fs-controller" );
+
+            rows.section( qtr( "Notifications and System Tray" ) );
+            rows.option( qtr( "Show the system tray icon" ), "qt-system-tray" );
+            rows.option( qtr( "Show a popup when the media changes" ), "qt-notification" );
+            rows.option( qtr( "Start minimized to the tray" ), "qt-start-minimized" );
+            rows.option( qtr( "Closing the window keeps VLC in the tray" ), "qt-close-to-system-tray" );
+
+            rows.advanced();
+            rows.block( classic );
             break;
         }
 
@@ -1521,8 +1549,28 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsMediaLibrary:
         {
             auto& ui = m_medialibUI;
-            ui.setupUi( panel );
-            panel_label->setText( qtr("Media Library Settings") );
+            /* redesign: Figma "Playlists, Folders & Files" rows, then the library folders */
+            panel_label->setText( qtr("Playlists, Folders & Files") );
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Opening Files" ) );
+            rows.option( qtr( "Only allow one VLC window" ), "one-instance" );
+            rows.option( qtr( "Apply to files opened from the file manager" ), "one-instance-when-started-from-file" );
+            rows.option( qtr( "Add to the play queue instead of replacing it" ), "playlist-enqueue" );
+            rows.option( qtr( "When opening a folder" ), "recursive" );
+            rows.option( qtr( "Show hidden files" ), "show-hiddenfiles" );
+
+            rows.section( qtr( "Metadata & Artwork" ) );
+            rows.option( qtr( "Fetch titles and artwork from the internet" ), "metadata-network-access" );
+
+            rows.section( qtr( "Media Library" ) );
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
+            rows.block( classic );
+            for( QPushButton *button : { ui.addButton, ui.banButton, ui.reloadButton } )
+            {
+                button->setProperty( "compact", true );
+                button->setFixedSize( 24, 24 );
+            }
 
             if ( vlc_ml_instance_get( p_intf ) != NULL )
             {
