@@ -61,7 +61,7 @@ T.Popup {
     background: Rectangle {
         radius: VLCStyle.dp(8, VLCStyle.scale)
         // Figma: the panel is #0E0E0E below its sections too
-        color: popupTheme.palette.isDark ? "#0E0E0E" : "#D2D2D1"
+        color: VLCStyle.figmaColors(popupTheme.palette.isDark).section
     }
 
     padding: 0

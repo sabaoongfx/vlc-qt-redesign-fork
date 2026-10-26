@@ -130,7 +130,7 @@ T.Pane {
                     ctx.reset()
                     _toCone(ctx)
                     ctx.path = trackPath
-                    ctx.fillStyle = dark ? "#090909" : "#DEDEDE"
+                    ctx.fillStyle = VLCStyle.figmaColors(dark).track
                     ctx.fill()
                 }
 

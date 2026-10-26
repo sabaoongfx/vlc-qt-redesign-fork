@@ -79,6 +79,53 @@ QtObject {
     // QApplication::setFont(), so base components set the bundled family explicitly
     readonly property string fontFamily: "Inter"
 
+    // redesign: the greys of the Figma frames (dark) and their Day counterparts, by role.
+    // Components pick a set with figmaColors(theme.palette.isDark).
+    readonly property var figmaDark: ({
+        bar: "#090909",          // player side panel tab bar and footer
+        section: "#0E0E0E",      // side panel sections
+        raised: "#191919",       // hovered buttons and field outlines on the sections
+        dropdown: "#191919",     // side panel dropdowns
+        line: "#222222",         // 1px lines between sections
+        field: "#090909",        // value fields
+        track: "#090909",        // seek bar and volume track
+        search: "#151515",       // page header search field
+        frame: "#090909",        // mini player picture frame
+        preview: "#2A2927",      // mini player picture backdrop
+        hint: "#6B6B6B",         // row labels, inactive tabs
+        label: "#8F8F8F",        // values, active tab
+        title: "#969696",        // section titles
+        tabIcon: "#404040"       // inactive tab icons
+    })
+    readonly property var figmaDay: ({
+        bar: "#BDBDBC",
+        section: "#D2D2D1",
+        raised: "#C1C1C0",
+        dropdown: "#E9E9E8",
+        line: "#BDBDBC",
+        field: "#E9E9E8",
+        track: "#DEDEDE",
+        search: "#DEDEDE",
+        frame: "#BEBEBD",
+        preview: "#2D2B29",
+        hint: "#4A4A4A",
+        label: "#2A2A2A",
+        title: "#151515",
+        tabIcon: "#8A8A8A"
+    })
+
+    function figmaColors(isDark) {
+        return isDark ? figmaDark : figmaDay
+    }
+
+    // the Figma accent-dim (#371F06 for the #D37918 accent): 26% of the accent over black in the dark
+    // theme, a fifth of it over the background in Day; follows a custom accent (qt-accent-color).
+    // Same formula as Redesign::accentDim() for the Widgets dialogs.
+    function accentDim(accent, isDark) {
+        return isDark ? Qt.rgba(accent.r * 0.26, accent.g * 0.26, accent.b * 0.26, 1.0)
+                      : Qt.alpha(accent, 0.2)
+    }
+
     readonly property int fontHeight_xsmall: Math.ceil(fontMetrics_xsmall.lineSpacing)
     readonly property int fontHeight_small:  Math.ceil(fontMetrics_small.lineSpacing)
     readonly property int fontHeight_normal: Math.ceil(fontMetrics_normal.lineSpacing)

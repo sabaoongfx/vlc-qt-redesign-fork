@@ -80,10 +80,10 @@ T.Control {
             width: parent.width
             height: Math.round(width * 9 / 16)
             radius: VLCStyle.dp(8, VLCStyle.scale)
-            color: theme.palette.isDark ? "#2A2927" : "#2D2B29"
+            color: VLCStyle.figmaColors(theme.palette.isDark).preview
             // a 2px dark frame around the picture (MainDisplay insets the PIP video by it)
             border.width: VLCStyle.dp(2, VLCStyle.scale)
-            border.color: theme.palette.isDark ? "#090909" : "#BEBEBD"
+            border.color: VLCStyle.figmaColors(theme.palette.isDark).frame
             clip: true
 
             // audio (or video without the PIP surface): the cover, a play/pause button on hover

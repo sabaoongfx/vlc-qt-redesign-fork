@@ -291,8 +291,8 @@ WindowDialog {
 
                 FooterButton {
                     text: qsTr("Save")
-                    // Figma accent-dim #371F06 in the dark theme, like the seek bar fill
-                    backgroundColor: root.viewTheme.palette.isDark ? "#371F06" : Qt.alpha(root.viewTheme.accent, 0.2)
+                    // the Figma accent-dim, like the seek bar fill
+                    backgroundColor: VLCStyle.accentDim(root.viewTheme.accent, root.viewTheme.palette.isDark)
                     textColor: root.viewTheme.accent
 
                     onClicked: root.accepted()

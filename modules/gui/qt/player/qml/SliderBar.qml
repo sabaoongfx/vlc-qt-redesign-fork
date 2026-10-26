@@ -328,7 +328,7 @@ T.ProgressBar {
         Rectangle {
             id: sliderRect
             visible: !Player.hasChapters
-            color: control.fieldStyle ? (theme.palette.isDark ? "#090909" : "#DEDEDE") : control.backgroundColor
+            color: control.fieldStyle ? VLCStyle.figmaColors(theme.palette.isDark).track : control.backgroundColor
             anchors.fill: parent
             radius: control.fieldStyle ? VLCStyle.dp(6, VLCStyle.scale) : implicitHeight
         }
@@ -440,8 +440,8 @@ T.ProgressBar {
             width: control.fieldStyle ? Math.max(0, control.visualPosition * parent.width - control._fieldInset)
                                       : control.visualPosition * parent.width
             visible: !Player.hasChapters
-            // redesign: Figma accent-dim #371F06 in the dark theme
-            color: control.fieldStyle ? (theme.palette.isDark ? "#371F06" : Qt.alpha(theme.accent, 0.3)) : theme.fg.primary
+            // redesign: the Figma accent-dim
+            color: control.fieldStyle ? VLCStyle.accentDim(theme.accent, theme.palette.isDark) : theme.fg.primary
             height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : control.barHeight
             radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : control._seekPointsRadius
 

@@ -44,17 +44,18 @@ FocusScope {
         colorSet: ColorContext.View
     }
 
-    // Figma frame colours (dark) and their light-theme counterparts
+    // Figma frame colours (VLCStyle.figmaDark / figmaDay)
     readonly property bool _dark: theme.palette?.isDark ?? true
-    readonly property color barColor: _dark ? "#090909" : "#BDBDBC"     // tab bar, footer
-    readonly property color sectionColor: _dark ? "#0E0E0E" : "#D2D2D1" // section blocks
-    readonly property color gapColor: _dark ? "#191919" : "#C1C1C0"     // hovered buttons, field outlines
-    readonly property color lineColor: _dark ? "#222222" : "#BDBDBC"    // 1px line between sections
-    readonly property color fieldColor: _dark ? "#090909" : "#E9E9E8"   // value fields
-    readonly property color labelColor: _dark ? "#6B6B6B" : "#4A4A4A"  // row labels, inactive tabs
-    readonly property color valueColor: _dark ? "#8F8F8F" : "#2A2A2A"  // field values, active tab
-    readonly property color headingColor: _dark ? "#969696" : "#151515"
-    readonly property color iconColor: _dark ? "#404040" : "#8A8A8A"   // inactive tab icons
+    readonly property var _figma: VLCStyle.figmaColors(_dark)
+    readonly property color barColor: _figma.bar
+    readonly property color sectionColor: _figma.section
+    readonly property color gapColor: _figma.raised
+    readonly property color lineColor: _figma.line
+    readonly property color fieldColor: _figma.field
+    readonly property color labelColor: _figma.hint
+    readonly property color valueColor: _figma.label
+    readonly property color headingColor: _figma.title
+    readonly property color iconColor: _figma.tabIcon
 
     implicitWidth: preferredWidth
     focus: true
@@ -478,7 +479,7 @@ FocusScope {
 
             // Figma Dropdown: #191919 inside a 2px #090909 ring (radius 6), 14px #8F8F8F text
             // 18px from the left edge, a 12px chevron 21px from the right one
-            bgColor: root._dark ? "#191919" : "#E9E9E8"
+            bgColor: root._figma.dropdown
             borderColor: root.fieldColor
             color: root.valueColor
             labelPixelSize: VLCStyle.fontSize_large

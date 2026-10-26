@@ -86,7 +86,7 @@ NavigableRow {
         Rectangle {
             anchors.fill: parent
             radius: VLCStyle.dp(6, VLCStyle.scale)
-            color: searchTheme.palette?.isDark ?? true ? "#151515" : "#DEDEDE"
+            color: VLCStyle.figmaColors(searchTheme.palette?.isDark ?? true).search
             border.width: searchField.activeFocus ? VLCStyle.border : 0
             border.color: searchTheme.accent
         }

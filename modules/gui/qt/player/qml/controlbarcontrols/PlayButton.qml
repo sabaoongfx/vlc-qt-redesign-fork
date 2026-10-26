@@ -211,7 +211,13 @@ T.Control {
                 return VLCIcons.play_filled
         }
 
-        color: "#1A0E02" // redesign: dark glyph on the accent fill (prototype --on-accent)
+        // redesign: dark glyph on the accent fill (prototype --on-accent), from the palette
+        color: accentTheme.fg.primary
+
+        ColorContext {
+            id: accentTheme
+            colorSet: ColorContext.ButtonAccent
+        }
 
         font.pixelSize: Math.round(parent.height * 0.82) // redesign: Figma glyph is about half the pill height
 

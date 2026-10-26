@@ -57,11 +57,12 @@ constexpr qreal disabledAmount = 0.22;
 inline QColor darkCard() { return QColor( 0x18, 0x18, 0x18 ); }
 inline QColor darkRaised() { return QColor( 0x22, 0x22, 0x22 ); }
 
-/* the Figma accent-dim: a quarter (a fifth in Day) of the accent over the base colour */
+/* the Figma accent-dim (#371F06 for the #D37918 accent): 26% of the accent over black in the dark
+ * theme, a fifth of it over the base colour in Day. Same formula as VLCStyle.accentDim() in QML. */
 inline QColor accentDim( const QPalette &palette )
 {
-    return mix( palette.color( QPalette::Base ), palette.color( QPalette::Highlight ),
-                isDark( palette ) ? 0.25 : 0.2 );
+    const QColor accent = palette.color( QPalette::Highlight );
+    return isDark( palette ) ? mix( Qt::black, accent, 0.26 ) : mix( palette.color( QPalette::Base ), accent, 0.2 );
 }
 
 /* a glyph of the VLCIcons font; a `width` larger than `size` leaves room after it */
