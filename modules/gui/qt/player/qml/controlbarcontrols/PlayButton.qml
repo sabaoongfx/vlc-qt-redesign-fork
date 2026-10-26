@@ -56,9 +56,6 @@ T.Control {
     implicitWidth: implicitBackgroundWidth + leftInset + rightInset
     implicitHeight: implicitBackgroundHeight + topInset + bottomInset
 
-    scale: (_keyOkPressed || (mouseArea.pressed && cursorInside)) ? 0.95
-                                                                  : 1.00
-
     Accessible.role: Accessible.Button
     Accessible.name: qsTr("Play/Pause")
     AccessibleCompat.id: "playButton"
@@ -105,7 +102,6 @@ T.Control {
             if (!event.isAutoRepeat) {
                 _keyOkPressed = true
                 keyHoldTimer.restart()
-                innerRectangle.state = "diminished"
             }
             event.accepted = true
         }
@@ -117,7 +113,6 @@ T.Control {
             if (!event.isAutoRepeat) {
                 _keyOkPressed = false
                 keyHoldTimer.stop()
-                innerRectangle.state = ""
                 if (Player.playingState !== Player.PLAYING_STATE_STOPPED)
                     MainPlaylistController.togglePlayPause()
             }
@@ -128,7 +123,6 @@ T.Control {
     // Functions
 
     function _pressAndHoldAction() {
-        innerRectangle.state = ""
         _keyOkPressed = false
         MainPlaylistController.stop()
     }
@@ -160,27 +154,14 @@ T.Control {
             return true
         }
 
-        onCursorInsideChanged: {
-            if (pressed && !cursorInside) {
-                // Press and hold action can no longer be done,
-                // so reset the state in order to reset the
-                // animation:
-                innerRectangle.state = ""
-            }
-        }
-
         onPressed: (mouse) => {
             if (!cursorInside) {
                 mouse.accepted = false
                 return
             }
 
+            // redesign: no press effect (no shrink, no growing circle)
             root.forceActiveFocus(Qt.MouseFocusReason)
-            innerRectangle.state = "diminished"
-        }
-
-        onReleased: {
-            innerRectangle.state = ""
         }
 
         onClicked: (mouse) => {
@@ -271,51 +252,6 @@ T.Control {
                 yOffset: VLCStyle.dp(4, VLCStyle.scale)
 
                 color: theme.accent.alpha(0.29)
-            }
-
-            Rectangle {
-                id: innerRectangle
-
-                color: (state === "diminished") ? "white" : "transparent"
-
-                anchors.fill: parent
-                anchors.margins: _diminished ? (parent.width / 2)
-                                             : VLCStyle.dp(2, VLCStyle.scale)
-
-                radius: width / 2
-
-                property bool _diminished: false
-
-                onStateChanged: {
-                    if (state === "diminished") {
-                        marginBehavior.enabled = true
-                        bindingTimer.start()
-                    } else {
-                        bindingTimer.stop()
-                        marginBehavior.enabled = false
-                        _diminished = false
-                    }
-                }
-
-                Timer {
-                    // Do not immediately start the animation.
-                    // Give some time if the intention is not
-                    // to hold the button.
-                    id: bindingTimer
-                    interval: mouseArea.pressAndHoldInterval / 3
-                    onTriggered: innerRectangle._diminished = true
-                }
-
-                Behavior on anchors.margins {
-                    id: marginBehavior
-                    NumberAnimation {
-                        // Press and hold action must be triggered
-                        // as soon as the inner rectangle diminishes.
-                        // Subtract the interval here so that we satisfy
-                        // that condition.
-                        duration: mouseArea.pressAndHoldInterval - bindingTimer.interval
-                    }
-                }
             }
         }
     }
