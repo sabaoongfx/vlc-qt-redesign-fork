@@ -66,8 +66,12 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     setLayout( main_layout );
 
     /* View (panel) selection */
-    types = new QGroupBox( qtr("Show settings") );
-    types->setAlignment( Qt::AlignHCenter );
+    /* redesign: a segmented value (like the Theme row) instead of a titled radio group */
+    types = new QGroupBox;
+    types->setObjectName( QStringLiteral( "settingsViews" ) );
+    types->setAccessibleName( qtr( "Show settings" ) );
+    types->setToolTip( qtr( "Show settings" ) );
+    types->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
     QHBoxLayout *types_l = new QHBoxLayout;
     types_l->setSpacing( 3 );
     types_l->setContentsMargins(3, 3, 3, 3);
@@ -172,9 +176,21 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
         "QCheckBox { spacing: 12px; }"
         "QCheckBox::indicator { width: 66px; height: 30px; }"
         "QCheckBox::indicator:unchecked { image: url(:/redesign-toggle-off%1.png); }"
-        "QCheckBox::indicator:checked { image: url(:/redesign-toggle-on.png); }" )
-        .arg( palette().color( QPalette::Window ).lightness() < 128 ? QString() : QStringLiteral( "-light" ) ) );
-    main_layout->addWidget( types, 3, 0, 2, 1 );
+        "QCheckBox::indicator:checked { image: url(:/redesign-toggle-on.png); }"
+        "QGroupBox#settingsViews { margin-top: 0px; padding: 2px; border: 1px solid palette(mid); border-radius: 6px;"
+        " background: palette(base); }"
+        "QGroupBox#settingsViews QRadioButton { padding: 6px 14px; border-radius: 4px; color: palette(placeholder-text); }"
+        "QGroupBox#settingsViews QRadioButton::indicator { width: 0px; height: 0px; image: none; border: none; background: transparent; margin: 0px; }"
+        "QGroupBox#settingsViews QRadioButton:checked { background: %2; color: palette(highlight); }" )
+        .arg( palette().color( QPalette::Window ).lightness() < 128 ? QString() : QStringLiteral( "-light" ) )
+        // the Figma accent-dim: a quarter of the accent over the base colour
+        .arg( [this]() {
+            const QColor a = palette().color( QPalette::Highlight ), b = palette().color( QPalette::Base );
+            const qreal m = b.lightnessF() < 0.5 ? 0.25 : 0.2;
+            return QColor::fromRgbF( b.redF() + ( a.redF() - b.redF() ) * m, b.greenF() + ( a.greenF() - b.greenF() ) * m,
+                                     b.blueF() + ( a.blueF() - b.blueF() ) * m ).name();
+        }() ) );
+    main_layout->addWidget( types, 4, 0, 1, 1, Qt::AlignLeft | Qt::AlignVCenter );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );
     main_layout->setContentsMargins(9, 9, 9, 9);
