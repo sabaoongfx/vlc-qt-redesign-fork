@@ -30,6 +30,8 @@ T.ProgressBar {
 
     // redesign: prototype `.seek` field, a tall rounded well with an inset dim fill and an accent bar handle
     property bool fieldStyle: false
+    // redesign: the mini player card's progress field has no handle (Figma "Miniplayer")
+    property bool showHandle: true
     readonly property real _fieldInset: VLCStyle.dp(2, VLCStyle.scale)
 
     readonly property real _hoveredScalingFactor: fieldStyle ? 1 : 1.8
@@ -605,6 +607,7 @@ T.ProgressBar {
         height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : implicitHeight
         radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : VLCStyle.dp(3, VLCStyle.scale)
         color: theme.accent
+        opacity: control.showHandle ? 1 : 0 // visible is driven by the hover states below
 
         // We use dynamic mutability group because time interpolation
         // may induce rapid change:

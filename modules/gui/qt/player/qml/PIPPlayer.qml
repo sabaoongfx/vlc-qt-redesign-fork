@@ -44,6 +44,8 @@ T.Control {
     // covered with the colour of whatever is around it (the mini player card)
     property real cornerRadius: 0
     property color cornerColor: "transparent"
+    // how far the ring may spill outside the video (a frame around it, for instance)
+    property real cornerSpill: Math.ceil(cornerRadius / 2)
 
     // `hideControls` being `false` does not necessarily mean that the buttons are shown:
     property bool hideControls: MainCtx.usingTouch // By default controls are hidden with touch
@@ -135,7 +137,7 @@ T.Control {
     // a ring whose inner edge is a rounded rect of cornerRadius over the video bounds; it only
     // needs to reach the video corner (r * (sqrt(2) - 1) inward), so it spills out by half the radius
     Rectangle {
-        readonly property real ringWidth: Math.ceil(root.cornerRadius / 2)
+        readonly property real ringWidth: root.cornerSpill
 
         z: 2
         visible: root.cornerRadius > 0

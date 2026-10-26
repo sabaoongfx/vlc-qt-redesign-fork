@@ -62,17 +62,17 @@ T.Control {
     Accessible.role: Accessible.Pane
     Accessible.name: qsTr("Mini player")
 
+    // Figma: the card is the secondary window colour with no border, only its shadow
     background: Rectangle {
         radius: VLCStyle.dp(12, VLCStyle.scale)
-        color: theme.bg.primary
-        border.width: VLCStyle.border
-        border.color: theme.separator
+        color: theme.bg.secondary
 
         Widgets.DefaultShadow { }
     }
 
+    // Figma: preview, 5px, progress field, then the title and the folder / artist row
     contentItem: Column {
-        spacing: VLCStyle.margin_xsmall
+        spacing: 0
 
         Rectangle {
             id: preview
@@ -81,6 +81,9 @@ T.Control {
             height: Math.round(width * 9 / 16)
             radius: VLCStyle.dp(8, VLCStyle.scale)
             color: theme.palette.isDark ? "#2A2927" : "#2D2B29"
+            // a 2px dark frame around the picture (MainDisplay insets the PIP video by it)
+            border.width: VLCStyle.dp(2, VLCStyle.scale)
+            border.color: theme.palette.isDark ? "#090909" : "#BEBEBD"
             clip: true
 
             // audio (or video without the PIP surface): the cover, a play/pause button on hover
@@ -115,10 +118,16 @@ T.Control {
             }
         }
 
+        Item {
+            width: parent.width
+            height: VLCStyle.dp(5, VLCStyle.scale)
+        }
+
         SliderBar {
             width: parent.width
-            barHeight: VLCStyle.dp(12, VLCStyle.scale)
+            barHeight: VLCStyle.dp(16, VLCStyle.scale)
             fieldStyle: true
+            showHandle: false
 
             Accessible.name: qsTr("Progress")
 
@@ -128,13 +137,14 @@ T.Control {
 
         T.Label {
             width: parent.width
-            topPadding: VLCStyle.margin_xxsmall
-            leftPadding: VLCStyle.margin_xxsmall
+            topPadding: VLCStyle.dp(22, VLCStyle.scale)
+            leftPadding: VLCStyle.margin_xsmall
+            rightPadding: VLCStyle.margin_xsmall
 
             text: Player.title !== "" ? Player.title : Player.name
-            color: theme.fg.primary
+            color: theme.fg.secondary
             font.family: VLCStyle.fontFamily
-            font.pixelSize: VLCStyle.fontSize_xlarge
+            font.pixelSize: VLCStyle.dp(17, VLCStyle.scale)
             elide: Text.ElideRight
 
             TapHandler {
@@ -144,12 +154,13 @@ T.Control {
 
         Item {
             width: parent.width
-            height: VLCStyle.bannerButton_height
+            height: VLCStyle.dp(48, VLCStyle.scale)
 
             Row {
                 anchors.left: parent.left
-                anchors.leftMargin: VLCStyle.margin_xxsmall
+                anchors.leftMargin: VLCStyle.dp(10, VLCStyle.scale)
                 anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: VLCStyle.dp(6, VLCStyle.scale) // Figma: 27px above the card edge
                 spacing: VLCStyle.margin_normal
 
                 Row {
@@ -159,7 +170,7 @@ T.Control {
                     Widgets.IconLabel {
                         anchors.verticalCenter: parent.verticalCenter
                         text: VLCIcons.ic_fluent_folder_open_24_regular
-                        font.pixelSize: VLCStyle.icon_normal
+                        font.pixelSize: VLCStyle.dp(22, VLCStyle.scale)
                         color: theme.fg.secondary
                     }
 
@@ -168,7 +179,7 @@ T.Control {
                         text: root.folderName
                         color: theme.fg.secondary
                         font.family: VLCStyle.fontFamily
-                        font.pixelSize: VLCStyle.fontSize_large
+                        font.pixelSize: VLCStyle.fontSize_xlarge
                     }
                 }
 
@@ -188,14 +199,16 @@ T.Control {
                         text: Player.artist
                         color: theme.fg.secondary
                         font.family: VLCStyle.fontFamily
-                        font.pixelSize: VLCStyle.fontSize_large
+                        font.pixelSize: VLCStyle.fontSize_xlarge
                     }
                 }
             }
 
             Widgets.IconToolButton {
                 anchors.right: parent.right
+                anchors.rightMargin: VLCStyle.dp(10, VLCStyle.scale)
                 anchors.verticalCenter: parent.verticalCenter
+                anchors.verticalCenterOffset: VLCStyle.dp(6, VLCStyle.scale)
 
                 text: VLCIcons.playlist
                 description: qsTr("Play Queue")

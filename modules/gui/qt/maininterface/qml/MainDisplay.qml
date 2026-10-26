@@ -985,12 +985,15 @@ FocusScope {
         PIPPlayer {
             id: playerPip
             // redesign: the video is shown inside the floating mini player card
-            x: floatingMiniPlayer.x + floatingMiniPlayer.leftPadding + floatingMiniPlayer.previewArea.x
-            y: floatingMiniPlayer.y + floatingMiniPlayer.topPadding + floatingMiniPlayer.previewArea.y
-            width: floatingMiniPlayer.previewArea.width
-            height: floatingMiniPlayer.previewArea.height
-            cornerRadius: floatingMiniPlayer.previewArea.radius
-            cornerColor: floatingMiniPlayer.background.color
+            // inside the preview's dark frame
+            readonly property real _frame: floatingMiniPlayer.previewArea.border.width
+            x: floatingMiniPlayer.x + floatingMiniPlayer.leftPadding + floatingMiniPlayer.previewArea.x + _frame
+            y: floatingMiniPlayer.y + floatingMiniPlayer.topPadding + floatingMiniPlayer.previewArea.y + _frame
+            width: floatingMiniPlayer.previewArea.width - 2 * _frame
+            height: floatingMiniPlayer.previewArea.height - 2 * _frame
+            cornerRadius: floatingMiniPlayer.previewArea.radius - _frame
+            cornerColor: floatingMiniPlayer.previewArea.border.color
+            cornerSpill: _frame
             z: 4
             visible: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
             enabled: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo

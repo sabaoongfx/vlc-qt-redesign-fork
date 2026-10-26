@@ -115,13 +115,19 @@ if g:
     (ok if crumb else fail)('resume-prompt', 'folder crumb visible while the resume prompt is shown')
     (ok if 'Continue' in g else fail)('resume-prompt', 'resume prompt shown')
 
-# 7. mini player card: the video corners are rounded (covered in the card colour)
+# 7. mini player card (Figma "Miniplayer"): the video corners are rounded into its 2px dark frame,
+#    the card is 391x338 in the secondary window colour
 im, g = img('lib-mini-video'), geom('lib-mini-video')
 if im and g.get('video content') and g.get('Mini player'):
     x, y, w, h = g['video content'][0]
-    card = im.getpixel((g['Mini player'][0][0] + 4, y + h // 2))
+    frame = im.getpixel((x - 1, y + h // 2))
     corners = [im.getpixel(p) for p in ((x, y), (x + w - 1, y), (x, y + h - 1), (x + w - 1, y + h - 1))]
-    (ok if all(near(c, card, 8) for c in corners) else fail)('lib-mini-video', f'video corners {[hexc(c) for c in corners]} (want the card colour {hexc(card)})')
+    (ok if near(frame, (0x09, 0x09, 0x09), 3) and all(near(c, frame, 8) for c in corners) else fail)(
+        'lib-mini-video', f'video corners {[hexc(c) for c in corners]} in the frame {hexc(frame)} (want #090909)')
+    cx, cy, cw, ch = g['Mini player'][0]
+    (ok if abs(cw - 391) <= 2 and abs(ch - 338) <= 2 else fail)('lib-mini-video', f'card {cw}x{ch} (want 391x338)')
+    c = im.getpixel((cx + 4, cy + ch - 20))
+    (ok if near(c, (0x1B, 0x1B, 0x1B), 2) else fail)('lib-mini-video', f'card colour {hexc(c)} (want #1B1B1B)')
 
 # 8. Customize Player: Figma header band and body colours (dark)
 im = img('customize')
