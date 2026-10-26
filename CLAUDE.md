@@ -7,6 +7,38 @@ Working notes for the VLC Qt redesign. This repo is a fork of `videolan/vlc`; th
 Port the HTML prototype (`sabaoongfx/vlc`, local `..\vlc`) into VLC's real Qt/QML interface (`modules/gui/qt`).
 The prototype is the visual reference only; do not copy its data layer. Back the new look with VLC's real models.
 
+## Linux machine (current, Manjaro KDE) — read this first
+
+- Tree: `~/Documents/vlc-qt-redesign-fork`, LF line endings. Remotes differ from the Windows notes below:
+  `origin` = the fork (`sabaoongfx/vlc-qt-redesign-fork`, push here), `upstream` = `videolan/vlc`. `git`/`gh` are on PATH.
+- Here VLC IS built and tested locally (the Windows "never run locally" rule does not apply): `make -C build -j$(nproc)`
+  (~25 s for QML/C++ changes in the Qt module; QML is compiled into the binary, so rebuild before every capture).
+  `contrib/native/` (local medialibrary build) is untracked on purpose.
+- Test harness: `redesign/tests/run.sh [scene-regex]` runs each scene of `scenarios.txt` in a headless nested KWin
+  (xdotool clicks, AT-SPI `press:Name`, `shot`/`shotwin`/`geom`), then `check.py` (QML warnings, colours and geometry
+  measured on the Figma frames, unchanged vlcrc after Settings Save). Output in `redesign/tests/out/run/` (`report.html`);
+  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run: 0 failures.
+- Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
+  and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
+- Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
+- Nothing is pushed since 2026-10-25: `redesign` is ~75 commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
+
+## Where we are (2026-10-26)
+
+- Phases 1-3 of `PLAN.md` done (harness; Customize Player modal, rounded mini-player video, Browse folder header,
+  ML folder buttons; Settings rebuilt as Figma row pages, 13 categories, search, classic pages kept under Advanced Options).
+- Phase 4 (pixel polish against Figma, measure with crops, fix, add a `check.py` guard) in progress. Done: player bars
+  (40px top / 55px bottom, #1B1B1B, centred controls, 15px times, grey 12-14px window buttons, 10px stage radius),
+  library layout (sidebar card x 8-208, rows at x 30/63, page margins 28/24, 20px grid gaps, 16:9 covers, header field
+  y 60-93 / separator 110), mini player card (391x338, framed preview, no progress handle), side panel colours.
+  Next: side panel combo text colour (#8F8F8F-ish) and 18px left padding, tab row layout; then menus, settings window
+  chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+- Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
+  side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar.
+
+## Windows machine notes (original setup)
+
 ## Repos and remotes
 
 - Local tree: `C:\Users\Sab\Documents\Code\vlc-original` (shallow clone, depth 1; upstream is the GitHub mirror `videolan/vlc`).
@@ -82,6 +114,19 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - The Windows shots job must start VLC with a fresh `%APPDATA%\vlc` each time or a "restore the playlist" prompt appears after a force-kill.
 
 ## Decisions and gotchas
+
+- Settings (`dialogs/preferences/simple_preferences.cpp`): `SettingsRows` builds Figma rows bound to real options via
+  `ConfigControl`; row controls go in `rowControls` and are written on Save only if their value differs from what they
+  first showed (`rowInitial`), so they never undo the classic page under Advanced Options. Options the classic Save code
+  writes itself (`volume-save`, `audio-filter`, `freetype-shadow-opacity`, `qt-fullscreen-screennumber`, `intf`) are not
+  rows. Panels are applied in category order. The sidebar reacts to `toggled` (AT-SPI presses toggle, not click).
+- Fixed upstream Save bugs (found by `prefs-save`): list combos showing the first choice for an out-of-list value, and
+  font combos rewriting a generic family. Keep both fixes when rebasing.
+- Video surfaces cannot be clipped: rounded video corners are covered by a ring/canvas in the surrounding colour
+  (`PIPPlayer.cornerRadius/cornerColor/cornerSpill`, the player stage corners in `Player.qml`).
+- `Player.qml` overrides the ControlBar's bottomPadding; `MainDisplay` overrides the sidebar pane's topPadding.
+- `SliderBar.showHandle` hides the handle via opacity (its `visible` is driven by hover states).
+- Harness: `at.py press` prefers on-screen matches; Widgets QMenu items are not reachable by AT-SPI (click by position).
 
 - TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
   `highlighted` (set by a Binding), not `checked`.
