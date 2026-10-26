@@ -725,7 +725,9 @@ private:
         label->setObjectName( QStringLiteral( "settingsLabel" ) );
         // the row label names its control for assistive tools (the toggles had no name)
         label->setBuddy( control );
-        if( control->accessibleName().isEmpty() )
+        // (a button with its own text keeps it)
+        auto button = qobject_cast<QAbstractButton *>( control );
+        if( control->accessibleName().isEmpty() && !( button && !button->text().isEmpty() ) )
             control->setAccessibleName( label->text() );
         layout->addWidget( label );
         if( !tooltip.isEmpty() )
