@@ -204,6 +204,7 @@ FocusScope {
                         stepSize: 0.05
                         value: Player.rate
                         labels: ["0.25", "0.5", "0.75", "1", "1.25", "1.5", "1.75", "2"]
+                        accessibleName: qsTr("Speed")
                         onMoved: (value) => { Player.rate = value }
                     }
 
@@ -299,6 +300,7 @@ FocusScope {
                         to: 10
                         stepSize: 0.05
                         value: Player.subtitleFPS
+                        accessibleName: qsTr("Subtitle Speed")
                         onMoved: (value) => { Player.subtitleFPS = value }
                     }
                 }
@@ -328,6 +330,8 @@ FocusScope {
                 implicitHeight: VLCStyle.dp(36, VLCStyle.scale)
 
                 onClicked: DialogsProvider.extendedDialog()
+
+                Accessible.name: qsTr("Open Advanced Settings")
 
                 background: Rectangle {
                     radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -442,6 +446,8 @@ FocusScope {
             TextInput {
                 id: valueInput
 
+                Accessible.name: valueRow.label
+
                 anchors.fill: parent
                 anchors.leftMargin: VLCStyle.margin_small
                 anchors.rightMargin: VLCStyle.margin_small
@@ -525,6 +531,7 @@ FocusScope {
         property real stepSize: 0
         property real value: 0
         property var labels: []
+        property string accessibleName
 
         signal moved(real value)
 
@@ -542,6 +549,8 @@ FocusScope {
             stepSize: range.stepSize
             value: range.value
             onMoved: range.moved(slider.value)
+
+            Accessible.name: range.accessibleName
 
             background: Rectangle {
                 x: slider.leftPadding
@@ -636,6 +645,7 @@ FocusScope {
             stepSize: 50
             value: delay.delayMS
             labels: ["-10 s", "0 s", "+10 s"]
+            accessibleName: delay.audio ? qsTr("Audio Track Delay") : qsTr("Subtitle Track Delay")
             onMoved: (value) => delay.setDelay(value)
         }
     }
@@ -660,6 +670,8 @@ FocusScope {
             implicitHeight: VLCStyle.dp(46, VLCStyle.scale)
 
             onClicked: expand.clicked()
+
+            Accessible.name: expand.label
 
             background: Rectangle {
                 radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -691,6 +703,8 @@ FocusScope {
 
         Layout.fillWidth: true
         implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+
+        Accessible.name: text
 
         background: Rectangle {
             radius: VLCStyle.dp(6, VLCStyle.scale)

@@ -24,6 +24,9 @@ import VLC.Style
 T.ScrollBar {
     id: control
 
+    // redesign: named for assistive tools (the AT-SPI audit found scroll bars unnamed)
+    Accessible.name: (orientation === Qt.Horizontal) ? qsTr("Horizontal scroll bar") : qsTr("Vertical scroll bar")
+
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,
                             implicitContentWidth + leftPadding + rightPadding)
     implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,

@@ -723,6 +723,10 @@ private:
         layout->setSpacing( 8 );
 
         label->setObjectName( QStringLiteral( "settingsLabel" ) );
+        // the row label names its control for assistive tools (the toggles had no name)
+        label->setBuddy( control );
+        if( control->accessibleName().isEmpty() )
+            control->setAccessibleName( label->text() );
         layout->addWidget( label );
         if( !tooltip.isEmpty() )
             layout->addWidget( infoIcon( tooltip ) );

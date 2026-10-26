@@ -114,6 +114,9 @@ NavigableRow {
 
             focus: true
 
+            // the field itself carries the name (the AT-SPI audit found it unnamed)
+            Accessible.name: qsTr("Search")
+
             // the Templates TextField does not draw its placeholder
             Text {
                 anchors.fill: parent
