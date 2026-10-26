@@ -155,7 +155,20 @@ if g:
     (ok if 'Local files' in g and 'Network' in g else fail)('prefs-search', 'search finds the buffering rows')
     (ok if 'General' not in g and 'Interface' not in g else fail)('prefs-search', 'categories without a match are hidden')
 
-# 12. every scene produced its screenshots
+# 12. player bars measured on the Figma Player frame: 40px top bar, 55px bottom bar at y 1025,
+#     28px controls centred in it, #1B1B1B bars
+g, im = geom('player-playing'), img('player-playing')
+if g and im:
+    bar = g.get('Player controls')
+    (ok if bar and abs(bar[0][1] - 1025) <= 1 and abs(bar[0][3] - 55) <= 1 else fail)('player-playing', f'bottom bar {bar[0][1:4:2] if bar else None} (want y 1025, 55 tall)')
+    pill = g.get('Play/Pause')
+    (ok if pill and abs(pill[0][1] - 1039) <= 1 else fail)('player-playing', f'play pill y {pill[0][1] if pill else None} (want 1039)')
+    top = next((y for y in range(0, 80) if im.getpixel((40, y)) != im.getpixel((40, 0))), None)
+    (ok if top is not None and abs(top - 40) <= 1 else fail)('player-playing', f'video starts at y {top} (want 40)')
+    c = im.getpixel((600, 1075))
+    (ok if near(c, (0x1B, 0x1B, 0x1B), 2) else fail)('player-playing', f'bar colour {hexc(c)} (want #1B1B1B)')
+
+# 13. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):

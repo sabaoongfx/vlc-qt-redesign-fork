@@ -45,7 +45,9 @@ T.Pane {
 
     topInset: sliderY
 
-    bottomPadding: VLCStyle.margin_xsmall
+    // redesign: the pinned one-row bar keeps its controls centred (Figma: 55px bar, 28px controls)
+    topPadding: (MainCtx.pinVideoControls && _inline) ? VLCStyle.margin_xxsmall : 0
+    bottomPadding: (MainCtx.pinVideoControls && _inline) ? VLCStyle.margin_xxsmall : VLCStyle.margin_xsmall
 
     readonly property real sliderY: mapFromItem(contentItem, 0, contentItem.sliderY).y
     property int textPosition: ControlBar.TimeTextPosition.AboveSlider
@@ -105,8 +107,11 @@ T.Pane {
 
     TextMetrics {
         id: timeTextMetrics
+        // redesign: the Figma one-row bar shows the times at 15px
+        font.family: VLCStyle.fontFamily
         font.pixelSize: (textPosition === ControlBar.TimeTextPosition.LeftRightSlider) ? VLCStyle.fontSize_small
-                                                                                       : VLCStyle.fontSize_normal
+                        : (textPosition === ControlBar.TimeTextPosition.InlineControls) ? VLCStyle.dp(15, VLCStyle.scale)
+                                                                                        : VLCStyle.fontSize_normal
         text: {
             // This text metrics is used for both the time and length, as we want them to have the same width.
             // Length might not be reported in some cases, for that reason we should check both and use the bigger one.

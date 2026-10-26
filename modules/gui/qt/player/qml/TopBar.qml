@@ -137,7 +137,9 @@ FocusScope{
             //place everything on one line
             //csdDecorations.implicitHeight gets overwritten when the height is set,
             //VLCStyle.icon_normal is its initial value
-            const lineHeight = Math.max(logoOrResume.implicitHeight, playlistGroup.implicitHeight, VLCStyle.icon_normal)
+            // redesign: the Figma player top bar is 40px, like the library one
+            const lineHeight = Math.max(logoOrResume.implicitHeight, playlistGroup.implicitHeight, VLCStyle.icon_normal,
+                                        VLCStyle.globalToolbar_height)
 
             centerTitleText.y = 0
             centerTitleText.height = lineHeight

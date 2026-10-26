@@ -80,7 +80,9 @@ T.Button {
                 return VLCIcons.fontFamily
             }
 
-            font.pixelSize: VLCStyle.icon_CSD
+            // redesign: VLC's own window glyphs drawn at 12-14px like the Figma title bar; the Windows
+            // Segoe glyphs keep their native size
+            font.pixelSize: (font.family === VLCIcons.fontFamily) ? VLCStyle.dp(22, VLCStyle.scale) : VLCStyle.icon_CSD
             color: control.color
         }
     }

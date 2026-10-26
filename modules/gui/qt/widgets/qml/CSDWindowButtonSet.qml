@@ -30,7 +30,8 @@ Row {
 
     width: implicitWidth
 
-    property color color: theme.fg.primary
+    // redesign: grey window buttons like the Figma title bar (close turns white on its red hover)
+    property color color: theme.fg.secondary
     property color hoverColor: theme.bg.primary.alpha(0.5)
 
     readonly property bool useWinIcons: ((MainCtx.osName === MainCtx.Windows)&&(MainCtx.osVersion >= 10))

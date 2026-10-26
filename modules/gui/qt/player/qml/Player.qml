@@ -1088,7 +1088,8 @@ FocusScope {
                 }
             }
 
-            tintColor: windowTheme.bg.primary
+            // redesign: the Figma player bars are the secondary window colour (#1B1B1B, light #ABABAA)
+            tintColor: windowTheme.bg.secondary
 
             visible: MainCtx.pinVideoControls || (MainCtx.hasEmbededVideo && !rootPlayer.displayFadeRectangles)
         }
@@ -1359,7 +1360,9 @@ FocusScope {
 
         rightPadding: VLCStyle.applicationHorizontalMargin
         leftPadding: VLCStyle.applicationHorizontalMargin
-        bottomPadding: VLCStyle.applicationVerticalMargin + VLCStyle.margin_xsmall
+        // redesign: pinned, the one-row bar keeps its controls centred (see ControlBar topPadding)
+        bottomPadding: VLCStyle.applicationVerticalMargin + (MainCtx.pinVideoControls ? VLCStyle.margin_xxsmall
+                                                                                      : VLCStyle.margin_xsmall)
 
         // redesign: elapsed and remaining time always sit left and right of the seek bar
         textPosition: ControlBar.TimeTextPosition.InlineControls
@@ -1414,7 +1417,7 @@ FocusScope {
                 }
             }
 
-            color: windowTheme.bg.primary
+            color: windowTheme.bg.secondary
         }
 
         FadeControllerStateGroup {
