@@ -599,8 +599,15 @@ public:
         }
 
         m_controls.append( configControl );
+        m_lastControl = control;
         addRow( label, p_item->psz_longtext ? qfut( p_item->psz_longtext ) : QString(), control, wide );
         return configControl;
+    }
+
+    /* a full-width block under the rows (a table, a list) */
+    void block( QWidget *widget )
+    {
+        m_target->addWidget( widget );
     }
 
     /* a row whose control is not a plain option (a button, a segmented value...) */
@@ -669,6 +676,12 @@ private:
     QList<ConfigControl *> &m_controls;
     QVBoxLayout *m_layout;
     QVBoxLayout *m_target;
+    QWidget *m_lastControl = nullptr;
+
+public:
+    /* the control of the last option row, to add a unit, a range... */
+    template<typename T>
+    T *last() const { return qobject_cast<T *>( m_lastControl ); }
 };
 
 /* writes a row control only when the user changed it, see rowControls */
@@ -1332,37 +1345,42 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
          ********************************/
         case SPrefsHotkeys:
         {
-            QGridLayout *gLayout = new QGridLayout;
-            panel->setLayout( gLayout );
-            int line = 0;
+            /* redesign: Figma "Controls" page; the shortcut table opens under its button */
+            panel_label->setText( qtr( "Mouse & Keyboard Controls" ) );
+            SettingsRows rows( panel, rowControls );
 
-            panel_label->setText( qtr( "Configure Hotkeys" ) );
-            control = new KeySelectorControl( this );
-            control->insertInto( gLayout, line );
+            rows.section( qtr( "Keyboard Shortcuts" ) );
+            QWidget *shortcuts = new QWidget;
+            shortcuts->setVisible( false );
+            shortcuts->setMinimumHeight( 420 );
+            QGridLayout *shortcutsLayout = new QGridLayout( shortcuts );
+            shortcutsLayout->setContentsMargins( 0, 4, 0, 8 );
+            control = new KeySelectorControl( shortcuts );
+            control->insertInto( shortcutsLayout, 0 );
             controls.append( control );
 
-            line++;
-
-            p_config = config_FindConfig( "hotkeys-y-wheel-mode" );
-            control = new IntegerListConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
-
-            line++;
-
-            p_config = config_FindConfig( "hotkeys-x-wheel-mode" );
-            control = new IntegerListConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
-
+            QPushButton *edit = new QPushButton( qtr( "Edit Keyboard Shortcuts" ) );
+            edit->setFlat( true );
+            edit->setCheckable( true );
+            connect( edit, &QPushButton::toggled, shortcuts, &QWidget::setVisible );
+            rows.widget( qtr( "Shortcuts" ), QString(), edit, false );
+            rows.block( shortcuts );
 #ifdef _WIN32
-            line++;
-
-            p_config = config_FindConfig( "qt-disable-volume-keys" );
-            control = new BoolConfigControl( p_config, this );
-            control->insertInto( gLayout, line );
-            controls.append( control );
+            rows.option( qtr( "Ignore the system volume keys" ), "qt-disable-volume-keys" );
 #endif
+
+            rows.section( qtr( "Skip Amounts" ) );
+            const std::pair<QString, const char *> skips[] = {
+                { qtr( "Very short skip" ), "extrashort-jump-size" }, { qtr( "Short skip" ), "short-jump-size" },
+                { qtr( "Medium skip" ), "medium-jump-size" }, { qtr( "Long skip" ), "long-jump-size" } };
+            for( const auto &skip : skips )
+                if( rows.option( skip.first, skip.second ) )
+                    if( QSpinBox *spin = rows.last<QSpinBox>() )
+                        spin->setSuffix( qtr( " s" ) );
+
+            rows.section( qtr( "Mouse" ) );
+            rows.option( qtr( "Scroll wheel" ), "hotkeys-y-wheel-mode" );
+            rows.option( qtr( "Horizontal scroll" ), "hotkeys-x-wheel-mode" );
             break;
         }
 
