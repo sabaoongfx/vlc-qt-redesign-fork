@@ -564,7 +564,8 @@ FocusScope {
 
             width: VLCStyle.isScreenReallySmall ? 0.0 : collapsedWidth
 
-            property real collapsedWidth: VLCStyle.icon_normal + VLCStyle.margin_small + VLCStyle.margin_xsmall + VLCStyle.applicationHorizontalMargin
+            // redesign: the collapsed card (from the card margin) holds the icon with margin_small on each side
+            property real collapsedWidth: VLCStyle.margin_xsmall + VLCStyle.icon_banner + 2 * VLCStyle.margin_small + VLCStyle.applicationHorizontalMargin
 
             delegateShowText: (state === "expanded")
 
