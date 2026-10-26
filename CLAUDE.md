@@ -21,7 +21,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Nothing is pushed since 2026-10-25: `redesign` is 66+ commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Nothing is pushed since 2026-10-25: `redesign` is 69+ commits ahead of `origin/redesign`. Push and run CI is phase 5.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
 
 ## Where we are (2026-10-26)
@@ -31,9 +31,9 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Phase 4 (pixel polish against Figma, measure with crops, fix, add a `check.py` guard) in progress. Done: player bars
   (40px top / 55px bottom, #1B1B1B, centred controls, 15px times, grey 12-14px window buttons, 10px stage radius),
   library layout (sidebar card x 8-208, rows at x 30/63, page margins 28/24, 20px grid gaps, 16:9 covers, header field
-  y 60-93 / separator 110), mini player card (391x338, framed preview, no progress handle), side panel colours.
-  Next: side panel combo text colour (#8F8F8F-ish) and 18px left padding, tab row layout; then menus, settings window
-  chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+  y 60-93 / separator 110), mini player card (391x338, framed preview, no progress handle), side panel (colours, content-sized tabs, 220x48
+  dropdowns, 138x34 fields, 1px #222222 section lines; measured on the `(1)` SVGs).
+  Next: menus, settings window chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
 - Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
   side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar.
 
@@ -125,6 +125,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Video surfaces cannot be clipped: rounded video corners are covered by a ring/canvas in the surrounding colour
   (`PIPPlayer.cornerRadius/cornerColor/cornerSpill`, the player stage corners in `Player.qml`).
 - `Player.qml` overrides the ControlBar's bottomPadding; `MainDisplay` overrides the sidebar pane's topPadding.
+- Qt Quick Controls `indicator`/`background`/`contentItem` are deferred: a grouped override (`indicator.x:`) from a
+  derived file is silently ignored. Add a property on the base component instead (`ComboBoxExt.indicatorRightMargin`).
 - `SliderBar.showHandle` hides the handle via opacity (its `visible` is driven by hover states).
 - Harness: `at.py press` prefers on-screen matches; Widgets QMenu items are not reachable by AT-SPI (click by position).
 
