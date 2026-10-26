@@ -26,6 +26,7 @@
 
 #include "player/player_controller.hpp"
 #include "player/seek_preview.hpp"
+#include "player/effects_controller.hpp"
 #include "player/player_controlbar_model.hpp"
 #include "player/control_list_model.hpp"
 #include "player/control_list_filter.hpp"
@@ -318,6 +319,7 @@ void MainUI::registerQMLTypes()
         qmlRegisterTypesAndRevisions<TimedText>(uri, versionMajor);
         qmlRegisterType<PlayerHighResolutionTimeUpdater>(uri, versionMajor, versionMinor, "HighResolutionTimeUpdater");
         qmlRegisterType<SeekPreview>(uri, versionMajor, versionMinor, "SeekPreview");
+        qmlRegisterType<EffectsController>(uri, versionMajor, versionMinor, "EffectsController");
         qmlRegisterUncreatableMetaObject(VLCTickForeign::staticMetaObject, uri, versionMajor, versionMinor, "VLCTick", "Not Instantiable" );
         qmlRegisterTypesAndRevisions<VLCDuration>(uri, versionMajor);
         qmlRegisterTypesAndRevisions<VLCTime>(uri, versionMajor);

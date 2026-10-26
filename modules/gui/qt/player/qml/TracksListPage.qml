@@ -60,6 +60,23 @@ FocusScope {
     implicitWidth: preferredWidth
     focus: true
 
+    // the equalizer, compressor and video filter cards
+    EffectsController {
+        id: effects
+        ctx: MainCtx
+    }
+    readonly property int _rev: effects.revision
+
+    // the adjust filter is on while one of its values is off neutral
+    function setAdjust(option, value) {
+        effects.setVideoValue(option, value)
+        const neutral = { hue: 0, brightness: 1, contrast: 1, saturation: 1, gamma: 1 }
+        let changed = false
+        for (const o in neutral)
+            changed = changed || Math.abs(Number(effects.videoValue(o)) - neutral[o]) > 0.001
+        effects.setVideoFilterEnabled("adjust", changed)
+    }
+
     // Figma: the whole panel is the section colour, 2px lines divide the sections
     Rectangle {
         anchors.fill: parent
@@ -232,9 +249,143 @@ FocusScope {
                     visible: root.currentTab === 1
                     title: qsTr("Filters")
 
-                    ExpandRow {
+                    EffectCard {
                         label: qsTr("Essential")
-                        onClicked: DialogsProvider.extendedDialog()
+
+                        EffectSlider {
+                            label: qsTr("Hue"); from: -180; to: 180; stepSize: 1
+                            value: (root._rev, Number(effects.videoValue("hue")))
+                            valueText: Math.round(value) + "°"
+                            onMoved: (v) => root.setAdjust("hue", v)
+                        }
+                        EffectSlider {
+                            label: qsTr("Brightness"); from: 0; to: 2; stepSize: 0.01
+                            value: (root._rev, Number(effects.videoValue("brightness")))
+                            onMoved: (v) => root.setAdjust("brightness", v)
+                        }
+                        EffectSlider {
+                            label: qsTr("Contrast"); from: 0; to: 2; stepSize: 0.01
+                            value: (root._rev, Number(effects.videoValue("contrast")))
+                            onMoved: (v) => root.setAdjust("contrast", v)
+                        }
+                        EffectSlider {
+                            label: qsTr("Saturation"); from: 0; to: 3; stepSize: 0.01
+                            value: (root._rev, Number(effects.videoValue("saturation")))
+                            onMoved: (v) => root.setAdjust("saturation", v)
+                        }
+                        EffectSlider {
+                            label: qsTr("Gamma"); from: 0.01; to: 10; stepSize: 0.01
+                            value: (root._rev, Number(effects.videoValue("gamma")))
+                            onMoved: (v) => root.setAdjust("gamma", v)
+                        }
+                        // the next three are off at 0
+                        EffectSlider {
+                            label: qsTr("Sharpen Sigma"); from: 0; to: 2; stepSize: 0.01
+                            value: (root._rev, effects.videoFilterEnabled("sharpen") ? Number(effects.videoValue("sharpen-sigma")) : 0)
+                            onMoved: (v) => {
+                                effects.setVideoValue("sharpen-sigma", v)
+                                effects.setVideoFilterEnabled("sharpen", v > 0)
+                            }
+                        }
+                        EffectSlider {
+                            label: qsTr("Banding Removal Radius"); from: 0; to: 32; stepSize: 1
+                            value: (root._rev, effects.videoFilterEnabled("gradfun") ? Number(effects.videoValue("gradfun-radius")) : 0)
+                            valueText: value < 4 ? qsTr("Off") : Math.round(value)
+                            onMoved: (v) => {
+                                if (v >= 4)
+                                    effects.setVideoValue("gradfun-radius", Math.round(v))
+                                effects.setVideoFilterEnabled("gradfun", v >= 4)
+                            }
+                        }
+                        EffectSlider {
+                            label: qsTr("Film Grain Variance"); from: 0; to: 10; stepSize: 0.1
+                            value: (root._rev, effects.videoFilterEnabled("grain") ? Number(effects.videoValue("grain-variance")) : 0)
+                            onMoved: (v) => {
+                                effects.setVideoValue("grain-variance", v)
+                                effects.setVideoFilterEnabled("grain", v > 0)
+                            }
+                        }
+                    }
+
+                    EffectCard {
+                        label: qsTr("Colors")
+
+                        ColorToggleRow {
+                            label: qsTr("Color Extraction")
+                            filter: "extract"
+                            option: "extract-component"
+                        }
+
+                        CardLine {}
+
+                        ColorToggleRow {
+                            id: threshold
+                            label: qsTr("Color Threshold")
+                            filter: "colorthres"
+                            option: "colorthres-color"
+                        }
+                        EffectSlider {
+                            label: qsTr("Saturation"); from: 0; to: 255; stepSize: 1
+                            active: threshold.on
+                            value: (root._rev, Number(effects.videoValue("colorthres-saturationthres")))
+                            valueText: Math.round(value)
+                            onMoved: (v) => effects.setVideoValue("colorthres-saturationthres", Math.round(v))
+                        }
+                        EffectSlider {
+                            label: qsTr("Similarity"); from: 0; to: 255; stepSize: 1
+                            active: threshold.on
+                            value: (root._rev, Number(effects.videoValue("colorthres-similaritythres")))
+                            valueText: Math.round(value)
+                            onMoved: (v) => effects.setVideoValue("colorthres-similaritythres", Math.round(v))
+                        }
+
+                        CardLine {}
+
+                        FilterToggleRow { label: qsTr("Negate Colors"); filter: "invert" }
+                        FilterToggleRow { label: qsTr("Posterize"); filter: "posterize" }
+
+                        CardLine {}
+
+                        FilterToggleRow { id: gradient; label: qsTr("Gradient"); filter: "gradient" }
+                        CardCombo {
+                            enabled: gradient.on
+                            model: [qsTr("Gradient"), qsTr("Edge"), qsTr("Hough")]
+                            readonly property var modes: ["gradient", "edge", "hough"]
+                            currentIndex: (root._rev, Math.max(0, modes.indexOf(String(effects.videoValue("gradient-mode")))))
+                            onActivated: (i) => effects.setVideoValue("gradient-mode", modes[i])
+                        }
+                        OptionToggleRow { label: qsTr("Color"); option: "gradient-color"; enabled: gradient.on }
+                        OptionToggleRow { label: qsTr("Cartoon"); option: "gradient-cartoon"; enabled: gradient.on }
+
+                        CardLine {}
+
+                        EffectSlider {
+                            label: qsTr("Sepia Intensity"); from: 0; to: 255; stepSize: 1
+                            value: (root._rev, effects.videoFilterEnabled("sepia") ? Number(effects.videoValue("sepia-intensity")) : 0)
+                            valueText: Math.round(value)
+                            onMoved: (v) => {
+                                effects.setVideoValue("sepia-intensity", Math.round(v))
+                                effects.setVideoFilterEnabled("sepia", v > 0)
+                            }
+                        }
+                    }
+
+                    EffectCard {
+                        label: qsTr("Crop")
+
+                        GridLayout {
+                            Layout.fillWidth: true
+                            columns: 3
+                            columnSpacing: VLCStyle.margin_xsmall
+                            rowSpacing: VLCStyle.margin_xsmall
+
+                            CropField { id: cropTop; side: "top"; label: qsTr("Top"); onEdited: (v) => { if (linkTB.checked) cropBottom.apply(v) } }
+                            CropField { id: cropBottom; side: "bottom"; label: qsTr("Bottom"); onEdited: (v) => { if (linkTB.checked) cropTop.apply(v) } }
+                            LinkToggle { id: linkTB; accessibleName: qsTr("Same top and bottom") }
+                            CropField { id: cropLeft; side: "left"; label: qsTr("Left"); onEdited: (v) => { if (linkLR.checked) cropRight.apply(v) } }
+                            CropField { id: cropRight; side: "right"; label: qsTr("Right"); onEdited: (v) => { if (linkLR.checked) cropLeft.apply(v) } }
+                            LinkToggle { id: linkLR; accessibleName: qsTr("Same left and right") }
+                        }
                     }
                 }
 
@@ -259,9 +410,66 @@ FocusScope {
                     visible: root.currentTab === 2
                     title: qsTr("Filters")
 
-                    ExpandRow {
+                    EffectCard {
                         label: qsTr("Equalizer")
-                        onClicked: DialogsProvider.extendedDialog()
+
+                        // Figma EQ presets: None (the equalizer off) and VLC's presets
+                        CardCombo {
+                            model: effects.equalizerPresetNames
+                            currentIndex: (root._rev, effects.equalizerPreset())
+                            onActivated: (i) => effects.setEqualizerPreset(i)
+                        }
+
+                        EffectSlider {
+                            label: qsTr("Preamp"); from: -20; to: 20; stepSize: 0.1; field: true
+                            active: (root._rev, effects.audioFilterEnabled("equalizer"))
+                            value: (root._rev, effects.audioValue("equalizer-preamp"))
+                            valueText: value.toFixed(1) + " dB"
+                            onMoved: (v) => {
+                                effects.setAudioValue("equalizer-preamp", v)
+                                effects.setAudioFilterEnabled("equalizer", true)
+                            }
+                        }
+
+                        Repeater {
+                            model: effects.equalizerBandNames
+                            delegate: EffectSlider {
+                                required property int index
+                                required property string modelData
+                                label: modelData; from: -20; to: 20; stepSize: 0.1; field: true
+                                active: (root._rev, effects.audioFilterEnabled("equalizer"))
+                                value: (root._rev, effects.equalizerBands()[index] ?? 0)
+                                valueText: value.toFixed(1) + " dB"
+                                onMoved: (v) => effects.setEqualizerBand(index, v)
+                            }
+                        }
+                    }
+
+                    EffectCard {
+                        label: qsTr("Compressor")
+
+                        FilterToggleRow { id: compressor; label: qsTr("Enable"); filter: "compressor"; audio: true }
+
+                        Repeater {
+                            // the dialog's ranges (Compressor in extended_panels.cpp)
+                            model: [
+                                { option: "compressor-rms-peak", label: qsTr("RMS / Peak"), from: 0, to: 1, step: 0.01, unit: "", digits: 2 },
+                                { option: "compressor-attack", label: qsTr("Attack"), from: 1.5, to: 400, step: 0.5, unit: " ms", digits: 1 },
+                                { option: "compressor-release", label: qsTr("Release"), from: 2, to: 800, step: 1, unit: " ms", digits: 1 },
+                                { option: "compressor-threshold", label: qsTr("Threshold"), from: -30, to: 0, step: 0.1, unit: " dB", digits: 1 },
+                                { option: "compressor-ratio", label: qsTr("Ratio"), from: 1, to: 20, step: 0.1, unit: " : 1", digits: 1 },
+                                { option: "compressor-knee", label: qsTr("Knee Radius"), from: 1, to: 10, step: 0.1, unit: " dB", digits: 1 },
+                                { option: "compressor-makeup-gain", label: qsTr("Makeup Gain"), from: 0, to: 24, step: 0.1, unit: " dB", digits: 1 }
+                            ]
+                            delegate: EffectSlider {
+                                required property var modelData
+                                label: modelData.label; from: modelData.from; to: modelData.to; stepSize: modelData.step
+                                active: compressor.on
+                                value: (root._rev, effects.audioValue(modelData.option))
+                                valueText: value.toFixed(modelData.digits) + modelData.unit
+                                onMoved: (v) => effects.setAudioValue(modelData.option, v)
+                            }
+                        }
                     }
                 }
 
@@ -532,6 +740,8 @@ FocusScope {
         property real value: 0
         property var labels: []
         property string accessibleName
+        // a filter that is off: grey fill and handle (Figma Video - Colors)
+        property bool active: true
 
         signal moved(real value)
 
@@ -564,7 +774,7 @@ FocusScope {
                     width: slider.visualPosition * parent.width
                     height: parent.height
                     radius: parent.radius
-                    color: Qt.alpha(theme.accent, 0.3)
+                    color: range.active ? Qt.alpha(theme.accent, 0.3) : root.gapColor
                 }
 
                 Repeater {
@@ -586,7 +796,7 @@ FocusScope {
                 width: VLCStyle.dp(7, VLCStyle.scale)
                 height: VLCStyle.dp(22, VLCStyle.scale)
                 radius: VLCStyle.dp(3, VLCStyle.scale)
-                color: theme.accent
+                color: range.active ? theme.accent : root.iconColor
             }
         }
 
@@ -650,54 +860,6 @@ FocusScope {
         }
     }
 
-    // "Expand Settings" row: opens the full effects dialog
-    component ExpandRow: ColumnLayout {
-        id: expand
-
-        property string label
-        signal clicked()
-
-        Layout.fillWidth: true
-        spacing: VLCStyle.margin_xsmall
-
-        RowLabel { text: expand.label }
-
-        T.AbstractButton {
-            HoverHandler { cursorShape: Qt.PointingHandCursor } // redesign: hand cursor, like the prototype
-            id: expandBtn
-
-            Layout.fillWidth: true
-            implicitHeight: VLCStyle.dp(46, VLCStyle.scale)
-
-            onClicked: expand.clicked()
-
-            Accessible.name: expand.label
-
-            background: Rectangle {
-                radius: VLCStyle.dp(6, VLCStyle.scale)
-                color: expandBtn.hovered ? root.gapColor : root.fieldColor
-            }
-
-            contentItem: RowLayout {
-                Text {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: VLCStyle.margin_normal
-                    text: qsTr("Expand Settings")
-                    color: root.valueColor
-                    font.family: VLCStyle.fontFamily
-                    font.pixelSize: VLCStyle.fontSize_large
-                }
-
-                Widgets.IconLabel {
-                    Layout.rightMargin: VLCStyle.margin_normal
-                    text: VLCIcons.ic_fluent_chevron_right_24
-                    font.pixelSize: VLCStyle.dp(16, VLCStyle.scale)
-                    color: root.labelColor
-                }
-            }
-        }
-    }
-
     component LinkRow: T.AbstractButton {
         id: link
 
@@ -727,6 +889,427 @@ FocusScope {
                 color: root.valueColor
                 font.family: VLCStyle.fontFamily
                 font.pixelSize: VLCStyle.fontSize_large
+            }
+        }
+    }
+
+    // ---- effect cards (Figma "06 Player side panels") ----
+
+    // "Expand Settings" opens the card in place, "Collapse Settings" closes it
+    component EffectCard: ColumnLayout {
+        id: card
+
+        property string label
+        property bool expanded: false
+        default property alias content: cardColumn.data
+
+        Layout.fillWidth: true
+        spacing: VLCStyle.margin_xsmall
+
+        RowLabel { text: card.label }
+
+        T.AbstractButton {
+            id: cardButton
+
+            Layout.fillWidth: true
+            implicitHeight: VLCStyle.dp(48, VLCStyle.scale)
+
+            HoverHandler { cursorShape: Qt.PointingHandCursor }
+            Accessible.name: (card.expanded ? qsTr("Collapse %1") : qsTr("Expand %1")).arg(card.label)
+
+            onClicked: card.expanded = !card.expanded
+
+            // Figma: the closed row is a field, the open card's header sits on the card
+            background: Rectangle {
+                radius: VLCStyle.dp(4, VLCStyle.scale)
+                color: card.expanded ? root._figma.previewCard
+                                     : (cardButton.hovered ? root.gapColor : root.fieldColor)
+                // the open card continues below the header
+                Rectangle {
+                    visible: card.expanded
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: parent.radius
+                    color: parent.color
+                }
+            }
+
+            contentItem: RowLayout {
+                Text {
+                    Layout.fillWidth: true
+                    Layout.leftMargin: VLCStyle.margin_normal
+                    text: card.expanded ? qsTr("Collapse Settings") : qsTr("Expand Settings")
+                    color: root.labelColor
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_large
+                }
+
+                Widgets.IconLabel {
+                    Layout.rightMargin: VLCStyle.margin_normal
+                    text: card.expanded ? VLCIcons.ic_fluent_chevron_down_24 : VLCIcons.ic_fluent_chevron_right_24
+                    font.pixelSize: VLCStyle.dp(16, VLCStyle.scale)
+                    color: root.labelColor
+                }
+            }
+        }
+
+        Rectangle {
+            visible: card.expanded
+            Layout.fillWidth: true
+            Layout.topMargin: -card.spacing
+            implicitHeight: cardColumn.implicitHeight + VLCStyle.margin_normal
+            radius: VLCStyle.dp(4, VLCStyle.scale)
+            color: root._figma.previewCard
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: parent.radius
+                color: parent.color
+            }
+
+            ColumnLayout {
+                id: cardColumn
+
+                anchors.fill: parent
+                anchors.leftMargin: VLCStyle.margin_normal
+                anchors.rightMargin: VLCStyle.margin_normal
+                anchors.bottomMargin: VLCStyle.margin_normal
+                spacing: VLCStyle.margin_small
+            }
+        }
+    }
+
+    // a 1px line across the card between groups of rows
+    component CardLine: Rectangle {
+        Layout.fillWidth: true
+        Layout.leftMargin: -VLCStyle.margin_normal
+        Layout.rightMargin: -VLCStyle.margin_normal
+        Layout.topMargin: VLCStyle.margin_xxsmall
+        Layout.bottomMargin: VLCStyle.margin_xxsmall
+        implicitHeight: VLCStyle.dp(1, VLCStyle.scale)
+        color: root._figma.previewEdge
+    }
+
+    // label and value over a slider; the value in a field (the equalizer) or as text
+    component EffectSlider: ColumnLayout {
+        id: effectSlider
+
+        property string label
+        property real from: 0
+        property real to: 1
+        property real stepSize: 0
+        property real value: 0
+        property string valueText: value.toFixed(stepSize >= 1 ? 0 : (stepSize >= 0.1 ? 1 : 2))
+        property bool field: false
+        property bool active: true
+
+        signal moved(real value)
+
+        Layout.fillWidth: true
+        spacing: VLCStyle.margin_xxsmall
+
+        RowLayout {
+            Layout.fillWidth: true
+
+            RowLabel { text: effectSlider.label }
+
+            Text {
+                visible: !effectSlider.field
+                text: effectSlider.valueText
+                color: root.labelColor
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_normal
+            }
+
+            Rectangle {
+                visible: effectSlider.field
+                Layout.preferredWidth: VLCStyle.dp(110, VLCStyle.scale)
+                Layout.preferredHeight: VLCStyle.dp(26, VLCStyle.scale)
+                radius: VLCStyle.dp(4, VLCStyle.scale)
+                color: root.fieldColor
+
+                Text {
+                    anchors.fill: parent
+                    anchors.leftMargin: VLCStyle.margin_xsmall
+                    verticalAlignment: Text.AlignVCenter
+                    text: effectSlider.valueText
+                    color: root.valueColor
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_normal
+                }
+            }
+        }
+
+        RangeSlider {
+            from: effectSlider.from
+            to: effectSlider.to
+            stepSize: effectSlider.stepSize
+            value: effectSlider.value
+            active: effectSlider.active
+            accessibleName: effectSlider.label
+            onMoved: (v) => effectSlider.moved(v)
+        }
+    }
+
+    // the Figma toggle: a knob and OFF on the field colour, the accent knob and ON when on
+    component ToggleSwitch: T.AbstractButton {
+        id: toggle
+
+        checkable: true
+        implicitWidth: VLCStyle.dp(68, VLCStyle.scale)
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+        opacity: enabled ? 1 : 0.5
+
+        HoverHandler { cursorShape: Qt.PointingHandCursor; enabled: toggle.enabled }
+
+        background: Rectangle {
+            radius: VLCStyle.dp(5, VLCStyle.scale)
+            color: root.fieldColor
+
+            Rectangle {
+                // the half that is not the knob
+                x: toggle.checked ? VLCStyle.dp(2, VLCStyle.scale) : parent.width / 2
+                y: VLCStyle.dp(2, VLCStyle.scale)
+                width: parent.width / 2 - VLCStyle.dp(2, VLCStyle.scale)
+                height: parent.height - VLCStyle.dp(4, VLCStyle.scale)
+                radius: VLCStyle.dp(3, VLCStyle.scale)
+                color: toggle.checked ? VLCStyle.accentDim(theme.accent, root._dark) : root.gapColor
+
+                Text {
+                    anchors.centerIn: parent
+                    text: toggle.checked ? qsTr("ON") : qsTr("OFF")
+                    color: toggle.checked ? theme.accent : root.iconColor
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_small
+                }
+            }
+
+            Rectangle {
+                x: toggle.checked ? parent.width / 2 : VLCStyle.dp(2, VLCStyle.scale)
+                y: VLCStyle.dp(2, VLCStyle.scale)
+                width: parent.width / 2 - VLCStyle.dp(2, VLCStyle.scale)
+                height: parent.height - VLCStyle.dp(4, VLCStyle.scale)
+                radius: VLCStyle.dp(3, VLCStyle.scale)
+                color: toggle.checked ? theme.accent : root.iconColor
+            }
+        }
+    }
+
+    // a row with a toggle bound to a video (or audio) filter of the chain
+    component FilterToggleRow: RowLayout {
+        id: filterRow
+
+        property string label
+        property string filter
+        property bool audio: false
+        readonly property bool on: (root._rev, audio ? effects.audioFilterEnabled(filter)
+                                                     : effects.videoFilterEnabled(filter))
+
+        Layout.fillWidth: true
+
+        RowLabel { text: filterRow.label }
+
+        ToggleSwitch {
+            checked: filterRow.on
+            Accessible.name: filterRow.label
+            onToggled: filterRow.audio ? effects.setAudioFilterEnabled(filterRow.filter, checked)
+                                       : effects.setVideoFilterEnabled(filterRow.filter, checked)
+        }
+    }
+
+    // a row with a toggle bound to a boolean filter option
+    component OptionToggleRow: RowLayout {
+        id: optionRow
+
+        property string label
+        property string option
+
+        Layout.fillWidth: true
+        opacity: enabled ? 1 : 0.5
+
+        RowLabel { text: optionRow.label }
+
+        ToggleSwitch {
+            checked: (root._rev, !!effects.videoValue(optionRow.option))
+            Accessible.name: optionRow.label
+            onToggled: effects.setVideoValue(optionRow.option, checked)
+        }
+    }
+
+    // a filter toggle with its colour as a hex field and a swatch (extract, colorthres)
+    component ColorToggleRow: RowLayout {
+        id: colorRow
+
+        property string label
+        property string filter
+        property string option
+        readonly property bool on: (root._rev, effects.videoFilterEnabled(filter))
+        readonly property string hex: (root._rev, "#" + ("000000" + Number(effects.videoValue(option)).toString(16).toUpperCase()).slice(-6))
+
+        Layout.fillWidth: true
+        spacing: VLCStyle.margin_xsmall
+
+        RowLabel { text: colorRow.label }
+
+        Rectangle {
+            Layout.preferredWidth: VLCStyle.dp(115, VLCStyle.scale)
+            Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
+            radius: VLCStyle.dp(5, VLCStyle.scale)
+            color: root.fieldColor
+
+            TextInput {
+                id: hexInput
+
+                anchors.fill: parent
+                anchors.leftMargin: VLCStyle.margin_small
+                anchors.rightMargin: swatch.width + VLCStyle.margin_small
+                verticalAlignment: TextInput.AlignVCenter
+                text: colorRow.hex
+                color: root.valueColor
+                selectionColor: theme.accent
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_normal
+                Accessible.name: qsTr("%1 colour").arg(colorRow.label)
+                onEditingFinished: {
+                    const v = parseInt(text.replace("#", ""), 16)
+                    if (!isNaN(v))
+                        effects.setVideoValue(colorRow.option, Math.max(1, Math.min(0xFFFFFF, v)))
+                    text = Qt.binding(() => colorRow.hex)
+                }
+            }
+
+            Rectangle {
+                id: swatch
+                anchors.right: parent.right
+                anchors.rightMargin: VLCStyle.dp(6, VLCStyle.scale)
+                anchors.verticalCenter: parent.verticalCenter
+                width: VLCStyle.dp(20, VLCStyle.scale)
+                height: width
+                radius: VLCStyle.dp(2, VLCStyle.scale)
+                color: colorRow.hex
+            }
+        }
+
+        ToggleSwitch {
+            checked: colorRow.on
+            Accessible.name: colorRow.label
+            onToggled: effects.setVideoFilterEnabled(colorRow.filter, checked)
+        }
+    }
+
+    // a dropdown on the card (equalizer presets, gradient mode)
+    component CardCombo: Widgets.ComboBoxExt {
+        Layout.fillWidth: true
+        Layout.preferredHeight: VLCStyle.dp(40, VLCStyle.scale)
+        opacity: enabled ? 1 : 0.5
+
+        bgColor: root.fieldColor
+        borderColor: root.fieldColor
+        color: root.valueColor
+        labelPixelSize: VLCStyle.fontSize_large
+        indicatorPixelSize: VLCStyle.dp(36, VLCStyle.scale)
+        leftPadding: VLCStyle.margin_normal
+        rightPadding: VLCStyle.margin_normal
+        indicatorRightMargin: VLCStyle.dp(8, VLCStyle.scale)
+    }
+
+    // a crop side in pixels: "Top  0 px" on the field colour
+    component CropField: Rectangle {
+        id: cropField
+
+        property string side
+        property string label
+        signal edited(int value)
+
+        function apply(v) {
+            effects.setCrop(side, v)
+        }
+
+        Layout.fillWidth: true
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+        radius: VLCStyle.dp(5, VLCStyle.scale)
+        color: root.fieldColor
+
+        Text {
+            anchors.left: parent.left
+            anchors.leftMargin: VLCStyle.margin_small
+            anchors.verticalCenter: parent.verticalCenter
+            text: cropField.label
+            color: root.labelColor
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.fontSize_normal
+        }
+
+        Row {
+            anchors.right: parent.right
+            anchors.rightMargin: VLCStyle.margin_small
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: VLCStyle.margin_xxxsmall
+
+            TextInput {
+                id: cropInput
+                width: VLCStyle.dp(32, VLCStyle.scale)
+                horizontalAlignment: TextInput.AlignRight
+                text: (root._rev, effects.crop(cropField.side))
+                validator: IntValidator { bottom: 0; top: 10000 }
+                color: root.valueColor
+                selectionColor: theme.accent
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_normal
+                Accessible.name: qsTr("Crop %1").arg(cropField.label)
+                onEditingFinished: {
+                    const v = parseInt(text)
+                    if (!isNaN(v)) {
+                        cropField.apply(v)
+                        cropField.edited(v)
+                    }
+                    text = Qt.binding(() => (root._rev, effects.crop(cropField.side)))
+                }
+            }
+
+            Text {
+                text: qsTr("px")
+                color: root.iconColor
+                font.family: VLCStyle.fontFamily
+                font.pixelSize: VLCStyle.fontSize_normal
+            }
+        }
+    }
+
+    // keeps two opposite crop sides the same (the Figma link icon)
+    component LinkToggle: T.AbstractButton {
+        id: link
+
+        property string accessibleName
+
+        checkable: true
+        implicitWidth: VLCStyle.dp(24, VLCStyle.scale)
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+        Accessible.name: accessibleName
+
+        HoverHandler { cursorShape: Qt.PointingHandCursor }
+
+        contentItem: Canvas {
+            readonly property color ink: link.checked ? theme.accent : root.valueColor
+            onInkChanged: requestPaint()
+            onPaint: {
+                const ctx = getContext("2d")
+                ctx.reset()
+                ctx.strokeStyle = ink
+                ctx.lineWidth = 1.5
+                ctx.lineCap = "round"
+                const cy = height / 2, r = 3.5
+                // two open links facing each other
+                ctx.beginPath()
+                ctx.moveTo(width / 2 - 2, cy - r); ctx.lineTo(width / 2 - 6, cy - r)
+                ctx.arc(width / 2 - 6, cy, r, -Math.PI / 2, Math.PI / 2, true)
+                ctx.lineTo(width / 2 - 2, cy + r)
+                ctx.moveTo(width / 2 + 2, cy - r); ctx.lineTo(width / 2 + 6, cy - r)
+                ctx.arc(width / 2 + 6, cy, r, -Math.PI / 2, Math.PI / 2, false)
+                ctx.lineTo(width / 2 + 2, cy + r)
+                ctx.stroke()
             }
         }
     }
