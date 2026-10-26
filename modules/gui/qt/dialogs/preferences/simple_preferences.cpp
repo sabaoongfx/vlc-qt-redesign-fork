@@ -334,7 +334,7 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     addCategory( qtr( "Extensions" ), qtr( "Add-ons and scripts" ), VLCIcons::add, SPrefsExtensions );
     layout->addStretch( 1 );
 
-    qobject_cast<QPushButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
+    qobject_cast<QPushButton*>(mapper->mapping(SPrefsDefaultCat))->setChecked(true);
     layout->setContentsMargins( 0, 0, 0, 8 );
     layout->setSpacing( 0 );
 

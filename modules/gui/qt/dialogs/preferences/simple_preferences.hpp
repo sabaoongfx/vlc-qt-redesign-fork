@@ -67,7 +67,7 @@ enum {
     SPrefsExtensions,
     SPrefsMax
 };
-#define SPrefsDefaultCat SPrefsInterface
+#define SPrefsDefaultCat SPrefsGeneral
 
 enum {
     CachingCustom = 0,
