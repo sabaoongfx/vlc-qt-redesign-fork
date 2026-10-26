@@ -235,14 +235,15 @@ static QIcon redesignCategoryIcon( QChar glyph, const QPalette& palette, qreal d
     QIcon icon;
     for( const bool on : { false, true } )
     {
-        QPixmap pix( QSize( size, size ) * dpr );
+        // the glyph in the left 20px of a wider pixmap: the label starts 14px after it (Figma x 50 on the card)
+        QPixmap pix( QSize( size + 10, size ) * dpr );
         pix.setDevicePixelRatio( dpr );
         pix.fill( Qt::transparent );
         QPainter painter( &pix );
         QFont font( QStringLiteral( "VLCIcons" ) );
         font.setPixelSize( size );
         painter.setFont( font );
-        painter.setPen( on ? palette.color( QPalette::Highlight ) : palette.color( QPalette::PlaceholderText ) );
+        painter.setPen( on ? palette.color( QPalette::Highlight ) : SettingsChrome::label( palette ) );
         painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( glyph ) );
         icon.addPixmap( pix, QIcon::Normal, on ? QIcon::On : QIcon::Off );
     }
@@ -263,9 +264,11 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     connect( mapper, &QSignalMapper::mappedInt, this, &SPrefsCatList::switchPanel );
     const qreal dpr = devicePixelRatioF();
 
+    /* Figma rhythm: rows every 48px (40px tall), headings centred 44px from their neighbours */
     auto addHeading = [&]( const QString& text ) {
         QLabel *heading = new QLabel( text, this );
         heading->setObjectName( QStringLiteral( "categoryHeading" ) );
+        heading->setFixedHeight( 41 );
         layout->addWidget( heading );
         m_headings.append( qMakePair( static_cast<QWidget *>( heading ), QList<QAbstractButton *>() ) );
     };
@@ -275,7 +278,7 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         button->setText( label );
         button->setToolTip( ltooltip );
         button->setIcon( redesignCategoryIcon( glyph, QApplication::palette(), dpr ) );
-        button->setIconSize( QSize( 20, 20 ) );
+        button->setIconSize( QSize( 30, 20 ) );
         button->setFlat( true );
         button->setCheckable( true );
         button->setAutoExclusive( true );
@@ -293,15 +296,39 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
             m_headings.last().second.append( button );
     };
 
-    /* Figma: a search field on top of the categories */
+    /* Figma: a search field in the header band, over the card of categories */
     QLineEdit *search = new QLineEdit( this );
     search->setObjectName( QStringLiteral( "settingsSearch" ) );
     search->setPlaceholderText( qtr( "Search" ) );
     search->setClearButtonEnabled( true );
     search->setAccessibleName( qtr( "Search settings" ) );
+    search->setFixedHeight( 34 );
+    {
+        const QPalette pal = QApplication::palette();
+        QPalette searchPalette = search->palette();
+        searchPalette.setColor( QPalette::PlaceholderText, SettingsChrome::heading( pal ) );
+        search->setPalette( searchPalette );
+        // the magnifier, 11px in like the Figma field
+        const int size = 20;
+        QPixmap pix( QSize( size, size ) * dpr );
+        pix.setDevicePixelRatio( dpr );
+        pix.fill( Qt::transparent );
+        QPainter painter( &pix );
+        QFont font( QStringLiteral( "VLCIcons" ) );
+        font.setPixelSize( size );
+        painter.setFont( font );
+        painter.setPen( SettingsChrome::heading( pal ) );
+        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( VLCIcons::search ) );
+        QLabel *icon = new QLabel( search );
+        icon->setPixmap( pix );
+        icon->setGeometry( 11, 7, size, size );
+        icon->setAttribute( Qt::WA_TransparentForMouseEvents );
+    }
     connect( search, &QLineEdit::textChanged, this, &SPrefsCatList::searchChanged );
     layout->addWidget( search );
-    layout->addSpacing( 4 );
+    m_search = search;
+    // 16px down to the card, 4px into it
+    layout->addSpacing( 19 );
     m_noMatch = new QLabel( qtr( "No settings match" ), this );
     m_noMatch->setObjectName( QStringLiteral( "categoryHeading" ) );
     m_noMatch->hide();
@@ -327,22 +354,36 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     layout->addStretch( 1 );
 
     qobject_cast<QPushButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
-    layout->setContentsMargins( 8, 8, 8, 8 );
-    layout->setSpacing( 2 );
+    layout->setContentsMargins( 0, 0, 0, 8 );
+    layout->setSpacing( 0 );
 
-    /* palette roles follow the Day/Night application palette (see SystemPalette) */
-    setAttribute( Qt::WA_StyledBackground, true );
+    /* the card itself is painted (paintEvent), below the search field */
+    const QPalette pal = QApplication::palette();
     setStyleSheet( QStringLiteral(
-        "SPrefsCatList { background: palette(alternate-base); border-radius: 8px; }"
-        "QLabel#categoryHeading { color: palette(placeholder-text); padding: 12px 10px 4px 10px; }"
-        "QPushButton { text-align: left; padding: 10px 10px; border: none; border-radius: 6px;"
-        " background: transparent; color: palette(text); }"
-        "QPushButton:hover { background: palette(button); }"
-        "QPushButton:checked { background: palette(button); }" ) );
+        "QLineEdit#settingsSearch { background: %1; border: none; border-radius: 6px; padding: 0px 8px 0px 38px;"
+        " color: %4; placeholder-text-color: %2; font-size: 14px; }"
+        "QLabel#categoryHeading { color: %2; padding: 0px 16px; font-size: 12px; }"
+        "QPushButton { text-align: left; padding: 10px 10px; margin: 4px 6px; min-height: 20px; border: none;"
+        " border-radius: 4px; background: transparent; color: %3; font-size: 14px; }"
+        "QPushButton:hover { background: %5; }"
+        "QPushButton:checked { background: %5; color: %4; }" )
+        .arg( SettingsChrome::field( pal ).name(), SettingsChrome::heading( pal ).name(),
+              SettingsChrome::label( pal ).name(), SettingsChrome::current( pal ).name(),
+              SettingsChrome::selected( pal ).name() ) );
 
     setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Expanding );
-    setFixedWidth( 220 );
+    setFixedWidth( 200 );
     setLayout( layout );
+}
+
+void SPrefsCatList::paintEvent( QPaintEvent * )
+{
+    QPainter painter( this );
+    painter.setRenderHint( QPainter::Antialiasing );
+    painter.setPen( Qt::NoPen );
+    painter.setBrush( SettingsChrome::card( QApplication::palette() ) );
+    const int top = m_search->geometry().bottom() + 1 + 16;
+    painter.drawRoundedRect( QRect( 0, top, width(), height() - top ), 8, 8 );
 }
 
 void SPrefsCatList::switchPanel( int i )
@@ -471,7 +512,8 @@ public:
         , m_layout( new QVBoxLayout( page ) )
         , m_target( m_layout )
     {
-        m_layout->setContentsMargins( 24, 0, 24, 24 );
+        // sections start under the page title (x 240 in the window)
+        m_layout->setContentsMargins( 0, 0, 24, 24 );
         m_layout->setSpacing( 0 );
 
         /* Figma: grey 14px labels, 17px section titles, the selected segment on the accent-dim
@@ -484,7 +526,7 @@ public:
                                              base.greenF() + ( accent.greenF() - base.greenF() ) * mix,
                                              base.blueF() + ( accent.blueF() - base.blueF() ) * mix );
         page->setStyleSheet( QStringLiteral(
-            "QLabel#settingsSection { font-size: 17px; color: palette(text); }"
+            "QLabel#settingsSection { font-size: 17px; color: %3; }"
             "QLabel#settingsLabel { font-size: 14px; color: palette(placeholder-text); }"
             "QWidget#settingsSegments { background: palette(base); border: 1px solid palette(mid); border-radius: 6px; }"
             "QWidget#settingsSegments QPushButton { border: none; border-radius: 4px; background: transparent;"
@@ -493,7 +535,7 @@ public:
             "QWidget#settingsSegments QPushButton#settingsSwatch { padding: 0; border-radius: 4px; border: 2px solid transparent; }"
             "QWidget#settingsSegments QPushButton#settingsSwatch:checked { border: 2px solid palette(text); }"
             "QPushButton#settingsAdvanced { color: palette(placeholder-text); padding: 10px; }" )
-            .arg( dim.name(), accent.name() ) );
+            .arg( dim.name(), accent.name(), SettingsChrome::section( palette ).name() ) );
     }
 
     ~SettingsRows()
@@ -505,7 +547,7 @@ public:
     {
         QLabel *label = new QLabel( title );
         label->setObjectName( QStringLiteral( "settingsSection" ) );
-        label->setContentsMargins( 0, m_target->count() ? 28 : 12, 0, 6 );
+        label->setContentsMargins( 0, m_target->count() ? 28 : 15, 0, 6 );
         m_target->addWidget( label );
         m_section = label;
     }
@@ -768,18 +810,19 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
     QVBoxLayout *panel_layout = new QVBoxLayout();
     QWidget *panel = new QWidget();
-    panel_layout->setContentsMargins(3, 3, 3, 3);
+    panel_layout->setContentsMargins( 0, 0, 0, 0 );
 
-    // Title Label
+    /* redesign: the title sits in the Figma header band (16px, dim), level with the search field */
     QLabel *panel_label = new QLabel;
     QFont labelFont = QApplication::font();
-    labelFont.setPointSize( labelFont.pointSize() + 6 );
+    labelFont.setPixelSize( 16 );
     panel_label->setFont( labelFont );
-
-    // Title <hr>
-    QFrame *title_line = new QFrame;
-    title_line->setFrameShape(QFrame::HLine);
-    title_line->setFrameShadow(QFrame::Sunken);
+    panel_label->setFixedHeight( 34 );
+    {
+        QPalette titlePalette = panel_label->palette();
+        titlePalette.setColor( QPalette::WindowText, SettingsChrome::title( QApplication::palette() ) );
+        panel_label->setPalette( titlePalette );
+    }
 
     QFont italicFont = QApplication::font();
     italicFont.setItalic( true );
@@ -1874,12 +1917,16 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
     }
 
     panel_layout->addWidget( panel_label );
-    panel_layout->addWidget( title_line );
+    panel_layout->addSpacing( 16 );
 
     QScrollArea *scroller= new QScrollArea;
     scroller->setWidget( panel );
     scroller->setWidgetResizable( true );
     scroller->setFrameStyle( QFrame::NoFrame );
+    // the window body shows through (PrefsDialog paints it)
+    scroller->setStyleSheet( QStringLiteral( "QScrollArea { background: transparent; }" ) );
+    scroller->viewport()->setAutoFillBackground( false );
+    panel->setAutoFillBackground( false );
     panel_layout->addWidget( scroller );
 
     setLayout( panel_layout );

@@ -37,6 +37,7 @@ prefs-cats-day   | 1 | ml   |                       | sleep:2 click:80,1036 slee
 prefs-save       | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:General sleep:0.6 press:Privacy sleep:0.6 press:Network sleep:0.6 press:Performance sleep:0.6 press:Recording sleep:0.6 press:Extensions sleep:0.6 press:Controls sleep:0.6 press:Playback sleep:0.6 press:Video sleep:0.6 press:Audio sleep:0.6 press:Subtitles sleep:0.6 press:Interface sleep:0.6 press:Library sleep:0.6 press:Save sleep:1.5 term
 prefs-search     | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:Search_settings sleep:0.3 type:cach sleep:2.5 shotwin:a geom:a
 prefs-day        | 1 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 shotwin:interface
+prefs-all        | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 click:542,952 sleep:1.5 shotwin:a
 customize        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
 customize-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
 # resume prompt: play past 10 s once, then reopen the same file

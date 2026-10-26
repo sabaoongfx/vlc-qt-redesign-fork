@@ -45,6 +45,7 @@
 #include <QStackedWidget>
 #include <QSplitter>
 #include <QShortcut>
+#include <QPainter>
 
 #include <vlc_configuration.h>
 #include <vlc_modules.h>
@@ -116,9 +117,11 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     simple_split_widget->layout()->addWidget( simple_tree_panel );
     simple_split_widget->layout()->addWidget( simple_panels_stack );
 
-    simple_tree_panel->layout()->setContentsMargins(1, 1, 1, 1);
-    simple_panels_stack->setContentsMargins( 6, 0, 0, 3 );
+    /* the Figma window: sidebar card at x 8-208, page title and sections at x 240 */
+    simple_tree_panel->layout()->setContentsMargins( 0, 0, 0, 0 );
+    simple_panels_stack->setContentsMargins( 0, 0, 0, 0 );
     simple_split_widget->layout()->setContentsMargins(0, 0, 0, 0);
+    simple_split_widget->layout()->setSpacing( 32 );
 
     stack->insertWidget( SIMPLE, simple_split_widget );
 
@@ -193,7 +196,9 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     main_layout->addWidget( types, 4, 0, 1, 1, Qt::AlignLeft | Qt::AlignVCenter );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );
-    main_layout->setContentsMargins(9, 9, 9, 9);
+    main_layout->setContentsMargins( 8, 8, 8, 8 );
+    // the header band is only for the Figma (simple) view
+    connect( stack, &QStackedWidget::currentChanged, this, QOverload<>::of( &QWidget::update ) );
 
     switch( var_InheritInteger( p_intf, "qt-initial-prefs-view" ) )
     {
@@ -212,6 +217,16 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
 
     /* redesign: Figma settings window size */
     QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, QSize( 1078, 860 ) );
+}
+
+/* redesign: the Figma window body, and the header band behind the search field and the page title */
+void PrefsDialog::paintEvent( QPaintEvent * )
+{
+    QPainter painter( this );
+    const QPalette pal = QApplication::palette();
+    painter.fillRect( rect(), SettingsChrome::body( pal ) );
+    if( stack->currentIndex() == SIMPLE )
+        painter.fillRect( QRect( 0, 0, width(), SettingsChrome::bandHeight ), SettingsChrome::band( pal ) );
 }
 
 PrefsDialog::~PrefsDialog()

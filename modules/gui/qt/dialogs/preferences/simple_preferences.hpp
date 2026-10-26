@@ -44,6 +44,8 @@ class MLFoldersEditor;
 #endif
 
 #include <QWidget>
+#include <QColor>
+#include <QPalette>
 class QLineEdit;
 class QLabel;
 class QPushButton;
@@ -84,6 +86,24 @@ class QString;
 class QTreeWidgetItem;
 #endif
 
+/* redesign: the Figma settings window (dark frames only; Day maps them to palette roles): a header band
+ * holding the search and the page title over the window body, the categories on a card */
+namespace SettingsChrome
+{
+constexpr int bandHeight = 50;
+inline bool dark( const QPalette &p ) { return p.color( QPalette::Window ).lightness() < 128; }
+inline QColor band( const QPalette &p ) { return dark( p ) ? QColor( 0x09, 0x09, 0x09 ) : p.color( QPalette::Window ); }
+inline QColor body( const QPalette &p ) { return dark( p ) ? QColor( 0x0E, 0x0E, 0x0E ) : p.color( QPalette::Base ); }
+inline QColor card( const QPalette &p ) { return dark( p ) ? QColor( 0x18, 0x18, 0x18 ) : p.color( QPalette::Light ); }
+inline QColor selected( const QPalette &p ) { return dark( p ) ? QColor( 0x22, 0x22, 0x22 ) : p.color( QPalette::Midlight ); }
+inline QColor field( const QPalette &p ) { return dark( p ) ? QColor( 0x14, 0x14, 0x14 ) : p.color( QPalette::Base ); }
+inline QColor title( const QPalette &p ) { return dark( p ) ? QColor( 0x96, 0x96, 0x96 ) : QColor( 0x3A, 0x3A, 0x3A ); }
+inline QColor label( const QPalette &p ) { return dark( p ) ? QColor( 0x8F, 0x8F, 0x8F ) : QColor( 0x4C, 0x4C, 0x4C ); }
+inline QColor current( const QPalette &p ) { return dark( p ) ? QColor( 0xEA, 0xEA, 0xEA ) : p.color( QPalette::Text ); }
+inline QColor section( const QPalette &p ) { return dark( p ) ? QColor( 0xC6, 0xC6, 0xC6 ) : p.color( QPalette::Text ); }
+inline QColor heading( const QPalette &p ) { return dark( p ) ? QColor( 0x6B, 0x6B, 0x6B ) : p.color( QPalette::PlaceholderText ); }
+}
+
 class SPrefsCatList : public QWidget
 {
     Q_OBJECT
@@ -101,6 +121,9 @@ private:
     QList<int> m_order;
     QList<QPair<QWidget *, QList<QAbstractButton *>>> m_headings;
     QWidget *m_noMatch = nullptr;
+    QWidget *m_search = nullptr;
+protected:
+    void paintEvent( QPaintEvent * ) override;
 signals:
     void currentItemChanged( int );
     void searchChanged( const QString & );

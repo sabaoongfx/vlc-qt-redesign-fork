@@ -46,6 +46,9 @@ public:
     PrefsDialog( QWindow *, qt_intf_t * );
     virtual ~PrefsDialog();
 
+protected:
+    void paintEvent( QPaintEvent * ) override;
+
 private:
     size_t count;
     module_t **p_list;

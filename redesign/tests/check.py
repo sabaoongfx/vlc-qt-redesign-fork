@@ -301,6 +301,32 @@ if im:
     c = brightest(im, (R - 80, 14, R - 4, 42))
     (ok if near(c, (0x6B, 0x6B, 0x6B), 6) else fail)('rclick-menu', f'Pause hotkey hint {hexc(c)} (want #6B6B6B)')
 
+# 13c. settings window chrome measured on the Figma "Settings - audio" frame (window coordinates)
+im = img('prefs-cats', 'audio')
+if im:
+    for what, xy, want in (('header band', (600, 20), (0x09, 0x09, 0x09)), ('window body', (600, 70), (0x0E, 0x0E, 0x0E)),
+                           ('sidebar card', (100, 300), (0x18, 0x18, 0x18)), ('search field', (150, 14), (0x14, 0x14, 0x14))):
+        c = im.getpixel(xy)
+        (ok if near(c, want, 2) else fail)('prefs-cats', f'{what} {hexc(c)} (want {hexc(want)})')
+    card = im.getpixel((100, 300))
+    top = next((y for y in range(40, 80) if im.getpixel((100, y)) == card), None)
+    (ok if top == 58 else fail)('prefs-cats', f'sidebar card top {top} (want 58)')
+    left = next((x for x in range(0, 40) if im.getpixel((x, 300)) == card), None)
+    (ok if left == 8 else fail)('prefs-cats', f'sidebar card x {left} (want 8)')
+    ink = ink_x(im, (215, 8, 600, 44), im.getpixel((600, 20)))
+    (ok if ink and abs(ink[0] - 240) <= 1 else fail)('prefs-cats', f'page title x {ink and ink[0]} (want 240)')
+    c = brightest(im, (215, 8, 600, 44))
+    (ok if near(c, (0x96, 0x96, 0x96), 6) else fail)('prefs-cats', f'page title {hexc(c)} (want #969696)')
+    # General (first row, centre y 125) and the current row Audio (y 454, label #EAEAEA)
+    for name, cy, want in (('General', 125, (0x8F, 0x8F, 0x8F)), ('Audio', 454, (0xEA, 0xEA, 0xEA))):
+        bg = im.getpixel((180, cy))
+        ink = ink_x(im, (46, cy - 6, 180, cy + 6), bg)
+        (ok if ink and abs(ink[0] - 58) <= 1 else fail)('prefs-cats', f'{name} label x {ink and ink[0]} (want 58)')
+        c = brightest(im, (46, cy - 6, 180, cy + 6))
+        (ok if near(c, want, 6) else fail)('prefs-cats', f'{name} label {hexc(c)} (want {hexc(want)})')
+    ink = ink_x(im, (215, 60, 400, 105), im.getpixel((600, 70)))
+    (ok if ink and abs(ink[0] - 240) <= 1 else fail)('prefs-cats', f'Output section x {ink and ink[0]} (want 240)')
+
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
