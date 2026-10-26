@@ -32,8 +32,9 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   (40px top / 55px bottom, #1B1B1B, centred controls, 15px times, grey 12-14px window buttons, 10px stage radius),
   library layout (sidebar card x 8-208, rows at x 30/63, page margins 28/24, 20px grid gaps, 16:9 covers, header field
   y 60-93 / separator 110), mini player card (391x338, framed preview, no progress handle), side panel (colours, content-sized tabs, 220x48
-  dropdowns, 138x34 fields, 1px #222222 section lines; measured on the `(1)` SVGs).
-  Next: menus, settings window chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+  dropdowns, 138x34 fields, 1px #222222 section lines; measured on the `(1)` SVGs), menus (`RedesignMenuStyle`: #181818 card,
+  48px rows, label x 52 #8F8F8F, right-aligned spaced shortcuts #6B6B6B, hotkey hints in the right-click menu).
+  Next: settings window chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
 - Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
   side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar.
 
@@ -128,6 +129,9 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Qt Quick Controls `indicator`/`background`/`contentItem` are deferred: a grouped override (`indicator.x:`) from a
   derived file is silently ignored. Add a property on the base component instead (`ComboBoxExt.indicatorRightMargin`).
 - `SliderBar.showHandle` hides the handle via opacity (its `visible` is driven by hover states).
+- Harness without a graphical login (machine at the SDDM greeter, shell env says XFCE): `run.sh` makes a private `XDG_RUNTIME_DIR` and uses
+  `--aout=adummy`, `inner.sh` pins `XDG_CURRENT_DESKTOP=KDE` (else Qt loads the GTK theme and its ATK bridge hides the tree from `at.py`) and runs
+  spectacle on Wayland (as an X11 client it hangs there).
 - Harness: `at.py press` prefers on-screen matches; Widgets QMenu items are not reachable by AT-SPI (click by position).
 
 - TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
@@ -140,8 +144,10 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Widgets dialogs (Preferences, file pickers, message boxes) get their look from `makeWidgetsPalette()` in `style/systempalette.cpp`.
   `QStyleHints::setColorScheme` did nothing on this Fusion build. `VLCStyle.qml` has two `SystemPalette`s (`themePalette`, `darkPalette` = fixed Night);
   only `themePalette` may set the application palette or Day mode turns dark.
-- Widgets `QMenu` popups (`VLCMenu`, `QmlMenuBarMenu` in `menus/`): Fusion draws the menu background as a lightened `Window` colour, which went white in Day.
-  Class palettes (`setPalette(pal, "QMenu")`) did not help; `redesignMenuStyleSheet()` in `menus/menus.hpp` (palette-role stylesheet) fixed it, verified in `lib-menu-*`.
+- Widgets `QMenu` popups (`VLCMenu`, `QmlMenuBarMenu` in `menus/`) are drawn by `RedesignMenuStyle` (`menus/menus.hpp`, code in `menus.cpp`), a
+  QProxyStyle: a stylesheet cannot colour or right-align the shortcut. A style does not cascade to submenus like a stylesheet; `apply()` installs
+  an event filter (ChildPolished) and also applies to existing child menus (children are polished before their parent reports them).
+  Hotkey hints are appended to action text after a tab (`hotkeyHint()`), never set as QAction shortcuts (the hotkeys module handles the key).
 - Fonts: Inter ships as static Light/Regular/Medium/SemiBold/Bold (`pixmaps/Inter-*.ttf`), not the variable font (Qt exposed only its Regular
   instance). Qt resolves every weight correctly (checked with a diagnostic in CI), but Qt Quick Controls do not always follow
   `QApplication::setFont()`: some DemiBold/Bold labels inside Controls (Home section headings, the Open File button) kept the platform font.
