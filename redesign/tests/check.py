@@ -41,12 +41,17 @@ def geom(scene, tag='a'):
     return rows
 
 
+def pixels(im):
+    # Pillow 12 deprecates getdata()
+    return im.get_flattened_data() if hasattr(im, 'get_flattened_data') else im.getdata()
+
+
 def dominant(im, box):
-    return Counter(im.crop(box).getdata()).most_common(1)[0][0]
+    return Counter(pixels(im.crop(box))).most_common(1)[0][0]
 
 
 def count_color(im, box, color, tol=12):
-    return sum(1 for p in im.crop(box).getdata() if near(p, color, tol))
+    return sum(1 for p in pixels(im.crop(box)) if near(p, color, tol))
 
 
 # 1. QML warnings / errors in every log
@@ -110,7 +115,23 @@ if g:
     (ok if crumb else fail)('resume-prompt', 'folder crumb visible while the resume prompt is shown')
     (ok if 'Continue' in g else fail)('resume-prompt', 'resume prompt shown')
 
-# 7. every scene produced its screenshots
+# 7. mini player card: the video corners are rounded (covered in the card colour)
+im, g = img('lib-mini-video'), geom('lib-mini-video')
+if im and g.get('video content') and g.get('Mini player'):
+    x, y, w, h = g['video content'][0]
+    card = im.getpixel((g['Mini player'][0][0] + 4, y + h // 2))
+    corners = [im.getpixel(p) for p in ((x, y), (x + w - 1, y), (x, y + h - 1), (x + w - 1, y + h - 1))]
+    (ok if all(near(c, card, 8) for c in corners) else fail)('lib-mini-video', f'video corners {[hexc(c) for c in corners]} (want the card colour {hexc(card)})')
+
+# 8. Customize Player: Figma header band and body colours (dark)
+im = img('customize')
+if im:
+    c = dominant(im, (300, 5, 700, 15))
+    (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('customize', f'header {hexc(c)} (want #090909)')
+    c = dominant(im, (300, 580, 700, 600))
+    (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('customize', f'body {hexc(c)} (want #0F0F0F)')
+
+# 9. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):
