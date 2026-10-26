@@ -48,11 +48,13 @@ FocusScope {
     readonly property bool _dark: theme.palette?.isDark ?? true
     readonly property color barColor: _dark ? "#090909" : "#BDBDBC"     // tab bar, footer
     readonly property color sectionColor: _dark ? "#0E0E0E" : "#D2D2D1" // section blocks
-    readonly property color gapColor: _dark ? "#191919" : "#C1C1C0"     // line between sections
-    readonly property color footerLineColor: _dark ? "#222222" : "#BDBDBC"
+    readonly property color gapColor: _dark ? "#191919" : "#C1C1C0"     // hovered buttons, field outlines
+    readonly property color lineColor: _dark ? "#222222" : "#BDBDBC"    // 1px line between sections
     readonly property color fieldColor: _dark ? "#090909" : "#E9E9E8"   // value fields
-    readonly property color labelColor: _dark ? "#8F8F8F" : "#4A4A4A"
-    readonly property color textColor: _dark ? "#E3E3E3" : "#151515"
+    readonly property color labelColor: _dark ? "#6B6B6B" : "#4A4A4A"  // row labels, inactive tabs
+    readonly property color valueColor: _dark ? "#8F8F8F" : "#2A2A2A"  // field values, active tab
+    readonly property color headingColor: _dark ? "#969696" : "#151515"
+    readonly property color iconColor: _dark ? "#404040" : "#8A8A8A"   // inactive tab icons
 
     implicitWidth: preferredWidth
     focus: true
@@ -73,13 +75,26 @@ FocusScope {
             Layout.preferredHeight: VLCStyle.dp(50, VLCStyle.scale)
             color: root.barColor
 
-            RowLayout {
+            // Figma: tabs sized to their content, underline 8px wider than the content on
+            // each side, 14px from the panel edges, the rest of the width spread between them
+            Row {
+                id: tabRow
+
+                readonly property real tabsWidth: {
+                    let w = 0
+                    for (let i = 0; i < tabRepeater.count; ++i)
+                        w += tabRepeater.itemAt(i)?.implicitWidth ?? 0
+                    return w
+                }
+
                 anchors.fill: parent
-                anchors.leftMargin: VLCStyle.margin_xsmall
-                anchors.rightMargin: VLCStyle.margin_xsmall
-                spacing: 0
+                anchors.leftMargin: VLCStyle.dp(14, VLCStyle.scale)
+                anchors.rightMargin: VLCStyle.dp(14, VLCStyle.scale)
+                spacing: Math.max(0, (width - tabsWidth) / Math.max(tabRepeater.count - 1, 1))
 
                 Repeater {
+                    id: tabRepeater
+
                     model: [
                         { label: qsTr("Playback"), icon: VLCIcons.play },
                         { label: qsTr("Video"), icon: VLCIcons.topbar_video },
@@ -94,10 +109,12 @@ FocusScope {
                         required property var modelData
 
                         readonly property bool current: root.currentTab === index
-                        readonly property color tint: (current || hovered) ? root.textColor : root.labelColor
+                        readonly property color tint: (current || hovered) ? root.valueColor : root.labelColor
 
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
+                        height: tabRow.height
+                        implicitWidth: implicitContentWidth + leftPadding + rightPadding
+                        leftPadding: VLCStyle.margin_xsmall
+                        rightPadding: VLCStyle.margin_xsmall
 
                         text: modelData.label
                         Accessible.name: modelData.label
@@ -106,8 +123,7 @@ FocusScope {
                         background: Item {
                             Rectangle {
                                 anchors.bottom: parent.bottom
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                width: parent.width - VLCStyle.margin_xsmall
+                                width: parent.width
                                 height: VLCStyle.dp(2, VLCStyle.scale)
                                 color: theme.accent
                                 visible: tab.current
@@ -115,15 +131,19 @@ FocusScope {
                         }
 
                         contentItem: Item {
+                            implicitWidth: tabContent.implicitWidth
+
                             Row {
+                                id: tabContent
+
                                 anchors.centerIn: parent
-                                spacing: VLCStyle.dp(6, VLCStyle.scale)
+                                spacing: VLCStyle.dp(10, VLCStyle.scale)
 
                                 Widgets.IconLabel {
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: tab.modelData.icon
                                     font.pixelSize: VLCStyle.dp(16, VLCStyle.scale)
-                                    color: tab.current ? theme.accent : tab.tint
+                                    color: tab.current ? theme.accent : (tab.hovered ? root.valueColor : root.iconColor)
                                 }
 
                                 Text {
@@ -294,7 +314,7 @@ FocusScope {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 height: VLCStyle.dp(1, VLCStyle.scale)
-                color: root.footerLineColor
+                color: root.lineColor
             }
 
             T.AbstractButton {
@@ -348,8 +368,8 @@ FocusScope {
         default property alias content: sectionColumn.data
 
         Layout.fillWidth: true
-        // Figma: sections are divided by a 2px line, not a gap
-        implicitHeight: sectionColumn.implicitHeight + VLCStyle.margin_normal * 2 + separator.height
+        // Figma: sections are divided by a 1px line, 20px above the title, 18px below the last row
+        implicitHeight: sectionColumn.implicitHeight + VLCStyle.dp(38, VLCStyle.scale) + separator.height
         color: root.sectionColor
 
         Rectangle {
@@ -358,26 +378,28 @@ FocusScope {
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.bottom: parent.bottom
-            height: VLCStyle.dp(2, VLCStyle.scale)
-            color: root.gapColor
+            height: VLCStyle.dp(1, VLCStyle.scale)
+            color: root.lineColor
         }
 
         ColumnLayout {
             id: sectionColumn
 
             anchors.fill: parent
-            anchors.margins: VLCStyle.margin_normal
+            anchors.topMargin: VLCStyle.dp(20, VLCStyle.scale)
             anchors.leftMargin: VLCStyle.margin_large
-            anchors.bottomMargin: VLCStyle.margin_normal + separator.height
-            spacing: VLCStyle.margin_small
+            anchors.rightMargin: VLCStyle.dp(20, VLCStyle.scale)
+            anchors.bottomMargin: VLCStyle.dp(18, VLCStyle.scale) + separator.height
+            // Figma: rows 20px apart
+            spacing: VLCStyle.dp(20, VLCStyle.scale)
 
             Text {
                 visible: section.title !== ""
                 text: section.title
-                color: root.textColor
+                color: root.headingColor
                 font.family: VLCStyle.fontFamily
                 font.pixelSize: VLCStyle.fontSize_xlarge
-                Layout.bottomMargin: VLCStyle.margin_xxsmall
+                Layout.bottomMargin: -VLCStyle.dp(4, VLCStyle.scale)
             }
         }
     }
@@ -405,11 +427,14 @@ FocusScope {
 
         RowLabel { text: valueRow.label }
 
+        // Figma: 138x34, radius 5, a 2px outline
         Rectangle {
-            Layout.preferredWidth: VLCStyle.dp(136, VLCStyle.scale)
-            Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
-            radius: VLCStyle.dp(4, VLCStyle.scale)
+            Layout.preferredWidth: VLCStyle.dp(138, VLCStyle.scale)
+            Layout.preferredHeight: VLCStyle.dp(34, VLCStyle.scale)
+            radius: VLCStyle.dp(5, VLCStyle.scale)
             color: root.fieldColor
+            border.color: root.gapColor
+            border.width: VLCStyle.dp(2, VLCStyle.scale)
 
             TextInput {
                 id: valueInput
@@ -420,7 +445,7 @@ FocusScope {
                 verticalAlignment: TextInput.AlignVCenter
                 readOnly: !valueRow.editable
                 text: valueRow.value
-                color: root.textColor
+                color: root.valueColor
                 selectionColor: theme.accent
                 font.family: VLCStyle.fontFamily
                 font.pixelSize: VLCStyle.fontSize_large
@@ -448,13 +473,19 @@ FocusScope {
         Widgets.ComboBoxExt {
             id: combo
 
-            Layout.preferredWidth: VLCStyle.dp(218, VLCStyle.scale)
-            Layout.preferredHeight: VLCStyle.dp(44, VLCStyle.scale)
+            Layout.preferredWidth: VLCStyle.dp(220, VLCStyle.scale)
+            Layout.preferredHeight: VLCStyle.dp(48, VLCStyle.scale)
 
-            // Figma: a flat #191919 field without an outline, 14px regular text
+            // Figma Dropdown: #191919 inside a 2px #090909 ring (radius 6), 14px #8F8F8F text
+            // 18px from the left edge, a 12px chevron 21px from the right one
             bgColor: root._dark ? "#191919" : "#E9E9E8"
-            borderColor: "transparent"
+            borderColor: root.fieldColor
+            color: root.valueColor
             labelPixelSize: VLCStyle.fontSize_large
+            indicatorPixelSize: VLCStyle.dp(36, VLCStyle.scale)
+            leftPadding: VLCStyle.dp(18, VLCStyle.scale)
+            rightPadding: VLCStyle.dp(18, VLCStyle.scale)
+            indicatorRightMargin: VLCStyle.dp(8, VLCStyle.scale)
 
             model: comboRow.choices
             textRole: "display"
@@ -636,7 +667,7 @@ FocusScope {
                     Layout.fillWidth: true
                     Layout.leftMargin: VLCStyle.margin_normal
                     text: qsTr("Expand Settings")
-                    color: root.textColor
+                    color: root.valueColor
                     font.family: VLCStyle.fontFamily
                     font.pixelSize: VLCStyle.fontSize_large
                 }
@@ -675,7 +706,7 @@ FocusScope {
             Text {
                 anchors.verticalCenter: parent.verticalCenter
                 text: link.text
-                color: root.textColor
+                color: root.valueColor
                 font.family: VLCStyle.fontFamily
                 font.pixelSize: VLCStyle.fontSize_large
             }

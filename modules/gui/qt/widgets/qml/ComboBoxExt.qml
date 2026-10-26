@@ -53,6 +53,8 @@ T.ComboBox {
     property color borderColor: theme.border
     // size of the displayed text (ListLabel's 12px by default)
     property int labelPixelSize: VLCStyle.fontSize_normal
+    property int indicatorPixelSize: VLCStyle.icon_normal
+    property real indicatorRightMargin: 0
 
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
@@ -72,9 +74,9 @@ T.ComboBox {
     }
 
     indicator: Widgets.IconLabel {
-        x: control.width - width - rightPadding
+        x: control.width - width - rightPadding - control.indicatorRightMargin
         y: control.topPadding + (control.availableHeight - height) / 2
-        font.pixelSize: VLCStyle.icon_normal
+        font.pixelSize: control.indicatorPixelSize
         font.bold: true
         text: VLCIcons.expand
         color: control.color

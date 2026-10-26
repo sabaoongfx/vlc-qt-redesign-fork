@@ -104,6 +104,43 @@ if im:
     c = dominant(im, (W - 380, 700, W - 40, 720))
     (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('panel-tabs', f'panel below the sections {hexc(c)} (want #0E0E0E)')
 
+# 4b. right panel measured on the Figma Subtitles SVGs (panel-relative x, the panel top is y 40)
+def accent_span(im, y, x0, x1):
+    xs = [x for x in range(x0, x1) if near(im.getpixel((x, y)), ACCENT, 30)]
+    return (min(xs), max(xs) + 1) if xs else None
+
+def brightest(im, box):
+    return max(pixels(im.crop(box)), key=sum)
+
+g = geom('panel-tabs', 'subs')
+combo = (g.get('Track 1 - [English]') or [None])[0]
+if im and combo:
+    px, py = combo[0] - 160, 40
+    (ok if combo[2:] == (220, 48) else fail)('panel-tabs', f'dropdown {combo[2]}x{combo[3]} (want 220x48)')
+    c = im.getpixel((combo[0] + 1, combo[1] + 24))
+    (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('panel-tabs', f'dropdown ring {hexc(c)} (want #090909)')
+    c = brightest(im, (combo[0] + 18, combo[1] + 14, combo[0] + 120, combo[1] + 34))
+    (ok if near(c, (0x8F, 0x8F, 0x8F), 8) else fail)('panel-tabs', f'dropdown text {hexc(c)} (want #8F8F8F)')
+    c = brightest(im, (px + 24, combo[1] + 14, px + 120, combo[1] + 34))
+    (ok if near(c, (0x6B, 0x6B, 0x6B), 8) else fail)('panel-tabs', f'row label {hexc(c)} (want #6B6B6B)')
+    span = accent_span(im, py + 49, px, px + 400)
+    want = (294, 386)
+    (ok if span and all(abs(a - px - b) <= 2 for a, b in zip(span, want)) else fail)(
+        'panel-tabs', f'Subtitles underline x {span and (span[0] - px, span[1] - px)} (want {want})')
+    for tag, want in (('video', (122, 192)), ('play', (14, 105))):
+        t = img('panel-tabs', tag)
+        span = t and accent_span(t, py + 49, px, px + 400)
+        # the Playback label renders ~3px wider than in Figma
+        (ok if span and all(abs(a - px - b) <= 3 for a, b in zip(span, want)) else fail)(
+            'panel-tabs', f'{tag} underline x {span and (span[0] - px, span[1] - px)} (want {want})')
+    t = img('panel-tabs', 'video')
+    if t:
+        # first dropdown row of the Video tab: chevron drawn at x 348-359
+        xs = [x for x in range(px + 300, px + 400) for y in range(py + 110, py + 150) if sum(t.getpixel((x, y))) > 200]
+        span = xs and (min(xs) - px, max(xs) - px + 1)
+        (ok if span and abs(span[0] - 348) <= 1 and abs(span[1] - 360) <= 1 else fail)(
+            'panel-tabs', f'dropdown chevron x {span} (want (348, 360))')
+
 # 5. idle mini player / library after the end of playback: no loading animation, no placeholders
 im = img('lib-after-end')
 if im:
