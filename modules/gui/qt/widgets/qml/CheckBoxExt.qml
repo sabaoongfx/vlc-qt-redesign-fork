@@ -101,4 +101,10 @@ T.CheckBox {
         text: control.text
         color: theme.fg.primary
     }
+
+    // redesign: the hand cursor over everything clickable, like the prototype
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+        enabled: control.enabled
+    }
 }

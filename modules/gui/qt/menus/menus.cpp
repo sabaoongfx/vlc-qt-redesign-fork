@@ -177,6 +177,8 @@ void RedesignMenuStyle::apply(QMenu* menu)
     font.setPixelSize(14);
     menu->setFont(font);
     menu->setMinimumWidth(minimumWidth);
+    // the prototype's menu rows take the hand cursor
+    menu->setCursor(Qt::PointingHandCursor);
     // rounded corners need a translucent popup window
     menu->setAttribute(Qt::WA_TranslucentBackground);
     // a style does not pass on to child widgets the way a stylesheet does: catch the submenus. A menu's

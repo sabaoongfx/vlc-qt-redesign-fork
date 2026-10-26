@@ -133,4 +133,10 @@ T.ComboBox {
             radius: 2
         }
     }
+
+    // redesign: the hand cursor over everything clickable, like the prototype
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+        enabled: control.enabled
+    }
 }

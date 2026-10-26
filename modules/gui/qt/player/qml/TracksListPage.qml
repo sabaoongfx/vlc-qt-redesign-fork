@@ -104,6 +104,7 @@ FocusScope {
                     ]
 
                     delegate: T.AbstractButton {
+                        HoverHandler { cursorShape: Qt.PointingHandCursor } // redesign: hand cursor, like the prototype
                         id: tab
 
                         required property int index
@@ -319,6 +320,7 @@ FocusScope {
             }
 
             T.AbstractButton {
+                HoverHandler { cursorShape: Qt.PointingHandCursor } // redesign: hand cursor, like the prototype
                 id: advanced
 
                 anchors.centerIn: parent
@@ -651,6 +653,7 @@ FocusScope {
         RowLabel { text: expand.label }
 
         T.AbstractButton {
+            HoverHandler { cursorShape: Qt.PointingHandCursor } // redesign: hand cursor, like the prototype
             id: expandBtn
 
             Layout.fillWidth: true

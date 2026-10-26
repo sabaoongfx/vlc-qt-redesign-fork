@@ -74,4 +74,10 @@ T.ToolButton {
         border.color: visualFocus ? theme.visualFocus : Qt.alpha(theme.visualFocus, 0.0)
         radius: control.radius
     }
+
+    // redesign: the hand cursor over everything clickable, like the prototype
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+        enabled: control.enabled
+    }
 }

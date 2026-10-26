@@ -64,4 +64,10 @@ T.Button {
         implicitWidth: 10
         implicitHeight: 10
     }
+
+    // redesign: the hand cursor over everything clickable, like the prototype
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+        enabled: control.enabled
+    }
 }

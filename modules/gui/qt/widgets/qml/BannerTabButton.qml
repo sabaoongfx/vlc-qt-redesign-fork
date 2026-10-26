@@ -170,4 +170,10 @@ T.TabButton {
             Layout.fillWidth: true
         }
     }
+
+    // redesign: the hand cursor over everything clickable, like the prototype
+    HoverHandler {
+        cursorShape: Qt.PointingHandCursor
+        enabled: control.enabled
+    }
 }
