@@ -21,7 +21,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Nothing is pushed since 2026-10-25: `redesign` is ~75 commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Nothing is pushed since 2026-10-25: `redesign` is 66+ commits ahead of `origin/redesign`. Push and run CI is phase 5.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
 
 ## Where we are (2026-10-26)
