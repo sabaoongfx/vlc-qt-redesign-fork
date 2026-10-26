@@ -1,7 +1,12 @@
 #!/bin/bash
 # Runs inside the nested kwin session. Env: THEME NAME MEDIA ACTIONS OUT CFG
 export QT_QPA_PLATFORM=${QPA:-xcb} QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1
+# pin the desktop: an inherited non-KDE one (e.g. XFCE) makes Qt load the GTK theme and its ATK bridge,
+# which registers a second, empty "vlc" accessible app
+export XDG_CURRENT_DESKTOP=KDE KDE_FULL_SESSION=true KDE_SESSION_VERSION=6 DESKTOP_SESSION=plasma
 xdotool() { env -u WAYLAND_DISPLAY /usr/bin/xdotool "$@"; }
+# spectacle as an X11 client hangs when there is no logind session: keep it on Wayland
+spectacle() { QT_QPA_PLATFORM=wayland timeout 20 /usr/bin/spectacle "$@"; }
 /usr/lib/at-spi-bus-launcher --launch-immediately &
 sleep 1
 export AT_SPI_BUS_ADDRESS=$(busctl --user call org.a11y.Bus /org/a11y/bus org.a11y.Bus GetAddress | sed 's/^s "//;s/"$//')
