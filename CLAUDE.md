@@ -17,11 +17,12 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Test harness: `redesign/tests/run.sh [scene-regex]` runs each scene of `scenarios.txt` in a headless nested KWin
   (xdotool clicks, AT-SPI `press:Name`, `shot`/`shotwin`/`geom`), then `check.py` (QML warnings, colours and geometry
   measured on the Figma frames, unchanged vlcrc after Settings Save). Output in `redesign/tests/out/run/` (`report.html`);
-  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run: 0 failures.
+  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-26): 0 failures, 129 checks.
+  Do not rebuild while a run is going (scenes use the build tree).
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Nothing is pushed since 2026-10-25: `redesign` is 69+ commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Nothing is pushed since 2026-10-25: `redesign` is 78 commits ahead of `origin/redesign`. Push and run CI is phase 5.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
 
 ## Where we are (2026-10-26)
@@ -33,10 +34,23 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   library layout (sidebar card x 8-208, rows at x 30/63, page margins 28/24, 20px grid gaps, 16:9 covers, header field
   y 60-93 / separator 110), mini player card (391x338, framed preview, no progress handle), side panel (colours, content-sized tabs, 220x48
   dropdowns, 138x34 fields, 1px #222222 section lines; measured on the `(1)` SVGs), menus (`RedesignMenuStyle`: #181818 card,
-  48px rows, label x 52 #8F8F8F, right-aligned spaced shortcuts #6B6B6B, hotkey hints in the right-click menu).
-  Next: settings window chrome, dialogs, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+  48px rows, label x 52 #8F8F8F, right-aligned spaced shortcuts #6B6B6B, hotkey hints in the right-click menu),
+  settings window chrome (50px #090909 header band with search and 16px #969696 title, #0E0E0E body, #181818 sidebar
+  card from y 58, 48px rows, label x 58, sections at x 240; band only in the simple view).
+  Code smell passes done: shared C++ helpers in `style/redesign.hpp`, QML colour tokens in `VLCStyle`, accent-dim follows the accent.
+- In progress: Dialogs. Decided with the user: restyle only (keep VLC's Open Media dialog and its behaviour, no playlist-name
+  field, no multi-URL) and keep the system title bar (band drawn inside the window, like Settings). Started with Open Network
+  Stream (Network tab of Open Media; Figma `05 Dialogs/Open network stream`: 50px #090909 band, title 14px #8F8F8F at x 34,
+  "Network URL" heading #C6C6C6 16px, #6B6B6B hint, #090909 field with #404040 placeholder, dim Cancel pill). Nothing edited yet;
+  `scenarios.txt` has uncommitted `open-network`/`open-network-day` scenes (Menu, then click 200,156: Ctrl+N does not reach
+  the window in the harness). Fix on the way: the "Clear History" button text is clipped.
+  Then: EQ (Effects dialog), Keyboard Shortcuts, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+- Smells left on purpose (user chose not to fix): `SPrefsPanel` constructor is ~1140 lines (splitting it would make a large diff
+  against upstream), several Widgets stylesheets repeat rules, the `VolumeWidget` gradient colours are inline.
 - Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
-  side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar.
+  side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar,
+  Figma dialogs with no VLC backend (Add Subtitles to Playlist, New Playlist, Profiles, Setting Preset), menu drop shadows,
+  the right-click menu's separators and entry order.
 
 ## Windows machine notes (original setup)
 
@@ -133,6 +147,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
   `--aout=adummy`, `inner.sh` pins `XDG_CURRENT_DESKTOP=KDE` (else Qt loads the GTK theme and its ATK bridge hides the tree from `at.py`) and runs
   spectacle on Wayland (as an X11 client it hangs there).
 - Harness: `at.py press` prefers on-screen matches; Widgets QMenu items are not reachable by AT-SPI (click by position).
+  AT-SPI presses toggle without a click: controls wired to `clicked` (e.g. the Simple/All/Expert radios) need `click:x,y`
+  (get positions with a `geom:` action first).
 
 - TabButton palette is counter-intuitive: `Fg Primary` is the dimmed 60% colour, `Fg Secondary` is full strength. The active nav row is
   `highlighted` (set by a Binding), not `checked`.
