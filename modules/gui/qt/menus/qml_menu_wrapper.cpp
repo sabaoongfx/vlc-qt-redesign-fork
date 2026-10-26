@@ -24,6 +24,8 @@
 #include "network/networkdevicemodel.hpp"
 #include "network/networkmediamodel.hpp"
 #include "player/player_controller.hpp"
+#include "player/input_models.hpp"
+#include "util/audio_device_model.hpp"
 #include "playlist/playlist_controller.hpp"
 #include "playlist/playlist_model.hpp"
 #include "dialogs/dialogs_provider.hpp"
@@ -865,6 +867,52 @@ void QmlAudioMenu::beforePopup(QMenu * menu) /* override */
     {
         emit triggered(Synchronize);
     });
+}
+
+// QmlAudioTracksMenu
+
+/* Q_INVOKABLE */ void QmlAudioTracksMenu::popup(const QPoint & anchor)
+{
+    assert(m_ctx);
+    qt_intf_t * p_intf = m_ctx->getIntf();
+    PlayerController * player = p_intf->p_mainPlayerController;
+
+    m_menu = std::make_unique<VLCMenu>(p_intf);
+    // the prototype's popup is 300px wide; long device names are elided past 360px
+    m_menu->setMinimumWidth(300);
+    m_menu->setMaximumWidth(360);
+
+    m_menu->addSection(qtr("Audio track"));
+    QAction * devicesSection = m_menu->addSection(qtr("Output device"));
+    QAction * separator = m_menu->addSeparator();
+    m_menu->addAction(qtr("Audio settings"), this, &QmlAudioTracksMenu::settingsRequested);
+
+    const auto fill = [this](QAbstractListModel * model, QAction * before, QActionGroup::ExclusionPolicy policy)
+    {
+        auto helper = new ListMenuHelper(m_menu.get(), model, before, m_menu.get());
+        helper->getActionGroup()->setExclusionPolicy(policy);
+        connect(helper, &ListMenuHelper::select, model, [model](int row, bool checked) {
+            model->setData(model->index(row), checked, Qt::CheckStateRole);
+        });
+        return helper;
+    };
+    ListMenuHelper * tracks = fill(player->getAudioTracks(), devicesSection,
+                                   QActionGroup::ExclusionPolicy::ExclusiveOptional);
+    fill(player->getAudioDevices(), separator, QActionGroup::ExclusionPolicy::Exclusive);
+
+    if (tracks->count() == 0)
+    {
+        QAction * none = new QAction(qtr("No audio track"), m_menu.get());
+        none->setEnabled(false);
+        m_menu->insertAction(devicesSection, none);
+    }
+
+    connect(m_menu.get(), &QMenu::aboutToShow, this, &QmlAudioTracksMenu::aboutToShow);
+    connect(m_menu.get(), &QMenu::aboutToHide, this, &QmlAudioTracksMenu::aboutToHide);
+
+    // above the button with a 6px gap, right edges aligned
+    const QSize size = m_menu->sizeHint();
+    m_menu->popup(QPoint(anchor.x() - size.width(), anchor.y() - size.height() - 6));
 }
 
 QmlAudioContextMenu::QmlAudioContextMenu(QObject *parent)

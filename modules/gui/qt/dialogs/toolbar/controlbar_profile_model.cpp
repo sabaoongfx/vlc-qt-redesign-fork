@@ -111,6 +111,7 @@ decltype (ControlbarProfileModel::m_defaults)
                                 },
                                 {
                                     ControlListModel::VOLUME,
+                                    ControlListModel::AUDIO_BUTTON,
                                     ControlListModel::LANG_BUTTON,
                                     ControlListModel::EXTENDED_BUTTON,
                                     ControlListModel::PLAYLIST_BUTTON
@@ -131,6 +132,7 @@ decltype (ControlbarProfileModel::m_defaults)
                                 },
                                 {
                                     ControlListModel::VOLUME,
+                                    ControlListModel::AUDIO_BUTTON,
                                     ControlListModel::LANG_BUTTON,
                                     ControlListModel::EXTENDED_BUTTON,
                                     ControlListModel::PLAYLIST_BUTTON
@@ -807,9 +809,23 @@ bool ControlbarProfileModel::reload()
                 return list;
             };
 
-            const std::array<QVector<int>, 3> data { split(alignments[1]),
-                                                     split(alignments[2]),
-                                                     split(alignments[3]) };
+            std::array<QVector<int>, 3> data { split(alignments[1]),
+                                               split(alignments[2]),
+                                               split(alignments[3]) };
+
+            // redesign: a player bar saved exactly as the Default Style was before the audio button
+            // existed gets the button after the volume, where the default now has it
+            if (identifier == PlayerControlbarModel::Videoplayer || identifier == PlayerControlbarModel::Audioplayer)
+            {
+                static const QVector<int> oldRight { ControlListModel::VOLUME, ControlListModel::LANG_BUTTON,
+                                                     ControlListModel::EXTENDED_BUTTON,
+                                                     ControlListModel::PLAYLIST_BUTTON };
+                static const QVector<int> transport { ControlListModel::PREVIOUS_BUTTON,
+                                                      ControlListModel::PLAY_BUTTON,
+                                                      ControlListModel::NEXT_BUTTON };
+                if (data[0] == transport && data[1].isEmpty() && data[2] == oldRight)
+                    data[2].insert(1, ControlListModel::AUDIO_BUTTON);
+            }
 
             ptrNewProfile->setModelData(identifier, data);
             ptrNewProfile->resetDirty(); // Newly loaded model can not be dirty

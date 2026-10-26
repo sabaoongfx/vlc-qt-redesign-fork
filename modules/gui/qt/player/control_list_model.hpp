@@ -69,7 +69,7 @@ public:
         PLAYBACK_SPEED_BUTTON,
         HIGH_RESOLUTION_TIME_WIDGET,
         FRAME_PREV_BUTTON,
-        RESERVED_0X1F,
+        AUDIO_BUTTON, // redesign: the prototype's audio track and output device popup
 
         SPLITTER = 0x20,
         VOLUME,
@@ -110,7 +110,7 @@ public:
     };
     Q_ENUM(ControlType)
 
-    static_assert(RESERVED_0X1F == 0x1F, "missaligned");
+    static_assert(AUDIO_BUTTON == 0x1F, "missaligned");
     static_assert(RESERVED_0X2B == 0x2B, "missaligned");
     static_assert(RESERVED_0X3F == 0x3F, "missaligned");
 

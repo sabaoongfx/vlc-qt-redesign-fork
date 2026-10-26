@@ -88,6 +88,9 @@ constexpr int rowHeight = 48;
 constexpr int rowRadius = 4;
 constexpr int separatorHeight = 9;
 constexpr int separatorInset = 12;  // line ends, from the row edges
+constexpr int sectionHeight = 28;   // a section title (QMenu::addSection): 11px caps, 10px above, 4px below
+constexpr int sectionBottom = 4;
+constexpr int sectionFontSize = 11;
 constexpr int iconX = 20;
 constexpr int iconSize = 20;
 constexpr int labelX = 52;
@@ -214,6 +217,15 @@ int RedesignMenuStyle::pixelMetric(PixelMetric metric, const QStyleOption* optio
     }
 }
 
+int RedesignMenuStyle::styleHint(StyleHint hint, const QStyleOption* option, const QWidget* widget,
+                                 QStyleHintReturn* returnData) const
+{
+    // section titles are drawn (as in the prototype's menu headers), not dropped
+    if (hint == SH_Menu_SupportsSections)
+        return true;
+    return QProxyStyle::styleHint(hint, option, widget, returnData);
+}
+
 QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption* option,
                                           const QSize& size, const QWidget* widget) const
 {
@@ -222,10 +234,13 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
         if (auto item = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
         {
             if (item->menuItemType == QStyleOptionMenuItem::Separator)
-                return QSize(size.width(), separatorHeight);
+                return QSize(size.width(), item->text.isEmpty() ? separatorHeight : sectionHeight);
             // QMenu adds the widest shortcut (unspaced) to this; the gap covers the spaces and the chevron
-            return QSize(labelX - menuPadding + size.width() + labelGap + shortcutInset - menuPadding,
-                         rowHeight);
+            int width = labelX - menuPadding + size.width() + labelGap + shortcutInset - menuPadding;
+            // QMenu ignores its maximum width when it lays out the rows: cap them, the label is elided
+            if (widget && widget->maximumWidth() < QWIDGETSIZE_MAX)
+                width = std::min(width, widget->maximumWidth() - 2 * menuPadding);
+            return QSize(width, rowHeight);
         }
     }
     return QProxyStyle::sizeFromContents(type, option, size, widget);
@@ -288,6 +303,21 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
 
+    if (item->menuItemType == QStyleOptionMenuItem::Separator && !item->text.isEmpty())
+    {
+        // a section title: small spaced capitals in the shortcut grey, on the label column
+        QFont font = item->font;
+        font.setPixelSize(sectionFontSize);
+        font.setCapitalization(QFont::AllUppercase);
+        font.setLetterSpacing(QFont::PercentageSpacing, 108);
+        painter->setFont(font);
+        painter->setPen(c.shortcut);
+        painter->drawText(QRect(cardLeft + labelX, row.top(), row.width(), row.height() - sectionBottom),
+                          Qt::AlignLeft | Qt::AlignBottom | Qt::TextSingleLine | Qt::TextHideMnemonic,
+                          item->text);
+        painter->restore();
+        return;
+    }
     if (item->menuItemType == QStyleOptionMenuItem::Separator)
     {
         painter->fillRect(QRect(row.left() + separatorInset, row.top() + row.height() / 2,
@@ -336,8 +366,10 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     painter->setFont(item->font);
     const QRect textRect(cardLeft + labelX, row.top(), right - cardLeft - labelX, row.height());
     painter->setPen(enabled ? c.label : c.disabled);
+    // a label too long for a width-capped menu (device names) is elided
     painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic,
-                      label);
+                      QFontMetrics(item->font).elidedText(label, Qt::ElideRight, textRect.width(),
+                                                         Qt::TextHideMnemonic));
 
     if (item->menuItemType == QStyleOptionMenuItem::SubMenu)
     {

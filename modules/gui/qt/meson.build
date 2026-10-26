@@ -772,6 +772,7 @@ qml_modules += {
        'player/qml/controlbarcontrols/ArtworkInfoWidget.qml',
        'player/qml/controlbarcontrols/AspectRatioWidget.qml',
        'player/qml/controlbarcontrols/AtoBButton.qml',
+       'player/qml/controlbarcontrols/AudioButton.qml',
        'player/qml/controlbarcontrols/BackButton.qml',
        'player/qml/controlbarcontrols/BookmarkButton.qml',
        'player/qml/controlbarcontrols/ChapterNextButton.qml',

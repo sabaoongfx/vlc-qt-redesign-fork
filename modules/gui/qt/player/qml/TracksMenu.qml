@@ -41,6 +41,15 @@ T.Popup {
     readonly property real _topBarHeight: VLCStyle.dp(40, VLCStyle.scale)
     height: root.parent.positionSliderY - _topBarHeight - VLCStyle.dp(6, VLCStyle.scale)
 
+    // redesign: open on one tab of the list page (0 Playback, 1 Video, 2 Audio, 3 Subtitles)
+    function openTab(tab) {
+        stackView.pop(null)
+        const page = stackView.get(0)
+        if (page)
+            page.currentTab = tab
+        open()
+    }
+
     // Animations
 
     Behavior on width {

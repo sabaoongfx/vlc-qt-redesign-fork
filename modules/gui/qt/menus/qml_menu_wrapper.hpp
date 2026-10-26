@@ -393,6 +393,30 @@ protected: // QmlTrackMenu implementation
     void beforePopup(QMenu * menu) override;
 };
 
+// redesign: the prototype's audio popup of the player bar, the audio tracks and the output devices
+// with a link to the audio settings of the tracks panel
+class QmlAudioTracksMenu : public QObject
+{
+    Q_OBJECT
+
+    SIMPLE_MENU_PROPERTY(MainCtx *, ctx, nullptr)
+
+public:
+    using QObject::QObject;
+
+public: // Interface
+    // anchor: the top right corner of the button, the menu opens above it, right-aligned
+    Q_INVOKABLE void popup(const QPoint & anchor);
+
+signals:
+    void settingsRequested();
+    void aboutToShow();
+    void aboutToHide();
+
+private:
+    std::unique_ptr<QMenu> m_menu;
+};
+
 class PlaylistListContextMenu : public BasicMenuContainer {
     Q_OBJECT
 
