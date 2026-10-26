@@ -17,7 +17,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Test harness: `redesign/tests/run.sh [scene-regex]` runs each scene of `scenarios.txt` in a headless nested KWin
   (xdotool clicks, AT-SPI `press:Name`, `shot`/`shotwin`/`geom`), then `check.py` (QML warnings, colours and geometry
   measured on the Figma frames, unchanged vlcrc after Settings Save). Output in `redesign/tests/out/run/` (`report.html`);
-  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-26): 0 failures, 129 checks.
+  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-27): 152 checks, the one failure (prefs-cats) fixed and rerun.
   Do not rebuild while a run is going (scenes use the build tree).
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
@@ -55,7 +55,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Smells left on purpose (user chose not to fix): `SPrefsPanel` constructor is ~1140 lines (splitting it would make a large diff
   against upstream), several Widgets stylesheets repeat rules, the `VolumeWidget` gradient colours are inline.
 - Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
-  side-panel features VLC lacks (sleep timer, reverse, EQ in the panel), the fullscreen button order in the title bar,
+  side-panel features VLC lacks (sleep timer, reverse), the fullscreen button order in the title bar,
   Figma dialogs with no VLC backend (Add Subtitles to Playlist, New Playlist, Profiles, Setting Preset), menu drop shadows,
   the right-click menu's separators and entry order.
 
