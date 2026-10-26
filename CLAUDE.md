@@ -22,7 +22,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Nothing is pushed since 2026-10-25: `redesign` is 78 commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Nothing is pushed since 2026-10-25: `redesign` is about 100 commits ahead of `origin/redesign`. Push and run CI is phase 5.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
 
 ## Where we are (2026-10-26)
@@ -44,7 +44,14 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   "Network URL" heading #C6C6C6 16px, #6B6B6B hint, #090909 field with #404040 placeholder, dim Cancel pill). Nothing edited yet;
   `scenarios.txt` has uncommitted `open-network`/`open-network-day` scenes (Menu, then click 200,156: Ctrl+N does not reach
   the window in the harness). Fix on the way: the "Clear History" button text is clipped.
-  Then: EQ (Effects dialog), Keyboard Shortcuts, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+  Then: Keyboard Shortcuts, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+- Done 2026-10-26/27 (user requests): collapsed sidebar centred 48px card; Settings opens on General and is widened to 1078px;
+  menu-button Figma Icon Wrapper hover; play button has no press effect; player-bar audio button (AUDIO_BUTTON, popup of
+  tracks + output devices); seek bar preview card (`player/seek_preview.*`, preparser thumbnailer); smooth unhinted icons
+  (curve rendering); hand cursor on clickable things; no play overlay on library items (`MediaCover.showPlayCover`);
+  AT-SPI accessibility audit in the harness; effects as Figma side-panel cards (`player/effects_controller.*`; decided with
+  the user: Equalizer, Compressor, Video Essential/Colors/Crop in the panel, the gear opens the panel, the old Effects window
+  stays under Open Advanced Settings for Spatializer, Stereo Widener and the rest).
 - Smells left on purpose (user chose not to fix): `SPrefsPanel` constructor is ~1140 lines (splitting it would make a large diff
   against upstream), several Widgets stylesheets repeat rules, the `VolumeWidget` gradient colours are inline.
 - Left on purpose: sidebar entries / Home rows that need new pages or models (Network, Playlists, Recent, Listen Again),
@@ -129,6 +136,18 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - The Windows shots job must start VLC with a fresh `%APPDATA%\vlc` each time or a "restore the playlist" prompt appears after a force-kill.
 
 ## Decisions and gotchas
+
+- `VLCIcons.ttf`: hmtx left side bearings must equal each glyph's xMin (FreeType places glyphs by the bearing); a tool that
+  rewrites outlines (fontTools) must recompute them, or icons shift off centre (the menu dots were 6px right).
+- Icon glyphs use `Font.PreferNoHinting` + `Text.CurveRendering` (IconLabel, IconToolButton/IconButton fonts, PlayButton):
+  native rendering hinted them to sharp corners with subpixel fringes. A full `font:` assignment drops the hinting
+  preference, so set it on the control's font too.
+- Qt Quick accessible nodes report no SHOWING/VISIBLE states; hidden ones have a 0x0 box (`at.py audit` relies on that).
+  Qt gives every item SetFocus/ShowMenu actions; only Press/Toggle/Increase... mean a control. AT-SPI calls buttons "button".
+- QMenu ignores its maximum width when laying out rows: `RedesignMenuStyle::sizeFromContents` caps them and labels elide.
+  Sections (`addSection`) are drawn as 11px spaced caps (`SH_Menu_SupportsSections`).
+- Contrast (check.py, information only): Figma greys below WCAG AA are kept on purpose (hint #6B6B6B ~3.3-3.6:1, inactive tab
+  icons ~1.9:1).
 
 - Settings (`dialogs/preferences/simple_preferences.cpp`): `SettingsRows` builds Figma rows bound to real options via
   `ConfigControl`; row controls go in `rowControls` and are written on Save only if their value differs from what they
