@@ -33,36 +33,31 @@
 #include <QProxyStyle>
 #include <QObject>
 
-// redesign: Fusion draws the menu background as a lightened Window colour, which turns white in Day
-// mode; style menus from the palette roles instead (submenus inherit it from their parent menu)
-/* redesign: 20px menu icons like the Figma menus (Qt menus use the style's small icon size) */
+// redesign: the Figma menus, drawn by the style rather than a stylesheet (a stylesheet cannot give the
+// shortcut its own colour or align it right): a flat #181818 card, 48px rows with a 20px icon, dim labels,
+// right-aligned "Ctrl + O" shortcuts, a 4px-radius hover row and an accent tick for checked entries.
+// Fusion would draw the background as a lightened Window colour, which turns white in Day mode.
 class RedesignMenuStyle : public QProxyStyle
 {
 public:
-    RedesignMenuStyle() : QProxyStyle() {}
+    static RedesignMenuStyle* instance();
+    /* gives a menu the look; its submenus follow when they are first shown */
+    static void apply(QMenu* menu);
+    /* the label colour, for icons drawn to match it */
+    static QColor labelColor(const QPalette& palette);
+
     int pixelMetric(PixelMetric metric, const QStyleOption* option = nullptr,
-                    const QWidget* widget = nullptr) const override
-    {
-        if (metric == PM_SmallIconSize)
-            return 20;
-        return QProxyStyle::pixelMetric(metric, option, widget);
-    }
+                    const QWidget* widget = nullptr) const override;
+    QSize sizeFromContents(ContentsType type, const QStyleOption* option,
+                           const QSize& size, const QWidget* widget) const override;
+    void drawPrimitive(PrimitiveElement element, const QStyleOption* option,
+                       QPainter* painter, const QWidget* widget = nullptr) const override;
+    void drawControl(ControlElement element, const QStyleOption* option,
+                     QPainter* painter, const QWidget* widget = nullptr) const override;
+
+protected:
+    bool eventFilter(QObject* object, QEvent* event) override;
 };
-
-inline QString redesignMenuStyleSheet()
-{
-    return QStringLiteral(
-        // prototype `.menu`: --menu background, subtle --menu-hover rows (not the accent), 7px row radius
-        "QMenu { background: palette(tooltip-base); border: 1px solid palette(mid); border-radius: 10px; padding: 6px; font-size: 14px; }"
-        // the icon is placed independently of the item padding: shift them so
-        // the icon gets room on its left without running into the label
-        "QMenu::item { padding: 14px 24px 14px 20px; border-radius: 7px; color: palette(text); min-width: 260px; }"
-        "QMenu::icon { padding-left: 16px; }"
-
-        "QMenu::item:selected { background: palette(midlight); color: palette(text); }"
-        "QMenu::item:disabled { color: palette(mid); }"
-        "QMenu::separator { height: 1px; background: palette(mid); margin: 4px 8px; }" );
-}
 
 class VLCMenu : public QMenu
 {
@@ -72,13 +67,8 @@ public:
     explicit VLCMenu(qt_intf_t* p_intf) : QMenu()
     {
         assert(p_intf);
-        // redesign: use the Day/Night widgets palette even when the platform theme ships a menu palette
-        setPalette(QApplication::palette());
-        static RedesignMenuStyle* menuStyle = new RedesignMenuStyle();
-        setStyle(menuStyle);
-        setStyleSheet(redesignMenuStyleSheet());
-        // rounded corners need a translucent popup window
-        setAttribute(Qt::WA_TranslucentBackground);
+        // redesign: the Figma menu look, with the Day/Night widgets palette
+        RedesignMenuStyle::apply(this);
         if (isWindow())
         {
             QVLCDialog::setWindowTransientParent(this, nullptr, p_intf);

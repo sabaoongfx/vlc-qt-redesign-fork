@@ -28,6 +28,7 @@ queue-open       | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sl
 rclick-menu      | 2 | none | @sample.mp4           | sleep:3 rclick:960,400 sleep:1.2 shot:a
 main-menu        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 shot:a
 main-menu-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 shot:a
+main-menu-more   | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 move:200,597 sleep:1.2 move:500,597 sleep:0.5 shot:a
 prefs            | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 shotwin:interface
 prefs-cats       | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:General sleep:1 shotwin:general press:Privacy sleep:1 shotwin:privacy press:Network sleep:1 shotwin:network press:Performance sleep:1 shotwin:performance press:Recording sleep:1 shotwin:recording press:Extensions sleep:1 shotwin:extensions press:Controls sleep:1 shotwin:controls press:Edit_Keyboard_Shortcuts sleep:1 shotwin:shortcuts press:Playback sleep:1 shotwin:playback press:Advanced_Options sleep:1 shotwin:playback-adv press:Video sleep:1 shotwin:video press:Audio sleep:1 shotwin:audio press:Subtitles sleep:1 shotwin:subtitles press:Interface sleep:1 shotwin:interface press:Library sleep:1 shotwin:library
 prefs-cats-day   | 1 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:General sleep:1 shotwin:general press:Network sleep:1 shotwin:network

@@ -279,7 +279,7 @@ static QIcon redesignGlyphIcon(QChar glyph, const QWidget* widget)
     QFont font(QStringLiteral("VLCIcons"));
     font.setPixelSize(size);
     painter.setFont(font);
-    painter.setPen(widget->palette().color(QPalette::Text));
+    painter.setPen(RedesignMenuStyle::labelColor(widget->palette()));
     painter.drawText(QRect(0, 0, size, size), Qt::AlignCenter, QString(glyph));
     return QIcon(pix);
 }
@@ -310,6 +310,7 @@ void QmlGlobalMenu::popup(QPoint pos)
     /* redesign: the Figma main menu, a flat list (open entries, recent, shortcuts, customize,
      * settings, about) with plain icons; the classic menus stay reachable under "More" */
     QMenu* menu = m_menu.get();
+    menu->setMinimumWidth(375);
     // duotone icons from the Figma menu (grey outline, accent details)
     const auto entry = [menu](const char* icon, const QString& text, auto member, const char* shortcut = nullptr) {
         QAction* action = menu->addAction(QIcon(QString::fromLatin1(icon)), text, THEDP, member);
@@ -386,8 +387,7 @@ QmlMenuBarMenu::QmlMenuBarMenu(QmlMenuBar* menubar, QWidget* parent)
     : QMenu(parent)
     , m_menubar(menubar)
 {
-    setPalette(QApplication::palette());
-    setStyleSheet(redesignMenuStyleSheet());
+    RedesignMenuStyle::apply(this);
 }
 
 QmlMenuBarMenu::~QmlMenuBarMenu()

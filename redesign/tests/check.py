@@ -245,6 +245,59 @@ if im:
     line = next((y for y in range(55, 125) if differs(im.getpixel((1000, y)), 6)), None)
     (ok if line is not None and abs(line - 110) <= 1 else fail)('video-grid', f'header separator y {line} (want 110)')
 
+# 13b. menus measured on the Figma "menu" and "right-click menu" frames (card-relative x; RedesignMenuStyle)
+def card_run(im, y, color, x0=0, x1=None, tol=2):
+    """longest run of the card colour on row y"""
+    best, start = (0, 0), None
+    for x in range(x0, x1 or im.width):
+        if near(im.getpixel((x, y)), color, tol):
+            start = x if start is None else start
+            if x - start + 1 > best[1] - best[0]: best = (start, x + 1)
+        else:
+            start = None
+    return best
+
+def ink_x(im, box, bg, tol=40):
+    xs = [x for x in range(box[0], box[2]) for y in range(box[1], box[3])
+          if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), bg)) > tol]
+    return (min(xs), max(xs)) if xs else None
+
+for scene, bg, label, shortcut in (('main-menu', (0x18, 0x18, 0x18), (0x8F, 0x8F, 0x8F), (0x6B, 0x6B, 0x6B)),
+                                   ('main-menu-day', (0xE6, 0xE6, 0xE5), (0x6C, 0x6C, 0x6B), (0x90, 0x90, 0x90))):
+    im = img(scene)
+    if not im: continue
+    # the menu opens under the top bar's menu button; its first row (Open File(s)) is centred 28px below the card top
+    # between two rows; the Night card touches the sidebar card (same colour): anchor on the right edge,
+    # the card-relative columns below then catch a wrong width. Day has a 1px border.
+    L, R = card_run(im, 322, bg, 30, 600)
+    if bg[0] >= 128:
+        L, R = L - 1, R + 1
+        (ok if R - L == 375 else fail)(scene, f'menu card width {R - L} (want 375)')
+    (ok if R == 423 else fail)(scene, f'menu card right edge {R} (want 423, {hexc(bg)})')
+    L = R - 375
+    # the top bar fades into the Night card colour: the card starts where 8 rows match exactly
+    T = next((y for y in range(10, 120) if all(im.getpixel((L + 200, y + i)) == bg for i in range(8))), None)
+    if T is None:
+        fail(scene, 'menu card top not found'); continue
+    for k, name in ((0, 'Open File(s)'), (5, 'Convert')):
+        cy = T + 28 + 48 * k
+        ink = ink_x(im, (L + 46, cy - 12, L + 250, cy + 12), bg)
+        (ok if ink and abs(ink[0] - L - 52) <= 1 else fail)(scene, f'{name} label x {ink and ink[0] - L} (want 52)')
+        ink = ink_x(im, (L + 10, cy - 12, L + 46, cy + 12), bg)
+        (ok if ink and 19 <= ink[0] - L <= 22 else fail)(scene, f'{name} icon x {ink and ink[0] - L} (want 19-22)')
+        c = brightest(im, (L + 46, cy - 12, L + 250, cy + 12)) if bg[0] < 128 else min(pixels(im.crop((L + 46, cy - 12, L + 250, cy + 12))), key=sum)
+        (ok if near(c, label, 6) else fail)(scene, f'{name} label {hexc(c)} (want {hexc(label)})')
+        ink = ink_x(im, (R - 130, cy - 12, R - 4, cy + 12), bg)
+        (ok if ink and abs(R - 1 - ink[1] - 18) <= 1 else fail)(scene, f'{name} shortcut right inset {ink and R - 1 - ink[1]} (want 18)')
+        box = (R - 130, cy - 12, R - 4, cy + 12)
+        c = brightest(im, box) if bg[0] < 128 else min(pixels(im.crop(box)), key=sum)
+        (ok if near(c, shortcut, 6) else fail)(scene, f'{name} shortcut {hexc(c)} (want {hexc(shortcut)})')
+
+im = img('rclick-menu')
+if im:
+    L, R = card_run(im, 500, (0x18, 0x18, 0x18), 900, 1400)
+    (ok if R - L == 292 else fail)('rclick-menu', f'right-click card width {R - L} (want 292)')
+
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]

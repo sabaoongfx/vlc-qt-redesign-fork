@@ -59,6 +59,8 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QSignalMapper>
+#include <QPainterPath>
+#include <QPainter>
 
 using namespace vlc::playlist;
 
@@ -73,6 +75,285 @@ using namespace vlc::playlist;
   */
 
 RendererMenu *VLCMenuBar::rendererMenu = NULL;
+
+/* redesign: the Figma menus (see RedesignMenuStyle in menus.hpp). Positions are measured on the
+ * card, from its left edge (icon, label) or its right edge (shortcut, chevron) */
+namespace {
+constexpr int menuPadding = 4;      // card padding around the rows
+constexpr int menuRadius = 10;
+constexpr int menuMinWidth = 292;   // the right-click menu
+constexpr int rowHeight = 48;
+constexpr int rowRadius = 4;
+constexpr int separatorHeight = 9;
+constexpr int iconX = 20;
+constexpr int iconSize = 20;
+constexpr int labelX = 52;
+constexpr int labelGap = 40;        // least space between a label and its shortcut
+constexpr int shortcutInset = 18;   // shortcut and tick right edge
+constexpr int chevronInset = 26;    // chevron right edge
+
+struct MenuColors
+{
+    QColor background, hover, border, line, label, shortcut, disabled;
+};
+
+/* labels and shortcuts are the text colour faded into the card: #8F8F8F and #6B6B6B on #181818 */
+QColor fade(const QColor& background, const QColor& text, qreal amount)
+{
+    return QColor(qRound(background.red() + (text.red() - background.red()) * amount),
+                  qRound(background.green() + (text.green() - background.green()) * amount),
+                  qRound(background.blue() + (text.blue() - background.blue()) * amount));
+}
+
+MenuColors menuColors(const QPalette& palette)
+{
+    MenuColors c;
+    if (palette.color(QPalette::Window).lightness() < 128)
+    {
+        c.background = QColor(0x18, 0x18, 0x18);
+        c.hover = QColor(0x1F, 0x1F, 0x1F);
+        c.border = Qt::transparent;
+        c.line = QColor(0x22, 0x22, 0x22);
+    }
+    else
+    {
+        // no Figma frame for Day: the tooltip card, with an edge (the dark card relies on its shadow)
+        c.background = palette.color(QPalette::ToolTipBase);
+        c.hover = c.background.darker(107);
+        c.border = palette.color(QPalette::Mid);
+        c.line = c.background.darker(110);
+    }
+    const QColor text = palette.color(QPalette::Active, QPalette::Text);
+    c.label = fade(c.background, text, 0.586);
+    c.shortcut = fade(c.background, text, 0.41);
+    c.disabled = fade(c.background, text, 0.22);
+    return c;
+}
+
+/* "Ctrl+O" -> "Ctrl + O" (a trailing '+' is the key itself) */
+QString spacedShortcut(const QString& shortcut)
+{
+    QString spaced;
+    for (qsizetype i = 0; i < shortcut.size(); ++i)
+    {
+        if (shortcut[i] == u'+' && i > 0 && i + 1 < shortcut.size())
+            spaced += QStringLiteral(" + ");
+        else
+            spaced += shortcut[i];
+    }
+    return spaced;
+}
+}
+
+RedesignMenuStyle* RedesignMenuStyle::instance()
+{
+    static RedesignMenuStyle* style = new RedesignMenuStyle();
+    return style;
+}
+
+void RedesignMenuStyle::apply(QMenu* menu)
+{
+    RedesignMenuStyle* style = instance();
+    if (menu->style() == style)
+        return;
+    // the Day/Night widgets palette even when the platform theme ships a menu palette
+    menu->setPalette(QApplication::palette());
+    menu->setStyle(style);
+    QFont font = menu->font();
+    font.setPixelSize(14);
+    menu->setFont(font);
+    menu->setMinimumWidth(menuMinWidth);
+    // rounded corners need a translucent popup window
+    menu->setAttribute(Qt::WA_TranslucentBackground);
+    // a style does not pass on to child widgets the way a stylesheet does: catch the submenus. A menu's
+    // children are polished before the menu itself, so those already there are not reported to the filter.
+    menu->installEventFilter(style);
+    for (QMenu* submenu : menu->findChildren<QMenu*>(Qt::FindDirectChildrenOnly))
+        apply(submenu);
+}
+
+QColor RedesignMenuStyle::labelColor(const QPalette& palette)
+{
+    return menuColors(palette).label;
+}
+
+bool RedesignMenuStyle::eventFilter(QObject* object, QEvent* event)
+{
+    // sent when a submenu is polished, before its first popup creates the window
+    if (event->type() == QEvent::ChildPolished)
+        if (auto menu = qobject_cast<QMenu*>(static_cast<QChildEvent*>(event)->child()))
+            apply(menu);
+    return QProxyStyle::eventFilter(object, event);
+}
+
+int RedesignMenuStyle::pixelMetric(PixelMetric metric, const QStyleOption* option,
+                                   const QWidget* widget) const
+{
+    switch (metric)
+    {
+    case PM_SmallIconSize:
+        return iconSize;
+    case PM_MenuPanelWidth:
+        return 0;
+    case PM_MenuHMargin:
+    case PM_MenuVMargin:
+        return menuPadding;
+    default:
+        return QProxyStyle::pixelMetric(metric, option, widget);
+    }
+}
+
+QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption* option,
+                                          const QSize& size, const QWidget* widget) const
+{
+    if (type == CT_MenuItem)
+    {
+        if (auto item = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
+        {
+            if (item->menuItemType == QStyleOptionMenuItem::Separator)
+                return QSize(size.width(), separatorHeight);
+            // QMenu adds the widest shortcut (unspaced) to this; the gap covers the spaces and the chevron
+            return QSize(labelX - menuPadding + size.width() + labelGap + shortcutInset - menuPadding,
+                         rowHeight);
+        }
+    }
+    return QProxyStyle::sizeFromContents(type, option, size, widget);
+}
+
+void RedesignMenuStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option,
+                                      QPainter* painter, const QWidget* widget) const
+{
+    if (element == PE_PanelMenu && qobject_cast<const QMenu*>(widget))
+    {
+        const MenuColors c = menuColors(option->palette);
+        painter->save();
+        painter->setCompositionMode(QPainter::CompositionMode_Source);
+        painter->fillRect(option->rect, Qt::transparent);
+        painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter->setRenderHint(QPainter::Antialiasing);
+        if (c.border.alpha() > 0)
+        {
+            painter->setPen(QPen(c.border, 1));
+            painter->setBrush(c.background);
+            painter->drawRoundedRect(QRectF(option->rect).adjusted(0.5, 0.5, -0.5, -0.5),
+                                     menuRadius - 0.5, menuRadius - 0.5);
+        }
+        else
+        {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(c.background);
+            painter->drawRoundedRect(option->rect, menuRadius, menuRadius);
+        }
+        painter->restore();
+        return;
+    }
+    if (element == PE_FrameMenu && qobject_cast<const QMenu*>(widget))
+        return;
+    QProxyStyle::drawPrimitive(element, option, painter, widget);
+}
+
+void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* option,
+                                    QPainter* painter, const QWidget* widget) const
+{
+    if (element == CE_MenuEmptyArea && qobject_cast<const QMenu*>(widget))
+        return;
+    const auto item = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+    if (element != CE_MenuItem || !item || !qobject_cast<const QMenu*>(widget)
+        || (item->menuItemType != QStyleOptionMenuItem::Normal
+            && item->menuItemType != QStyleOptionMenuItem::DefaultItem
+            && item->menuItemType != QStyleOptionMenuItem::SubMenu
+            && item->menuItemType != QStyleOptionMenuItem::Separator))
+    {
+        QProxyStyle::drawControl(element, option, painter, widget);
+        return;
+    }
+
+    const MenuColors c = menuColors(item->palette);
+    const QRect row = item->rect;
+    // the card edges, the positions below are measured from them
+    const int cardLeft = row.left() - menuPadding;
+    const int cardRight = row.left() + row.width() + menuPadding;
+
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+
+    if (item->menuItemType == QStyleOptionMenuItem::Separator)
+    {
+        painter->fillRect(QRect(row.left() + 12, row.top() + row.height() / 2, row.width() - 24, 1), c.line);
+        painter->restore();
+        return;
+    }
+
+    const bool enabled = item->state & State_Enabled;
+    if (enabled && (item->state & State_Selected))
+    {
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(c.hover);
+        painter->drawRoundedRect(row, rowRadius, rowRadius);
+    }
+
+    const int centerY = row.top() + row.height() / 2;
+    if (!item->icon.isNull())
+    {
+        const QRect iconRect(cardLeft + iconX, centerY - iconSize / 2, iconSize, iconSize);
+        item->icon.paint(painter, iconRect, Qt::AlignCenter, enabled ? QIcon::Normal : QIcon::Disabled,
+                         item->checked ? QIcon::On : QIcon::Off);
+    }
+
+    QString label = item->text;
+    QString shortcut;
+    const qsizetype tab = label.indexOf(u'\t');
+    if (tab >= 0)
+    {
+        shortcut = label.mid(tab + 1);
+        label.truncate(tab);
+    }
+
+    int right = cardRight - shortcutInset;
+    if (item->checkType != QStyleOptionMenuItem::NotCheckable && item->checked)
+    {
+        // the accent tick of the Figma option rows
+        QPainterPath tick;
+        tick.moveTo(right - 14, centerY);
+        tick.lineTo(right - 9.5, centerY + 4.5);
+        tick.lineTo(right, centerY - 5);
+        QPen pen(enabled ? item->palette.color(QPalette::Highlight) : c.disabled, 1.6);
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        painter->setPen(pen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPath(tick);
+        right -= 14 + 12;
+    }
+
+    painter->setFont(item->font);
+    const QRect textRect(cardLeft + labelX, row.top(), right - cardLeft - labelX, row.height());
+    painter->setPen(enabled ? c.label : c.disabled);
+    painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic,
+                      label);
+
+    if (item->menuItemType == QStyleOptionMenuItem::SubMenu)
+    {
+        const qreal x = cardRight - chevronInset - 6.25;
+        QPainterPath chevron;
+        chevron.moveTo(x, centerY - 5.25);
+        chevron.lineTo(x + 5.5, centerY);
+        chevron.lineTo(x, centerY + 5.25);
+        QPen pen(enabled ? c.label : c.disabled, 1.5);
+        pen.setCapStyle(Qt::RoundCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        painter->setPen(pen);
+        painter->setBrush(Qt::NoBrush);
+        painter->drawPath(chevron);
+    }
+    else if (!shortcut.isEmpty())
+    {
+        painter->setPen(enabled ? c.shortcut : c.disabled);
+        painter->drawText(textRect, Qt::AlignRight | Qt::AlignVCenter | Qt::TextSingleLine,
+                          spacedShortcut(shortcut));
+    }
+    painter->restore();
+}
 
 /**
  * @brief Add static entries to DP in menus
