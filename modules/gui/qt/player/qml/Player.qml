@@ -964,7 +964,7 @@ FocusScope {
 
             required property int index
 
-            readonly property real r: VLCStyle.dp(8, VLCStyle.scale)
+            readonly property real r: VLCStyle.dp(10, VLCStyle.scale) // measured on the Figma Player-6 frame
             readonly property color fill: controlBar.background ? controlBar.background.color : "black"
 
             z: 1
