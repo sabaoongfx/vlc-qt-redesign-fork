@@ -37,8 +37,9 @@ GridView {
     currentIndex: -1
     highlightFollowsCurrentItem: false
 
-    cellWidth: VLCStyle.cover_small
-    cellHeight: cellWidth
+    // redesign: Figma lays the items out 9 per row, 110x120 cells at 1048px
+    cellWidth: Math.max(VLCStyle.dp(96, VLCStyle.scale), Math.floor(width / Math.max(1, Math.floor(width / VLCStyle.dp(110, VLCStyle.scale)))))
+    cellHeight: VLCStyle.dp(120, VLCStyle.scale)
 
     boundsBehavior: Flickable.StopAtBounds
 
@@ -180,41 +181,45 @@ GridView {
             buttonDragItem.x = pos.x + VLCStyle.dragDelta
         }
 
+        // redesign: Figma item = 24px icon over a 14px grey label, no frame; hover is a soft rounded tile
         Rectangle {
             anchors.fill: parent
+            anchors.margins: VLCStyle.margin_xxsmall
 
-            implicitWidth: childrenRect.width
-            implicitHeight: childrenRect.height
+            radius: VLCStyle.dp(8, VLCStyle.scale)
+            color: containsMouse && !buttonDragItem.Drag.active ? colorContext.bg.highlight
+                                                                : "transparent"
 
-            color: "transparent"
+            Column {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.topMargin: VLCStyle.margin_normal
 
-            border.width: VLCStyle.dp(1, VLCStyle.scale)
-            border.color: containsMouse && !buttonDragItem.Drag.active ? colorContext.border
-                                                                       : "transparent"
-            border.pixelAligned: (radius < Number.EPSILON)
-
-            ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 10
+                spacing: VLCStyle.margin_small
 
                 EditorDummyButton {
-                    Layout.preferredWidth: VLCStyle.icon_medium
-                    Layout.preferredHeight: VLCStyle.icon_medium
-                    Layout.alignment: Qt.AlignHCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: VLCStyle.icon_normal
+                    height: VLCStyle.icon_normal
 
-                    color: colorContext.fg.primary
+                    font.pixelSize: VLCStyle.icon_normal
+                    color: theme.fg.secondary
                     text: PlayerControlbarControls.controlList[model.index].label
                 }
 
-                Widgets.ListSubtitleLabel {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                Text {
+                    width: parent.width
+                    leftPadding: VLCStyle.margin_xxsmall
+                    rightPadding: VLCStyle.margin_xxsmall
 
-                    color: colorContext.fg.secondary
-                    elide: Text.ElideNone
-                    fontSizeMode: Text.Fit
+                    color: theme.fg.secondary
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_large
                     text: PlayerControlbarControls.controlList[model.index].text
                     wrapMode: Text.WordWrap
+                    maximumLineCount: 2
+                    elide: Text.ElideRight
                     horizontalAlignment: Text.AlignHCenter
                 }
             }

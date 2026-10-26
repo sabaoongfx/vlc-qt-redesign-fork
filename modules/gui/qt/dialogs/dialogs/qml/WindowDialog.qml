@@ -33,6 +33,8 @@ Window {
     flags: Qt.Dialog
 
     property bool modal: false
+    // redesign: dialogs that draw edge-to-edge bands (header, footer) set this to 0
+    property real contentMargins: VLCStyle.margin_small
     modality: modal ? Qt.ApplicationModal : Qt.NonModal
 
     width: VLCStyle.appWidth * 0.75
@@ -78,7 +80,7 @@ Window {
     ColumnLayout {
         id: layout
         anchors.fill: parent
-        anchors.margins: VLCStyle.margin_small
+        anchors.margins: root.contentMargins
 
 
         readonly property ColorContext colorContext: ColorContext {
@@ -103,6 +105,8 @@ Window {
 
             Layout.fillWidth: true
             Layout.minimumHeight: VLCStyle.icon_normal
+
+            visible: standardButtons !== DialogButtonBox.NoButton
 
             standardButtons: DialogButtonBox.Ok | DialogButtonBox.Cancel
 

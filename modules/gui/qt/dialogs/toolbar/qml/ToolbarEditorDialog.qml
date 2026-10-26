@@ -29,16 +29,30 @@ import VLC.Dialogs
 WindowDialog {
     id: root
 
-    width: minimumWidth
-    height: 600
+    // redesign: the Figma "Customize Player" modal is 1048x654
+    width: VLCStyle.dp(1048, VLCStyle.scale)
+    height: VLCStyle.dp(654, VLCStyle.scale)
 
     minimumWidth: 825
     minimumHeight: 400
 
     modal: true
-    title: qsTr("Toolbar Editor")
+    title: qsTr("Customize Player")
+
+    contentMargins: 0
+    standardButtons: DialogButtonBox.NoButton
+    color: viewTheme.bg.primary
 
     signal unload()
+
+    readonly property ColorContext viewTheme: ColorContext {
+        palette: VLCStyle.palette
+        colorSet: ColorContext.View
+    }
+
+    // Figma: header and body text are a mid grey, the hint below the title is dimmer
+    readonly property color textColor: viewTheme.fg.secondary
+    readonly property color hintColor: Qt.alpha(viewTheme.fg.secondary, 0.7)
 
     Component.onCompleted: {
         // Save first, in case the dialog is rejected.
@@ -75,6 +89,41 @@ WindowDialog {
         return (text += " *")
     }
 
+    component FooterButton: T.AbstractButton {
+        id: footerButton
+
+        property color backgroundColor
+        property color textColor
+
+        implicitWidth: Math.max(VLCStyle.dp(100, VLCStyle.scale), implicitContentWidth + leftPadding + rightPadding)
+        implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
+        leftPadding: VLCStyle.margin_normal
+        rightPadding: VLCStyle.margin_normal
+
+        focusPolicy: Qt.StrongFocus
+
+        background: Rectangle {
+            radius: VLCStyle.dp(6, VLCStyle.scale)
+            color: footerButton.backgroundColor
+            opacity: footerButton.hovered || footerButton.visualFocus ? 0.85 : 1
+            border.width: footerButton.visualFocus ? VLCStyle.dp(1, VLCStyle.scale) : 0
+            border.color: footerButton.textColor
+        }
+
+        contentItem: Text {
+            text: footerButton.text
+            color: footerButton.textColor
+            font.family: VLCStyle.fontFamily
+            font.pixelSize: VLCStyle.dp(13, VLCStyle.scale)
+            font.weight: Font.DemiBold
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Keys.onReturnPressed: clicked()
+        Keys.onEnterPressed: clicked()
+    }
+
     contentComponent: Item {
         MouseArea {
             anchors.fill: parent
@@ -85,100 +134,127 @@ WindowDialog {
         ColumnLayout {
             anchors.fill: parent
 
-            spacing: VLCStyle.margin_small
+            spacing: 0
 
-            RowLayout {
-                Layout.fillHeight: false
+            // header band: title, hint and the profile controls
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: VLCStyle.dp(93, VLCStyle.scale)
 
-                spacing: VLCStyle.margin_xsmall
+                color: root.viewTheme.bg.secondary
 
-                Widgets.MenuLabel {
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: implicitWidth
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: VLCStyle.dp(20, VLCStyle.scale)
+                    anchors.rightMargin: VLCStyle.dp(20, VLCStyle.scale)
 
-                    color: root.colorContext.fg.primary
-                    text: qsTr("Select profile:")
-                }
+                    spacing: VLCStyle.margin_xsmall
 
-                Widgets.ComboBoxExt {
-                    id: comboBox
+                    RowLayout {
+                        Layout.fillWidth: true
 
-                    Layout.fillWidth: (implicitWidth > Layout.minimumWidth)
-                    Layout.minimumWidth: VLCStyle.combobox_width_large
-                    Layout.minimumHeight: VLCStyle.combobox_height_normal
+                        spacing: VLCStyle.margin_xxsmall
 
-                    // this is not proper way to do it,
-                    // but ComboBoxExt does not provide
-                    // correct implicit width:
-                    implicitWidth: implicitContentWidth
-                    font.pixelSize: VLCStyle.fontSize_normal
+                        Text {
+                            Layout.fillWidth: true
 
-                    delegate: ItemDelegate {
-                        width: comboBox.width
-                        leftPadding: comboBox.leftPadding
-                        background: Item {}
-                        contentItem: Text {
-                            text: model.dirty ? _markDirty(model.name)
-                                              : model.name
-                            color: comboBox.color
-                            font: comboBox.font
+                            text: qsTr("Customize Player")
+                            color: root.textColor
+                            font.family: VLCStyle.fontFamily
+                            font.pixelSize: VLCStyle.fontSize_large
                             elide: Text.ElideRight
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        highlighted: (comboBox.highlightedIndex === index)
-                    }
-
-                    displayText: {
-                        let text
-
-                        if (!!MainCtx.controlbarProfileModel.currentModel)
-                            text = MainCtx.controlbarProfileModel.currentModel.name
-                        else {
-                            text = "N/A"
-                            return text
                         }
 
-                        if (MainCtx.controlbarProfileModel.currentModel.dirty)
-                            return _markDirty(text)
-                        else
-                            return text
+                        Widgets.ComboBoxExt {
+                            id: comboBox
+
+                            Layout.minimumWidth: VLCStyle.combobox_width_large
+                            Layout.preferredHeight: VLCStyle.dp(28, VLCStyle.scale)
+
+                            // this is not proper way to do it,
+                            // but ComboBoxExt does not provide
+                            // correct implicit width:
+                            implicitWidth: implicitContentWidth
+                            font.pixelSize: VLCStyle.fontSize_normal
+
+                            delegate: ItemDelegate {
+                                width: comboBox.width
+                                leftPadding: comboBox.leftPadding
+                                background: Item {}
+                                contentItem: Text {
+                                    text: model.dirty ? _markDirty(model.name)
+                                                      : model.name
+                                    color: comboBox.color
+                                    font: comboBox.font
+                                    elide: Text.ElideRight
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                highlighted: (comboBox.highlightedIndex === index)
+                            }
+
+                            displayText: {
+                                let text
+
+                                if (!!MainCtx.controlbarProfileModel.currentModel)
+                                    text = MainCtx.controlbarProfileModel.currentModel.name
+                                else {
+                                    text = "N/A"
+                                    return text
+                                }
+
+                                if (MainCtx.controlbarProfileModel.currentModel.dirty)
+                                    return _markDirty(text)
+                                else
+                                    return text
+                            }
+
+                            model: MainCtx.controlbarProfileModel
+
+                            currentIndex: MainCtx.controlbarProfileModel.selectedProfile
+
+                            onCurrentIndexChanged: {
+                                MainCtx.controlbarProfileModel.selectedProfile = currentIndex
+                            }
+
+                            Accessible.name: qsTr("Profiles")
+                        }
+
+                        Widgets.IconToolButton {
+                            description: qsTr("Clone the selected profile")
+                            text: VLCIcons.ic_fluent_document_copy_24_regular
+
+                            onClicked: {
+                                root.newProfile(MainCtx.controlbarProfileModel.cloneSelectedProfile)
+                            }
+                        }
+
+                        Widgets.IconToolButton {
+                            description: qsTr("New profile")
+                            text: VLCIcons.ic_fluent_document_add_24_regular
+
+                            onClicked: {
+                                root.newProfile(MainCtx.controlbarProfileModel.newProfile)
+                            }
+                        }
+
+                        Widgets.IconToolButton {
+                            description: qsTr("Delete the current profile.\nDeleting all profiles brings back the default styles.")
+                            text: VLCIcons.del
+
+                            onClicked: {
+                                  MainCtx.controlbarProfileModel.deleteSelectedProfile()
+                            }
+                        }
                     }
 
-                    model: MainCtx.controlbarProfileModel
+                    Text {
+                        Layout.fillWidth: true
 
-                    currentIndex: MainCtx.controlbarProfileModel.selectedProfile
-
-                    onCurrentIndexChanged: {
-                        MainCtx.controlbarProfileModel.selectedProfile = currentIndex
-                    }
-
-                    Accessible.name: qsTr("Profiles")
-                }
-
-                Widgets.IconToolButton {
-                    description: qsTr("Clone the selected profile")
-                    text: VLCIcons.ic_fluent_document_copy_24_regular
-
-                    onClicked: {
-                        root.newProfile(MainCtx.controlbarProfileModel.cloneSelectedProfile)
-                    }
-                }
-
-                Widgets.IconToolButton {
-                    description: qsTr("New profile")
-                    text: VLCIcons.ic_fluent_document_add_24_regular
-
-                    onClicked: {
-                        root.newProfile(MainCtx.controlbarProfileModel.newProfile)
-                    }
-                }
-
-                Widgets.IconToolButton {
-                    description: qsTr("Delete the current profile.\nDeleting all profiles brings back the default styles.")
-                    text: VLCIcons.del
-
-                    onClicked: {
-                          MainCtx.controlbarProfileModel.deleteSelectedProfile()
+                        text: qsTr("Drag items from the box below into the bars to add them, drag them around to re-order them, and drag them back into the box to remove them from the player.")
+                        color: root.hintColor
+                        font.family: VLCStyle.fontFamily
+                        font.pixelSize: VLCStyle.dp(13, VLCStyle.scale)
+                        elide: Text.ElideRight
                     }
                 }
             }
@@ -189,6 +265,38 @@ WindowDialog {
 
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.leftMargin: VLCStyle.dp(20, VLCStyle.scale)
+                Layout.rightMargin: VLCStyle.dp(20, VLCStyle.scale)
+                Layout.topMargin: VLCStyle.margin_small
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: VLCStyle.dp(20, VLCStyle.scale)
+                Layout.rightMargin: VLCStyle.dp(20, VLCStyle.scale)
+                Layout.topMargin: VLCStyle.margin_small
+                Layout.bottomMargin: VLCStyle.dp(18, VLCStyle.scale)
+
+                FooterButton {
+                    text: qsTr("Cancel")
+                    backgroundColor: root.colorContext.bg.secondary
+                    textColor: root.textColor
+
+                    onClicked: root.rejected(true)
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                FooterButton {
+                    text: qsTr("Save")
+                    // Figma accent-dim #371F06 in the dark theme, like the seek bar fill
+                    backgroundColor: root.viewTheme.palette.isDark ? "#371F06" : Qt.alpha(root.viewTheme.accent, 0.2)
+                    textColor: root.viewTheme.accent
+
+                    onClicked: root.accepted()
+                }
             }
         }
     }

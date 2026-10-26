@@ -52,9 +52,7 @@ Item {
             id: bar
             z: 1
 
-            background: Rectangle {
-                color: theme.bg.primary
-            }
+            background: null
 
             readonly property int currentIdentifier: currentItem.identifier
 
@@ -85,25 +83,26 @@ Item {
         }
 
         Item {
-            Layout.preferredHeight: VLCStyle.controlLayoutHeight * 1.5
+            Layout.preferredHeight: VLCStyle.controlLayoutHeight * 1.25
             Layout.fillWidth: true
+            Layout.topMargin: VLCStyle.margin_xsmall
 
             TextMetrics {
                 id: leftMetric
                 text: qsTr("L   E   F   T")
-                font.pixelSize: VLCStyle.fontSize_xxlarge
+                font.pixelSize: VLCStyle.fontSize_normal
             }
 
             TextMetrics {
                 id: centerMetric
                 text: qsTr("C   E   N   T   E   R")
-                font.pixelSize: VLCStyle.fontSize_xxlarge
+                font.pixelSize: VLCStyle.fontSize_normal
             }
 
             TextMetrics {
                 id: rightMetric
                 text: qsTr("R   I   G   H   T")
-                font.pixelSize: VLCStyle.fontSize_xxlarge
+                font.pixelSize: VLCStyle.fontSize_normal
             }
 
             Repeater {
@@ -190,8 +189,10 @@ Item {
 
                             readonly property int count: item?.count ?? 0
 
+                            // redesign: the bars are rounded wells on the header colour
                             sourceComponent: Rectangle {
-                                color: theme.bg.primary
+                                color: theme.bg.secondary
+                                radius: VLCStyle.dp(8, VLCStyle.scale)
 
                                 border.color: theme.border
                                 border.width: VLCStyle.border
@@ -240,8 +241,9 @@ Item {
 
                                         text: repeater.getMetric(index).text
                                         verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: VLCStyle.fontSize_xxlarge
-                                        color: theme.fg.secondary
+                                        font.family: VLCStyle.fontFamily
+                                        font.pixelSize: VLCStyle.fontSize_normal
+                                        color: Qt.alpha(theme.fg.secondary, 0.7)
                                         horizontalAlignment: Text.AlignHCenter
                                         visible: (count === 0)
                                     }
@@ -253,31 +255,20 @@ Item {
             }
         }
 
-        Rectangle {
+        // redesign: the Figma item grid sits straight on the dialog body, no frame or caption
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.topMargin: VLCStyle.margin_xxsmall
-
-            color: buttonList.colorContext.bg.primary
-            border.color: theme.border
-            border.width: VLCStyle.border
-            border.pixelAligned: (radius < Number.EPSILON)
+            Layout.topMargin: VLCStyle.margin_small
 
             ColumnLayout {
                 anchors.fill: parent
-
-                Widgets.MenuCaption {
-                    Layout.margins: VLCStyle.margin_xxsmall
-                    text: qsTr("Drag items below to add them above: ")
-                    color: buttonList.colorContext.fg.primary
-                }
 
                 ToolbarEditorButtonList {
                     id: buttonList
 
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.margins: VLCStyle.margin_xxsmall
 
                     Component.onCompleted: {
                         controlDragStarted.connect(root.dragStarted)

@@ -29,6 +29,8 @@ main-menu        | 2 | ml   |                       | sleep:2 press:Menu sleep:1
 main-menu-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 shot:a
 prefs            | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 shotwin:interface
 prefs-day        | 1 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 shotwin:interface
+customize        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
+customize-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
 # resume prompt: play past 10 s once, then reopen the same file
 resume-first     | 2 | fixture | ~/Videos/long_movie.mp4         | sleep:16 term
 resume-prompt    | 2 | same | ~/Videos/long_movie.mp4         | shot:a sleep:2 shot:b geom:b sleep:2 shot:c
