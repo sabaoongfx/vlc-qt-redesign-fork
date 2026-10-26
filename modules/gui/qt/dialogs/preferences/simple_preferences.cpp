@@ -65,6 +65,10 @@
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QRegularExpression>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QFontComboBox>
+#include <QLineEdit>
 
 #include <cassert>
 #include <math.h>
@@ -274,13 +278,19 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         button->setCheckable( true );
         button->setAutoExclusive( true );
         button->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
-        connect( button, &QPushButton::clicked, mapper, QOverload<>::of(&QSignalMapper::map) );
+        // toggled, not clicked: accessibility tools check the button without a click
+        connect( button, &QPushButton::toggled, mapper, [mapper, button]( bool on ) {
+            if( on )
+                mapper->map( button );
+        } );
         mapper->setMapping( button, numb );
         layout->addWidget( button );
     };
 
     addHeading( qtr( "App" ) );
+    addCategory( qtr( "General" ), qtr( "Appearance, startup and diagnostics" ), VLCIcons::effect_filter, SPrefsGeneral );
     addCategory( qtr( "Interface" ), qfut(INTF_TOOLTIP), VLCIcons::settings, SPrefsInterface );
+    addCategory( qtr( "Privacy" ), qtr( "History and network access" ), VLCIcons::history, SPrefsPrivacy );
     addCategory( qtr( "Controls" ), qfut(HOTKEYS_TOOLTIP), VLCIcons::menu_keyboard, SPrefsHotkeys );
     addHeading( qtr( "Media" ) );
     addCategory( qtr( "Playback" ), qfut(INPUT_TOOLTIP), VLCIcons::play, SPrefsInputAndCodecs );
@@ -289,6 +299,11 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     addCategory( qtr( "Subtitles" ), qfut(SUBPIC_TOOLTIP), VLCIcons::audiosub, SPrefsSubtitles );
     if ( vlc_ml_instance_get( p_intf ) != nullptr )
         addCategory( qtr( "Library" ), qfut(ML_TOOLTIP), VLCIcons::ic_fluent_folder_open_24_regular, SPrefsMediaLibrary );
+    addHeading( qtr( "System" ) );
+    addCategory( qtr( "Network" ), qtr( "Buffering, proxy and security" ), VLCIcons::topbar_network, SPrefsNetwork );
+    addCategory( qtr( "Performance" ), qtr( "Decoding and smooth playback" ), VLCIcons::effect_filter, SPrefsPerformance );
+    addCategory( qtr( "Recording" ), qtr( "Recording, casting and streaming out" ), VLCIcons::record, SPrefsRecording );
+    addCategory( qtr( "Extensions" ), qtr( "Add-ons and scripts" ), VLCIcons::add, SPrefsExtensions );
     layout->addStretch( 1 );
 
     qobject_cast<QPushButton*>(mapper->mapping(SPrefsInterface))->setChecked(true);
@@ -384,6 +399,301 @@ void SPrefsPanel::configBool(const char* option, QAbstractButton* control)
     {
         control->setEnabled( false );
     }
+}
+
+/*********************************************************************
+ * redesign: Figma settings rows
+ *********************************************************************/
+QString formatTooltip( const QString &tooltip ); // preferences_widgets.cpp
+
+/* A page of the Figma settings window: section titles, then rows of a label (with an info icon
+ * carrying the option's long text) on the left and the control on the right. Every row is bound
+ * to a real option through the usual ConfigControl classes; options this build lacks (a module
+ * that is not compiled in) are left out rather than shown disabled. */
+class SettingsRows
+{
+public:
+    SettingsRows( QWidget *page, QList<ConfigControl *> &controls )
+        : m_controls( controls )
+        , m_layout( new QVBoxLayout( page ) )
+        , m_target( m_layout )
+    {
+        m_layout->setContentsMargins( 24, 0, 24, 24 );
+        m_layout->setSpacing( 0 );
+
+        /* Figma: grey 14px labels, 17px section titles, the selected segment on the accent-dim
+         * colour with accent text (#371F06 over the dark base) */
+        const QPalette palette = QApplication::palette();
+        const QColor accent = palette.color( QPalette::Highlight );
+        const QColor base = palette.color( QPalette::Base );
+        const qreal mix = base.lightnessF() < 0.5 ? 0.25 : 0.2;
+        const QColor dim = QColor::fromRgbF( base.redF() + ( accent.redF() - base.redF() ) * mix,
+                                             base.greenF() + ( accent.greenF() - base.greenF() ) * mix,
+                                             base.blueF() + ( accent.blueF() - base.blueF() ) * mix );
+        page->setStyleSheet( QStringLiteral(
+            "QLabel#settingsSection { font-size: 17px; color: palette(text); }"
+            "QLabel#settingsLabel { font-size: 14px; color: palette(placeholder-text); }"
+            "QWidget#settingsSegments { background: palette(base); border: 1px solid palette(mid); border-radius: 6px; }"
+            "QWidget#settingsSegments QPushButton { border: none; border-radius: 4px; background: transparent;"
+            " color: palette(placeholder-text); padding: 6px 12px; }"
+            "QWidget#settingsSegments QPushButton:checked { background: %1; color: %2; }"
+            "QWidget#settingsSegments QPushButton#settingsSwatch { padding: 0; border-radius: 4px; border: 2px solid transparent; }"
+            "QWidget#settingsSegments QPushButton#settingsSwatch:checked { border: 2px solid palette(text); }"
+            "QPushButton#settingsAdvanced { color: palette(placeholder-text); padding: 10px; }" )
+            .arg( dim.name(), accent.name() ) );
+    }
+
+    ~SettingsRows()
+    {
+        m_layout->addStretch( 1 );
+    }
+
+    void section( const QString &title )
+    {
+        QLabel *label = new QLabel( title );
+        label->setObjectName( QStringLiteral( "settingsSection" ) );
+        label->setContentsMargins( 0, m_target->count() ? 28 : 12, 0, 6 );
+        m_target->addWidget( label );
+    }
+
+    /* the following rows go under a collapsed "Advanced Options" bar (Figma) */
+    void advanced()
+    {
+        QPushButton *toggle = new QPushButton( qtr( "Advanced Options" ) );
+        toggle->setObjectName( QStringLiteral( "settingsAdvanced" ) );
+        toggle->setCheckable( true );
+        toggle->setFlat( true );
+        toggle->setLayoutDirection( Qt::RightToLeft ); // chevron after the text
+        toggle->setIcon( chevron( false ) );
+        m_layout->addSpacing( 16 );
+        m_layout->addWidget( toggle );
+
+        QWidget *box = new QWidget;
+        box->setVisible( false );
+        QVBoxLayout *boxLayout = new QVBoxLayout( box );
+        boxLayout->setContentsMargins( 0, 8, 0, 0 );
+        boxLayout->setSpacing( 0 );
+        m_layout->addWidget( box );
+        m_target = boxLayout;
+
+        QObject::connect( toggle, &QPushButton::toggled, box, [box, toggle]( bool on ) {
+            box->setVisible( on );
+            toggle->setIcon( chevron( on ) );
+        } );
+    }
+
+    ConfigControl *option( const QString &text, const char *name )
+    {
+        module_config_t *p_item = config_FindConfig( name );
+        if( !p_item )
+            return nullptr;
+
+        QLabel *label = new QLabel( text );
+        QWidget *control = nullptr;
+        ConfigControl *configControl = nullptr;
+        bool wide = true;
+
+        switch( p_item->i_type )
+        {
+        case CONFIG_ITEM_BOOL:
+        {
+            QCheckBox *box = new QCheckBox;
+            configControl = new BoolConfigControl( p_item, label, box );
+            control = box;
+            wide = false;
+            break;
+        }
+        case CONFIG_ITEM_INTEGER:
+            if( p_item->list_count )
+            {
+                QComboBox *combo = new QComboBox;
+                configControl = new IntegerListConfigControl( p_item, label, combo );
+                control = combo;
+                // same as string lists below: keep a value outside the choices as it is
+                if( combo->findData( qlonglong( p_item->value.i ) ) < 0 )
+                {
+                    combo->insertItem( 0, QString::number( p_item->value.i ), qlonglong( p_item->value.i ) );
+                    combo->setCurrentIndex( 0 );
+                }
+            }
+            else
+            {
+                QSpinBox *spin = new QSpinBox;
+                configControl = new IntegerRangeConfigControl( p_item, label, spin );
+                control = spin;
+            }
+            break;
+        case CONFIG_ITEM_FLOAT:
+        {
+            QDoubleSpinBox *spin = new QDoubleSpinBox;
+            configControl = new FloatRangeConfigControl( p_item, label, spin );
+            control = spin;
+            break;
+        }
+        case CONFIG_ITEM_STRING:
+        case CONFIG_ITEM_MODULE:
+            if( p_item->i_type == CONFIG_ITEM_MODULE || p_item->list_count )
+            {
+                QComboBox *combo = new QComboBox;
+                configControl = new StringListConfigControl( p_item, label, combo );
+                control = combo;
+                /* a value outside the choices (often the empty default) would show the first
+                 * choice and be replaced by it on Save: list it as it is */
+                const QString current = qfu( p_item->value.psz ? p_item->value.psz : "" );
+                if( combo->findData( current ) < 0 )
+                {
+                    combo->insertItem( 0, current.isEmpty() ? qtr( "Default" ) : current, current );
+                    combo->setCurrentIndex( 0 );
+                }
+            }
+            else
+            {
+                QLineEdit *edit = new QLineEdit;
+                configControl = new StringConfigControl( p_item, label, edit );
+                control = edit;
+            }
+            break;
+        case CONFIG_ITEM_PASSWORD:
+        {
+            QLineEdit *edit = new QLineEdit;
+            configControl = new PasswordConfigControl( p_item, label, edit );
+            control = edit;
+            break;
+        }
+        case CONFIG_ITEM_LOADFILE:
+        case CONFIG_ITEM_SAVEFILE:
+        case CONFIG_ITEM_DIRECTORY:
+        {
+            QLineEdit *edit = new QLineEdit;
+            QPushButton *browse = new QPushButton( qtr( "Browse" ) );
+            browse->setFlat( true );
+            if( p_item->i_type == CONFIG_ITEM_DIRECTORY )
+                configControl = new DirectoryConfigControl( p_item, label, edit, browse );
+            else
+                configControl = new FileConfigControl( p_item, label, edit, browse );
+            control = new QWidget;
+            QHBoxLayout *box = new QHBoxLayout( control );
+            box->setContentsMargins( 0, 0, 0, 0 );
+            box->addWidget( edit, 1 );
+            box->addWidget( browse );
+            break;
+        }
+        case CONFIG_ITEM_FONT:
+        {
+            QFontComboBox *combo = new QFontComboBox;
+            configControl = new FontConfigControl( p_item, label, combo );
+            control = combo;
+            break;
+        }
+        case CONFIG_ITEM_RGB:
+        {
+            QToolButton *button = new QToolButton;
+            configControl = new ColorConfigControl( p_item, label, button );
+            control = button;
+            wide = false;
+            break;
+        }
+        default:
+            delete label;
+            return nullptr;
+        }
+
+        m_controls.append( configControl );
+        addRow( label, p_item->psz_longtext ? qfut( p_item->psz_longtext ) : QString(), control, wide );
+        return configControl;
+    }
+
+    /* a row whose control is not a plain option (a button, a segmented value...) */
+    void widget( const QString &text, const QString &tooltip, QWidget *control, bool wide = true )
+    {
+        addRow( new QLabel( text ), tooltip, control, wide );
+    }
+
+private:
+    static QIcon chevron( bool open )
+    {
+        QPixmap pix( 16, 16 );
+        pix.fill( Qt::transparent );
+        QPainter painter( &pix );
+        painter.setRenderHint( QPainter::Antialiasing );
+        painter.setPen( QPen( QApplication::palette().color( QPalette::Text ), 1.4 ) );
+        if( open )
+            painter.drawPolyline( QPolygonF( { QPointF( 4, 6 ), QPointF( 8, 10 ), QPointF( 12, 6 ) } ) );
+        else
+            painter.drawPolyline( QPolygonF( { QPointF( 6, 4 ), QPointF( 10, 8 ), QPointF( 6, 12 ) } ) );
+        return QIcon( pix );
+    }
+
+    static QLabel *infoIcon( const QString &tooltip )
+    {
+        const int size = 16;
+        const qreal dpr = qApp->devicePixelRatio();
+        QPixmap pix( QSize( size, size ) * dpr );
+        pix.setDevicePixelRatio( dpr );
+        pix.fill( Qt::transparent );
+        QPainter painter( &pix );
+        QFont font( QStringLiteral( "VLCIcons" ) );
+        font.setPixelSize( size );
+        painter.setFont( font );
+        painter.setPen( QApplication::palette().color( QPalette::PlaceholderText ) );
+        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( VLCIcons::info ) );
+
+        QLabel *icon = new QLabel;
+        icon->setPixmap( pix );
+        icon->setToolTip( formatTooltip( tooltip ) );
+        return icon;
+    }
+
+    void addRow( QLabel *label, const QString &tooltip, QWidget *control, bool wide )
+    {
+        QWidget *row = new QWidget;
+        row->setMinimumHeight( 44 );
+        QHBoxLayout *layout = new QHBoxLayout( row );
+        layout->setContentsMargins( 0, 4, 0, 4 );
+        layout->setSpacing( 8 );
+
+        label->setObjectName( QStringLiteral( "settingsLabel" ) );
+        layout->addWidget( label );
+        if( !tooltip.isEmpty() )
+            layout->addWidget( infoIcon( tooltip ) );
+        layout->addStretch( 1 );
+
+        // Figma: dropdowns and fields are 318px wide, toggles keep their size
+        if( wide )
+            control->setFixedWidth( 318 );
+        layout->addWidget( control );
+
+        m_target->addWidget( row );
+    }
+
+    QList<ConfigControl *> &m_controls;
+    QVBoxLayout *m_layout;
+    QVBoxLayout *m_target;
+};
+
+/* writes a row control only when the user changed it, see rowControls */
+static void applyIfChanged( ConfigControl *control )
+{
+    const char *name = control->getName();
+    if( auto *c = qobject_cast<VIntConfigControl *>( control ) )
+    {
+        if( c->getValue() != config_GetInt( name ) )
+            c->doApply();
+    }
+    else if( auto *c = qobject_cast<VFloatConfigControl *>( control ) )
+    {
+        if( !qFuzzyCompare( 1.f + c->getValue(), 1.f + config_GetFloat( name ) ) )
+            c->doApply();
+    }
+    else if( auto *c = qobject_cast<VStringConfigControl *>( control ) )
+    {
+        char *current = config_GetPsz( name );
+        if( c->getValue() != qfu( current ? current : "" ) )
+            c->doApply();
+        free( current );
+    }
+    else
+        control->doApply();
 }
 
 SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
@@ -1091,6 +1401,215 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             break;
         }
+
+        /* redesign: the Figma settings pages VLC had no simple page for; titles and row
+         * labels follow the Figma frames, the options behind them are VLC's own */
+        case SPrefsGeneral:
+        {
+            panel_label->setText( qtr( "Global Settings" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "Appearance" ) );
+
+            /* Theme: the colour scheme model, as a segmented value (Night, Day, System) */
+            ColorSchemeModel *schemes = p_intf->p_mi->getColorScheme();
+            QComboBox *schemeCombo = new QComboBox( panel );
+            schemeCombo->setModel( schemes );
+            schemeCombo->setCurrentIndex( schemes->currentIndex() );
+            schemeCombo->hide();
+            m_resetters.push_back( std::make_unique<PropertyResetter>( schemeCombo, "currentIndex" ) );
+            connect( schemeCombo, QOverload<int>::of( &QComboBox::currentIndexChanged ),
+                     schemes, &ColorSchemeModel::setCurrentIndex );
+
+            QWidget *segments = new QWidget;
+            segments->setObjectName( QStringLiteral( "settingsSegments" ) );
+            QHBoxLayout *segmentsLayout = new QHBoxLayout( segments );
+            segmentsLayout->setContentsMargins( 2, 2, 2, 2 );
+            segmentsLayout->setSpacing( 2 );
+            QButtonGroup *segmentGroup = new QButtonGroup( segments );
+            for( int i = schemes->rowCount( {} ) - 1; i >= 0; --i )
+            {
+                QPushButton *segment = new QPushButton( schemes->data( schemes->index( i ), Qt::DisplayRole ).toString() );
+                segment->setCheckable( true );
+                segment->setChecked( i == schemeCombo->currentIndex() );
+                segment->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
+                segmentGroup->addButton( segment, i );
+                segmentsLayout->addWidget( segment );
+            }
+            connect( segmentGroup, &QButtonGroup::idClicked, schemeCombo, &QComboBox::setCurrentIndex );
+            connect( schemeCombo, QOverload<int>::of( &QComboBox::currentIndexChanged ), segmentGroup, [segmentGroup]( int i ) {
+                if( QAbstractButton *b = segmentGroup->button( i ) )
+                    b->setChecked( true );
+            } );
+            rows.widget( qtr( "Theme" ), QString(), segments );
+
+            /* Accent colour: the Figma swatches; written to qt-accent-color, used from the next start */
+            if( config_FindConfig( "qt-accent-color" ) )
+            {
+                QLineEdit *accentEdit = new QLineEdit( panel );
+                accentEdit->hide();
+                rowControls.append( new StringConfigControl( config_FindConfig( "qt-accent-color" ), nullptr, accentEdit ) );
+
+                QWidget *swatches = new QWidget;
+                swatches->setObjectName( QStringLiteral( "settingsSegments" ) );
+                QHBoxLayout *swatchLayout = new QHBoxLayout( swatches );
+                swatchLayout->setContentsMargins( 4, 4, 4, 4 );
+                swatchLayout->setSpacing( 4 );
+                QButtonGroup *swatchGroup = new QButtonGroup( swatches );
+                static const char *const accents[] = { "default", "#A13B26", "#8D721C", "#157528", "#147A97",
+                                                       "#144497", "#6731B6", "#AB3D81", "#7E7E7E" };
+                for( const char *accent : accents )
+                {
+                    const QString value = qfu( accent );
+                    const QString color = ( value == QLatin1String( "default" ) ) ? QStringLiteral( "#D37918" ) : value;
+                    QPushButton *swatch = new QPushButton;
+                    swatch->setObjectName( QStringLiteral( "settingsSwatch" ) );
+                    swatch->setCheckable( true );
+                    swatch->setFixedSize( 28, 28 );
+                    swatch->setToolTip( value == QLatin1String( "default" ) ? qtr( "Default" ) : value );
+                    swatch->setStyleSheet( QStringLiteral( "QPushButton#settingsSwatch { background: %1; }" ).arg( color ) );
+                    swatch->setChecked( accentEdit->text().compare( value, Qt::CaseInsensitive ) == 0 );
+                    swatchGroup->addButton( swatch );
+                    swatchLayout->addWidget( swatch );
+                    connect( swatch, &QPushButton::clicked, accentEdit, [accentEdit, value]() { accentEdit->setText( value ); } );
+                }
+                rows.widget( qtr( "Accent color" ), qtr( "Used from the next start of VLC" ), swatches );
+            }
+
+            rows.section( qtr( "Startup" ) );
+            rows.option( qtr( "Ask about network access on first start" ), "qt-privacy-ask" );
+            rows.option( qtr( "Check for updates automatically" ), "qt-updates-notif" );
+
+            rows.section( qtr( "Diagnostics" ) );
+            rows.option( qtr( "Save a log" ), "file-logging" );
+            rows.option( qtr( "Log file" ), "logfile" );
+            rows.option( qtr( "Log details" ), "log-verbose" );
+
+            rows.advanced();
+            rows.option( qtr( "Show minor warnings" ), "verbose" );
+            rows.option( qtr( "Log format" ), "logmode" );
+            rows.option( qtr( "Collect playback statistics" ), "stats" );
+            break;
+        }
+
+        case SPrefsPrivacy:
+        {
+            panel_label->setText( qtr( "Privacy Settings" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "History" ) );
+            rows.option( qtr( "Remember the playback position" ), "restore-playback-pos" );
+            if( vlc_ml_instance_get( p_intf ) != nullptr )
+            {
+                QPushButton *clear = new QPushButton( qtr( "Clear" ) );
+                clear->setFlat( true );
+                connect( clear, &QPushButton::clicked, this, [this, clear]() {
+                    if( p_intf->p_mi && p_intf->p_mi->getMediaLibrary() )
+                    {
+                        // parented to the panel: the clear runs later on the media library thread
+                        MLRecentMediaModel *recents = new MLRecentMediaModel( this );
+                        recents->setMl( p_intf->p_mi->getMediaLibrary() );
+                        recents->clearHistory();
+                        clear->setEnabled( false );
+                    }
+                } );
+                rows.widget( qtr( "Clear history now" ), qtr( "Forget the recently played media" ), clear, false );
+            }
+
+            rows.section( qtr( "Network" ) );
+            rows.option( qtr( "Fetch titles and cover art from the internet" ), "metadata-network-access" );
+            rows.option( qtr( "Last.fm username" ), "lastfm-username" );
+            rows.option( qtr( "Last.fm password" ), "lastfm-password" );
+            rows.option( qtr( "Last.fm submission URL" ), "scrobbler-url" );
+            break;
+        }
+
+        case SPrefsNetwork:
+        {
+            panel_label->setText( qtr( "Network Connections & Security" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "Buffering" ) );
+            rows.option( qtr( "Local files" ), "file-caching" );
+            rows.option( qtr( "Discs" ), "disc-caching" );
+            rows.option( qtr( "Network streams" ), "network-caching" );
+            rows.option( qtr( "Live capture" ), "live-caching" );
+
+            rows.section( qtr( "Proxy" ) );
+            rows.option( qtr( "HTTP proxy" ), "http-proxy" );
+            rows.option( qtr( "HTTP proxy password" ), "http-proxy-pwd" );
+
+            rows.section( qtr( "Security" ) );
+            rows.option( qtr( "Verify certificates against the system trust store" ), "gnutls-system-trust" );
+            rows.option( qtr( "Cipher preference" ), "gnutls-priorities" );
+
+            rows.advanced();
+            rows.option( qtr( "HTTP server address" ), "http-host" );
+            rows.option( qtr( "HTTP server port" ), "http-port" );
+            break;
+        }
+
+        case SPrefsPerformance:
+        {
+            panel_label->setText( qtr( "Performance Settings" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "Decoding" ) );
+            rows.option( qtr( "Hardware-accelerated decoding" ), "hw-dec" );
+            rows.option( qtr( "Decoder device" ), "dec-dev" );
+            rows.option( qtr( "Skip the H.264 loop filter" ), "avcodec-skiploopfilter" );
+            rows.option( qtr( "Decoding threads" ), "avcodec-threads" );
+
+            rows.section( qtr( "Smooth Playback" ) );
+            rows.option( qtr( "Drop frames when the system can't keep up" ), "drop-late-frames" );
+            rows.option( qtr( "Rescan plugins at the next start" ), "reset-plugins-cache" );
+
+            rows.advanced();
+            rows.option( qtr( "Preferred decoders" ), "codec" );
+            rows.option( qtr( "Clock synchronisation" ), "clock-synchro" );
+            rows.option( qtr( "Clock jitter" ), "clock-jitter" );
+            rows.option( qtr( "Clock source" ), "clock-master" );
+            break;
+        }
+
+        case SPrefsRecording:
+        {
+            panel_label->setText( qtr( "Recording, Casting & Streaming Out" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "Recording" ) );
+            rows.option( qtr( "Save recordings to" ), "input-record-path" );
+            rows.option( qtr( "Record without re-encoding when possible" ), "input-record-native" );
+
+            rows.section( qtr( "Casting" ) );
+            rows.option( qtr( "Cast quality" ), "sout-chromecast-conversion-quality" );
+
+            rows.section( qtr( "Streaming" ) );
+            rows.option( qtr( "Play locally while streaming" ), "sout-display" );
+            rows.option( qtr( "Include audio" ), "sout-audio" );
+            rows.option( qtr( "Include video" ), "sout-video" );
+            rows.option( qtr( "Include subtitles" ), "sout-spu" );
+            rows.option( qtr( "Encoding preset" ), "sout-x264-preset" );
+            rows.option( qtr( "Tuning" ), "sout-x264-tune" );
+
+            rows.advanced();
+            rows.option( qtr( "Stream all elementary streams" ), "sout-all" );
+            rows.option( qtr( "Keep the stream output open" ), "sout-keep" );
+            break;
+        }
+
+        case SPrefsExtensions:
+        {
+            panel_label->setText( qtr( "Add-ons & Scripts" ) );
+            SettingsRows rows( panel, rowControls );
+
+            rows.section( qtr( "Add-ons" ) );
+            QPushButton *manager = new QPushButton( qtr( "Find more extensions" ) );
+            manager->setFlat( true );
+            connect( manager, &QPushButton::clicked, THEDP, &DialogsProvider::pluginDialog );
+            rows.widget( qtr( "Plugins and extensions" ), QString(), manager, false );
+            break;
+        }
     }
 
     panel_layout->addWidget( panel_label );
@@ -1160,6 +1679,7 @@ SPrefsPanel::~SPrefsPanel()
         clean();
 
     qDeleteAll( controls ); controls.clear();
+    qDeleteAll( rowControls ); rowControls.clear();
     free( lang );
 }
 
@@ -1235,6 +1755,8 @@ void SPrefsPanel::apply()
         ConfigControl *c = qobject_cast<ConfigControl *>(*i);
         c->doApply();
     }
+    for( ConfigControl *c : rowControls )
+        applyIfChanged( c );
 
     switch( number )
     {

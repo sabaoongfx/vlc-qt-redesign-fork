@@ -139,7 +139,17 @@ if g:
     b = g.get('Add to medialibrary') or g.get('Remove from medialibrary')
     (ok if b and b[0][2] <= 40 else fail)('browse-folder', f'media library button is an icon ({b[0][2] if b else "missing"} px wide)')
 
-# 10. every scene produced its screenshots
+# 10. saving after visiting the new settings pages changes no option
+saved = glob.glob(f'{OUT}/profiles/prefs-save.*/config/vlc/vlcrc')
+if saved:
+    fixture = os.path.join(os.environ.get('FIX', os.path.join(os.path.dirname(OUT), 'fixtures')), 'profile/config/vlc/vlcrc')
+    def options(p):
+        return {l.strip() for l in open(p, errors='replace') if l.strip() and not l.startswith(('#', '['))}
+    (ok if os.path.getmtime(saved[0]) != os.path.getmtime(fixture) else fail)('prefs-save', 'Save wrote the configuration')
+    added, removed = options(saved[0]) - options(fixture), options(fixture) - options(saved[0])
+    (ok if not added and not removed else fail)('prefs-save', f'options unchanged after Save (added {sorted(added)[:6]}, removed {sorted(removed)[:6]})')
+
+# 11. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):

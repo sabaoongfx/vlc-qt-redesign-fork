@@ -57,6 +57,13 @@ enum {
     SPrefsInputAndCodecs,
     SPrefsHotkeys,
     SPrefsMediaLibrary,
+    /* redesign: categories of the Figma settings window that VLC had no simple page for */
+    SPrefsGeneral,
+    SPrefsPrivacy,
+    SPrefsNetwork,
+    SPrefsPerformance,
+    SPrefsRecording,
+    SPrefsExtensions,
     SPrefsMax
 };
 #define SPrefsDefaultCat SPrefsInterface
@@ -115,6 +122,9 @@ private:
 private:
     qt_intf_t *p_intf;
     QList<ConfigControl *> controls;
+    /* redesign: controls of the Figma row pages, written only when their value changed so they
+     * never overwrite an option another page also shows */
+    QList<ConfigControl *> rowControls;
 
     int number;
 
