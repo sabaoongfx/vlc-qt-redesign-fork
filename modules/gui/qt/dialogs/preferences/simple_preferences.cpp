@@ -584,6 +584,7 @@ public:
             return nullptr;
         }
 
+        label->setText( text ); // some controls (colour) put the option's own text in the label
         m_controls.append( configControl );
         m_lastControl = control;
         addRow( label, p_item->psz_longtext ? qfut( p_item->psz_longtext ) : QString(), control, wide );
@@ -730,8 +731,10 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsVideo:
         {
             auto& ui = m_videoUI;
-            ui.setupUi( panel );
-            panel_label->setText( qtr("Video Settings") );
+            /* redesign: the classic page stays whole under Advanced Options */
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
+            panel_label->setText( qtr("Video Defaults") );
 
             configBool( "video", ui.enableVideo );
             ui.videoZone->setEnabled( ui.enableVideo->isChecked() );
@@ -783,6 +786,26 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             configBool( "snapshot-sequential", ui.snapshotsSequentialNumbering );
             configGeneric<StringListConfigControl>( "snapshot-format", ui.arLabel, ui.snapshotsFormat );
 
+            /* redesign: Figma "Video" rows */
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Output" ) );
+            rows.option( qtr( "Enable video" ), "video" );
+            rows.option( qtr( "Start videos in fullscreen" ), "fullscreen" );
+            rows.option( qtr( "Stop the screensaver during playback" ), "disable-screensaver" );
+            rows.option( qtr( "Keep the video above other windows" ), "video-on-top" );
+            rows.option( qtr( "Play video as desktop wallpaper" ), "video-wallpaper" );
+
+            rows.section( qtr( "Deinterlacing" ) );
+            rows.option( qtr( "Deinterlacing" ), "deinterlace" );
+            rows.option( qtr( "Method" ), "deinterlace-mode" );
+
+            rows.section( qtr( "Framing" ) );
+            rows.option( qtr( "Aspect ratio" ), "aspect-ratio" );
+            rows.option( qtr( "Crop" ), "crop" );
+            rows.option( qtr( "Fit the video to the window" ), "autoscale" );
+
+            rows.advanced();
+            rows.block( classic );
             break;
         }
 
@@ -792,8 +815,10 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsAudio:
         {
             auto& ui = m_audioUI;
-            ui.setupUi( panel );
-            panel_label->setText( qtr("Audio Settings") );
+            /* redesign: the classic page stays whole under Advanced Options */
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
+            panel_label->setText( qtr("Audio Defaults") );
 
             configBool( "audio", ui.enableAudio );
             ui.audioZone->setEnabled( ui.enableAudio->isChecked() );
@@ -941,6 +966,32 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             /* Volume Label */
             updateAudioVolume( ui.defaultVolume->value() ); // First time init
 
+            /* redesign: Figma "Audio" rows; the startup volume and the normaliser stay on the
+             * classic page, its Save code writes them */
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Output" ) );
+            rows.option( qtr( "Enable audio" ), "audio" );
+            rows.option( qtr( "Output module" ), "aout" );
+            rows.option( qtr( "Stereo mode" ), "stereo-mode" );
+            rows.option( qtr( "Force Dolby Surround" ), "force-dolby-surround" );
+            rows.option( qtr( "Use S/PDIF when available" ), "spdif" );
+
+            rows.section( qtr( "Volume" ) );
+            rows.option( qtr( "Maximum volume" ), "qt-max-volume" );
+            if( rows.option( qtr( "Volume step" ), "volume-step" ) )
+                if( QDoubleSpinBox *spin = rows.last<QDoubleSpinBox>() )
+                    spin->setDecimals( 1 );
+
+            rows.section( qtr( "Loudness" ) );
+            rows.option( qtr( "Replay gain" ), "audio-replay-gain-mode" );
+            rows.option( qtr( "Replay gain preamp" ), "audio-replay-gain-preamp" );
+
+            rows.section( qtr( "Effects" ) );
+            rows.option( qtr( "Keep the pitch when changing speed" ), "audio-time-stretch" );
+            rows.option( qtr( "Visualization" ), "audio-visual" );
+
+            rows.advanced();
+            rows.block( classic );
             break;
         }
 
@@ -1344,8 +1395,10 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsSubtitles:
         {
             auto& ui = m_subtitlesUI;
-            ui.setupUi( panel );
-            panel_label->setText( qtr("Subtitle & On Screen Display Settings") );
+            /* redesign: the classic page stays whole under Advanced Options */
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
+            panel_label->setText( qtr("Subtitle Defaults") );
 
             configBool( "osd", ui.OSDBox);
             configBool( "video-title-show", ui.OSDTitleBox);
@@ -1387,6 +1440,34 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             configGeneric<IntegerListConfigControl>( "secondary-sub-alignment",
                             ui.secondarySubsAlignmentLabel, ui.secondarySubsAlignment );
             configGeneric<IntegerConfigControl>( "secondary-sub-margin", ui.secondarySubsPosLabel, ui.secondarySubsPosition );
+
+            /* redesign: Figma "Subtitles" rows; the shadow and background opacity stay on the
+             * classic page, its Save code writes them */
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Tracks & Languages" ) );
+            rows.option( qtr( "Enable subtitles" ), "spu" );
+            rows.option( qtr( "Preferred language" ), "sub-language" );
+            rows.option( qtr( "Text encoding" ), "subsdec-encoding" );
+
+            rows.section( qtr( "Loading Subtitles" ) );
+            rows.option( qtr( "Load subtitle files automatically" ), "sub-autodetect-file" );
+            rows.option( qtr( "File name matching" ), "sub-autodetect-fuzzy" );
+
+            rows.section( qtr( "Appearance" ) );
+            rows.option( qtr( "Font" ), "freetype-font" );
+            rows.option( qtr( "Bold" ), "freetype-bold" );
+            rows.option( qtr( "Text color" ), "freetype-color" );
+            rows.option( qtr( "Text opacity" ), "freetype-opacity" );
+            rows.option( qtr( "Outline thickness" ), "freetype-outline-thickness" );
+            rows.option( qtr( "Outline color" ), "freetype-outline-color" );
+            rows.option( qtr( "Distance from the bottom" ), "sub-margin" );
+
+            rows.section( qtr( "On Screen Display" ) );
+            rows.option( qtr( "Show messages on the video" ), "osd" );
+            rows.option( qtr( "Show the media title when it starts" ), "video-title-show" );
+
+            rows.advanced();
+            rows.block( classic );
             break;
         }
 
