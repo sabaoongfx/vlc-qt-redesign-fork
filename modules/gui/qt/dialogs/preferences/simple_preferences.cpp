@@ -604,6 +604,19 @@ public:
         return configControl;
     }
 
+    /* a hidden check box bound to a boolean option, for rows that show it another way (a
+     * combined dropdown, an inverted toggle); nullptr if the option is missing */
+    QCheckBox *hiddenBool( const char *name, QWidget *parent )
+    {
+        module_config_t *p_item = config_FindConfig( name );
+        if( !p_item )
+            return nullptr;
+        QCheckBox *box = new QCheckBox( parent );
+        box->hide();
+        m_controls.append( new BoolConfigControl( p_item, nullptr, box ) );
+        return box;
+    }
+
     /* a full-width block under the rows (a table, a list) */
     void block( QWidget *widget )
     {
@@ -684,29 +697,16 @@ public:
     T *last() const { return qobject_cast<T *>( m_lastControl ); }
 };
 
-/* writes a row control only when the user changed it, see rowControls */
-static void applyIfChanged( ConfigControl *control )
+/* the value a row control shows, compared before and after editing, see rowControls */
+static QVariant controlValue( ConfigControl *control )
 {
-    const char *name = control->getName();
     if( auto *c = qobject_cast<VIntConfigControl *>( control ) )
-    {
-        if( c->getValue() != config_GetInt( name ) )
-            c->doApply();
-    }
-    else if( auto *c = qobject_cast<VFloatConfigControl *>( control ) )
-    {
-        if( !qFuzzyCompare( 1.f + c->getValue(), 1.f + config_GetFloat( name ) ) )
-            c->doApply();
-    }
-    else if( auto *c = qobject_cast<VStringConfigControl *>( control ) )
-    {
-        char *current = config_GetPsz( name );
-        if( c->getValue() != qfu( current ? current : "" ) )
-            c->doApply();
-        free( current );
-    }
-    else
-        control->doApply();
+        return c->getValue();
+    if( auto *c = qobject_cast<VFloatConfigControl *>( control ) )
+        return c->getValue();
+    if( auto *c = qobject_cast<VStringConfigControl *>( control ) )
+        return c->getValue();
+    return {};
 }
 
 SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
@@ -964,8 +964,10 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsInputAndCodecs:
         {
             auto& ui = m_inputCodecUI;
-            ui.setupUi( panel );
-            panel_label->setText( qtr("Input & Codecs Settings") );
+            /* redesign: the classic page stays whole under Advanced Options */
+            QWidget *classic = new QWidget;
+            ui.setupUi( classic );
+            panel_label->setText( qtr("Playback Preferences") );
 
             /* Disk Devices */
             {
@@ -1049,6 +1051,68 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
                     ui.cachingCombo->findData( QVariant( i_cache ) ) );
 #undef TestCaC
 
+            /* redesign: Figma "Playback" rows */
+            SettingsRows rows( panel, rowControls );
+            rows.section( qtr( "Startup" ) );
+            rows.option( qtr( "Continue where you left off" ), "restore-playback-pos" );
+            rows.option( qtr( "Start playing as soon as a file opens" ), "playlist-autostart" );
+            rows.option( qtr( "Default playback speed" ), "rate" );
+
+            rows.section( qtr( "Tracks" ) );
+            rows.option( qtr( "Preferred video quality" ), "preferred-resolution" );
+            rows.option( qtr( "Preferred menu language" ), "menu-language" );
+            for( const auto &track : { std::pair<QString, const char *>( qtr( "Default audio track" ), "audio-track" ),
+                                       std::pair<QString, const char *>( qtr( "Default subtitle track" ), "sub-track" ) } )
+                if( rows.option( track.first, track.second ) )
+                    if( QSpinBox *spin = rows.last<QSpinBox>() )
+                    {
+                        spin->setMinimum( -1 ); // -1: let VLC choose
+                        spin->setSpecialValueText( qtr( "Automatic" ) );
+                    }
+
+            rows.section( qtr( "Order" ) );
+            /* Repeat: VLC's loop (all) and repeat (one) as one Off / One / All value */
+            QCheckBox *loop = rows.hiddenBool( "loop", panel );
+            QCheckBox *repeat = rows.hiddenBool( "repeat", panel );
+            if( loop && repeat )
+            {
+                QComboBox *repeatCombo = new QComboBox;
+                repeatCombo->addItem( qtr( "Off" ) );
+                repeatCombo->addItem( qtr( "Repeat one" ) );
+                repeatCombo->addItem( qtr( "Repeat all" ) );
+                repeatCombo->setCurrentIndex( repeat->isChecked() ? 1 : loop->isChecked() ? 2 : 0 );
+                connect( repeatCombo, QOverload<int>::of( &QComboBox::currentIndexChanged ), this, [loop, repeat]( int i ) {
+                    repeat->setChecked( i == 1 );
+                    loop->setChecked( i == 2 );
+                } );
+                rows.widget( qtr( "Repeat" ), qfut( config_FindConfig( "loop" )->psz_longtext ), repeatCombo );
+            }
+            rows.option( qtr( "Shuffle" ), "random" );
+            rows.option( qtr( "Stop after each item" ), "play-and-stop" );
+            if( QCheckBox *exitBox = rows.hiddenBool( "play-and-exit", panel ) )
+            {
+                QComboBox *finish = new QComboBox;
+                finish->addItem( qtr( "Stop" ) );
+                finish->addItem( qtr( "Quit VLC" ) );
+                finish->setCurrentIndex( exitBox->isChecked() ? 1 : 0 );
+                connect( finish, QOverload<int>::of( &QComboBox::currentIndexChanged ), exitBox, [exitBox]( int i ) {
+                    exitBox->setChecked( i == 1 );
+                } );
+                rows.widget( qtr( "When playback finishes" ), qfut( config_FindConfig( "play-and-exit" )->psz_longtext ), finish );
+            }
+
+            rows.section( qtr( "Seeking" ) );
+            /* "Seek precisely" is the opposite of VLC's fast seek */
+            if( QCheckBox *fastSeek = rows.hiddenBool( "input-fast-seek", panel ) )
+            {
+                QCheckBox *precise = new QCheckBox;
+                precise->setChecked( !fastSeek->isChecked() );
+                connect( precise, &QCheckBox::toggled, fastSeek, [fastSeek]( bool on ) { fastSeek->setChecked( !on ); } );
+                rows.widget( qtr( "Seek precisely" ), qtr( "Slower, but lands exactly on the requested time" ), precise, false );
+            }
+
+            rows.advanced();
+            rows.block( classic );
             break;
         }
 
@@ -1640,6 +1704,11 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
     panel_layout->addWidget( scroller );
 
     setLayout( panel_layout );
+
+    /* what the row controls show before any edit: Save writes only the ones that differ, so a
+     * row never undoes a change made to the same option elsewhere (the classic page below it) */
+    for( ConfigControl *c : rowControls )
+        rowInitial.insert( c, controlValue( c ) );
 }
 
 
@@ -1774,7 +1843,11 @@ void SPrefsPanel::apply()
         c->doApply();
     }
     for( ConfigControl *c : rowControls )
-        applyIfChanged( c );
+    {
+        const QVariant value = controlValue( c );
+        if( !value.isValid() || value != rowInitial.value( c ) )
+            c->doApply();
+    }
 
     switch( number )
     {

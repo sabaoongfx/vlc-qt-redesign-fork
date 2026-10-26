@@ -67,6 +67,13 @@ elif cmd == 'press':
     # a trailing * matches a prefix (e.g. Back_to_* for the folder crumb)
     match = (lambda nm: nm.startswith(arg[:-1])) if arg.endswith('*') else (lambda nm: nm == arg)
     hits = [n for _, n in nodes() if match(n.get_name() or '') and actionable(n)]
+    # prefer what is on screen (a hidden page or menu can carry the same name)
+    def showing(n):
+        try:
+            return n.get_state_set().contains(Atspi.StateType.SHOWING)
+        except Exception:
+            return False
+    hits = [n for n in hits if showing(n)] + [n for n in hits if not showing(n)]
     if len(hits) <= nth:
         print('no match:', arg); sys.exit(1)
     hits[nth].get_action_iface().do_action(0); print('pressed', arg, nth)

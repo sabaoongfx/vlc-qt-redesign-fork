@@ -125,6 +125,7 @@ private:
     /* redesign: controls of the Figma row pages, written only when their value changed so they
      * never overwrite an option another page also shows */
     QList<ConfigControl *> rowControls;
+    QHash<ConfigControl *, QVariant> rowInitial;
 
     int number;
 
