@@ -1,5 +1,5 @@
 # name | theme (0 system, 1 day, 2 night) | kind (ml = media library profile, none) | media (@ = fixtures dir) | actions
-# actions: sleep:S move:x,y click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag tree
+# actions: sleep:S move:x,y click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag audit:tag (AT-SPI accessibility audit) tree
 # 1920x1080. Sidebar rows: Home 75, Video 121, Music 167, Browse 213, Discover 259, Preferences 1036 (x 80; the clicks below land inside these 46px rows).
 
 home-night       | 2 | ml   |                       | sleep:3 move:960,600 shot:a geom:a
@@ -49,3 +49,9 @@ dots-hover-player | 2 | none | @sample.mp4          | sleep:3 move:900,500 sleep
 audio-menu       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 audio-menu-day   | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 video-hover      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:390,220 sleep:1 shot:a
+a11y-home        | 2 | ml   |                       | sleep:3 move:960,600 audit:a
+a11y-video       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 audit:a
+a11y-music       | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 audit:a
+a11y-player      | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 audit:a
+a11y-panel       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 audit:a
+a11y-prefs       | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 audit:a

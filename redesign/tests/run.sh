@@ -15,7 +15,7 @@ mkdir -p "$OUT"
 "$T/fixtures.sh" >/dev/null
 # fresh copy of the library profile per run, so scenes do not leak state into each other
 # the nested session's helpers can still be writing for a moment: retry
-for i in 1 2 3 4 5; do rm -rf "$OUT"/*.png "$OUT"/*.log "$OUT"/*.at "$OUT"/*.geom "$OUT"/*.tree "$OUT"/profiles "$OUT"/profile 2>/dev/null && break; sleep 1; done
+for i in 1 2 3 4 5; do rm -rf "$OUT"/*.png "$OUT"/*.log "$OUT"/*.at "$OUT"/*.geom "$OUT"/*.a11y "$OUT"/*.tree "$OUT"/profiles "$OUT"/profile 2>/dev/null && break; sleep 1; done
 grep -v '^\s*#' "$T/scenarios.txt" | grep -v '^\s*$' | while IFS='|' read -r name theme kind media actions; do
     name=$(echo $name); [[ "$name" =~ $FILTER ]] || continue
     media=$(echo $media | sed "s|@|$FIX/|g")

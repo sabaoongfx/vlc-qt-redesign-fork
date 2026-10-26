@@ -43,6 +43,7 @@ for a in $ACTIONS; do
     press:*) "$LIB/at.py" press "${a#press:}" >> "$OUT/$NAME.at" 2>&1 ;;
     tree) "$LIB/at.py" tree > "$OUT/$NAME.tree" 2>&1 ;;
     geom:*) "$LIB/at.py" geom > "$OUT/$NAME-${a#geom:}.geom" 2>/dev/null ;;
+    audit:*) "$LIB/at.py" audit > "$OUT/$NAME-${a#audit:}.a11y" 2>/dev/null ;;
   esac
 done
 kill -- -$VPID 2>/dev/null; sleep 0.5; kill -9 -- -$VPID 2>/dev/null

@@ -340,6 +340,44 @@ for at in sorted(glob.glob(f'{OUT}/*.at')):
         if line.startswith('no match') or line.startswith('no action'):
             fail(scene, 'AT-SPI: ' + line.strip())
 
+# 15. accessibility: the AT-SPI audit (at.py audit) finds nothing on the audited screens
+for a in sorted(glob.glob(f'{OUT}/*.a11y')):
+    scene = os.path.basename(a)[:-5].rsplit('-', 1)[0]
+    issues = [l.rstrip('\n').split('\t') for l in open(a) if l.strip()]
+    for rule, role, name, where in issues:
+        fail(scene, f'a11y {rule}: {role} "{name}" at {where}')
+    if not issues:
+        ok(scene, 'a11y audit: every control is named, has a role, is focusable and at least 24x24')
+
+# WCAG contrast of the Figma colour pairs, for information (the Figma greys are kept on purpose)
+def luminance(hexc_):
+    r, g, b = (int(hexc_[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    lin = lambda c: c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+
+def contrast(fg, bg):
+    a, b = sorted((luminance(fg), luminance(bg)), reverse=True)
+    return (a + 0.05) / (b + 0.05)
+
+CONTRAST_PAIRS = [  # what, foreground, background, needed (4.5 text, 3 large text or UI)
+    ('Night: body text on the library', '#E3E3E3', '#0E0E0E', 4.5),
+    ('Night: bar icons and times on the player bar', '#8F8F8F', '#1B1B1B', 4.5),
+    ('Night: menu labels', '#8F8F8F', '#181818', 4.5),
+    ('Night: menu shortcuts and section titles', '#6B6B6B', '#181818', 4.5),
+    ('Night: side panel row labels', '#6B6B6B', '#0E0E0E', 4.5),
+    ('Night: side panel section titles', '#969696', '#0E0E0E', 4.5),
+    ('Night: inactive side panel tab icons', '#404040', '#090909', 3),
+    ('Night: accent on the library', '#D37918', '#0E0E0E', 3),
+    ('Night: play glyph on the accent', '#1A0E02', '#D37918', 3),
+    ('Day: side panel values', '#2A2A2A', '#D2D2D1', 4.5),
+    ('Day: side panel row labels', '#4A4A4A', '#D2D2D1', 4.5),
+    ('Day: inactive side panel tab icons', '#8A8A8A', '#BDBDBC', 3),
+]
+contrast_rows = []
+for what, fg, bg, need in CONTRAST_PAIRS:
+    r = contrast(fg, bg)
+    contrast_rows.append((what, fg, bg, r, need))
+
 # report
 rows = []
 for scene in sorted({os.path.basename(p).rsplit('-', 1)[0] for p in glob.glob(f'{OUT}/*.png')} | {s for s, _ in failures}):
@@ -353,8 +391,14 @@ for scene in sorted({os.path.basename(p).rsplit('-', 1)[0] for p in glob.glob(f'
 open(f'{OUT}/report.html', 'w').write(
     "<!doctype html><meta charset=utf-8><title>Redesign test report</title><style>body{background:#111;color:#ddd;"
     "font:14px sans-serif;margin:24px}img{width:480px;margin:4px;border:1px solid #333}.bad{color:#f66}.good{color:#7c7}</style>"
-    f"<h1>{len(failures)} failures, {len(passes)} passes</h1>" + ''.join(rows))
+    f"<h1>{len(failures)} failures, {len(passes)} passes</h1>" + ''.join(rows)
+    + "<h2>WCAG contrast (information)</h2>"
+    + ''.join(f"<div class={'good' if r >= need else 'bad'}>{html.escape(w)}: {fg} on {bg} = {r:.2f}:1 (AA needs {need}:1)</div>"
+              for w, fg, bg, r, need in contrast_rows))
 print(f'{len(failures)} failures, {len(passes)} passes')
 for s, w in failures:
     print(f'FAIL {s}: {w}')
+low = [(w, r, need) for w, fg, bg, r, need in contrast_rows if r < need]
+if low:
+    print('contrast below WCAG AA (information): ' + '; '.join(f'{w} {r:.2f}:1 < {need}' for w, r, need in low))
 sys.exit(1 if failures else 0)

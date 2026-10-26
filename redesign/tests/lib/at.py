@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# AT-SPI helper: at.py tree | press NAME [nth] | dump-file PATH
+# AT-SPI helper: at.py tree | geom | audit | press NAME [nth] | dump-file PATH
 import sys, gi, time
 gi.require_version('Atspi', '2.0')
 from gi.repository import Atspi
@@ -47,6 +47,48 @@ elif cmd == 'geom':
             e = n.get_extents(Atspi.CoordType.SCREEN)
             if nm and e.width > 0 and e.height > 0:
                 print(f"{nm}\t{n.get_role_name()}\t{e.x}\t{e.y}\t{e.width}\t{e.height}")
+        except Exception:
+            pass
+elif cmd == 'audit':
+    # accessibility audit of what is on screen, one issue per line: rule<TAB>role<TAB>name<TAB>x,y wxh
+    #  name   WCAG 4.1.2: an interactive control without an accessible name (or description)
+    #  role   WCAG 4.1.2: something with an action but no control role
+    #  target WCAG 2.5.8: an interactive target smaller than 24x24
+    #  focus  WCAG 2.1.1: a button-like control that keyboard focus can never reach
+    interactive = {'push button', 'button', 'toggle button', 'check box', 'radio button', 'combo box', 'slider',
+                   'spin button', 'menu item', 'check menu item', 'radio menu item', 'page tab', 'link',
+                   'entry', 'text', 'list item', 'table cell', 'tree item', 'scroll bar'}
+    vague = {'unknown', 'filler', 'panel', 'redundant object', 'label', 'image', 'section'}
+    S = Atspi.StateType
+    for d, n in nodes():
+        try:
+            # Qt Quick reports no SHOWING/VISIBLE states: hidden items have an empty box
+            st = n.get_state_set()
+            role = n.get_role_name(); nm = (n.get_name() or '').strip()
+            e = n.get_extents(Atspi.CoordType.SCREEN)
+            if e.width <= 0 or e.height <= 0:
+                continue
+            # Qt gives every accessible item SetFocus/ShowMenu: only actions that operate a control count
+            try:
+                ai = n.get_action_iface()
+                acts = sum(1 for i in range(ai.get_n_actions() if ai else 0)
+                           if ai.get_action_name(i).lower() in ('press', 'click', 'toggle', 'activate', 'increase', 'decrease'))
+            except Exception:
+                acts = 0
+            if role == 'text' and not st.contains(S.EDITABLE):
+                continue
+            where = f'{e.x},{e.y} {e.width}x{e.height}'
+            if role in interactive or acts:
+                if not nm and not (n.get_description() or '').strip():
+                    print(f'name\t{role}\t\t{where}')
+                if acts and role in vague:
+                    print(f'role\t{role}\t{nm}\t{where}')
+                if role not in ('list item', 'table cell', 'tree item', 'text', 'entry', 'scroll bar', 'menu item',
+                                'check menu item', 'radio menu item') and (e.width < 24 or e.height < 24):
+                    print(f'target\t{role}\t{nm}\t{where}')
+                if role in ('push button', 'button', 'toggle button', 'check box', 'radio button', 'combo box', 'slider', 'page tab') \
+                        and st.contains(S.ENABLED) and not st.contains(S.FOCUSABLE):
+                    print(f'focus\t{role}\t{nm}\t{where}')
         except Exception:
             pass
 elif cmd == 'apps':
