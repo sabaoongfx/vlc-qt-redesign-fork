@@ -575,7 +575,8 @@ FocusScope {
             property int maximumWidth: Math.max(minimumWidth, (g_mainDisplay.width + sidebarResizeHandle.width) / 3)
 
             // redesign: room for the floating card's margins
-            topPadding: VLCStyle.margin_xsmall * 2
+            // redesign: the first Figma sidebar row is centred 36px under the card top
+            topPadding: VLCStyle.margin_small
             leftPadding: VLCStyle.margin_xsmall
             rightPadding: sidebarResizeHandle.visible ? sidebarResizeHandle.visualBorder.width : 0.0
             bottomPadding: VLCStyle.applicationVerticalMargin + VLCStyle.margin_small + VLCStyle.margin_xsmall

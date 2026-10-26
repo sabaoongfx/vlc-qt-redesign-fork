@@ -118,7 +118,8 @@ T.ItemDelegate {
     }
 
     contentItem: RowLayout {
-        spacing: VLCStyle.margin_xsmall
+        // redesign: Figma labels start 33px after the icon's left edge
+        spacing: VLCStyle.margin_small
 
         Item {
             Layout.preferredWidth: VLCStyle.icon_banner

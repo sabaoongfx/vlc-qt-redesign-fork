@@ -183,7 +183,8 @@ T.Pane {
 
                     property real preferredHeight: shouldShow ? VLCStyle.buttonHeightNavigationPane : 0.0
 
-                    leftPadding: root.safeAreaLeftMargin + VLCStyle.margin_xsmall
+                    // redesign: Figma icons sit 22px into the card
+                    leftPadding: root.safeAreaLeftMargin + VLCStyle.dp(18, VLCStyle.scale)
                     rightPadding: root.safeAreaRightMargin
 
                     leftInset: root.safeAreaLeftMargin + implicitLeftInset
