@@ -77,7 +77,9 @@ T.ProgressBar {
         onTriggered: control._isSeekPointsShown = false
     }
 
+    // the preview card shows the time itself
     Widgets.PointingToolTipAttached.visible: (hoverHandler.hovered || control.visualFocus || dragHandler.active)
+                                             && !previewCard.visible
 
     Widgets.PointingToolTipAttached.text: {
         if (!Widgets.PointingToolTipAttached.instance?.visible)
@@ -659,5 +661,71 @@ T.ProgressBar {
         state: (hoverHandler.hovered || control.visualFocus)
                ? ((control._currentChapterHovered || (Player.hasChapters && fsm._state === fsm.fsmHeld)) ? "visibleLarge" : "visible")
                : "hidden"
+    }
+
+    // redesign: the prototype's seek preview, a card with the frame under the cursor and its time
+    readonly property real _hoverPosition: hoverHandler.hovered ? Helpers.clamp(hoverHandler.point.position.x / control.width, 0, 1)
+                                                                : -1
+    readonly property bool _previewWanted: hoverHandler.hovered && Player.isStarted && (Player.videoTracks.count > 0)
+
+    on_HoverPositionChanged: {
+        if (_previewWanted)
+            seekPreview.request(_hoverPosition)
+    }
+
+    SeekPreview {
+        id: seekPreview
+        ctx: MainCtx
+    }
+
+    Rectangle {
+        id: previewCard
+
+        readonly property var _figma: VLCStyle.figmaColors(theme.palette.isDark)
+        readonly property real _pad: VLCStyle.dp(5, VLCStyle.scale)
+
+        visible: control._previewWanted && seekPreview.source !== ""
+        z: 10
+
+        width: VLCStyle.dp(156, VLCStyle.scale)
+        height: _pad + previewFrame.height + VLCStyle.dp(6, VLCStyle.scale) + previewTime.implicitHeight + VLCStyle.dp(8, VLCStyle.scale)
+
+        // centred on the cursor, kept over the bar, 10px above it
+        x: Helpers.clamp(control._hoverPosition * control.width, width / 2, control.width - width / 2) - width / 2
+        y: -height - VLCStyle.dp(10, VLCStyle.scale)
+
+        radius: VLCStyle.dp(10, VLCStyle.scale)
+        color: _figma.previewCard
+        border.color: _figma.previewEdge
+        border.width: VLCStyle.dp(1, VLCStyle.scale)
+
+        Widgets.ImageExt {
+            id: previewFrame
+
+            x: previewCard._pad
+            y: previewCard._pad
+            width: parent.width - 2 * previewCard._pad
+            height: VLCStyle.dp(82, VLCStyle.scale)
+
+            radius: VLCStyle.dp(6, VLCStyle.scale)
+            backgroundColor: "black"
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: false
+            cache: false
+            source: seekPreview.source
+        }
+
+        Text {
+            id: previewTime
+
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: previewFrame.y + previewFrame.height + VLCStyle.dp(6, VLCStyle.scale)
+
+            text: control._hoverPosition < 0 ? ""
+                                             : Player.length.scale(control._hoverPosition).formatHMS(Player.length.isSubSecond() ? VLCTick.SubSecondFormattedAsMS : 0)
+            color: previewCard._figma.previewText
+            font.pixelSize: VLCStyle.dp(12, VLCStyle.scale)
+            font.family: VLCStyle.fontFamily
+        }
     }
 }
