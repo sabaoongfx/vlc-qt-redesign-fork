@@ -144,6 +144,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Widgets dialogs (Preferences, file pickers, message boxes) get their look from `makeWidgetsPalette()` in `style/systempalette.cpp`.
   `QStyleHints::setColorScheme` did nothing on this Fusion build. `VLCStyle.qml` has two `SystemPalette`s (`themePalette`, `darkPalette` = fixed Night);
   only `themePalette` may set the application palette or Day mode turns dark.
+- QML Figma colours live in `VLCStyle.figmaDark`/`figmaDay` (`VLCStyle.figmaColors(isDark)`), the accent-dim in `VLCStyle.accentDim(accent, isDark)`;
+  do not add colour literals to QML files.
 - Shared Widgets helpers live in `style/redesign.hpp` (`Redesign::isDark`, `mix` and the fade amounts that turn the text colour into the Figma
   greys, `darkCard`/`darkRaised`, `accentDim`, `glyphPixmap` for VLCIcons glyphs); use them instead of new copies.
 - Widgets `QMenu` popups (`VLCMenu`, `QmlMenuBarMenu` in `menus/`) are drawn by `RedesignMenuStyle` (`menus/menus.hpp`, code in `menus.cpp`), a
