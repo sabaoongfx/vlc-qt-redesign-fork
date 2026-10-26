@@ -48,3 +48,4 @@ dots-hover-day   | 1 | ml   |                       | sleep:2 move:66,20 sleep:0
 dots-hover-player | 2 | none | @sample.mp4          | sleep:3 move:900,500 sleep:0.3 move:66,20 sleep:0.8 shot:a
 audio-menu       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 audio-menu-day   | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
+video-hover      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:390,220 sleep:1 shot:a

@@ -32,6 +32,9 @@ Item {
     property real playIconSize: VLCStyle.play_cover_normal
 
     property bool playCoverShowPlay: implicitPlayCoverShowPlay
+    // redesign: the Figma library items have no play overlay on hover; a click selects and a
+    // double click plays
+    property bool showPlayCover: false
     property bool implicitPlayCoverShowPlay: false
 
     readonly property real effectiveRadius: fallbackImage.visible ? fallbackImage.effectiveRadius
@@ -205,7 +208,7 @@ Item {
     onPlayCoverShowPlayChanged: {
         // NOTE: We are lazy loading the component when this gets visible and it stays loaded.
         //       We could consider unloading it when visible goes to false.
-        if (playCoverShowPlay && !_playCoverItem && !_playCoverItemIncubator) {
+        if (showPlayCover && playCoverShowPlay && !_playCoverItem && !_playCoverItemIncubator) {
             // https://doc.qt.io/qt-6/qqmlincubator.html#details
             const incubator = playCoverComponent.incubateObject(root, {}, 1 /* QQmlIncubator::AsynchronousIfNested */)
             _playCoverItemIncubator = incubator
