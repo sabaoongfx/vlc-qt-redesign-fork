@@ -509,12 +509,6 @@ public:
                 QComboBox *combo = new QComboBox;
                 configControl = new IntegerListConfigControl( p_item, label, combo );
                 control = combo;
-                // same as string lists below: keep a value outside the choices as it is
-                if( combo->findData( qlonglong( p_item->value.i ) ) < 0 )
-                {
-                    combo->insertItem( 0, QString::number( p_item->value.i ), qlonglong( p_item->value.i ) );
-                    combo->setCurrentIndex( 0 );
-                }
             }
             else
             {
@@ -537,14 +531,6 @@ public:
                 QComboBox *combo = new QComboBox;
                 configControl = new StringListConfigControl( p_item, label, combo );
                 control = combo;
-                /* a value outside the choices (often the empty default) would show the first
-                 * choice and be replaced by it on Save: list it as it is */
-                const QString current = qfu( p_item->value.psz ? p_item->value.psz : "" );
-                if( combo->findData( current ) < 0 )
-                {
-                    combo->insertItem( 0, current.isEmpty() ? qtr( "Default" ) : current, current );
-                    combo->setCurrentIndex( 0 );
-                }
             }
             else
             {

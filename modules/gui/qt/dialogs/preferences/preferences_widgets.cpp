@@ -537,6 +537,15 @@ void StringListConfigControl::finish(module_config_t *p_module_config )
     free( texts );
     free( values );
 
+    /* a value outside the choices (often the empty default) would show the first choice and be
+     * replaced by it on Save: list it as it is */
+    const QString current = qfu( p_item->value.psz ? p_item->value.psz : "" );
+    if( combo->findData( current ) < 0 )
+    {
+        combo->insertItem( 0, current.isEmpty() ? qtr( "Default" ) : current, current );
+        combo->setCurrentIndex( 0 );
+    }
+
     if( p_module_config->psz_longtext )
     {
         QString tipText = qfut(p_module_config->psz_longtext);
@@ -1039,6 +1048,13 @@ void IntegerListConfigControl::finish( module_config_t *p_module_config )
     }
     free( texts );
     free( values );
+
+    /* same as string lists: keep a value outside the choices as it is */
+    if( count > 0 && combo->findData( qlonglong( p_module_config->value.i ) ) < 0 )
+    {
+        combo->insertItem( 0, QString::number( p_module_config->value.i ), qlonglong( p_module_config->value.i ) );
+        combo->setCurrentIndex( 0 );
+    }
     if( p_item->psz_longtext )
     {
         QString tipText = qfut(p_item->psz_longtext );
