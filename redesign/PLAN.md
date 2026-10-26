@@ -6,6 +6,24 @@ matches the build, verified by automated captures instead of by eye, with no reg
 Order: 1 harness, 2 fix everything it finds, 3 settings UI, 4 pixel polish, 5 CI and docs.
 Each phase ends with a full harness run; nothing moves to the next phase with a failing check.
 
+## Status (2026-10-26)
+
+- Phase 1: done. `redesign/tests/run.sh` covers 40+ scenes, with checks for QML warnings, colours,
+  sizes, hover growth, rounded mini-player video corners, the Customize Player colours, the Browse
+  folder header, settings search, and an unchanged config after Save.
+- Phase 2: done for the visual bugs. Fixed: -1 ms durations, the resume prompt, first-run pinned
+  controls, Customize Player (now the Figma modal), square mini-player video corners, the Browse
+  folder header (back/forward, path crumbs, count, + button), and the tiny media-library folder
+  buttons. Menu icons were already 20px. Not done, and these are content changes rather than bugs:
+  the sidebar entries (Network, Playlists, Recent, Add item) and the Home rows (Listen Again,
+  Frequently Visited Folders) need new pages or models.
+- Phase 3: done. There are 13 categories in App / Media / System groups, each a Figma row page
+  backed by real options, with the classic pages whole under Advanced Options. There is also a
+  search, a segmented Simple / All / Expert switch, and a theme and accent row. Mapping and
+  omissions: `redesign/SETTINGS-MAP.md`. The harness found and fixed two upstream Save bugs (list
+  combos and generic fonts silently rewrote options).
+- Phase 4: next.
+
 ## 1. Test harness (`redesign/tests/`)
 
 Turn the ad-hoc scratchpad scripts into a checked-in tool, run with one command.
