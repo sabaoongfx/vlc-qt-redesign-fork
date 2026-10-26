@@ -46,6 +46,7 @@
 #include <QSplitter>
 #include <QShortcut>
 #include <QPainter>
+#include <QScreen>
 
 #include <vlc_configuration.h>
 #include <vlc_modules.h>
@@ -210,7 +211,21 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
     BUTTONACT( expert, &PrefsDialog::setExpert );
 
     /* redesign: Figma settings window size */
-    QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, QSize( 1078, 860 ) );
+    const QSize figmaSize( 1078, 860 );
+    QVLCTools::restoreWidgetPosition( p_intf, "Preferences", this, figmaSize );
+    /* a window saved narrower than the Figma one (the rows and the sidebar need its width) is
+       widened again, as far as the screen allows, and kept on the screen */
+    if( QScreen *s = screen() )
+    {
+        const QRect avail = s->availableGeometry();
+        const int w = qMin( figmaSize.width(), avail.width() );
+        if( width() < w )
+        {
+            resize( w, height() );
+            if( x() + w > avail.right() + 1 )
+                move( qMax( avail.left(), avail.right() + 1 - w ), y() );
+        }
+    }
 }
 
 /* redesign: the Figma window body, and the header band behind the search field and the page title */
