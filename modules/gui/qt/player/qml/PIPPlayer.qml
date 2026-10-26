@@ -40,6 +40,11 @@ T.Control {
     // redesign: plain icons over the video, no outline
     property int textStyle: Text.Normal
 
+    // redesign: the video surface cannot be clipped to a rounded shape, so its corners are
+    // covered with the colour of whatever is around it (the mini player card)
+    property real cornerRadius: 0
+    property color cornerColor: "transparent"
+
     // `hideControls` being `false` does not necessarily mean that the buttons are shown:
     property bool hideControls: MainCtx.usingTouch // By default controls are hidden with touch
 
@@ -125,6 +130,22 @@ T.Control {
         Widgets.DefaultShadow {
 
         }
+    }
+
+    // a ring whose inner edge is a rounded rect of cornerRadius over the video bounds; it only
+    // needs to reach the video corner (r * (sqrt(2) - 1) inward), so it spills out by half the radius
+    Rectangle {
+        readonly property real ringWidth: Math.ceil(root.cornerRadius / 2)
+
+        z: 2
+        visible: root.cornerRadius > 0
+        anchors.fill: parent
+        anchors.margins: -ringWidth
+        radius: root.cornerRadius + ringWidth
+        color: "transparent"
+        border.width: ringWidth
+        border.color: root.cornerColor
+        antialiasing: true
     }
 
     contentItem: Item {

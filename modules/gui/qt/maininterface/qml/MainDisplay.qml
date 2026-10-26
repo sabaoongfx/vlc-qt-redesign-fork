@@ -989,6 +989,8 @@ FocusScope {
             y: floatingMiniPlayer.y + floatingMiniPlayer.topPadding + floatingMiniPlayer.previewArea.y
             width: floatingMiniPlayer.previewArea.width
             height: floatingMiniPlayer.previewArea.height
+            cornerRadius: floatingMiniPlayer.previewArea.radius
+            cornerColor: floatingMiniPlayer.background.color
             z: 4
             visible: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
             enabled: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
