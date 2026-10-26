@@ -203,6 +203,8 @@ T.Control {
         font.pixelSize: Math.round(parent.height * 0.82) // redesign: Figma glyph is about half the pill height
 
         font.family: VLCIcons.fontFamily
+        font.hintingPreference: Font.PreferNoHinting
+        renderType: Text.CurveRendering // redesign: smooth like the Figma glyph, see IconLabel
 
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter

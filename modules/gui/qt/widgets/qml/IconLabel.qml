@@ -27,7 +27,12 @@ Text {
     font {
         pixelSize: VLCStyle.icon_normal
         family: VLCIcons.fontFamily
+        // redesign: unhinted, so the rounded corners and ends of the Figma icons are not snapped to
+        // the pixel grid
+        hintingPreference: Font.PreferNoHinting
     }
+    // redesign: drawn as smooth greyscale curves like the Figma frames, not as native (subpixel) glyphs
+    renderType: Text.CurveRendering
     textFormat: Text.PlainText
 
     Accessible.ignored: true

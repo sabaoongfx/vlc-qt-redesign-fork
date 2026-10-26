@@ -23,6 +23,8 @@ import VLC.Style
 T.Label {
     font.pixelSize: VLCStyle.icon_medium
     font.family: VLCIcons.fontFamily
+    font.hintingPreference: Font.PreferNoHinting // redesign: smooth icons, see IconLabel
+    renderType: Text.CurveRendering
 
     verticalAlignment: Text.AlignVCenter
     horizontalAlignment: Text.AlignHCenter

@@ -38,6 +38,7 @@ T.Button {
                              implicitContentHeight + topPadding + bottomPadding)
 
     font.family: VLCIcons.fontFamily
+    font.hintingPreference: Font.PreferNoHinting // redesign: passed to the IconLabel, see there
 
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)

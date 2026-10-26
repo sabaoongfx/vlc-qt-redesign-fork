@@ -56,6 +56,7 @@ T.ToolButton {
 
     font.pixelSize: VLCStyle.icon_toolbar
     font.family: VLCIcons.fontFamily
+    font.hintingPreference: Font.PreferNoHinting // redesign: passed to the IconLabel, see there
 
     // Keys
 
