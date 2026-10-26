@@ -79,10 +79,48 @@ T.Pane {
         }
     }
 
+    // redesign: same header as the library pages (Figma): back/forward, the folder path as crumbs,
+    // the item count, sort / view / search, then add to (or remove from) the media library
     RowLayout {
         id: layout
 
         anchors.fill: parent
+
+        spacing: VLCStyle.margin_xsmall
+
+        Widgets.IconToolButton {
+            id: historyBack
+
+            text: VLCIcons.back
+            description: qsTr("Back")
+            font.pixelSize: VLCStyle.icon_banner
+            Layout.preferredWidth: VLCStyle.bannerButton_width
+            Layout.preferredHeight: VLCStyle.bannerButton_height
+
+            enabled: !History.previousEmpty
+            onClicked: History.previous(Qt.MouseFocusReason)
+
+            Navigation.parentItem: root
+            Navigation.rightItem: historyForward
+        }
+
+        Widgets.IconToolButton {
+            id: historyForward
+
+            text: VLCIcons.back
+            rotation: 180 // no forward glyph in the icon font
+            description: qsTr("Forward")
+            font.pixelSize: VLCStyle.icon_banner
+            Layout.preferredWidth: VLCStyle.bannerButton_width
+            Layout.preferredHeight: VLCStyle.bannerButton_height
+
+            enabled: !History.nextEmpty
+            onClicked: History.next(Qt.MouseFocusReason)
+
+            Navigation.parentItem: root
+            Navigation.leftItem: historyBack
+            Navigation.rightItem: networkAddressbar
+        }
 
         NetworkAddressbar {
             id: networkAddressbar
@@ -95,44 +133,55 @@ T.Pane {
             path: root.path
 
             Navigation.parentItem: root
-            Navigation.rightItem: medialibraryBtn
+            Navigation.leftItem: historyForward
+            Navigation.rightItem: gridSortFilter
 
             onHomeButtonClicked: reason => root.homeButtonClicked(reason)
 
             onBrowse:  (tree, reason) => root.browse(tree, reason)
         }
 
-        Widgets.ButtonExt {
-            id: medialibraryBtn
+        Widgets.LabelExt {
+            readonly property var _count: root.providerModel?.count
 
-            AccessibleCompat.id: "browseIndexButton"
-
-            focus: true
-
-            iconTxt: root.providerModel.indexed ? VLCIcons.medialibrary_remove : VLCIcons.medialibrary_add
-
-            text: root.providerModel.indexed
-                  ? qsTr("Remove from medialibrary")
-                  : qsTr("Add to medialibrary")
-
-            display: VLCStyle.isScreenSmall ?  T.AbstractButton.IconOnly  : T.AbstractButton.TextBesideIcon
-
-            visible: root.providerModel.canBeIndexed ?? false
-
-            onClicked: root.providerModel.indexed = !root.providerModel.indexed
-
-            Layout.preferredWidth: implicitWidth
-
-            Navigation.parentItem: root
-            Navigation.leftItem: networkAddressbar
-            Navigation.rightItem: gridSortFilter
+            visible: (_count !== undefined && _count !== null)
+            text: qsTr("%1 items").arg(_count ?? 0)
+            font.pixelSize: VLCStyle.fontSize_large
+            color: theme.fg.secondary
+            Layout.rightMargin: VLCStyle.margin_small
         }
 
         Widgets.GridSortFilterControls {
             id: gridSortFilter
 
             Navigation.parentItem: root
-            Navigation.leftItem: medialibraryBtn
+            Navigation.leftItem: networkAddressbar
+            Navigation.rightItem: medialibraryBtn
+        }
+
+        Widgets.IconToolButton {
+            id: medialibraryBtn
+
+            AccessibleCompat.id: "browseIndexButton"
+
+            focus: true
+
+            font.pixelSize: VLCStyle.icon_banner
+            Layout.preferredWidth: VLCStyle.bannerButton_width
+            Layout.preferredHeight: VLCStyle.bannerButton_height
+
+            text: root.providerModel.indexed ? VLCIcons.medialibrary_remove : VLCIcons.medialibrary_add
+
+            description: root.providerModel.indexed
+                  ? qsTr("Remove from medialibrary")
+                  : qsTr("Add to medialibrary")
+
+            visible: root.providerModel.canBeIndexed ?? false
+
+            onClicked: root.providerModel.indexed = !root.providerModel.indexed
+
+            Navigation.parentItem: root
+            Navigation.leftItem: gridSortFilter
         }
     }
 }

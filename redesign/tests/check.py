@@ -131,7 +131,15 @@ if im:
     c = dominant(im, (300, 580, 700, 600))
     (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('customize', f'body {hexc(c)} (want #0F0F0F)')
 
-# 9. every scene produced its screenshots
+# 9. browse folder header like the library header: back/forward, path crumbs, item count, + button
+g = geom('browse-folder', 'deep')
+if g:
+    for name in ('Back', 'Forward', 'The Wand', 'S01', '12 items'):
+        (ok if name in g else fail)('browse-folder', f'header shows "{name}"')
+    b = g.get('Add to medialibrary') or g.get('Remove from medialibrary')
+    (ok if b and b[0][2] <= 40 else fail)('browse-folder', f'media library button is an icon ({b[0][2] if b else "missing"} px wide)')
+
+# 10. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):
