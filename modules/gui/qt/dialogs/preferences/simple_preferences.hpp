@@ -90,12 +90,36 @@ class SPrefsCatList : public QWidget
 public:
     SPrefsCatList( qt_intf_t *, QWidget * );
     virtual ~SPrefsCatList() {}
+    /* redesign: search filtering hides the categories without a match */
+    QList<int> categories() const { return m_order; }
+    void setCategoryVisible( int, bool );
+    int current() const;
+    void select( int );
 private:
     qt_intf_t *p_intf;
+    QHash<int, QAbstractButton *> m_buttons;
+    QList<int> m_order;
+    QList<QPair<QWidget *, QList<QAbstractButton *>>> m_headings;
+    QWidget *m_noMatch = nullptr;
 signals:
     void currentItemChanged( int );
+    void searchChanged( const QString & );
 public slots:
     void switchPanel( int );
+};
+
+/* redesign: the rows of a Figma settings page, for the sidebar search */
+struct SettingsSearchIndex
+{
+    struct Row
+    {
+        QWidget *row;
+        QWidget *section;
+        QString text;
+        bool advanced;
+    };
+    QList<Row> rows;
+    QAbstractButton *advancedToggle = nullptr;
 };
 
 class SPrefsPanel : public QWidget
@@ -105,6 +129,8 @@ public:
     SPrefsPanel( qt_intf_t *, QWidget *, int );
     virtual ~SPrefsPanel();
     void apply();
+    /* redesign: shows only the rows matching the search, returns how many */
+    int filter( const QString & );
 #ifdef _WIN32
     void cleanLang();
 #endif
@@ -126,6 +152,7 @@ private:
      * never overwrite an option another page also shows */
     QList<ConfigControl *> rowControls;
     QHash<ConfigControl *, QVariant> rowInitial;
+    SettingsSearchIndex searchIndex;
 
     int number;
 

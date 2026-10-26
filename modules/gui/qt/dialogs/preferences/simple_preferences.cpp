@@ -69,6 +69,7 @@
 #include <QDoubleSpinBox>
 #include <QFontComboBox>
 #include <QLineEdit>
+#include <QSet>
 
 #include <cassert>
 #include <math.h>
@@ -266,6 +267,7 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         QLabel *heading = new QLabel( text, this );
         heading->setObjectName( QStringLiteral( "categoryHeading" ) );
         layout->addWidget( heading );
+        m_headings.append( qMakePair( static_cast<QWidget *>( heading ), QList<QAbstractButton *>() ) );
     };
 
     auto addCategory = [&]( QString label, QString ltooltip, QChar glyph, int numb ) {
@@ -285,7 +287,25 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         } );
         mapper->setMapping( button, numb );
         layout->addWidget( button );
+        m_buttons.insert( numb, button );
+        m_order.append( numb );
+        if( !m_headings.isEmpty() )
+            m_headings.last().second.append( button );
     };
+
+    /* Figma: a search field on top of the categories */
+    QLineEdit *search = new QLineEdit( this );
+    search->setObjectName( QStringLiteral( "settingsSearch" ) );
+    search->setPlaceholderText( qtr( "Search" ) );
+    search->setClearButtonEnabled( true );
+    search->setAccessibleName( qtr( "Search settings" ) );
+    connect( search, &QLineEdit::textChanged, this, &SPrefsCatList::searchChanged );
+    layout->addWidget( search );
+    layout->addSpacing( 4 );
+    m_noMatch = new QLabel( qtr( "No settings match" ), this );
+    m_noMatch->setObjectName( QStringLiteral( "categoryHeading" ) );
+    m_noMatch->hide();
+    layout->addWidget( m_noMatch );
 
     addHeading( qtr( "App" ) );
     addCategory( qtr( "General" ), qtr( "Appearance, startup and diagnostics" ), VLCIcons::effect_filter, SPrefsGeneral );
@@ -328,6 +348,38 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
 void SPrefsCatList::switchPanel( int i )
 {
     emit currentItemChanged( i );
+}
+
+void SPrefsCatList::setCategoryVisible( int number, bool visible )
+{
+    if( QAbstractButton *button = m_buttons.value( number ) )
+        button->setVisible( visible );
+
+    // a heading goes with its categories, and an empty list says so
+    bool any = false;
+    for( const auto &heading : m_headings )
+    {
+        bool shown = false;
+        for( QAbstractButton *b : heading.second )
+            shown |= !b->isHidden();
+        heading.first->setVisible( shown );
+        any |= shown;
+    }
+    m_noMatch->setVisible( !any );
+}
+
+int SPrefsCatList::current() const
+{
+    for( auto it = m_buttons.cbegin(); it != m_buttons.cend(); ++it )
+        if( it.value()->isChecked() )
+            return it.key();
+    return -1;
+}
+
+void SPrefsCatList::select( int number )
+{
+    if( QAbstractButton *button = m_buttons.value( number ) )
+        button->setChecked( true );
 }
 
 /*********************************************************************
@@ -413,8 +465,9 @@ QString formatTooltip( const QString &tooltip ); // preferences_widgets.cpp
 class SettingsRows
 {
 public:
-    SettingsRows( QWidget *page, QList<ConfigControl *> &controls )
+    SettingsRows( QWidget *page, QList<ConfigControl *> &controls, SettingsSearchIndex &index )
         : m_controls( controls )
+        , m_index( index )
         , m_layout( new QVBoxLayout( page ) )
         , m_target( m_layout )
     {
@@ -454,6 +507,7 @@ public:
         label->setObjectName( QStringLiteral( "settingsSection" ) );
         label->setContentsMargins( 0, m_target->count() ? 28 : 12, 0, 6 );
         m_target->addWidget( label );
+        m_section = label;
     }
 
     /* the following rows go under a collapsed "Advanced Options" bar (Figma) */
@@ -467,6 +521,8 @@ public:
         toggle->setIcon( chevron( false ) );
         m_layout->addSpacing( 16 );
         m_layout->addWidget( toggle );
+        m_index.advancedToggle = toggle;
+        m_advanced = true;
 
         QWidget *box = new QWidget;
         box->setVisible( false );
@@ -671,12 +727,17 @@ private:
         layout->addWidget( control );
 
         m_target->addWidget( row );
+        // the search also looks at the option's description ("caching" finds the buffering rows)
+        m_index.rows.append( { row, m_section, label->text() + QLatin1Char( '\n' ) + tooltip, m_advanced } );
     }
 
     QList<ConfigControl *> &m_controls;
+    SettingsSearchIndex &m_index;
     QVBoxLayout *m_layout;
     QVBoxLayout *m_target;
     QWidget *m_lastControl = nullptr;
+    QWidget *m_section = nullptr;
+    bool m_advanced = false;
 
 public:
     /* the control of the last option row, to add a unit, a range... */
@@ -787,7 +848,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             configGeneric<StringListConfigControl>( "snapshot-format", ui.arLabel, ui.snapshotsFormat );
 
             /* redesign: Figma "Video" rows */
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Output" ) );
             rows.option( qtr( "Enable video" ), "video" );
             rows.option( qtr( "Start videos in fullscreen" ), "fullscreen" );
@@ -968,7 +1029,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             /* redesign: Figma "Audio" rows; the startup volume and the normaliser stay on the
              * classic page, its Save code writes them */
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Output" ) );
             rows.option( qtr( "Enable audio" ), "audio" );
             rows.option( qtr( "Output module" ), "aout" );
@@ -1089,7 +1150,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 #undef TestCaC
 
             /* redesign: Figma "Playback" rows */
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Startup" ) );
             rows.option( qtr( "Continue where you left off" ), "restore-playback-pos" );
             rows.option( qtr( "Start playing as soon as a file opens" ), "playlist-autostart" );
@@ -1391,7 +1452,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             /* redesign: Figma "Interface" rows; the custom skin and the fullscreen screen stay on
              * the classic page, its Save code writes them */
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Window" ) );
             rows.option( qtr( "Play video inside the main window" ), "embedded-video" );
             rows.option( qtr( "Resize the window to fit the video" ), "qt-video-autoresize" );
@@ -1471,7 +1532,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             /* redesign: Figma "Subtitles" rows; the shadow and background opacity stay on the
              * classic page, its Save code writes them */
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Tracks & Languages" ) );
             rows.option( qtr( "Enable subtitles" ), "spu" );
             rows.option( qtr( "Preferred language" ), "sub-language" );
@@ -1506,7 +1567,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         {
             /* redesign: Figma "Controls" page; the shortcut table opens under its button */
             panel_label->setText( qtr( "Mouse & Keyboard Controls" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Keyboard Shortcuts" ) );
             QWidget *shortcuts = new QWidget;
@@ -1551,7 +1612,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             auto& ui = m_medialibUI;
             /* redesign: Figma "Playlists, Folders & Files" rows, then the library folders */
             panel_label->setText( qtr("Playlists, Folders & Files") );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
             rows.section( qtr( "Opening Files" ) );
             rows.option( qtr( "Only allow one VLC window" ), "one-instance" );
             rows.option( qtr( "Apply to files opened from the file manager" ), "one-instance-when-started-from-file" );
@@ -1604,7 +1665,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsGeneral:
         {
             panel_label->setText( qtr( "Global Settings" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Appearance" ) );
 
@@ -1692,7 +1753,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsPrivacy:
         {
             panel_label->setText( qtr( "Privacy Settings" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "History" ) );
             rows.option( qtr( "Remember the playback position" ), "restore-playback-pos" );
@@ -1724,13 +1785,16 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsNetwork:
         {
             panel_label->setText( qtr( "Network Connections & Security" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Buffering" ) );
-            rows.option( qtr( "Local files" ), "file-caching" );
-            rows.option( qtr( "Discs" ), "disc-caching" );
-            rows.option( qtr( "Network streams" ), "network-caching" );
-            rows.option( qtr( "Live capture" ), "live-caching" );
+            const std::pair<QString, const char *> cachings[] = {
+                { qtr( "Local files" ), "file-caching" }, { qtr( "Discs" ), "disc-caching" },
+                { qtr( "Network streams" ), "network-caching" }, { qtr( "Live capture" ), "live-caching" } };
+            for( const auto &caching : cachings )
+                if( rows.option( caching.first, caching.second ) )
+                    if( QSpinBox *spin = rows.last<QSpinBox>() )
+                        spin->setSuffix( qtr( " ms" ) );
 
             rows.section( qtr( "Proxy" ) );
             rows.option( qtr( "HTTP proxy" ), "http-proxy" );
@@ -1749,7 +1813,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsPerformance:
         {
             panel_label->setText( qtr( "Performance Settings" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Decoding" ) );
             rows.option( qtr( "Hardware-accelerated decoding" ), "hw-dec" );
@@ -1772,7 +1836,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsRecording:
         {
             panel_label->setText( qtr( "Recording, Casting & Streaming Out" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Recording" ) );
             rows.option( qtr( "Save recordings to" ), "input-record-path" );
@@ -1798,7 +1862,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
         case SPrefsExtensions:
         {
             panel_label->setText( qtr( "Add-ons & Scripts" ) );
-            SettingsRows rows( panel, rowControls );
+            SettingsRows rows( panel, rowControls, searchIndex );
 
             rows.section( qtr( "Add-ons" ) );
             QPushButton *manager = new QPushButton( qtr( "Find more extensions" ) );
@@ -1883,6 +1947,35 @@ SPrefsPanel::~SPrefsPanel()
     qDeleteAll( controls ); controls.clear();
     qDeleteAll( rowControls ); rowControls.clear();
     free( lang );
+}
+
+int SPrefsPanel::filter( const QString &text )
+{
+    int matches = 0;
+    bool advancedMatch = false;
+    QSet<QWidget *> sections;
+    for( const SettingsSearchIndex::Row &row : searchIndex.rows )
+    {
+        const bool match = text.isEmpty() || row.text.contains( text, Qt::CaseInsensitive );
+        row.row->setVisible( match );
+        if( match )
+        {
+            ++matches;
+            advancedMatch |= row.advanced;
+            if( row.section )
+                sections.insert( row.section );
+        }
+    }
+    for( const SettingsSearchIndex::Row &row : searchIndex.rows )
+        if( row.section )
+            row.section->setVisible( text.isEmpty() || sections.contains( row.section ) );
+    if( searchIndex.advancedToggle )
+    {
+        searchIndex.advancedToggle->setVisible( text.isEmpty() || advancedMatch );
+        if( !text.isEmpty() && advancedMatch )
+            searchIndex.advancedToggle->setChecked( true );
+    }
+    return matches;
 }
 
 /* Checks the layout radio button corresponding the image clicked */

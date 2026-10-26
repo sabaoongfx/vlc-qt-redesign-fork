@@ -292,6 +292,29 @@ void PrefsDialog::setSimple()
         simple_tree = new SPrefsCatList( p_intf, simple_tree_panel );
         connect( simple_tree, &SPrefsCatList::currentItemChanged,
                  this, &PrefsDialog::changeSimplePanel );
+        /* redesign: the search builds every page, then hides the rows and the categories
+         * without a match */
+        connect( simple_tree, &SPrefsCatList::searchChanged, this, [this]( const QString &text ) {
+            int first = -1;
+            bool currentVisible = false;
+            const int current = simple_tree->current();
+            for( int number : simple_tree->categories() )
+            {
+                if( !simple_panels[number] )
+                {
+                    simple_panels[number] = new SPrefsPanel( p_intf, simple_panels_stack, number );
+                    simple_panels_stack->insertWidget( number, simple_panels[number] );
+                }
+                const bool visible = simple_panels[number]->filter( text ) > 0 || text.isEmpty();
+                simple_tree->setCategoryVisible( number, visible );
+                if( visible && first < 0 )
+                    first = number;
+                if( number == current )
+                    currentVisible = visible;
+            }
+            if( !currentVisible && first >= 0 )
+                simple_tree->select( first );
+        } );
         simple_tree_panel->layout()->addWidget( simple_tree );
         simple_tree_panel->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Preferred );
     }
@@ -348,9 +371,11 @@ void PrefsDialog::save()
     if( simple->isChecked() && simple_tree->isVisible() )
     {
         msg_Dbg( p_intf, "Saving the simple preferences" );
+        /* in category order, not the order the pages were opened in: the Figma pages after the
+         * classic ones, so their edits win over what a classic page writes back unchanged */
         for( int i = 0 ; i< SPrefsMax; i++ ){
-            if( simple_panels_stack->widget(i) )
-                qobject_cast<SPrefsPanel *>(simple_panels_stack->widget(i))->apply();
+            if( simple_panels[i] )
+                simple_panels[i]->apply();
         }
     }
     else if( all->isChecked() && advanced_tree->isVisible() )

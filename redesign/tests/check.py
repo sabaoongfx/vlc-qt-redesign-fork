@@ -149,7 +149,13 @@ if saved:
     added, removed = options(saved[0]) - options(fixture), options(fixture) - options(saved[0])
     (ok if not added and not removed else fail)('prefs-save', f'options unchanged after Save (added {sorted(added)[:6]}, removed {sorted(removed)[:6]})')
 
-# 11. every scene produced its screenshots
+# 11. settings search: "cach" leaves the Network page with its buffering rows
+g = geom('prefs-search')
+if g:
+    (ok if 'Local files' in g and 'Network' in g else fail)('prefs-search', 'search finds the buffering rows')
+    (ok if 'General' not in g and 'Interface' not in g else fail)('prefs-search', 'categories without a match are hidden')
+
+# 12. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]
     for line in open(at):
