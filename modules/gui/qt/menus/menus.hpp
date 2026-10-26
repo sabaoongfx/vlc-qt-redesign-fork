@@ -29,7 +29,6 @@
 #include "custom_menus.hpp"
 #include "widgets/native/qvlcframe.hpp"
 
-#include <QApplication>
 #include <QProxyStyle>
 #include <QObject>
 
@@ -40,6 +39,9 @@
 class RedesignMenuStyle : public QProxyStyle
 {
 public:
+    static constexpr int minimumWidth = 292;   // the Figma right-click menu
+    static constexpr int mainMenuWidth = 375;  // the Figma main menu
+
     static RedesignMenuStyle* instance();
     /* gives a menu the look; its submenus follow when they are first shown */
     static void apply(QMenu* menu);

@@ -44,8 +44,7 @@ class MLFoldersEditor;
 #endif
 
 #include <QWidget>
-#include <QColor>
-#include <QPalette>
+#include "style/redesign.hpp"
 class QLineEdit;
 class QLabel;
 class QPushButton;
@@ -90,18 +89,21 @@ class QTreeWidgetItem;
  * holding the search and the page title over the window body, the categories on a card */
 namespace SettingsChrome
 {
+using Redesign::isDark;
 constexpr int bandHeight = 50;
-inline bool dark( const QPalette &p ) { return p.color( QPalette::Window ).lightness() < 128; }
-inline QColor band( const QPalette &p ) { return dark( p ) ? QColor( 0x09, 0x09, 0x09 ) : p.color( QPalette::Window ); }
-inline QColor body( const QPalette &p ) { return dark( p ) ? QColor( 0x0E, 0x0E, 0x0E ) : p.color( QPalette::Base ); }
-inline QColor card( const QPalette &p ) { return dark( p ) ? QColor( 0x18, 0x18, 0x18 ) : p.color( QPalette::Light ); }
-inline QColor selected( const QPalette &p ) { return dark( p ) ? QColor( 0x22, 0x22, 0x22 ) : p.color( QPalette::Midlight ); }
-inline QColor field( const QPalette &p ) { return dark( p ) ? QColor( 0x14, 0x14, 0x14 ) : p.color( QPalette::Base ); }
-inline QColor title( const QPalette &p ) { return dark( p ) ? QColor( 0x96, 0x96, 0x96 ) : QColor( 0x3A, 0x3A, 0x3A ); }
-inline QColor label( const QPalette &p ) { return dark( p ) ? QColor( 0x8F, 0x8F, 0x8F ) : QColor( 0x4C, 0x4C, 0x4C ); }
-inline QColor current( const QPalette &p ) { return dark( p ) ? QColor( 0xEA, 0xEA, 0xEA ) : p.color( QPalette::Text ); }
-inline QColor section( const QPalette &p ) { return dark( p ) ? QColor( 0xC6, 0xC6, 0xC6 ) : p.color( QPalette::Text ); }
-inline QColor heading( const QPalette &p ) { return dark( p ) ? QColor( 0x6B, 0x6B, 0x6B ) : p.color( QPalette::PlaceholderText ); }
+inline QColor band( const QPalette &p ) { return isDark( p ) ? QColor( 0x09, 0x09, 0x09 ) : p.color( QPalette::Window ); }
+inline QColor body( const QPalette &p ) { return isDark( p ) ? QColor( 0x0E, 0x0E, 0x0E ) : p.color( QPalette::Base ); }
+inline QColor card( const QPalette &p ) { return isDark( p ) ? Redesign::darkCard() : p.color( QPalette::Light ); }
+inline QColor selected( const QPalette &p ) { return isDark( p ) ? Redesign::darkRaised() : p.color( QPalette::Midlight ); }
+inline QColor field( const QPalette &p ) { return isDark( p ) ? QColor( 0x14, 0x14, 0x14 ) : p.color( QPalette::Base ); }
+// the greys are the text faded into their background, like the menus (#969696, #8F8F8F, #C6C6C6, #6B6B6B)
+inline QColor text( const QPalette &p ) { return p.color( QPalette::Active, QPalette::Text ); }
+inline QColor title( const QPalette &p ) { return Redesign::mix( band( p ), text( p ), Redesign::titleAmount ); }
+inline QColor label( const QPalette &p ) { return Redesign::mix( card( p ), text( p ), Redesign::labelAmount ); }
+inline QColor section( const QPalette &p ) { return Redesign::mix( body( p ), text( p ), Redesign::sectionAmount ); }
+inline QColor heading( const QPalette &p ) { return Redesign::mix( card( p ), text( p ), Redesign::hintAmount ); }
+// brighter than the text colour in the dark frame
+inline QColor current( const QPalette &p ) { return isDark( p ) ? QColor( 0xEA, 0xEA, 0xEA ) : text( p ); }
 }
 
 class SPrefsCatList : public QWidget

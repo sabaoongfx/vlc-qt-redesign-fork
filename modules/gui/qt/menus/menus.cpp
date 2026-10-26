@@ -49,6 +49,7 @@
 #include "util/varchoicemodel.hpp"
 #include "util/color_scheme_model.hpp"
 #include "util/colorizedsvgicon.hpp"
+#include "style/redesign.hpp"
 #include "medialibrary/medialib.hpp"
 #include "medialibrary/mlrecentmediamodel.hpp"
 #include "medialibrary/mlbookmarkmodel.hpp"
@@ -62,6 +63,7 @@
 #include <QKeySequence>
 #include <QPainterPath>
 #include <QPainter>
+#include <QApplication>
 
 using namespace vlc::playlist;
 
@@ -82,39 +84,35 @@ RendererMenu *VLCMenuBar::rendererMenu = NULL;
 namespace {
 constexpr int menuPadding = 4;      // card padding around the rows
 constexpr int menuRadius = 10;
-constexpr int menuMinWidth = 292;   // the right-click menu
 constexpr int rowHeight = 48;
 constexpr int rowRadius = 4;
 constexpr int separatorHeight = 9;
+constexpr int separatorInset = 12;  // line ends, from the row edges
 constexpr int iconX = 20;
 constexpr int iconSize = 20;
 constexpr int labelX = 52;
 constexpr int labelGap = 40;        // least space between a label and its shortcut
 constexpr int shortcutInset = 18;   // shortcut and tick right edge
-constexpr int chevronInset = 26;    // chevron right edge
+constexpr int tickWidth = 14;       // the tick is 14x10, 12px clear of a shortcut on its left
+constexpr int tickGap = 12;
+constexpr int chevronInset = 26;    // chevron right edge, a 7x12 glyph
+constexpr qreal chevronWidth = 5.5; // the stroke centres, inside the 1.5px pen
+constexpr qreal chevronHalfHeight = 5.25;
 
 struct MenuColors
 {
     QColor background, hover, border, line, label, shortcut, disabled;
 };
 
-/* labels and shortcuts are the text colour faded into the card: #8F8F8F and #6B6B6B on #181818 */
-QColor fade(const QColor& background, const QColor& text, qreal amount)
-{
-    return QColor(qRound(background.red() + (text.red() - background.red()) * amount),
-                  qRound(background.green() + (text.green() - background.green()) * amount),
-                  qRound(background.blue() + (text.blue() - background.blue()) * amount));
-}
-
 MenuColors menuColors(const QPalette& palette)
 {
     MenuColors c;
-    if (palette.color(QPalette::Window).lightness() < 128)
+    if (Redesign::isDark(palette))
     {
-        c.background = QColor(0x18, 0x18, 0x18);
+        c.background = Redesign::darkCard();
         c.hover = QColor(0x1F, 0x1F, 0x1F);
         c.border = Qt::transparent;
-        c.line = QColor(0x22, 0x22, 0x22);
+        c.line = Redesign::darkRaised();
     }
     else
     {
@@ -124,11 +122,23 @@ MenuColors menuColors(const QPalette& palette)
         c.border = palette.color(QPalette::Mid);
         c.line = c.background.darker(110);
     }
+    // labels and shortcuts are the text colour faded into the card
     const QColor text = palette.color(QPalette::Active, QPalette::Text);
-    c.label = fade(c.background, text, 0.586);
-    c.shortcut = fade(c.background, text, 0.41);
-    c.disabled = fade(c.background, text, 0.22);
+    c.label = Redesign::mix(c.background, text, Redesign::labelAmount);
+    c.shortcut = Redesign::mix(c.background, text, Redesign::hintAmount);
+    c.disabled = Redesign::mix(c.background, text, Redesign::disabledAmount);
     return c;
+}
+
+/* the tick and the chevron: open strokes with round ends */
+void strokePath(QPainter* painter, const QPainterPath& path, const QColor& color, qreal width)
+{
+    QPen pen(color, width);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    painter->setPen(pen);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawPath(path);
 }
 
 /* "Ctrl+O" -> "Ctrl + O" (a trailing '+' is the key itself) */
@@ -163,7 +173,7 @@ void RedesignMenuStyle::apply(QMenu* menu)
     QFont font = menu->font();
     font.setPixelSize(14);
     menu->setFont(font);
-    menu->setMinimumWidth(menuMinWidth);
+    menu->setMinimumWidth(minimumWidth);
     // rounded corners need a translucent popup window
     menu->setAttribute(Qt::WA_TranslucentBackground);
     // a style does not pass on to child widgets the way a stylesheet does: catch the submenus. A menu's
@@ -280,7 +290,8 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
 
     if (item->menuItemType == QStyleOptionMenuItem::Separator)
     {
-        painter->fillRect(QRect(row.left() + 12, row.top() + row.height() / 2, row.width() - 24, 1), c.line);
+        painter->fillRect(QRect(row.left() + separatorInset, row.top() + row.height() / 2,
+                                row.width() - 2 * separatorInset, 1), c.line);
         painter->restore();
         return;
     }
@@ -315,16 +326,11 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     {
         // the accent tick of the Figma option rows
         QPainterPath tick;
-        tick.moveTo(right - 14, centerY);
-        tick.lineTo(right - 9.5, centerY + 4.5);
+        tick.moveTo(right - tickWidth, centerY);
+        tick.lineTo(right - tickWidth + 4.5, centerY + 4.5);
         tick.lineTo(right, centerY - 5);
-        QPen pen(enabled ? item->palette.color(QPalette::Highlight) : c.disabled, 1.6);
-        pen.setCapStyle(Qt::RoundCap);
-        pen.setJoinStyle(Qt::RoundJoin);
-        painter->setPen(pen);
-        painter->setBrush(Qt::NoBrush);
-        painter->drawPath(tick);
-        right -= 14 + 12;
+        strokePath(painter, tick, enabled ? item->palette.color(QPalette::Highlight) : c.disabled, 1.6);
+        right -= tickWidth + tickGap;
     }
 
     painter->setFont(item->font);
@@ -335,17 +341,13 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
 
     if (item->menuItemType == QStyleOptionMenuItem::SubMenu)
     {
-        const qreal x = cardRight - chevronInset - 6.25;
+        // the stroke's right end sits half a pen inside the inset
+        const qreal x = cardRight - chevronInset - 0.75 - chevronWidth;
         QPainterPath chevron;
-        chevron.moveTo(x, centerY - 5.25);
-        chevron.lineTo(x + 5.5, centerY);
-        chevron.lineTo(x, centerY + 5.25);
-        QPen pen(enabled ? c.label : c.disabled, 1.5);
-        pen.setCapStyle(Qt::RoundCap);
-        pen.setJoinStyle(Qt::RoundJoin);
-        painter->setPen(pen);
-        painter->setBrush(Qt::NoBrush);
-        painter->drawPath(chevron);
+        chevron.moveTo(x, centerY - chevronHalfHeight);
+        chevron.lineTo(x + chevronWidth, centerY);
+        chevron.lineTo(x, centerY + chevronHalfHeight);
+        strokePath(painter, chevron, enabled ? c.label : c.disabled, 1.5);
     }
     else if (!shortcut.isEmpty())
     {

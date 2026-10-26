@@ -257,6 +257,13 @@ def card_run(im, y, color, x0=0, x1=None, tol=2):
             start = None
     return best
 
+def text_ink(im, box, bg):
+    """the strongest text colour in box: the brightest on a dark background, the darkest on a light one"""
+    return brightest(im, box) if bg[0] < 128 else min(pixels(im.crop(box)), key=sum)
+
+# the main menu opens under the top bar's menu button: card x 48-423 (375 wide)
+MAIN_MENU_RIGHT = 423
+
 def ink_x(im, box, bg, tol=40):
     xs = [x for x in range(box[0], box[2]) for y in range(box[1], box[3])
           if sum(abs(a - b) for a, b in zip(im.getpixel((x, y)), bg)) > tol]
@@ -273,7 +280,7 @@ for scene, bg, label, shortcut in (('main-menu', (0x18, 0x18, 0x18), (0x8F, 0x8F
     if bg[0] >= 128:
         L, R = L - 1, R + 1
         (ok if R - L == 375 else fail)(scene, f'menu card width {R - L} (want 375)')
-    (ok if R == 423 else fail)(scene, f'menu card right edge {R} (want 423, {hexc(bg)})')
+    (ok if R == MAIN_MENU_RIGHT else fail)(scene, f'menu card right edge {R} (want {MAIN_MENU_RIGHT}, {hexc(bg)})')
     L = R - 375
     # the top bar fades into the Night card colour: the card starts where 8 rows match exactly
     T = next((y for y in range(10, 120) if all(im.getpixel((L + 200, y + i)) == bg for i in range(8))), None)
@@ -285,12 +292,11 @@ for scene, bg, label, shortcut in (('main-menu', (0x18, 0x18, 0x18), (0x8F, 0x8F
         (ok if ink and abs(ink[0] - L - 52) <= 1 else fail)(scene, f'{name} label x {ink and ink[0] - L} (want 52)')
         ink = ink_x(im, (L + 10, cy - 12, L + 46, cy + 12), bg)
         (ok if ink and 19 <= ink[0] - L <= 22 else fail)(scene, f'{name} icon x {ink and ink[0] - L} (want 19-22)')
-        c = brightest(im, (L + 46, cy - 12, L + 250, cy + 12)) if bg[0] < 128 else min(pixels(im.crop((L + 46, cy - 12, L + 250, cy + 12))), key=sum)
+        c = text_ink(im, (L + 46, cy - 12, L + 250, cy + 12), bg)
         (ok if near(c, label, 6) else fail)(scene, f'{name} label {hexc(c)} (want {hexc(label)})')
         ink = ink_x(im, (R - 130, cy - 12, R - 4, cy + 12), bg)
         (ok if ink and abs(R - 1 - ink[1] - 18) <= 1 else fail)(scene, f'{name} shortcut right inset {ink and R - 1 - ink[1]} (want 18)')
-        box = (R - 130, cy - 12, R - 4, cy + 12)
-        c = brightest(im, box) if bg[0] < 128 else min(pixels(im.crop(box)), key=sum)
+        c = text_ink(im, (R - 130, cy - 12, R - 4, cy + 12), bg)
         (ok if near(c, shortcut, 6) else fail)(scene, f'{name} shortcut {hexc(c)} (want {hexc(shortcut)})')
 
 im = img('rclick-menu')

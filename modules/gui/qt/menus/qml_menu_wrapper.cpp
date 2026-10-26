@@ -32,6 +32,7 @@
 #include "menus/custom_menus.hpp"
 #include "medialibrary/mlrecentmediamodel.hpp"
 #include "style/vlcicons.hpp"
+#include "style/redesign.hpp"
 
 // Qt includes
 #include <QApplication>
@@ -267,21 +268,11 @@ QmlGlobalMenu::QmlGlobalMenu(QObject *parent)
 {
 }
 
-/* redesign: a plain menu icon drawn from the VLCIcons font, in the menu's text colour */
+/* redesign: a plain menu icon drawn from the VLCIcons font, in the menu's label colour */
 static QIcon redesignGlyphIcon(QChar glyph, const QWidget* widget)
 {
-    const qreal dpr = widget->devicePixelRatioF();
-    const int size = 20;
-    QPixmap pix(QSize(size, size) * dpr);
-    pix.setDevicePixelRatio(dpr);
-    pix.fill(Qt::transparent);
-    QPainter painter(&pix);
-    QFont font(QStringLiteral("VLCIcons"));
-    font.setPixelSize(size);
-    painter.setFont(font);
-    painter.setPen(RedesignMenuStyle::labelColor(widget->palette()));
-    painter.drawText(QRect(0, 0, size, size), Qt::AlignCenter, QString(glyph));
-    return QIcon(pix);
+    return QIcon(Redesign::glyphPixmap(glyph, 20, RedesignMenuStyle::labelColor(widget->palette()),
+                                       widget->devicePixelRatioF()));
 }
 
 void QmlGlobalMenu::popup(QPoint pos)
@@ -310,7 +301,7 @@ void QmlGlobalMenu::popup(QPoint pos)
     /* redesign: the Figma main menu, a flat list (open entries, recent, shortcuts, customize,
      * settings, about) with plain icons; the classic menus stay reachable under "More" */
     QMenu* menu = m_menu.get();
-    menu->setMinimumWidth(375);
+    menu->setMinimumWidth(RedesignMenuStyle::mainMenuWidth);
     // duotone icons from the Figma menu (grey outline, accent details)
     const auto entry = [menu](const char* icon, const QString& text, auto member, const char* shortcut = nullptr) {
         QAction* action = menu->addAction(QIcon(QString::fromLatin1(icon)), text, THEDP, member);

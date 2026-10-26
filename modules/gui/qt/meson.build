@@ -407,6 +407,7 @@ qt_plugin_sources = files(
     'style/colorcontext.hpp',
     'style/systempalette.cpp',
     'style/systempalette.hpp',
+    'style/redesign.hpp',
     'style/vlcicons.cpp',
     'style/vlcicons.hpp',
     'style/defaultthemeproviders.hpp',

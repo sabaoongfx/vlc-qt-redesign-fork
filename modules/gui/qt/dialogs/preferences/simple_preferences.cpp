@@ -231,21 +231,12 @@ private:
  * category is current (Figma settings sidebar) */
 static QIcon redesignCategoryIcon( QChar glyph, const QPalette& palette, qreal dpr )
 {
-    const int size = 20;
     QIcon icon;
     for( const bool on : { false, true } )
     {
-        // the glyph in the left 20px of a wider pixmap: the label starts 14px after it (Figma x 50 on the card)
-        QPixmap pix( QSize( size + 10, size ) * dpr );
-        pix.setDevicePixelRatio( dpr );
-        pix.fill( Qt::transparent );
-        QPainter painter( &pix );
-        QFont font( QStringLiteral( "VLCIcons" ) );
-        font.setPixelSize( size );
-        painter.setFont( font );
-        painter.setPen( on ? palette.color( QPalette::Highlight ) : SettingsChrome::label( palette ) );
-        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( glyph ) );
-        icon.addPixmap( pix, QIcon::Normal, on ? QIcon::On : QIcon::Off );
+        // the glyph in the left 20px of a 30px pixmap: the label starts 14px after it (Figma x 50 on the card)
+        const QColor color = on ? palette.color( QPalette::Highlight ) : SettingsChrome::label( palette );
+        icon.addPixmap( Redesign::glyphPixmap( glyph, 20, color, dpr, 30 ), QIcon::Normal, on ? QIcon::On : QIcon::Off );
     }
     return icon;
 }
@@ -309,19 +300,9 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         searchPalette.setColor( QPalette::PlaceholderText, SettingsChrome::heading( pal ) );
         search->setPalette( searchPalette );
         // the magnifier, 11px in like the Figma field
-        const int size = 20;
-        QPixmap pix( QSize( size, size ) * dpr );
-        pix.setDevicePixelRatio( dpr );
-        pix.fill( Qt::transparent );
-        QPainter painter( &pix );
-        QFont font( QStringLiteral( "VLCIcons" ) );
-        font.setPixelSize( size );
-        painter.setFont( font );
-        painter.setPen( SettingsChrome::heading( pal ) );
-        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( VLCIcons::search ) );
         QLabel *icon = new QLabel( search );
-        icon->setPixmap( pix );
-        icon->setGeometry( 11, 7, size, size );
+        icon->setPixmap( Redesign::glyphPixmap( VLCIcons::search, 20, SettingsChrome::heading( pal ), dpr ) );
+        icon->setGeometry( 11, 7, 20, 20 );
         icon->setAttribute( Qt::WA_TransparentForMouseEvents );
     }
     connect( search, &QLineEdit::textChanged, this, &SPrefsCatList::searchChanged );
@@ -519,12 +500,6 @@ public:
         /* Figma: grey 14px labels, 17px section titles, the selected segment on the accent-dim
          * colour with accent text (#371F06 over the dark base) */
         const QPalette palette = QApplication::palette();
-        const QColor accent = palette.color( QPalette::Highlight );
-        const QColor base = palette.color( QPalette::Base );
-        const qreal mix = base.lightnessF() < 0.5 ? 0.25 : 0.2;
-        const QColor dim = QColor::fromRgbF( base.redF() + ( accent.redF() - base.redF() ) * mix,
-                                             base.greenF() + ( accent.greenF() - base.greenF() ) * mix,
-                                             base.blueF() + ( accent.blueF() - base.blueF() ) * mix );
         page->setStyleSheet( QStringLiteral(
             "QLabel#settingsSection { font-size: 17px; color: %3; }"
             "QLabel#settingsLabel { font-size: 14px; color: palette(placeholder-text); }"
@@ -535,7 +510,8 @@ public:
             "QWidget#settingsSegments QPushButton#settingsSwatch { padding: 0; border-radius: 4px; border: 2px solid transparent; }"
             "QWidget#settingsSegments QPushButton#settingsSwatch:checked { border: 2px solid palette(text); }"
             "QPushButton#settingsAdvanced { color: palette(placeholder-text); padding: 10px; }" )
-            .arg( dim.name(), accent.name(), SettingsChrome::section( palette ).name() ) );
+            .arg( Redesign::accentDim( palette ).name(), palette.color( QPalette::Highlight ).name(),
+                  SettingsChrome::section( palette ).name() ) );
     }
 
     ~SettingsRows()
@@ -731,20 +707,9 @@ private:
 
     static QLabel *infoIcon( const QString &tooltip )
     {
-        const int size = 16;
-        const qreal dpr = qApp->devicePixelRatio();
-        QPixmap pix( QSize( size, size ) * dpr );
-        pix.setDevicePixelRatio( dpr );
-        pix.fill( Qt::transparent );
-        QPainter painter( &pix );
-        QFont font( QStringLiteral( "VLCIcons" ) );
-        font.setPixelSize( size );
-        painter.setFont( font );
-        painter.setPen( QApplication::palette().color( QPalette::PlaceholderText ) );
-        painter.drawText( QRect( 0, 0, size, size ), Qt::AlignCenter, QString( VLCIcons::info ) );
-
         QLabel *icon = new QLabel;
-        icon->setPixmap( pix );
+        icon->setPixmap( Redesign::glyphPixmap( VLCIcons::info, 16, QApplication::palette().color( QPalette::PlaceholderText ),
+                                                qApp->devicePixelRatio() ) );
         icon->setToolTip( formatTooltip( tooltip ) );
         return icon;
     }

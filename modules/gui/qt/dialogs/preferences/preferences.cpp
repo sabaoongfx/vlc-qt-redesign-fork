@@ -185,14 +185,8 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
         "QGroupBox#settingsViews QRadioButton { padding: 6px 14px; border-radius: 4px; color: palette(placeholder-text); }"
         "QGroupBox#settingsViews QRadioButton::indicator { width: 0px; height: 0px; image: none; border: none; background: transparent; margin: 0px; }"
         "QGroupBox#settingsViews QRadioButton:checked { background: %2; color: palette(highlight); }" )
-        .arg( palette().color( QPalette::Window ).lightness() < 128 ? QString() : QStringLiteral( "-light" ) )
-        // the Figma accent-dim: a quarter of the accent over the base colour
-        .arg( [this]() {
-            const QColor a = palette().color( QPalette::Highlight ), b = palette().color( QPalette::Base );
-            const qreal m = b.lightnessF() < 0.5 ? 0.25 : 0.2;
-            return QColor::fromRgbF( b.redF() + ( a.redF() - b.redF() ) * m, b.greenF() + ( a.greenF() - b.greenF() ) * m,
-                                     b.blueF() + ( a.blueF() - b.blueF() ) * m ).name();
-        }() ) );
+        .arg( Redesign::isDark( palette() ) ? QString() : QStringLiteral( "-light" ) )
+        .arg( Redesign::accentDim( palette() ).name() ) );
     main_layout->addWidget( types, 4, 0, 1, 1, Qt::AlignLeft | Qt::AlignVCenter );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );
