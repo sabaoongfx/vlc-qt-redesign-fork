@@ -95,7 +95,8 @@ QtObject {
         hint: "#6B6B6B",         // row labels, inactive tabs
         label: "#8F8F8F",        // values, active tab
         title: "#969696",        // section titles
-        tabIcon: "#404040"       // inactive tab icons
+        tabIcon: "#404040",      // inactive tab icons
+        iconHover: "#0FFFFFFF"   // Figma Icon Wrapper: white at 6% behind a hovered icon
     })
     readonly property var figmaDay: ({
         bar: "#BDBDBC",
@@ -111,7 +112,8 @@ QtObject {
         hint: "#4A4A4A",
         label: "#2A2A2A",
         title: "#151515",
-        tabIcon: "#8A8A8A"
+        tabIcon: "#8A8A8A",
+        iconHover: "#0F000000"
     })
 
     function figmaColors(isDark) {

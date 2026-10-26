@@ -298,6 +298,18 @@ FocusScope{
 
                     checked: contextMenu.shown
 
+                    // redesign: Figma Icon Wrapper, a 30x32 box with a 4px radius around the
+                    // 24px icon, kept while the menu is open; drawn outside the item so the bar
+                    // layout does not move
+                    leftInset: -VLCStyle.dp(3, VLCStyle.scale)
+                    rightInset: -VLCStyle.dp(3, VLCStyle.scale)
+                    topInset: -VLCStyle.dp(4, VLCStyle.scale)
+                    bottomInset: -VLCStyle.dp(4, VLCStyle.scale)
+                    radius: VLCStyle.dp(4, VLCStyle.scale)
+                    backgroundColor: (hovered || checked) ? VLCStyle.figmaColors(colorContext.palette.isDark).iconHover
+                                                          : "transparent"
+                    color: checked ? colorContext.fg.secondary : colorContext.fg.primary
+
                     Navigation.parentItem: root
                     Navigation.rightItem: backBtn
 

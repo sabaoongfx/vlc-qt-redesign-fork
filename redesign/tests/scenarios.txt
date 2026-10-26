@@ -43,3 +43,6 @@ customize-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1
 # resume prompt: play past 10 s once, then reopen the same file
 resume-first     | 2 | fixture | ~/Videos/long_movie.mp4         | sleep:16 term
 resume-prompt    | 2 | same | ~/Videos/long_movie.mp4         | shot:a sleep:2 shot:b geom:b sleep:2 shot:c
+dots-hover       | 2 | ml   |                       | sleep:2 move:66,20 sleep:0.8 shot:a
+dots-hover-day   | 1 | ml   |                       | sleep:2 move:66,20 sleep:0.8 shot:a
+dots-hover-player | 2 | none | @sample.mp4          | sleep:3 move:900,500 sleep:0.3 move:66,20 sleep:0.8 shot:a
