@@ -207,6 +207,8 @@ static QString redesignWidgetsStyleSheet()
         "QPushButton:pressed { background: palette(mid); }"
         "QPushButton:default { border-color: palette(highlight); }"
         "QPushButton:disabled { color: palette(mid); }"
+        // small glyph buttons (+, -, reload): the padding above would hide the glyph
+        "QPushButton[compact=\"true\"] { padding: 0px; }"
         "QLineEdit { padding: 4px 8px; border: 1px solid palette(mid); border-radius: 6px;"
         " background: palette(base); }"
         "QLineEdit:focus { border-color: palette(highlight); }"

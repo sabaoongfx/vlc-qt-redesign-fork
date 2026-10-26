@@ -149,9 +149,11 @@ void MLFoldersEditor::newRow(const QUrl &mrl)
     {
         QWidget *wid = new QWidget( this );
         QBoxLayout* layout = new QBoxLayout( QBoxLayout::LeftToRight , wid );
+        layout->setContentsMargins( 0, 0, 0, 0 );
 
         QPushButton *pb = new QPushButton( icon , wid );
-        pb->setFixedSize( 18 , 18 );
+        pb->setFixedSize( 24 , 24 );
+        pb->setProperty( "compact", true );
         pb->setAccessibleName(accessibleName);
 
         layout->addWidget( pb , Qt::AlignCenter );
