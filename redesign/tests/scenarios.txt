@@ -12,6 +12,7 @@ browse           | 2 | ml   |                       | sleep:2 click:80,217 sleep
 browse-folder    | 2 | ml   |                       | sleep:2 click:80,217 sleep:3 dclick:300,226 sleep:2.5 move:960,700 shot:home geom:home dclick:300,183 sleep:2 dclick:300,183 sleep:2 dclick:300,183 sleep:2 dclick:300,183 sleep:2.5 move:960,700 shot:deep geom:deep
 search           | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1700,81 type:Wand sleep:2 shot:a
 sort             | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 press:Sort sleep:1.2 shot:a
+video-ctx        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 rclick:390,220 sleep:1.2 shot:a
 lib-mini-video   | 2 | ml   | @sample.mp4           | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 move:960,700 shot:a geom:a
 lib-mini-audio   | 1 | ml   | @neon.mp3             | sleep:3 press:Back_to_* sleep:1.5 click:80,171 sleep:3 move:960,700 shot:a
 lib-after-end    | 2 | ml   | @short.mp4            | sleep:10 move:960,600 sleep:1 shot:a

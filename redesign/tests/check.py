@@ -297,6 +297,9 @@ im = img('rclick-menu')
 if im:
     L, R = card_run(im, 500, (0x18, 0x18, 0x18), 900, 1400)
     (ok if R - L == 292 else fail)('rclick-menu', f'right-click card width {R - L} (want 292)')
+    # the configured hotkey shown on the first row (Pause: Space), in the shortcut colour
+    c = brightest(im, (R - 80, 14, R - 4, 42))
+    (ok if near(c, (0x6B, 0x6B, 0x6B), 6) else fail)('rclick-menu', f'Pause hotkey hint {hexc(c)} (want #6B6B6B)')
 
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):

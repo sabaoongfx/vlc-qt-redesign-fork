@@ -59,6 +59,7 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QSignalMapper>
+#include <QKeySequence>
 #include <QPainterPath>
 #include <QPainter>
 
@@ -386,6 +387,24 @@ QAction *addDPStaticEntry( QMenu *menu,
     Q_UNUSED( role );
 #endif
     return action;
+}
+
+/**
+ * redesign: the configured VLC hotkey of an option ("key-stop") as a menu shortcut hint, appended after a
+ * tab. It is only shown: the hotkeys module handles the key, a QAction shortcut would trigger twice.
+ **/
+static QString hotkeyHint( qt_intf_t *p_intf, const char *option )
+{
+    char *keys = var_InheritString( p_intf, option );
+    if( !keys )
+        return {};
+    // several keys are separated by tabs ("s\tMedia Stop"): show the first
+    const QKeySequence sequence = QKeySequence::fromString( qfu( keys ).section( QLatin1Char( '\t' ), 0, 0 ),
+                                                            QKeySequence::PortableText );
+    free( keys );
+    if( sequence.isEmpty() )
+        return {};
+    return QLatin1Char( '\t' ) + sequence.toString( QKeySequence::NativeText );
 }
 
 /**
@@ -863,7 +882,7 @@ void VLCMenuBar::PopupMenuPlaylistEntries( QMenu *menu, qt_intf_t *p_intf )
     /* Play or Pause action and icon */
     if( !hasInput || THEMIM->getPlayingState() != PlayerController::PLAYING_STATE_PLAYING )
     {
-        action = menu->addAction( qtr( "&Play" ), [p_intf]() {
+        action = menu->addAction( qtr( "&Play" ) + hotkeyHint( p_intf, "key-play-pause" ), [p_intf]() {
             if ( THEMPL->isEmpty() )
                 THEDP->openFileDialog();
             else
@@ -875,29 +894,29 @@ void VLCMenuBar::PopupMenuPlaylistEntries( QMenu *menu, qt_intf_t *p_intf )
     }
     else
     {
-        action = addMPLStaticEntry( p_intf, menu, qtr( "Pause" ),
+        action = addMPLStaticEntry( p_intf, menu, qtr( "Pause" ) + hotkeyHint( p_intf, "key-play-pause" ),
                 ":/menu/ic_pause_filled.svg", &PlaylistController::togglePlayPause );
     }
 
     /* Stop */
-    action = addMPLStaticEntry( p_intf, menu, qtr( "&Stop" ),
+    action = addMPLStaticEntry( p_intf, menu, qtr( "&Stop" ) + hotkeyHint( p_intf, "key-stop" ),
             ":/menu/ic_fluent_stop.svg", &PlaylistController::stop );
     if( !hasInput )
         action->setEnabled( false );
 
     /* Next / Previous */
     bool bPlaylistEmpty = THEMPL->isEmpty();
-    QAction* previousAction = addMPLStaticEntry( p_intf, menu, qtr( "Pre&vious" ),
+    QAction* previousAction = addMPLStaticEntry( p_intf, menu, qtr( "Pre&vious" ) + hotkeyHint( p_intf, "key-prev" ),
             ":/menu/ic_fluent_previous.svg", &PlaylistController::prev );
     previousAction->setEnabled( !bPlaylistEmpty );
     connect( THEMPL, &PlaylistController::isEmptyChanged, previousAction, &QAction::setDisabled);
 
-    QAction* nextAction = addMPLStaticEntry( p_intf, menu, qtr( "Ne&xt" ),
+    QAction* nextAction = addMPLStaticEntry( p_intf, menu, qtr( "Ne&xt" ) + hotkeyHint( p_intf, "key-next" ),
             ":/menu/ic_fluent_next.svg", &PlaylistController::next );
     nextAction->setEnabled( !bPlaylistEmpty );
     connect( THEMPL, &PlaylistController::isEmptyChanged, nextAction, &QAction::setDisabled);
 
-    action = menu->addAction( qtr( "Record" ), THEMIM, &PlayerController::toggleRecord );
+    action = menu->addAction( qtr( "Record" ) + hotkeyHint( p_intf, "key-record" ), THEMIM, &PlayerController::toggleRecord );
     action->setIcon( QIcon( ":/menu/ic_fluent_record.svg" ) );
     if( !hasInput )
         action->setEnabled( false );
@@ -1047,7 +1066,8 @@ static void applyRedesignPopupIcons( QMenu *menu )
     };
     for( QAction *action : menu->actions() )
     {
-        const QString label = action->text().remove( QLatin1Char( '&' ) );
+        // without the mnemonic and the hotkey hint
+        const QString label = action->text().section( QLatin1Char( '\t' ), 0, 0 ).remove( QLatin1Char( '&' ) );
         for( const auto& icon : icons )
         {
             if( label == icon.first )
@@ -1079,7 +1099,8 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         /* Add a fullscreen switch button, since it is the most used function */
         if( p_vout )
         {
-            menu->addAction(new BooleanPropertyAction(qtr( "&Fullscreen" ), THEMIM, "fullscreen", menu) );
+            menu->addAction(new BooleanPropertyAction(qtr( "&Fullscreen" ) + hotkeyHint( p_intf, "key-toggle-fullscreen" ),
+                                                      THEMIM, "fullscreen", menu) );
             menu->addSeparator();
         }
 
