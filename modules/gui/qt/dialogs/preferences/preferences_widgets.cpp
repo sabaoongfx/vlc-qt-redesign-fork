@@ -420,6 +420,8 @@ FontConfigControl::FontConfigControl( module_config_t *_p_item, QWidget *p ) :
     label = new QLabel( qfut(p_item->psz_text), p );
     font = new QFontComboBox( p );
     font->setCurrentFont( QFont( qfu( p_item->value.psz) ) );
+    initialValue = qfu( p_item->value.psz );
+    initialFamily = font->currentFont().family();
 
     if( p_item->psz_longtext )
     {
@@ -435,6 +437,8 @@ FontConfigControl::FontConfigControl( module_config_t *_p_item,
     label = _p_label;
     font = _p_font;
     font->setCurrentFont( QFont( qfu( p_item->value.psz) ) );
+    initialValue = qfu( p_item->value.psz );
+    initialFamily = font->currentFont().family();
 
     if( p_item->psz_longtext )
     {
@@ -462,7 +466,8 @@ void FontConfigControl::changeVisibility( bool visible )
 
 QString FontConfigControl::getValue() const
 {
-    return font->currentFont().family();
+    const QString family = font->currentFont().family();
+    return family == initialFamily ? initialValue : family;
 }
 
 /********* String / choice list **********/

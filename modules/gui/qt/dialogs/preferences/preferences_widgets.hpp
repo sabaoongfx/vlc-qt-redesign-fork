@@ -342,6 +342,11 @@ protected:
     void changeVisibility( bool ) override;
     QLabel *label;
     QFontComboBox *font;
+private:
+    /* the combo can only show installed families: a generic value ("Serif") shows the nearest
+     * one, keep the value as it is unless another family is picked */
+    QString initialValue;
+    QString initialFamily;
 };
 
 class ModuleConfigControl : public VStringConfigControl
