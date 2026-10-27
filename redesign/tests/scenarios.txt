@@ -37,9 +37,11 @@ prefs-cats-day   | 1 | ml   |                       | sleep:2 click:80,1036 slee
 prefs-save       | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:General sleep:0.6 press:Privacy sleep:0.6 press:Network sleep:0.6 press:Performance sleep:0.6 press:Recording sleep:0.6 press:Extensions sleep:0.6 press:Controls sleep:0.6 press:Playback sleep:0.6 press:Video sleep:0.6 press:Audio sleep:0.6 press:Subtitles sleep:0.6 press:Interface sleep:0.6 press:Library sleep:0.6 press:Save sleep:1.5 term
 prefs-search     | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 press:Search_settings sleep:0.3 type:cach sleep:2.5 shotwin:a geom:a
 prefs-day        | 1 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 shotwin:general
+prefs-live-day   | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 click:1305,237 sleep:1.5 shotwin:general
 prefs-all        | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 click:542,952 sleep:1.5 shotwin:a
 customize        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
 customize-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
+menu-shortcuts   | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,398 sleep:2.5 shotwin:a
 # resume prompt: play past 10 s once, then reopen the same file
 resume-first     | 2 | fixture | ~/Videos/long_movie.mp4         | sleep:16 term
 resume-prompt    | 2 | same | ~/Videos/long_movie.mp4         | shot:a sleep:2 shot:b geom:b sleep:2 shot:c
@@ -60,5 +62,3 @@ a11y-prefs       | 2 | ml   |                       | sleep:2 click:80,1036 slee
 effects-video    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 click:1660,64 sleep:0.8 press:Expand_Essential sleep:0.8 shot:essential press:Collapse_Essential press:Expand_Colors sleep:0.8 shot:colors press:Negate_Colors sleep:1.5 shot:negate press:Negate_Colors sleep:0.5 press:Collapse_Colors press:Expand_Crop sleep:0.8 shot:crop audit:a
 effects-audio    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 click:1745,64 sleep:0.8 press:Expand_Equalizer sleep:0.8 shot:eq press:Collapse_Equalizer press:Expand_Compressor sleep:0.8 shot:compressor audit:a
 effects-gear     | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Extended_settings sleep:1.5 shot:a
-menu-shortcuts   | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,398 sleep:2.5 shotwin:a
-prefs-live-day   | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 click:1305,237 sleep:1.5 shotwin:general
