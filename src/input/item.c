@@ -1378,14 +1378,16 @@ char *input_item_CreateFilename(input_item_t *item,
     return path;
 }
 
+/* redesign: a folder opened for playback plays its own files first, then its subfolders (a "Sample"
+ * folder sorted before the episodes played first); file browsers sort their own listings */
 static int rdh_compar_type(input_item_t *p1, input_item_t *p2)
 {
     if (p1->i_type != p2->i_type)
     {
         if (p1->i_type == ITEM_TYPE_DIRECTORY)
-            return -1;
-        if (p2->i_type == ITEM_TYPE_DIRECTORY)
             return 1;
+        if (p2->i_type == ITEM_TYPE_DIRECTORY)
+            return -1;
     }
     return 0;
 }
