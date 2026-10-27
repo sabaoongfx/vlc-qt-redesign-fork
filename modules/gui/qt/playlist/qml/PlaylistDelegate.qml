@@ -273,8 +273,10 @@ T.Control {
         ColumnLayout {
             id: textInfoColumn
 
+            // redesign: centred on the row like the cover and the duration (it filled the row's
+            // height and drew from the top)
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.alignment: Qt.AlignVCenter
             Layout.leftMargin: VLCStyle.margin_large
             spacing: VLCStyle.margin_xxxsmall
 
@@ -292,6 +294,8 @@ T.Control {
                 id: textArtist
 
                 Layout.fillWidth: true
+                // no empty second line under a title without an artist
+                visible: text.length > 0
 
                 text: delegate.artist || (delegate.title.length === 0 ? delegate.url : "")
                 color: theme.fg.primary
