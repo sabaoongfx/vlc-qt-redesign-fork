@@ -20,6 +20,7 @@
 #include <QSGRectangleNode>
 #include <QThreadPool>
 #include <vlc_window.h>
+#include <vlc_mouse.h>
 
 #include <QQuickRenderControl>
 #ifdef QT_DECLARATIVE_PRIVATE
@@ -27,11 +28,21 @@
 #endif
 
 #include "maininterface/mainctx.hpp"
+#include "dialogs/dialogs_provider.hpp"
 
 VideoSurfaceProvider::VideoSurfaceProvider(bool threadedSurfaceUpdates, QObject* parent)
     : QObject(parent)
     , m_threadedSurfaceUpdates(threadedSurfaceUpdates)
 {
+    // redesign: a QMenu popped on a right press grabs the mouse, the video never gets the release and
+    // keeps the button down, so the next right press is no change and opens no menu (every other
+    // right-click did nothing). DialogsProvider asks for the releases before it pops the menu (this
+    // connection was lost when the interface moved to QML)
+    if (DialogsProvider *dialogs = DialogsProvider::getInstance())
+        connect(dialogs, &DialogsProvider::releaseMouseEvents, this, [this]() {
+            for (int button : { MOUSE_BUTTON_LEFT, MOUSE_BUTTON_CENTER, MOUSE_BUTTON_RIGHT })
+                onMouseReleased(button);
+        });
 }
 
 bool VideoSurfaceProvider::isEnabled()
