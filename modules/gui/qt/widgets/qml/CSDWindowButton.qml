@@ -67,7 +67,8 @@ T.Button {
             anchors.centerIn: parent
             text: control.iconTxt
 
-            font.family:{
+            // redesign: a property of its own, the size below reads it (font.family there was a binding loop)
+            readonly property string iconFamily: {
                 if (MainCtx.osName === MainCtx.Windows)
                 {
                     if(MainCtx.osVersion === 10)
@@ -80,9 +81,11 @@ T.Button {
                 return VLCIcons.fontFamily
             }
 
+            font.family: iconFamily
+
             // redesign: VLC's own window glyphs drawn at 12-14px like the Figma title bar; the Windows
             // Segoe glyphs keep their native size
-            font.pixelSize: (font.family === VLCIcons.fontFamily) ? VLCStyle.dp(22, VLCStyle.scale) : VLCStyle.icon_CSD
+            font.pixelSize: (iconFamily === VLCIcons.fontFamily) ? VLCStyle.dp(22, VLCStyle.scale) : VLCStyle.icon_CSD
             color: control.color
         }
     }
