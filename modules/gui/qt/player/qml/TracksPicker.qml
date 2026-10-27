@@ -81,6 +81,13 @@ T.Popup {
     }
 
     contentItem: Item {
+        // a popup's content is not parented to the popup: without its own context the scroll bar
+        // had no palette and drew in the placeholder magenta (TracksMenu does the same)
+        readonly property ColorContext colorContext: ColorContext {
+            colorSet: theme.colorSet
+            palette: theme.palette
+        }
+
         // ---- tab bar ----
         Rectangle {
             id: tabBar
