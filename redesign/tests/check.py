@@ -104,7 +104,20 @@ if im:
     c = dominant(im, (W - 380, 700, W - 40, 720))
     (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('panel-tabs', f'panel below the sections {hexc(c)} (want #0E0E0E)')
 
-# 4b. right panel measured on the Figma Subtitles SVGs (panel-relative x, the panel top is y 40)
+# 4a. the play queue and the tracks panel are solid cards inside the stage: a gap under the top bar
+# and right of them, the card colour inside (the queue was 80% opaque and touched the top bar)
+for scene, tag, inside in (('queue-open', 'a', (0x0E, 0x0E, 0x0E)), ('panel-tabs', 'subs', (0x09, 0x09, 0x09))):
+    t = img(scene, tag)
+    if t:
+        W = t.size[0]
+        c = t.getpixel((W - 200, 44))
+        (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} right under the top bar (want a gap)')
+        c = t.getpixel((W - 14, 500))
+        (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} at the stage edge (want a gap)')
+        c = t.getpixel((W - 200, 60))
+        (ok if near(c, inside, 3) else fail)(scene, f'panel {hexc(c)} (want solid {hexc(inside)})')
+
+# 4b. right panel measured on the Figma Subtitles SVGs (panel-relative x and y; the panel top is the tab row's)
 def accent_span(im, y, x0, x1):
     xs = [x for x in range(x0, x1) if near(im.getpixel((x, y)), ACCENT, 30)]
     return (min(xs), max(xs) + 1) if xs else None
@@ -115,7 +128,8 @@ def brightest(im, box):
 g = geom('panel-tabs', 'subs')
 combo = (g.get('Track 1 - [English]') or [None])[0]
 if im and combo:
-    px, py = combo[0] - 160, 40
+    tab = (g.get('Playback') or [None])[0]
+    px, py = combo[0] - 160, tab[1] if tab else 40
     (ok if combo[2:] == (220, 48) else fail)('panel-tabs', f'dropdown {combo[2]}x{combo[3]} (want 220x48)')
     c = im.getpixel((combo[0] + 1, combo[1] + 24))
     (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('panel-tabs', f'dropdown ring {hexc(c)} (want #090909)')
