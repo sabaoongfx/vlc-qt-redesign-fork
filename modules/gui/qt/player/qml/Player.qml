@@ -964,42 +964,24 @@ FocusScope {
         }
     }
 
-    // redesign: rounded stage corners; the video surface cannot be clipped, so the corners are
-    // covered with the bar colour
-    Repeater {
-        model: rootPlayer._videoStage ? 4 : 0
+    // redesign: rounded stage corners; the video surface cannot be clipped, so a ring in the bar colour
+    // (inner edge a rounded rect over the stage, like PIPPlayer) covers them. No Canvas: the Windows Qt
+    // build does not have it and the whole player failed to load there.
+    Rectangle {
+        readonly property real r: VLCStyle.dp(10, VLCStyle.scale) // measured on the Figma Player-6 frame
+        readonly property real ringWidth: Math.ceil(r / 2)
 
-        delegate: Canvas {
-            id: corner
-
-            required property int index
-
-            readonly property real r: VLCStyle.dp(10, VLCStyle.scale) // measured on the Figma Player-6 frame
-            readonly property color fill: controlBar.background ? controlBar.background.color : "black"
-
-            z: 1
-            width: r
-            height: r
-            x: (index % 2 === 0) ? playerSpecializationLoader.x
-                                 : playerSpecializationLoader.x + playerSpecializationLoader.width - r
-            y: (index < 2) ? playerSpecializationLoader.y
-                           : playerSpecializationLoader.y + playerSpecializationLoader.height - r
-
-            onFillChanged: requestPaint()
-
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.reset()
-                ctx.fillStyle = fill
-                ctx.fillRect(0, 0, r, r)
-                ctx.globalCompositeOperation = "destination-out"
-                ctx.beginPath()
-                const cx = (index % 2 === 0) ? r : 0
-                const cy = (index < 2) ? r : 0
-                ctx.arc(cx, cy, r, 0, Math.PI * 2)
-                ctx.fill()
-            }
-        }
+        z: 1
+        visible: rootPlayer._videoStage
+        x: playerSpecializationLoader.x - ringWidth
+        y: playerSpecializationLoader.y - ringWidth
+        width: playerSpecializationLoader.width + 2 * ringWidth
+        height: playerSpecializationLoader.height + 2 * ringWidth
+        radius: r + ringWidth
+        color: "transparent"
+        border.width: ringWidth
+        border.color: controlBar.background ? controlBar.background.color : "black"
+        antialiasing: true
     }
 
     TopBar {

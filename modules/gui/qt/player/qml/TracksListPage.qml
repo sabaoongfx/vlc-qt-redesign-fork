@@ -1299,25 +1299,27 @@ FocusScope {
 
         HoverHandler { cursorShape: Qt.PointingHandCursor }
 
-        contentItem: Canvas {
+        // two links facing each other (no Canvas: the Windows Qt build lacks it)
+        contentItem: Item {
+            id: linkIcon
+
             readonly property color ink: link.checked ? theme.accent : root.valueColor
-            onInkChanged: requestPaint()
-            onPaint: {
-                const ctx = getContext("2d")
-                ctx.reset()
-                ctx.strokeStyle = ink
-                ctx.lineWidth = 1.5
-                ctx.lineCap = "round"
-                const cy = height / 2, r = 3.5
-                // two open links facing each other
-                ctx.beginPath()
-                ctx.moveTo(width / 2 - 2, cy - r); ctx.lineTo(width / 2 - 6, cy - r)
-                ctx.arc(width / 2 - 6, cy, r, -Math.PI / 2, Math.PI / 2, true)
-                ctx.lineTo(width / 2 - 2, cy + r)
-                ctx.moveTo(width / 2 + 2, cy - r); ctx.lineTo(width / 2 + 6, cy - r)
-                ctx.arc(width / 2 + 6, cy, r, -Math.PI / 2, Math.PI / 2, false)
-                ctx.lineTo(width / 2 + 2, cy + r)
-                ctx.stroke()
+
+            Repeater {
+                model: 2
+
+                delegate: Rectangle {
+                    required property int index
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: parent.width / 2 + (index === 0 ? -9.5 : 2)
+                    width: 7.5
+                    height: 7
+                    radius: 3.5
+                    color: "transparent"
+                    border.width: 1.5
+                    border.color: linkIcon.ink
+                }
             }
         }
     }

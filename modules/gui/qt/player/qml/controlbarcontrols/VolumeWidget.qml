@@ -103,68 +103,61 @@ T.Pane {
 
             handle: Item { }
 
-            background: Canvas {
-                id: coneCanvas
+            background: Item {
+                id: cone
 
                 readonly property real level: volControl.visualPosition
                 readonly property bool dark: volControl.colorContext.palette?.isDark ?? true
 
-                onLevelChanged: requestPaint()
-                onDarkChanged: requestPaint()
-                onWidthChanged: requestPaint()
-                onHeightChanged: requestPaint()
+                // prototype cone (js/chrome-icons.js, viewBox 91x30): a wedge 10.7 to 27.4 units high with the
+                // gradient fill inset by 1.5, drawn as thin columns (no Canvas: the Windows Qt build lacks it)
+                readonly property int columns: 64
+                readonly property real unit: Math.min(height, VLCStyle.dp(30, VLCStyle.scale)) / 30
+                readonly property color trackColor: VLCStyle.figmaColors(dark).track
+                readonly property var stops: [[0, "#95D318"], [0.5788, "#B2A918"], [0.7924, "#D37918"], [1, "#FF3737"]]
 
-                // paths from the prototype (js/chrome-icons.js), viewBox 1627 1038 91 30
-                readonly property string trackPath: "M1631.6 1058.36C1629.55 1058.16 1628 1056.44 1628 1054.38V1051.62C1628 1049.56 1629.55 1047.84 1631.6 1047.64L1713.7 1039.33C1715.47 1039.16 1717 1040.54 1717 1042.32V1063.68C1717 1065.46 1715.47 1066.84 1713.7 1066.67L1631.6 1058.36Z"
-                readonly property string fillPath: "M1631.29 1056.69C1630.27 1056.58 1629.5 1055.72 1629.5 1054.7V1051.3C1629.5 1050.28 1630.27 1049.42 1631.29 1049.31L1713.29 1040.73C1714.47 1040.61 1715.5 1041.53 1715.5 1042.72V1063.28C1715.5 1064.47 1714.47 1065.39 1713.29 1065.27L1631.29 1056.69Z"
-
-                function _toCone(ctx) {
-                    const h = Math.min(height, VLCStyle.dp(30, VLCStyle.scale))
-                    ctx.translate(0, (height - h) / 2)
-                    ctx.scale(width / 91, h / 30)
-                    ctx.translate(-1627, -1038)
+                function gradientAt(t) {
+                    for (let i = 1; i < stops.length; ++i) {
+                        if (t <= stops[i][0]) {
+                            const a = Qt.color(stops[i - 1][1])
+                            const b = Qt.color(stops[i][1])
+                            const k = (t - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0])
+                            return Qt.rgba(a.r + (b.r - a.r) * k, a.g + (b.g - a.g) * k, a.b + (b.b - a.b) * k, 1)
+                        }
+                    }
+                    return Qt.color(stops[stops.length - 1][1])
                 }
 
-                onPaint: {
-                    const ctx = getContext("2d")
-                    ctx.reset()
-                    _toCone(ctx)
-                    ctx.path = trackPath
-                    ctx.fillStyle = VLCStyle.figmaColors(dark).track
-                    ctx.fill()
-                }
+                Repeater {
+                    model: cone.columns
 
-                // Fill on its own layer, so the part above the level can be erased
-                // without touching the track
-                Canvas {
-                    id: coneFill
+                    delegate: Item {
+                        id: column
 
-                    anchors.fill: parent
+                        required property int index
 
-                    readonly property real level: coneCanvas.level
-                    onLevelChanged: requestPaint()
-                    onWidthChanged: requestPaint()
-                    onHeightChanged: requestPaint()
+                        readonly property real t: (index + 0.5) / cone.columns
+                        readonly property real wedge: (10.7 + 16.7 * t) * cone.unit
 
-                    onPaint: {
-                        const ctx = getContext("2d")
-                        ctx.reset()
-                        coneCanvas._toCone(ctx)
+                        x: index * cone.width / cone.columns
+                        width: cone.width / cone.columns + 0.5
+                        height: cone.height
 
-                        // prototype gradient (#vg)
-                        const g = ctx.createLinearGradient(1627, 1053, 1717, 1053)
-                        g.addColorStop(0, "#95D318")
-                        g.addColorStop(0.5788, "#B2A918")
-                        g.addColorStop(0.7924, "#D37918")
-                        g.addColorStop(1, "#FF3737")
-                        ctx.path = coneCanvas.fillPath
-                        ctx.fillStyle = g
-                        ctx.fill()
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            height: column.wedge
+                            color: cone.trackColor
+                        }
 
-                        ctx.globalCompositeOperation = "destination-out"
-                        ctx.fillStyle = "black"
-                        const levelX = 1629.5 + 86 * Math.min(Math.max(level, 0), 1)
-                        ctx.fillRect(levelX, 1030, 1720 - levelX, 45)
+                        Rectangle {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width
+                            height: column.wedge - 3 * cone.unit
+                            color: cone.gradientAt(column.t)
+                            visible: column.t > 2.5 / 91 && column.t < 88.5 / 91
+                                     && column.t < (2.5 + 86 * Math.min(Math.max(cone.level, 0), 1)) / 91
+                        }
                     }
                 }
             }
