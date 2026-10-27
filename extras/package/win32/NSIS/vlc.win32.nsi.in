@@ -3,16 +3,18 @@
 ; (http://nsis.sourceforge.net) ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-!define PRODUCT_NAME "VLC media player"
+; redesign: its own name, folder, registry key and uninstall entry, so it installs next to
+; VideoLAN's VLC instead of over it (file type associations are still shared, they are optional)
+!define PRODUCT_NAME "VLC (juxtopposed)"
 !define VERSION @VERSION@
 !define PRODUCT_VERSION @VERSION@
-!define PRODUCT_GROUP "VideoLAN"
-!define PRODUCT_PUBLISHER "VideoLAN"
-!define PRODUCT_WEB_SITE "https://www.videolan.org/"
-!define PRODUCT_DIR_REGKEY "Software\VideoLAN\VLC"
+!define PRODUCT_GROUP "VLC juxtopposed"
+!define PRODUCT_PUBLISHER "VLC juxtopposed"
+!define PRODUCT_WEB_SITE "https://vlc.sabaoon.dev/"
+!define PRODUCT_DIR_REGKEY "Software\VLC juxtopposed"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define PRODUCT_ID "{ea92ef52-afe4-4212-bacb-dfe9fca94cd6}"
+!define PRODUCT_ID "{6f0c2d8e-4b7a-4e43-9a51-2f6d3c9b7e10}"
 
 !define MUI_LANGDLL_REGISTRY_ROOT "HKLM"
 !define MUI_LANGDLL_REGISTRY_KEY "${PRODUCT_DIR_REGKEY}"
@@ -47,7 +49,7 @@ Name "${PRODUCT_NAME}"
 @HAVE_WIN64_FALSE@                   OutFile ..\vlc-${VERSION}-win32.exe
 @HAVE_WIN64_TRUE@ @HAVE_ARM64_FALSE@ OutFile ..\vlc-${VERSION}-win64.exe
 @HAVE_WIN64_TRUE@ @HAVE_ARM64_TRUE@  OutFile ..\vlc-${VERSION}-winarm64.exe
-InstallDir "$@PROGRAMFILES@\${PRODUCT_PUBLISHER}\VLC"
+InstallDir "$@PROGRAMFILES@\${PRODUCT_PUBLISHER}"
 !ifdef NSIS_LZMA_COMPRESS_WHOLE
 SetCompressor lzma
 !else
@@ -567,7 +569,7 @@ ${Endif}
 
 ReadRegStr $INSTDIR HKLM "${PRODUCT_DIR_REGKEY}" "InstallDir"
 StrCmp $INSTDIR "" 0 WinOk
-StrCpy $INSTDIR "$@PROGRAMFILES@\${PRODUCT_PUBLISHER}\VLC"
+StrCpy $INSTDIR "$@PROGRAMFILES@\${PRODUCT_PUBLISHER}"
 Goto WinOk
 
 WinTooOld:
@@ -864,7 +866,7 @@ Section "un.$(Name_Section91)" SEC91
   Call un.RemoveEmptyDirs
   RMDir "$INSTDIR"
 
-  DeleteRegKey HKLM Software\VideoLAN
+  DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
 
   DeleteRegKey HKCR Applications\vlc.exe
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\App Paths\vlc.exe"
