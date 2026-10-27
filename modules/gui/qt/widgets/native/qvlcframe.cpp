@@ -28,6 +28,7 @@
 
 #include "qvlcframe.hpp"
 #include "maininterface/compositor.hpp"
+#include "style/redesign.hpp"
 
 void QVLCTools::saveWidgetPosition(QSettings *settings, QWidget *widget)
 {
@@ -266,7 +267,7 @@ static QString redesignWidgetsStyleSheet()
 
 QVLCFrame::QVLCFrame(qt_intf_t *_p_intf) : QWidget( NULL ), p_intf( _p_intf )
 {
-    setStyleSheet( redesignWidgetsStyleSheet() );
+    Redesign::liveStyleSheet( this, redesignWidgetsStyleSheet );
 
     assert(_p_intf);
 
@@ -320,5 +321,13 @@ QVLCDialog::QVLCDialog(QWindow *parent, qt_intf_t *_p_intf)
     setWindowTransientParent(this, parent, p_intf);
 
     /* redesign: see redesignWidgetsStyleSheet() */
-    setStyleSheet( redesignWidgetsStyleSheet() );
+    Redesign::liveStyleSheet( this, [this]() {
+        return redesignWidgetsStyleSheet() + ( m_extraStyleSheet ? m_extraStyleSheet() : QString() );
+    } );
+}
+
+void QVLCDialog::setExtraStyleSheet( std::function<QString()> extra )
+{
+    m_extraStyleSheet = std::move( extra );
+    setStyleSheet( redesignWidgetsStyleSheet() + m_extraStyleSheet() );
 }

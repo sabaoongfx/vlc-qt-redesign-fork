@@ -304,16 +304,46 @@ SystemPalette::SystemPalette(QObject* parent)
 
 }
 
+SystemPalette::~SystemPalette()
+{
+    if (m_ctx)
+    {
+        var_DelCallback(m_ctx->getIntf(), "qt-accent-color", accentChanged, this);
+        var_Destroy(m_ctx->getIntf(), "qt-accent-color");
+    }
+}
+
+int SystemPalette::accentChanged(vlc_object_t *, const char *, vlc_value_t, vlc_value_t, void *data)
+{
+    auto self = static_cast<SystemPalette *>(data);
+    QMetaObject::invokeMethod(self, [self]() {
+        self->loadAccent();
+        self->updatePalette();
+    }, Qt::QueuedConnection);
+    return VLC_SUCCESS;
+}
+
 void SystemPalette::componentComplete()
 {
+    assert(m_ctx);
+    // redesign: a variable on the interface, so Settings can change the accent live
+    var_Create(m_ctx->getIntf(), "qt-accent-color", VLC_VAR_STRING | VLC_VAR_DOINHERIT);
+    var_AddCallback(m_ctx->getIntf(), "qt-accent-color", accentChanged, this);
+    loadAccent();
+    updatePalette();
+}
+
+void SystemPalette::loadAccent()
+{
     {
-        assert(m_ctx);
         char* accentColor = var_InheritString(m_ctx->getIntf(), "qt-accent-color");
         assert(accentColor);
 
         if (!strcmp(accentColor, "default"))
         {
-            // Use default
+            // Use default (the prototype accent, both themes)
+            orange500 = QColor("#D37918");
+            orange800 = QColor("#D37918");
         }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
         else if (!strcmp(accentColor, "system"))
@@ -333,8 +363,6 @@ void SystemPalette::componentComplete()
 
         free(accentColor);
     }
-
-    updatePalette();
 }
 
 ColorSchemeModel::ColorScheme SystemPalette::source() const

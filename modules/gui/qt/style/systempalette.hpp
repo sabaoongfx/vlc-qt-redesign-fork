@@ -137,6 +137,7 @@ public:
 
 public:
     SystemPalette(QObject* parent = nullptr);
+    ~SystemPalette() override;
 
     ColorSchemeModel::ColorScheme source() const;
     QImage getCSDImage(vlc_qt_theme_csd_button_type type, vlc_qt_theme_csd_button_state state, bool maximized, bool active, int bannerHeight);
@@ -167,6 +168,9 @@ signals:
 
 private:
     void updatePalette();
+    // redesign: qt-accent-color, re-read when Settings changes it (no restart needed)
+    void loadAccent();
+    static int accentChanged(vlc_object_t *, const char *, vlc_value_t, vlc_value_t, void *);
 
     void makeLightPalette();
     void makeDarkPalette();

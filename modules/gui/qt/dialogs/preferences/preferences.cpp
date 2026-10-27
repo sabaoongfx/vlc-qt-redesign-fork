@@ -175,7 +175,7 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
 
     /* redesign: settings rows like the Figma frames, group boxes as plain section titles and
      * check boxes as ON / OFF toggles */
-    setStyleSheet( styleSheet() + QStringLiteral(
+    setExtraStyleSheet( [this]() { return QStringLiteral(
         "QGroupBox { border: none; margin-top: 28px; padding-top: 8px; font-size: 16px; }"
         "QGroupBox::title { subcontrol-origin: margin; left: 0px; padding: 0px; color: palette(text); }"
         "QCheckBox { spacing: 12px; }"
@@ -187,8 +187,8 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
         "QGroupBox#settingsViews QRadioButton { padding: 6px 14px; border-radius: 4px; color: palette(placeholder-text); }"
         "QGroupBox#settingsViews QRadioButton::indicator { width: 0px; height: 0px; image: none; border: none; background: transparent; margin: 0px; }"
         "QGroupBox#settingsViews QRadioButton:checked { background: %2; color: palette(highlight); }" )
-        .arg( Redesign::isDark( palette() ) ? QString() : QStringLiteral( "-light" ) )
-        .arg( Redesign::accentDim( palette() ).name() ) );
+        .arg( Redesign::isDark( QApplication::palette() ) ? QString() : QStringLiteral( "-light" ) )
+        .arg( Redesign::accentDim( QApplication::palette() ).name() ); } );
     main_layout->addWidget( types, 4, 0, 1, 1, Qt::AlignLeft | Qt::AlignVCenter );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );
@@ -498,6 +498,18 @@ void PrefsDialog::cancel()
     if( !wasResetting )
         QVLCTools::saveWidgetPosition( p_intf, "Preferences", this );
     reject();
+}
+
+/* redesign: an accent picked in Settings applies right away; closing without Save restores the saved one */
+void PrefsDialog::reject()
+{
+    char *saved = config_GetPsz( "qt-accent-color" );
+    char *live = var_InheritString( p_intf, "qt-accent-color" );
+    if( saved && live && strcmp( saved, live ) )
+        var_SetString( p_intf, "qt-accent-color", saved );
+    free( saved );
+    free( live );
+    QVLCDialog::reject();
 }
 
 /* Reset all the preferences, when you click the button */

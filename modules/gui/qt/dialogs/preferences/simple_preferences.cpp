@@ -269,6 +269,9 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         button->setText( label );
         button->setToolTip( ltooltip );
         button->setIcon( redesignCategoryIcon( glyph, QApplication::palette(), dpr ) );
+        Redesign::onPaletteChange( button, [button, glyph, dpr]() {
+            button->setIcon( redesignCategoryIcon( glyph, QApplication::palette(), dpr ) );
+        } );
         button->setIconSize( QSize( 30, 20 ) );
         button->setFlat( true );
         button->setCheckable( true );
@@ -295,15 +298,19 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     search->setAccessibleName( qtr( "Search settings" ) );
     search->setFixedHeight( 34 );
     {
-        const QPalette pal = QApplication::palette();
-        QPalette searchPalette = search->palette();
-        searchPalette.setColor( QPalette::PlaceholderText, SettingsChrome::heading( pal ) );
-        search->setPalette( searchPalette );
         // the magnifier, 11px in like the Figma field
         QLabel *icon = new QLabel( search );
-        icon->setPixmap( Redesign::glyphPixmap( VLCIcons::search, 20, SettingsChrome::heading( pal ), dpr ) );
         icon->setGeometry( 11, 7, 20, 20 );
         icon->setAttribute( Qt::WA_TransparentForMouseEvents );
+        auto colour = [search, icon, dpr]() {
+            const QPalette pal = QApplication::palette();
+            QPalette searchPalette = search->palette();
+            searchPalette.setColor( QPalette::PlaceholderText, SettingsChrome::heading( pal ) );
+            search->setPalette( searchPalette );
+            icon->setPixmap( Redesign::glyphPixmap( VLCIcons::search, 20, SettingsChrome::heading( pal ), dpr ) );
+        };
+        colour();
+        Redesign::onPaletteChange( search, colour );
     }
     connect( search, &QLineEdit::textChanged, this, &SPrefsCatList::searchChanged );
     layout->addWidget( search );
@@ -339,8 +346,9 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
     layout->setSpacing( 0 );
 
     /* the card itself is painted (paintEvent), below the search field */
+    Redesign::liveStyleSheet( this, []() {
     const QPalette pal = QApplication::palette();
-    setStyleSheet( QStringLiteral(
+    return QStringLiteral(
         "QLineEdit#settingsSearch { background: %1; border: none; border-radius: 6px; padding: 0px 8px 0px 38px;"
         " color: %4; placeholder-text-color: %2; font-size: 14px; }"
         "QLabel#categoryHeading { color: %2; padding: 0px 16px; font-size: 12px; }"
@@ -350,7 +358,8 @@ SPrefsCatList::SPrefsCatList( qt_intf_t *_p_intf, QWidget *_parent ) :
         "QPushButton:checked { background: %5; color: %4; }" )
         .arg( SettingsChrome::field( pal ).name(), SettingsChrome::heading( pal ).name(),
               SettingsChrome::label( pal ).name(), SettingsChrome::current( pal ).name(),
-              SettingsChrome::selected( pal ).name() ) );
+              SettingsChrome::selected( pal ).name() );
+    } );
 
     setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Expanding );
     setFixedWidth( 200 );
@@ -499,8 +508,9 @@ public:
 
         /* Figma: grey 14px labels, 17px section titles, the selected segment on the accent-dim
          * colour with accent text (#371F06 over the dark base) */
+        Redesign::liveStyleSheet( page, []() {
         const QPalette palette = QApplication::palette();
-        page->setStyleSheet( QStringLiteral(
+        return QStringLiteral(
             "QLabel#settingsSection { font-size: 17px; color: %3; }"
             "QLabel#settingsLabel { font-size: 14px; color: palette(placeholder-text); }"
             "QWidget#settingsSegments { background: palette(base); border: 1px solid palette(mid); border-radius: 6px; }"
@@ -511,7 +521,8 @@ public:
             "QWidget#settingsSegments QPushButton#settingsSwatch:checked { border: 2px solid palette(text); }"
             "QPushButton#settingsAdvanced { color: palette(placeholder-text); padding: 10px; }" )
             .arg( Redesign::accentDim( palette ).name(), palette.color( QPalette::Highlight ).name(),
-                  SettingsChrome::section( palette ).name() ) );
+                  SettingsChrome::section( palette ).name() );
+        } );
     }
 
     ~SettingsRows()
@@ -537,6 +548,7 @@ public:
         toggle->setFlat( true );
         toggle->setLayoutDirection( Qt::RightToLeft ); // chevron after the text
         toggle->setIcon( chevron( false ) );
+        Redesign::onPaletteChange( toggle, [toggle]() { toggle->setIcon( chevron( toggle->isChecked() ) ); } );
         m_layout->addSpacing( 16 );
         m_layout->addWidget( toggle );
         m_index.advancedToggle = toggle;
@@ -708,8 +720,12 @@ private:
     static QLabel *infoIcon( const QString &tooltip )
     {
         QLabel *icon = new QLabel;
-        icon->setPixmap( Redesign::glyphPixmap( VLCIcons::info, 16, QApplication::palette().color( QPalette::PlaceholderText ),
-                                                qApp->devicePixelRatio() ) );
+        auto colour = [icon]() {
+            icon->setPixmap( Redesign::glyphPixmap( VLCIcons::info, 16, QApplication::palette().color( QPalette::PlaceholderText ),
+                                                    qApp->devicePixelRatio() ) );
+        };
+        colour();
+        Redesign::onPaletteChange( icon, colour );
         icon->setToolTip( formatTooltip( tooltip ) );
         return icon;
     }
@@ -790,9 +806,13 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
     panel_label->setFont( labelFont );
     panel_label->setFixedHeight( 34 );
     {
-        QPalette titlePalette = panel_label->palette();
-        titlePalette.setColor( QPalette::WindowText, SettingsChrome::title( QApplication::palette() ) );
-        panel_label->setPalette( titlePalette );
+        auto colour = [panel_label]() {
+            QPalette titlePalette = panel_label->palette();
+            titlePalette.setColor( QPalette::WindowText, SettingsChrome::title( QApplication::palette() ) );
+            panel_label->setPalette( titlePalette );
+        };
+        colour();
+        Redesign::onPaletteChange( panel_label, colour );
     }
 
     QFont italicFont = QApplication::font();
@@ -1716,7 +1736,8 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             } );
             rows.widget( qtr( "Theme" ), QString(), segments );
 
-            /* Accent colour: the Figma swatches; written to qt-accent-color, used from the next start */
+            /* Accent colour: the Figma swatches; written to qt-accent-color, applied right away (SystemPalette
+             * listens to the interface variable) */
             if( config_FindConfig( "qt-accent-color" ) )
             {
                 QLineEdit *accentEdit = new QLineEdit( panel );
@@ -1744,9 +1765,12 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
                     swatch->setChecked( accentEdit->text().compare( value, Qt::CaseInsensitive ) == 0 );
                     swatchGroup->addButton( swatch );
                     swatchLayout->addWidget( swatch );
-                    connect( swatch, &QPushButton::clicked, accentEdit, [accentEdit, value]() { accentEdit->setText( value ); } );
+                    connect( swatch, &QPushButton::clicked, accentEdit, [this, accentEdit, value]() {
+                        accentEdit->setText( value );
+                        var_SetString( p_intf, "qt-accent-color", qtu( value ) );
+                    } );
                 }
-                rows.widget( qtr( "Accent color" ), qtr( "Used from the next start of VLC" ), swatches );
+                rows.widget( qtr( "Accent color" ), QString(), swatches );
             }
 
             rows.section( qtr( "Startup" ) );

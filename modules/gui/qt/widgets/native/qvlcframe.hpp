@@ -26,6 +26,8 @@
 #include <QWidget>
 #include <QDialog>
 #include <QMainWindow>
+
+#include <functional>
 #include <QSettings>
 
 #include "qt.hpp"
@@ -121,6 +123,11 @@ public:
 
 protected:
     qt_intf_t *p_intf;
+
+    /* redesign: rules added after the shared window stylesheet, rebuilt with it when the palette
+     * changes (see Redesign::liveStyleSheet) */
+    void setExtraStyleSheet( std::function<QString()> extra );
+    std::function<QString()> m_extraStyleSheet;
 };
 
 #endif

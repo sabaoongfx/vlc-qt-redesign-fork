@@ -21,15 +21,66 @@
 /* redesign: helpers shared by the Qt Widgets parts drawn after the Figma frames (menus, settings) */
 
 #include <QColor>
+#include <QCoreApplication>
+#include <QEvent>
 #include <QFont>
 #include <QIcon>
 #include <QPainter>
 #include <QPalette>
 #include <QPixmap>
 #include <QString>
+#include <QWidget>
+
+#include <functional>
 
 namespace Redesign
 {
+
+namespace detail
+{
+/* calls `update` when the application palette changes, as long as `owner` lives; it listens on the
+ * application: child widgets with a stylesheet do not get the palette events */
+class PaletteListener : public QObject
+{
+public:
+    PaletteListener( QObject *owner, std::function<void()> update, bool queued )
+        : QObject( owner ), m_update( std::move( update ) ), m_queued( queued )
+    {
+        QCoreApplication::instance()->installEventFilter( this );
+    }
+    bool eventFilter( QObject *object, QEvent *event ) override
+    {
+        if( object == QCoreApplication::instance() && event->type() == QEvent::ApplicationPaletteChange )
+        {
+            if( m_queued )
+                QMetaObject::invokeMethod( this, m_update, Qt::QueuedConnection );
+            else
+                m_update();
+        }
+        return false;
+    }
+private:
+    std::function<void()> m_update;
+    bool m_queued;
+};
+}
+
+/* Sets a stylesheet built from the current palette, and builds it again when the palette changes
+ * (theme or accent switched in Settings): colours put into a stylesheet as text do not follow the
+ * palette, and Qt resolves palette() references only when the stylesheet is set */
+inline void liveStyleSheet( QWidget *widget, std::function<QString()> build )
+{
+    widget->setStyleSheet( build() );
+    new detail::PaletteListener( widget, [widget, build]() { widget->setStyleSheet( build() ); }, false );
+}
+
+/* Runs `update` after a palette change, once the stylesheets are rebuilt (re-setting a stylesheet
+ * restores the palettes its widgets had), as long as `owner` lives: pixmaps coloured from the
+ * palette, explicit palette roles */
+inline void onPaletteChange( QObject *owner, std::function<void()> update )
+{
+    new detail::PaletteListener( owner, std::move( update ), true );
+}
 
 inline bool isDark( const QPalette &palette )
 {

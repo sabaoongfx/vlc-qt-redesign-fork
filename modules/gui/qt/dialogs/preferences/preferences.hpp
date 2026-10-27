@@ -47,6 +47,7 @@ public:
     virtual ~PrefsDialog();
     /* redesign: open on the Controls page with the shortcut table shown (menu Keyboard Shortcuts) */
     void showKeyboardShortcuts();
+    void reject() override;
 
 protected:
     void paintEvent( QPaintEvent * ) override;
