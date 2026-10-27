@@ -31,13 +31,62 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Pushed 2026-10-27 (`70c0b913f4`, 123 commits): `origin/redesign` matches local. Both workflows (Linux and Windows)
-  run on every push to `redesign`; a push whose head commit says `[skip ci]` runs neither, so do not end a push with a
-  docs/harness-only commit when the code needs CI. One build per workflow at a time (concurrency group, no cancelling).
+- Pushed 2026-10-27 (`18bcace619`): `origin/redesign` matches local. Three workflows run on every push to `redesign`
+  (Linux build, Windows build, Linux packages); a push whose head commit says `[skip ci]` runs none, so push a code
+  commit on its own first (`git push origin <sha>:redesign`) when a harness/docs commit sits on top. One run per
+  workflow at a time; a newer push replaces a still-pending run (it shows as "cancelled"), it never stops a running one.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
+- Harness extras: `SCEN=<file>` runs another scene list, `SKIP_FIXTURES=1` skips the test fixtures and check.py,
+  `KWINRULES=<file>` replaces the KWin rules (an empty rules file leaves VLC's own window size and placement; the
+  default rules maximise the main window, so window-size tests need it). `redesign/tests/showcase.sh` makes the website
+  screenshots from generated media (gradient videos, albums; out/showcase-shots) with `showcase.txt`.
+- Local install for the user: `make -C build install` puts the build in `install/` (the configured prefix; excluded in
+  `.git/info/exclude`); `~/.local/share/applications/vlc-juxtopposed.desktop` starts it and KDE uses it for video.
+  The user removed the official VLC (pacman `vlc`); `lua51` was reinstalled `--asdeps` because this build links it
+  (if it goes missing the Lua plugin is recompiled against Lua 5.4 headers and fails to link: delete its objects).
+  Refresh the install after changes; the user runs it daily.
 
-## Where we are (2026-10-26)
+## Release (in progress, 2026-10-27)
 
+- Name: **VLC (juxtopposed)** (the user's choice; the design is Juxtopposed's video "I Redesigned VLC After 25 Years",
+  https://youtu.be/ERFeOgqk324). Unofficial, not affiliated with VideoLAN: say so wherever it is published.
+  First tag `v0.1.0`, a pre-release. Windows + Linux now, macOS later (the user's decision: needs a Qt build for macOS,
+  VLC's Mac app is Cocoa). Ask the user before pushing a tag (it publishes the release).
+- `.github/workflows/redesign-release.yml` (on `v*` tags): waits for the Windows and Linux-packages runs of the tagged
+  commit (a tag run cannot read the redesign branch caches, so it does not build), downloads their artifacts and
+  publishes versioned + fixed-name assets (`VLC-juxtopposed-x64-setup.exe`, `-x64-portable.zip`, `-x86_64.AppImage`,
+  `-x86_64.tar.gz`) and SHA256SUMS. Tag a commit whose Windows and Linux-packages runs both passed.
+- Windows: `build.sh -r` already runs `make package-win32` (zip, 7z, NSIS exe; the image has makensis); the NSIS script
+  (`extras/package/win32/NSIS/vlc.win32.nsi.in`) has its own name/folder/registry key/uninstall entry/product id so it
+  installs next to VideoLAN's VLC; paths with `${PRODUCT_PUBLISHER}` must be quoted (it has a space). Passing.
+- Linux: `.github/workflows/redesign-linux-packages.yml` builds on Ubuntu 24.04 with Qt 6.10 (install-qt-action;
+  qtwayland is in the base install, not a module) and calls `extras/package/redesign/appimage.sh <prefix> <src>
+  <qmake6> <out>`, which also runs locally: `TOOLS=<dir with linuxdeploy + plugin-qt AppImages> extras/package/
+  redesign/appimage.sh install . <qmake6> <out>` (on this machine use a qmake6 wrapper whose QT_INSTALL_PLUGINS has
+  no KDE kimg_* plugins, they miss libraries). Learned: apt needs `sudo DEBIAN_FRONTEND=noninteractive` (build-dep hung
+  an hour on a debconf question); vlc-cache-gen is in libexec; Qt 6.10 has one `libqwayland.so`; linuxdeploy's strip
+  fails on .relr.dyn (NO_STRIP, system strip instead, 287 -> 145 MB); the plugin cache must be made after linuxdeploy
+  rewrites the plugins (else every plugin is "stale"); a /usr build has no rpaths, so the script sets `$ORIGIN` rpaths
+  with linuxdeploy's own patchelf (LD_LIBRARY_PATH into the AppDir breaks qmake). Run 40500923741 (`18bcace619`) is the
+  first with that last fix: if it passes, Windows and Linux are green on the same commit and the tag can go out.
+- Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
+  for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
+  caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
+  `releases/latest/download` skips pre-releases); without a release they open the releases page. Screenshots come from
+  showcase.sh (WebP 1600 + 800). Audited clean: Lighthouse 100 (mobile perf 98 on the home page), pa11y WCAG2AA 0
+  issues, html-validate. Blog: `blog/porting-juxtopposeds-vlc-redesign/` (first person as the user; facts checked
+  against the repo; uses Juxtopposed's Figma Settings frame, credited). Keep it accurate when things change.
+- Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
+  Save/Cancel. The user said leave it for now.
+
+## Where we are (2026-10-27)
+
+- Done 2026-10-27 (fourth batch): library search field takes clicks (its Templates TextField had no implicit height:
+  0px tall; it fills the box now, a tap anywhere in the box focuses it); sort and list/grid buttons centred on the
+  search field; main window opens at 1280x800 (85% of a smaller screen) centred instead of 600x420 (a window saved at
+  exactly 600x420 is upgraded); Settings opens centred on the VLC window every time (`PrefsDialog::showEvent`; it has a
+  transient parent but no parent widget, so Qt centred it on the primary screen once); play queue rows centre the title
+  column and hide an empty artist line.
 - Phases 1-3 of `PLAN.md` done (harness; Customize Player modal, rounded mini-player video, Browse folder header,
   ML folder buttons; Settings rebuilt as Figma row pages, 13 categories, search, classic pages kept under Advanced Options).
 - Phase 4 (pixel polish against Figma, measure with crops, fix, add a `check.py` guard) in progress. Done: player bars
