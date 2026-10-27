@@ -24,6 +24,7 @@ import VLC.MainInterface
 import VLC.Style
 import VLC.Widgets as Widgets
 import VLC.Util
+import VLC.Dialogs
 
 EmptyLabel {
     id: root
@@ -38,8 +39,15 @@ EmptyLabel {
 
     // Functions
 
+    // redesign: the library pages offer to add a folder (they are empty until one is indexed);
+    // false keeps the old Browse button
+    property bool addsFolder: true
+
     function onNavigate(reason) {
-        History.push(["network"], reason)
+        if (addsFolder)
+            DialogsProvider.addLibraryFolderDialog()
+        else
+            History.push(["network"], reason)
     }
 
     // Keys
@@ -75,8 +83,8 @@ EmptyLabel {
 
         focus: true
 
-        text: qsTr("Browse")
-        iconTxt: VLCIcons.topbar_network
+        text: root.addsFolder ? qsTr("Add Folder") : qsTr("Browse")
+        iconTxt: root.addsFolder ? VLCIcons.ic_fluent_folder_open_24_regular : VLCIcons.topbar_network
 
         Navigation.parentItem: root
 

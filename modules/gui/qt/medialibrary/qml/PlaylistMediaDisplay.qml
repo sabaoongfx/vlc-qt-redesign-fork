@@ -229,6 +229,8 @@ Widgets.PageExt {
 
             text: qsTr("No media found")
 
+            addsFolder: false
+
             cover: root._placeHolder
 
             Navigation.parentItem: root

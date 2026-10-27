@@ -38,6 +38,7 @@
 #include "util/qt_dirs.hpp"
 #include "util/vlchotkeyconverter.hpp"
 #include "maininterface/mainctx.hpp"
+#include "medialibrary/medialib.hpp"
 
 /* The dialogs */
 #include "dialogs/bookmarks/bookmarks.hpp"
@@ -309,6 +310,23 @@ void DialogsProvider::hotkeysDialog()
         prefsDialog();
     if( m_prefsDialog )
         m_prefsDialog->showKeyboardShortcuts();
+}
+
+/* redesign: the empty library pages' Add Folder button: pick a folder and index it */
+void DialogsProvider::addLibraryFolderDialog()
+{
+    MediaLib *mediaLib = p_intf->p_mi->getMediaLibrary();
+    if( !mediaLib )
+        return;
+    const QUrl dirurl = QFileDialog::getExistingDirectoryUrl( NULL, qtr( "Add a folder to the library" ),
+            p_intf->p_mi->getDialogFilePath(), QFileDialog::ShowDirsOnly, { QStringLiteral( "file" ) } );
+    if( dirurl.isEmpty() )
+        return;
+    p_intf->p_mi->setDialogFilePath( dirurl );
+    const QByteArray mrl = dirurl.toString( QUrl::FullyEncoded ).toUtf8();
+    mediaLib->runOnMLThread( this, [mrl]( vlc_medialibrary_t *ml ) {
+        vlc_ml_add_folder( ml, mrl.constData() );
+    } );
 }
 
 void DialogsProvider::firstRunDialog()
