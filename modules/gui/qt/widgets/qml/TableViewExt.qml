@@ -154,8 +154,8 @@ ListViewExt {
     signal rightClick(Item menuParent, var menuModel, point globalMousePos)
     signal itemDoubleClicked(var index, var model)
 
-    // redesign: rows activate on a plain click (TableViewDelegateExt.activateOnClick)
-    property bool activateOnClick: false
+    // redesign: rows activate on a plain click (TableViewDelegateExt.activateOnClick), like the prototype
+    property bool activateOnClick: true
 
     Component.onCompleted: {
         // This is a remnant from the time `TableViewExt` derived from `FocusScope`:

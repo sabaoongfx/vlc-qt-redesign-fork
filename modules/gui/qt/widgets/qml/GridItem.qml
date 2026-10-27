@@ -80,9 +80,9 @@ T.ItemDelegate {
     signal itemClicked(int modifier, bool select)
     signal itemDoubleClicked(int modifier)
 
-    // redesign: a plain left click activates the item (plays a video, opens a group), like the
-    // prototype; modifier clicks still only select
-    property bool activateOnClick: false
+    // redesign: a plain left click activates the item (plays a video or a track, opens an album, a
+    // group or a folder), like the prototype; modifier clicks still only select
+    property bool activateOnClick: true
     signal contextMenuButtonClicked(Item menuParent, point globalMousePos)
 
     // Settings
