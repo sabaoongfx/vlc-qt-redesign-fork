@@ -83,6 +83,15 @@ NavigableRow {
             focused: searchField.activeFocus
         }
 
+        // a press anywhere in the box (the icon, the padding) focuses the field
+        TapHandler {
+            onTapped: searchBox.expandAndFocus()
+        }
+
+        HoverHandler {
+            cursorShape: Qt.IBeamCursor
+        }
+
         Rectangle {
             anchors.fill: parent
             radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -110,7 +119,10 @@ NavigableRow {
             anchors.leftMargin: VLCStyle.margin_xsmall
             anchors.right: parent.right
             anchors.rightMargin: VLCStyle.margin_xsmall
-            anchors.verticalCenter: parent.verticalCenter
+            // the box's full height: the Templates TextField has no implicit height, centred
+            // it was 0px tall and took no clicks
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
 
             focus: true
 
