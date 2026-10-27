@@ -56,6 +56,22 @@ T.Popup {
         open()
     }
 
+    // redesign: the bar buttons toggle the panel. A press outside closes it before the button gets
+    // its click, so a click right after that close (the same press on the button) leaves it closed
+    property double _closedAt: 0
+
+    function toggle(tab) {
+        if (visible)
+            close()
+        else if (Date.now() - _closedAt > 300)
+            (tab === undefined) ? open() : openTab(tab)
+    }
+
+    Connections {
+        target: root
+        function onClosed() { root._closedAt = Date.now() }
+    }
+
     // Animations
 
     Behavior on width {

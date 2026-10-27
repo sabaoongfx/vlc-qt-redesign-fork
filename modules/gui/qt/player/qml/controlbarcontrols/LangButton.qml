@@ -53,7 +53,7 @@ Widgets.IconToolButton {
 
     // Events
 
-    onClicked: menuLoader.item.open()
+    onClicked: menuLoader.item.toggle()
 
     // redesign: accent while the tracks panel is open (Figma active state)
     color: (menuLoader.item && menuLoader.item.visible) ? colorContext.accent : colorContext.fg.primary

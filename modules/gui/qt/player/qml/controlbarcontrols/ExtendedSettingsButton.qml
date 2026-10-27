@@ -43,14 +43,7 @@ Widgets.IconToolButton {
     description: qsTr("Extended settings")
     AccessibleCompat.id: "extendedSettingsButton"
 
-    onClicked: {
-        if (!panelLoader.item)
-            return
-        if (panelLoader.item.visible)
-            panelLoader.item.close()
-        else
-            panelLoader.item.openTab(1)
-    }
+    onClicked: panelLoader.item?.toggle(1)
 
     // accent while its panel is open (Figma active state)
     color: (panelLoader.item && panelLoader.item.visible) ? colorContext.accent : colorContext.fg.primary

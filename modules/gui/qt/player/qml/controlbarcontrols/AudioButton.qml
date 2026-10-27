@@ -40,6 +40,8 @@ Widgets.IconToolButton {
     }
 
     property bool _menuShown: false
+    // the popup closes on the press outside, before this button gets the click (see TracksMenu.toggle)
+    property double _menuHiddenAt: 0
 
     // Signals
 
@@ -60,7 +62,12 @@ Widgets.IconToolButton {
 
     // Events
 
-    onClicked: menu.popup(root.mapToGlobal(root.width, 0))
+    onClicked: {
+        if (panelLoader.item?.visible)
+            panelLoader.item.close()
+        else if (Date.now() - Math.max(_menuHiddenAt, panelLoader.item?._closedAt ?? 0) > 300)
+            menu.popup(root.mapToGlobal(root.width, 0))
+    }
 
     // Children
 
@@ -75,6 +82,7 @@ Widgets.IconToolButton {
         }
         onAboutToHide: {
             root._menuShown = false
+            root._menuHiddenAt = Date.now()
             root.requestLockUnlockAutoHide(false)
         }
 
