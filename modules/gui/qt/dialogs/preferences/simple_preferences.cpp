@@ -1596,6 +1596,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             QPushButton *edit = new QPushButton( qtr( "Edit Keyboard Shortcuts" ) );
             edit->setFlat( true );
             edit->setCheckable( true );
+            edit->setObjectName( QStringLiteral( "editShortcuts" ) );
             connect( edit, &QPushButton::toggled, shortcuts, &QWidget::setVisible );
             rows.widget( qtr( "Shortcuts" ), QString(), edit, false );
             rows.block( shortcuts );

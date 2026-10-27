@@ -45,6 +45,8 @@ class PrefsDialog : public QVLCDialog
 public:
     PrefsDialog( QWindow *, qt_intf_t * );
     virtual ~PrefsDialog();
+    /* redesign: open on the Controls page with the shortcut table shown (menu Keyboard Shortcuts) */
+    void showKeyboardShortcuts();
 
 protected:
     void paintEvent( QPaintEvent * ) override;

@@ -333,7 +333,7 @@ void QmlGlobalMenu::popup(QPoint pos)
         menu->addMenu(recentsMenu);
     }
 
-    entry(":/menu/redesign-keyboard.svg", qtr("Keyboard Shortcuts"), &DialogsProvider::prefsDialog);
+    entry(":/menu/redesign-keyboard.svg", qtr("Keyboard Shortcuts"), &DialogsProvider::hotkeysDialog);
     entry(":/menu/redesign-customize.svg", qtr("Customize Player"), &DialogsProvider::showToolbarEditorDialog);
     entry(":/menu/redesign-settings.svg", qtr("Settings"), &DialogsProvider::prefsDialog, "Ctrl+P");
     entry(":/menu/redesign-about.svg", qtr("About VLC"), &DialogsProvider::aboutDialog, "Shift+F1");

@@ -302,6 +302,15 @@ void DialogsProvider::prefsDialog()
     }
 }
 
+/* redesign: the main menu's Keyboard Shortcuts entry */
+void DialogsProvider::hotkeysDialog()
+{
+    if( !m_prefsDialog )
+        prefsDialog();
+    if( m_prefsDialog )
+        m_prefsDialog->showKeyboardShortcuts();
+}
+
 void DialogsProvider::firstRunDialog()
 {
     ensureDialog(m_firstRunDialog);

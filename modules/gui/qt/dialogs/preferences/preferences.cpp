@@ -37,6 +37,7 @@
 #include "maininterface/mainctx.hpp"
 
 #include <QHBoxLayout>
+#include <QPushButton>
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QPushButton>
@@ -377,6 +378,15 @@ void PrefsDialog::changeSimplePanel( int number )
         simple_panels[number] = insert;
     }
     simple_panels_stack->setCurrentWidget( simple_panels[number] );
+}
+
+void PrefsDialog::showKeyboardShortcuts()
+{
+    setSimple();
+    simple_tree->select( SPrefsHotkeys );
+    changeSimplePanel( SPrefsHotkeys );
+    if( auto edit = simple_panels[SPrefsHotkeys]->findChild<QPushButton *>( QStringLiteral( "editShortcuts" ) ) )
+        edit->setChecked( true );
 }
 
 /* Changing from one Advanced Panel to another */
