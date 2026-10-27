@@ -171,6 +171,7 @@ private:
     // redesign: qt-accent-color, re-read when Settings changes it (no restart needed)
     void loadAccent();
     static int accentChanged(vlc_object_t *, const char *, vlc_value_t, vlc_value_t, void *);
+    qt_intf_t *m_accentIntf = nullptr; // set while the callback is registered
 
     void makeLightPalette();
     void makeDarkPalette();

@@ -28,58 +28,90 @@
 #include <QPainter>
 #include <QPalette>
 #include <QPixmap>
+#include <QPointer>
 #include <QString>
 #include <QWidget>
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 namespace Redesign
 {
 
 namespace detail
 {
-/* calls `update` when the application palette changes, as long as `owner` lives; it listens on the
- * application: child widgets with a stylesheet do not get the palette events */
+/* one listener on the application for every palette update (theme or accent switched in Settings);
+ * child widgets with a stylesheet do not get the palette events themselves. Stylesheets are rebuilt
+ * first, the other updates after them: re-setting a stylesheet restores the palettes its widgets had */
 class PaletteListener : public QObject
 {
 public:
-    PaletteListener( QObject *owner, std::function<void()> update, bool queued )
-        : QObject( owner ), m_update( std::move( update ) ), m_queued( queued )
+    static PaletteListener &instance()
+    {
+        static PaletteListener *listener = new PaletteListener;
+        return *listener;
+    }
+
+    void add( QObject *owner, std::function<void()> update, bool late )
+    {
+        // windows come and go (Settings is deleted on close): drop the dead entries now and then
+        if( m_entries.size() % 64 == 63 )
+            prune();
+        m_entries.push_back( { owner, std::move( update ), late } );
+    }
+
+    bool eventFilter( QObject *object, QEvent *event ) override
+    {
+        if( object != QCoreApplication::instance() || event->type() != QEvent::ApplicationPaletteChange )
+            return false;
+        prune();
+        for( const Entry &e : m_entries )
+            if( !e.late )
+                e.update();
+        for( const Entry &e : m_entries )
+            if( e.late )
+                QMetaObject::invokeMethod( e.owner.data(), e.update, Qt::QueuedConnection );
+        return false;
+    }
+
+private:
+    void prune()
+    {
+        m_entries.erase( std::remove_if( m_entries.begin(), m_entries.end(),
+                                         []( const Entry &e ) { return e.owner.isNull(); } ),
+                         m_entries.end() );
+    }
+
+    PaletteListener() : QObject( QCoreApplication::instance() )
     {
         QCoreApplication::instance()->installEventFilter( this );
     }
-    bool eventFilter( QObject *object, QEvent *event ) override
+
+    struct Entry
     {
-        if( object == QCoreApplication::instance() && event->type() == QEvent::ApplicationPaletteChange )
-        {
-            if( m_queued )
-                QMetaObject::invokeMethod( this, m_update, Qt::QueuedConnection );
-            else
-                m_update();
-        }
-        return false;
-    }
-private:
-    std::function<void()> m_update;
-    bool m_queued;
+        QPointer<QObject> owner;
+        std::function<void()> update;
+        bool late;
+    };
+    std::vector<Entry> m_entries;
 };
 }
 
-/* Sets a stylesheet built from the current palette, and builds it again when the palette changes
- * (theme or accent switched in Settings): colours put into a stylesheet as text do not follow the
- * palette, and Qt resolves palette() references only when the stylesheet is set */
+/* Sets a stylesheet built from the current palette, and builds it again when the palette changes:
+ * colours put into a stylesheet as text do not follow the palette, and Qt resolves palette()
+ * references only when the stylesheet is set */
 inline void liveStyleSheet( QWidget *widget, std::function<QString()> build )
 {
     widget->setStyleSheet( build() );
-    new detail::PaletteListener( widget, [widget, build]() { widget->setStyleSheet( build() ); }, false );
+    detail::PaletteListener::instance().add( widget, [widget, build]() { widget->setStyleSheet( build() ); }, false );
 }
 
-/* Runs `update` after a palette change, once the stylesheets are rebuilt (re-setting a stylesheet
- * restores the palettes its widgets had), as long as `owner` lives: pixmaps coloured from the
- * palette, explicit palette roles */
+/* Runs `update` after a palette change, once the stylesheets are rebuilt, as long as `owner` lives:
+ * pixmaps coloured from the palette, explicit palette roles */
 inline void onPaletteChange( QObject *owner, std::function<void()> update )
 {
-    new detail::PaletteListener( owner, std::move( update ), true );
+    detail::PaletteListener::instance().add( owner, std::move( update ), true );
 }
 
 inline bool isDark( const QPalette &palette )

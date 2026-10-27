@@ -306,10 +306,10 @@ SystemPalette::SystemPalette(QObject* parent)
 
 SystemPalette::~SystemPalette()
 {
-    if (m_ctx)
+    if (m_accentIntf)
     {
-        var_DelCallback(m_ctx->getIntf(), "qt-accent-color", accentChanged, this);
-        var_Destroy(m_ctx->getIntf(), "qt-accent-color");
+        var_DelCallback(m_accentIntf, "qt-accent-color", accentChanged, this);
+        var_Destroy(m_accentIntf, "qt-accent-color");
     }
 }
 
@@ -327,8 +327,9 @@ void SystemPalette::componentComplete()
 {
     assert(m_ctx);
     // redesign: a variable on the interface, so Settings can change the accent live
-    var_Create(m_ctx->getIntf(), "qt-accent-color", VLC_VAR_STRING | VLC_VAR_DOINHERIT);
-    var_AddCallback(m_ctx->getIntf(), "qt-accent-color", accentChanged, this);
+    m_accentIntf = m_ctx->getIntf();
+    var_Create(m_accentIntf, "qt-accent-color", VLC_VAR_STRING | VLC_VAR_DOINHERIT);
+    var_AddCallback(m_accentIntf, "qt-accent-color", accentChanged, this);
     loadAccent();
     updatePalette();
 }
