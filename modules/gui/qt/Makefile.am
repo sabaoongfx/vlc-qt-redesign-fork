@@ -1005,6 +1005,7 @@ libqt_plugin_la_RES = \
 	pixmaps/menu/redesign-next.svg \
 	pixmaps/menu/redesign-openmedia.svg \
 	pixmaps/menu/redesign-play.svg \
+	pixmaps/menu/redesign-pause.svg \
 	pixmaps/menu/redesign-playback.svg \
 	pixmaps/menu/redesign-playlist.svg \
 	pixmaps/menu/redesign-previous.svg \

@@ -1085,7 +1085,7 @@ static void applyRedesignPopupIcons( QMenu *menu )
 {
     const std::pair<QString, const char*> icons[] = {
         { qtr( "Play" ), ":/menu/redesign-play.svg" },
-        { qtr( "Pause" ), ":/menu/redesign-play.svg" },
+        { qtr( "Pause" ), ":/menu/redesign-pause.svg" },
         { qtr( "Stop" ), ":/menu/redesign-stop.svg" },
         { qtr( "Previous" ), ":/menu/redesign-previous.svg" },
         { qtr( "Next" ), ":/menu/redesign-next.svg" },

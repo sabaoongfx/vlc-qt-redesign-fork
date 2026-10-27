@@ -40,6 +40,7 @@
         <file alias="redesign-next.svg">pixmaps/menu/redesign-next.svg</file>
         <file alias="redesign-openmedia.svg">pixmaps/menu/redesign-openmedia.svg</file>
         <file alias="redesign-play.svg">pixmaps/menu/redesign-play.svg</file>
+        <file alias="redesign-pause.svg">pixmaps/menu/redesign-pause.svg</file>
         <file alias="redesign-playback.svg">pixmaps/menu/redesign-playback.svg</file>
         <file alias="redesign-playlist.svg">pixmaps/menu/redesign-playlist.svg</file>
         <file alias="redesign-previous.svg">pixmaps/menu/redesign-previous.svg</file>
