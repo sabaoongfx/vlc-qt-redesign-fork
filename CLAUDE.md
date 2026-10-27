@@ -67,15 +67,26 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   an hour on a debconf question); vlc-cache-gen is in libexec; Qt 6.10 has one `libqwayland.so`; linuxdeploy's strip
   fails on .relr.dyn (NO_STRIP, system strip instead, 287 -> 145 MB); the plugin cache must be made after linuxdeploy
   rewrites the plugins (else every plugin is "stale"); a /usr build has no rpaths, so the script sets `$ORIGIN` rpaths
-  with linuxdeploy's own patchelf (LD_LIBRARY_PATH into the AppDir breaks qmake). Run 40500923741 (`18bcace619`) is the
-  first with that last fix: if it passes, Windows and Linux are green on the same commit and the tag can go out.
+  with linuxdeploy's own patchelf (LD_LIBRARY_PATH into the AppDir breaks qmake); plugins one directory deeper
+  (`plugins/access/rtp/`) need their own `$ORIGIN/../../../..` rule. Passing since `43d2e8b`.
+  Qt's TIFF/WebP/MNG image plugins link libtiff.so.5 (absent on Ubuntu 24.04) and linuxdeploy stops on them: a workflow
+  step deletes them after the Qt install (dropping the `qtimageformats` module alone did nothing, install-qt-action's
+  restore-keys brought back an older cached Qt that still had it). `apt-get build-dep` hangs now and then and hits the
+  20 min step timeout (twice): re-run the failed job (`gh run rerun <id> --failed`); a retry in the workflow would help.
 - Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
   for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
   caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
-  `releases/latest/download` skips pre-releases); without a release they open the releases page. Screenshots come from
+  `releases/latest/download` skips pre-releases); the no-JavaScript fallback links in `index.html` are the v0.1.0 files
+  (update those four with each release; `vlc-web` `982f97e`). Screenshots come from
   showcase.sh (WebP 1600 + 800). Audited clean: Lighthouse 100 (mobile perf 98 on the home page), pa11y WCAG2AA 0
   issues, html-validate. Blog: `blog/porting-juxtopposeds-vlc-redesign/` (first person as the user; facts checked
   against the repo; uses Juxtopposed's Figma Settings frame, credited). Keep it accurate when things change.
+- Released 2026-10-27: **v0.1.0** (pre-release) on `43d2e8b`, all nine assets published by `redesign-release.yml`. The first
+  v0.1.0 (on `18bcace`) was deleted and re-tagged: its Windows build showed only the video, no interface (see the Canvas
+  gotcha under Windows CI gotchas). Delete a release with `gh release delete v0.1.0 --cleanup-tag --yes`, then re-tag.
+- Open: the build still carries VideoLAN's update check ("An error occurred while checking for updates" dialogs in the
+  Windows shots); Windows CI has no playback shot (night-player.png is a pile of update dialogs), so Windows playback is
+  verified by hand only; a retry for the apt hang in the Linux packages workflow.
 - Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
   Save/Cancel. The user said leave it for now.
 
@@ -209,6 +220,13 @@ Local edits are text only (QML/C++/YAML/Markdown).
   `no such command: capi`. The touch step deletes `contrib/contrib-win64/.cargo-c` so it is rebuilt.
 - A job failure skips the cache save and the cache key is immutable once saved; the v2 key holds a complete cache.
 - The Windows shots job must start VLC with a fresh `%APPDATA%\vlc` each time or a "restore the playlist" prompt appears after a force-kill.
+- The Windows Qt (contrib, static, trimmed) has no `Canvas`: `qrc:/.../Player.qml:972:19: Canvas is not a type` stopped the whole
+  player from loading, so only the video showed (every compositor, `--qt-compositor=win7` a blank screen). Linux Qt has Canvas, so
+  CI and the harness never showed it. Do not use `Canvas`, `getContext` or `QtQuick.Shapes` (upstream uses neither): corners are a
+  `PIPPlayer`-style ring Rectangle, the volume cone thin columns, the crop link icon two rounded rects. Diagnose a Windows UI
+  that does not appear with `vlc.exe -vv --file-logging --logfile=%TEMP%\vlc.log <file>` and look for `is not a type`.
+- Windows installs live in `C:\Program Files\VLC juxtopposed`; the portable zip and the installer share `%APPDATA%\vlc`
+  (`vlcrc`, `vlc-qt-interface.ini`), so settings from older builds carry over (see the control bar profiles gotcha).
 
 ## Decisions and gotchas
 
@@ -294,6 +312,11 @@ Local edits are text only (QML/C++/YAML/Markdown).
   is the bottom-right card and `MainDisplay` places the PIP video over its preview. Page headers (`PageExt`) have back/forward
   (`History.next()` / `nextEmpty` were added in `util/navigation_history.*`), the page crumb, the item count and an always-visible
   search field (`GridSortFilterControls`).
+- Control bar profiles are written to the settings file (`[ControlbarProfileModel]`) on the first run and never refreshed, so a
+  machine that ran an older build keeps the old bar whatever the code default says (a Windows install showed upstream's centred
+  skip/previous/play/next in two rows, not the Figma one-row bar with play at the left after previous). `ControlbarProfileModel::
+  reload` migrates the known old Default Styles (audio button; upstream's centred transport); change a built-in default there too.
+  Linux CI and the harness start from a clean config and hide this. Quick reset: rename `vlc-qt-interface.ini`.
 - Prototype accent `#D37918` is used for both themes; `orange800` (the light-theme accent) is set to the same value.
 - Text on accent buttons is dark (`#1A0E02`), as in the prototype.
 - Icons: Qt's set is already filled Fluent-style outlines close to the prototype's; only 18 of 97 names match. Add individual glyphs
