@@ -85,52 +85,26 @@ jobs:
       - name: Build
         run: |
           make -j"$(nproc)"
-          make install DESTDIR="$PWD/AppDir"
+          make install DESTDIR="$PWD/stage"
           ccache -s
 
       - name: AppImage and tarball
         run: |
-          set -euo pipefail
-          A=$PWD/AppDir
-          # plugin cache for the relocated tree (VLC finds its plugins next to libvlccore)
-          "$A/usr/lib/vlc/vlc-cache-gen" "$A/usr/lib/vlc/plugins"
-          # the menu entry carries the release name
-          D=$A/usr/share/applications/vlc.desktop
-          # (and runs the AppImage's own binary, not /usr/bin/vlc)
-          sed -i -e 's/^Name=.*/Name=VLC (juxtopposed)/' -e '/^Name\[/d' \
-            -e 's|^Exec=/usr/bin/vlc|Exec=vlc|' -e '/^TryExec=/d' "$D"
-
+          # extras/package/redesign/appimage.sh: the same script is tested locally against the dev build
+          mkdir -p tools && cd tools
           wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
           wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
           chmod +x linuxdeploy*.AppImage
-
-          # the VLC plugins are loaded at run time: deploy their libraries too
-          DEPS=()
-          for d in "$A"/usr/lib/vlc/plugins/*/; do DEPS+=(--deploy-deps-only "$d"); done
-
-          export QMAKE="$QT_ROOT_DIR/bin/qmake6"
-          export QML_SOURCES_PATHS="$PWD/modules/gui/qt"
-          export EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so"
-          export EXTRA_QT_PLUGINS="wayland-shell-integration;wayland-decoration-client;wayland-graphics-integration-client;svg;iconengines;imageformats"
-          export LDAI_OUTPUT="VLC-juxtopposed-x86_64.AppImage"
-          ./linuxdeploy-x86_64.AppImage --appdir "$A" \
-            -e "$A/usr/bin/vlc" -d "$D" \
-            -i "$A/usr/share/icons/hicolor/256x256/apps/vlc.png" \
-            "${DEPS[@]}" --plugin qt --output appimage
-
-          # the same tree as a tarball: extract, then run ./vlc-juxtopposed
-          mv "$A" VLC-juxtopposed-x86_64
-          ln -s AppRun VLC-juxtopposed-x86_64/vlc-juxtopposed
-          tar czf VLC-juxtopposed-x86_64.tar.gz VLC-juxtopposed-x86_64
-          mkdir -p out && mv VLC-juxtopposed-x86_64.AppImage VLC-juxtopposed-x86_64.tar.gz out/
-          ls -la out
+          cd ..
+          TOOLS=$PWD/tools extras/package/redesign/appimage.sh stage/usr . "$QT_ROOT_DIR/bin/qmake6" out
 
       - name: Smoke test
         run: |
-          # starts, lists the Qt interface and exits (no display needed)
-          chmod +x out/VLC-juxtopposed-x86_64.AppImage
-          out/VLC-juxtopposed-x86_64.AppImage --version | head -3
-          out/VLC-juxtopposed-x86_64.AppImage --list 2>/dev/null | grep -E "^ +qt " || { echo "Qt interface missing"; exit 1; }
+          # starts, lists the Qt interface and exits (no display needed); the plugin cache matches
+          A=out/VLC-juxtopposed-x86_64.AppImage
+          $A --version | head -3
+          $A --list 2>/dev/null | grep -E "^ +qt " || { echo "::error::Qt interface missing"; exit 1; }
+          if $A --list 2>&1 | grep -q "stale plugins cache"; then echo "::error::stale plugin cache"; exit 1; fi
 
       - name: Upload
         uses: actions/upload-artifact@v4
