@@ -48,6 +48,7 @@
 #include <QShortcut>
 #include <QPainter>
 #include <QScreen>
+#include <QWindow>
 
 #include <vlc_configuration.h>
 #include <vlc_modules.h>
@@ -227,6 +228,27 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
                 move( qMax( avail.left(), avail.right() + 1 - w ), y() );
         }
     }
+}
+
+/* redesign: Settings opens centred on the VLC window, on its screen (keeping its saved size). The
+   dialog has a transient parent but no parent widget, so Qt centred it on the primary screen the
+   first time and then reopened it wherever it was last */
+void PrefsDialog::showEvent( QShowEvent *event )
+{
+    QVLCDialog::showEvent( event );
+
+    const QWindow *parent = windowHandle() ? windowHandle()->transientParent() : nullptr;
+    if( !parent || !parent->isVisible() )
+        return;
+    QRect r( QPoint(), frameGeometry().size() );
+    r.moveCenter( parent->frameGeometry().center() );
+    if( const QScreen *s = parent->screen() )
+    {
+        const QRect avail = s->availableGeometry();
+        r.moveLeft( qBound( avail.left(), r.left(), qMax( avail.left(), avail.right() + 1 - r.width() ) ) );
+        r.moveTop( qBound( avail.top(), r.top(), qMax( avail.top(), avail.bottom() + 1 - r.height() ) ) );
+    }
+    move( r.topLeft() );
 }
 
 /* redesign: the Figma window body, and the header band behind the search field and the page title */

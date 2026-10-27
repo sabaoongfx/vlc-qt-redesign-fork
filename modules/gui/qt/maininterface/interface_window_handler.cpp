@@ -69,7 +69,20 @@ InterfaceWindowHandler::InterfaceWindowHandler(qt_intf_t *_p_intf, MainCtx* main
     m_window->setIcon( QApplication::windowIcon() );
     m_window->setOpacity( var_InheritFloat( p_intf, "qt-opacity" ) );
 
-    QVLCTools::restoreWindowPosition( getSettings(), m_window, QSize(600, 420) );
+    /* redesign: the library (sidebar card, cover grid, header) needs room: open at 1280x800, or 85%
+       of a smaller screen, centred, instead of 600x420. A window saved at exactly the old default
+       was never resized by hand: it gets the new size too */
+    QSize defSize( 1280, 800 );
+    if( const QScreen *s = QGuiApplication::primaryScreen() )
+        defSize = defSize.boundedTo( s->availableGeometry().size() * 0.85 );
+    QVLCTools::restoreWindowPosition( getSettings(), m_window, defSize );
+    if( m_window->size() == QSize( 600, 420 )
+        && !( m_window->windowStates() & ( Qt::WindowMaximized | Qt::WindowFullScreen ) ) )
+    {
+        const QRect avail = m_window->screen()->availableGeometry();
+        m_window->resize( defSize.boundedTo( avail.size() * 0.85 ) );
+        m_window->setPosition( avail.center() - QPoint( m_window->width() / 2, m_window->height() / 2 ) );
+    }
 
     // this needs to be called asynchronously
     // otherwise QQuickWidget won't initialize properly

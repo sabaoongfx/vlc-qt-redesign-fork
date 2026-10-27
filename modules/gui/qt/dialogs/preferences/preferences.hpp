@@ -51,6 +51,7 @@ public:
 
 protected:
     void paintEvent( QPaintEvent * ) override;
+    void showEvent( QShowEvent * ) override;
 
 private:
     size_t count;
