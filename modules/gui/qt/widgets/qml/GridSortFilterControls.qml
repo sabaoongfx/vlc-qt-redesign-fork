@@ -20,6 +20,9 @@ NavigableRow {
     SortControl {
         id: sortControl
 
+        // centred on the search field (the row aligns its items at the top)
+        anchors.verticalCenter: parent.verticalCenter
+
         visible: root.sort.available
         enabled: visible
         width: VLCStyle.bannerButton_width
@@ -45,6 +48,9 @@ NavigableRow {
     //TODO: visible value of root.sort.available and MainCtx.hasGridListMode is initialised correctly but on first load still shows up
     IconToolButton {
         id: gridListBtn
+
+        // centred on the search field (the row aligns its items at the top)
+        anchors.verticalCenter: parent.verticalCenter
 
         visible: MainCtx.hasGridListMode
 
