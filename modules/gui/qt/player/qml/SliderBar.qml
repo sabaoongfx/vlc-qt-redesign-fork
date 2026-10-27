@@ -477,7 +477,9 @@ T.ProgressBar {
                 y: control._fieldInset
                 width: control._seekPointsDistance
                 height: control.barHeight - control._fieldInset * 2
-                color: VLCStyle.figmaColors(theme.palette.isDark).track
+                // a gap in the played fill; ahead of it a grey mark (the field colour did not show there)
+                color: (startPosition <= control.visualPosition) ? VLCStyle.figmaColors(theme.palette.isDark).track
+                                                                 : VLCStyle.figmaColors(theme.palette.isDark).tabIcon
             }
         }
 
