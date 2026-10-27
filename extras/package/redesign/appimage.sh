@@ -39,6 +39,8 @@ setrpath '$ORIGIN/../../lib' "$A"/usr/libexec/vlc/*
 setrpath '$ORIGIN' "$A"/usr/lib/*.so*
 setrpath '$ORIGIN/..:$ORIGIN' "$A"/usr/lib/vlc/*.so*
 setrpath '$ORIGIN/../../..:$ORIGIN/../..' "$A"/usr/lib/vlc/plugins/*/*.so
+# a few plugins sit one directory deeper (access/rtp/librtp_pcm_plugin.so)
+setrpath '$ORIGIN/../../../..:$ORIGIN/../../..' "$A"/usr/lib/vlc/plugins/*/*/*.so
 
 # the VLC plugins and their helper libraries are loaded at run time: deploy their dependencies too
 DEPS=()
