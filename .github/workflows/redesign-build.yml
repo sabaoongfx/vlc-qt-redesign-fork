@@ -5,6 +5,11 @@ on:
     branches: [redesign]
   workflow_dispatch:
 
+# one build at a time per branch: a newer push waits for the running one and replaces an older waiting one
+concurrency:
+  group: redesign-build-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   linux-qt:
     runs-on: ubuntu-latest

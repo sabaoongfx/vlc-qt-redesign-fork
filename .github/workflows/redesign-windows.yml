@@ -3,12 +3,16 @@ name: Redesign Windows build
 # Cross-builds VLC (with the redesigned Qt UI) for Windows x64 and uploads a portable zip.
 # The second job runs the portable build on a Windows runner and uploads screenshots of it.
 on:
-  # The file only runs from the default branch via workflow_dispatch, so also run on pushes
-  # that touch this file; edit it (e.g. bump the revision below) to re-run.
+  # every push to redesign, like the Linux build (a head commit with [skip ci] skips both)
   push:
     branches: [redesign]
-    paths: ['.github/workflows/redesign-windows.yml']
   workflow_dispatch:
+
+# one Windows build at a time: a newer push waits for the running one (cancelling a build would
+# also skip its contrib cache save), and replaces an older one still waiting
+concurrency:
+  group: redesign-windows-${{ github.ref }}
+  cancel-in-progress: false
 
 # revision: 9
 jobs:
