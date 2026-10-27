@@ -329,7 +329,9 @@ T.ProgressBar {
 
         Rectangle {
             id: sliderRect
-            visible: !Player.hasChapters
+            // redesign: the field style keeps its well and inset fill with chapters too (the chapter
+            // segments were a full accent fill edge to edge); chapters are breaks in the fill
+            visible: control.fieldStyle || !Player.hasChapters
             color: control.fieldStyle ? VLCStyle.figmaColors(theme.palette.isDark).track : control.backgroundColor
             anchors.fill: parent
             radius: control.fieldStyle ? VLCStyle.dp(6, VLCStyle.scale) : implicitHeight
@@ -341,10 +343,12 @@ T.ProgressBar {
             anchors.left: parent.left
             anchors.right: parent.right
             height: control.barHeight
-            visible: Player.hasChapters
+            visible: Player.hasChapters && !control.fieldStyle
 
             model: Player.chapters
             Item {
+                // the delegates are parented to the Repeater's parent: its visible does not reach them
+                visible: seekpointsRptr.visible
                 Rectangle {
                     id: seekpointsRect
                     readonly property real startPosition: model.startPosition ??  0.0
@@ -441,11 +445,11 @@ T.ProgressBar {
             y: control.fieldStyle ? control._fieldInset : 0
             width: control.fieldStyle ? Math.max(0, control.visualPosition * parent.width - control._fieldInset)
                                       : control.visualPosition * parent.width
-            visible: !Player.hasChapters
             // redesign: the Figma accent-dim
             color: control.fieldStyle ? VLCStyle.accentDim(theme.accent, theme.palette.isDark) : theme.fg.primary
             height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : control.barHeight
             radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : control._seekPointsRadius
+            visible: control.fieldStyle || !Player.hasChapters
 
             // We use dynamic mutability group because time interpolation
             // may induce rapid change:
@@ -456,6 +460,24 @@ T.ProgressBar {
                 when: (progressRect.mutabilityGroup !== undefined)
                 value: (Player.playingState === Player.PLAYING_STATE_PLAYING) ? Item.DynamicMutabilityGroup
                                                                               : Item.StaticMutabilityGroup
+            }
+        }
+
+        // redesign: field style, chapter starts as 2px breaks across the inset fill
+        Repeater {
+            model: (control.fieldStyle && Player.hasChapters) ? Player.chapters : 0
+
+            delegate: Rectangle {
+                required property var model
+
+                readonly property real startPosition: model.startPosition ?? 0.0
+
+                visible: startPosition > 0
+                x: Math.round(startPosition * parent.width) - width / 2
+                y: control._fieldInset
+                width: control._seekPointsDistance
+                height: control.barHeight - control._fieldInset * 2
+                color: VLCStyle.figmaColors(theme.palette.isDark).track
             }
         }
 
@@ -658,7 +680,8 @@ T.ProgressBar {
             }
         ]
 
-        state: (hoverHandler.hovered || control.visualFocus)
+        // redesign: the field-style handle is always shown (Figma player bar)
+        state: (control.fieldStyle || hoverHandler.hovered || control.visualFocus)
                ? ((control._currentChapterHovered || (Player.hasChapters && fsm._state === fsm.fsmHeld)) ? "visibleLarge" : "visible")
                : "hidden"
     }
