@@ -61,3 +61,4 @@ effects-video    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep
 effects-audio    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 click:1745,64 sleep:0.8 press:Expand_Equalizer sleep:0.8 shot:eq press:Collapse_Equalizer press:Expand_Compressor sleep:0.8 shot:compressor audit:a
 effects-gear     | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Extended_settings sleep:1.5 shot:a
 menu-shortcuts   | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,398 sleep:2.5 shotwin:a
+prefs-live-day   | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 click:1305,237 sleep:1.5 shotwin:general

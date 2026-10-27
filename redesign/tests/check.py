@@ -214,6 +214,15 @@ if g:
     (ok if 'Local files' in g and 'Network' in g else fail)('prefs-search', 'search finds the buffering rows')
     (ok if 'General' not in g and 'Interface' not in g else fail)('prefs-search', 'categories without a match are hidden')
 
+# 11b. switching to Day inside Settings restyles the open window completely: it matches a window
+# opened in Day (stylesheets, sidebar icons and title colours were left in the old theme)
+a, b = img('prefs-live-day', 'general'), img('prefs-day', 'general')
+if a and b:
+    from PIL import ImageChops
+    n = sum(1 for p in ImageChops.difference(a.convert('RGB'), b.convert('RGB')).get_flattened_data() if max(p) > 24) \
+        if a.size == b.size else -1
+    (ok if n == 0 else fail)('prefs-live-day', f'{n} pixels differ from Settings opened in Day (want 0)')
+
 # 12. player bars measured on the Figma Player frame: 40px top bar, 55px bottom bar at y 1025,
 #     28px controls centred in it, #1B1B1B bars
 g, im = geom('player-playing'), img('player-playing')
