@@ -47,6 +47,11 @@ public:
 
 protected:
     QAbstractListModel* m_model = nullptr;
+
+private:
+    // redesign: a disabled "Not available" entry while the list is empty (an empty submenu showed nothing)
+    QAction* m_empty = nullptr;
+    void updateEmpty();
 };
 
 class QQuickImageResponse;

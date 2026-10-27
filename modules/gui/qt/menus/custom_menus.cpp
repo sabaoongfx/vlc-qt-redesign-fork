@@ -161,6 +161,18 @@ CheckableListMenu::CheckableListMenu(QString title, QAbstractListModel* model , 
     connect(helper, &ListMenuHelper::select, this, [this](int row, bool checked){
         m_model->setData(m_model->index(row), checked, Qt::CheckStateRole);
     });
+
+    m_empty = addAction(qtr("Not available"));
+    m_empty->setEnabled(false);
+    updateEmpty();
+    connect(m_model, &QAbstractListModel::rowsInserted, this, &CheckableListMenu::updateEmpty);
+    connect(m_model, &QAbstractListModel::rowsRemoved, this, &CheckableListMenu::updateEmpty);
+    connect(m_model, &QAbstractListModel::modelReset, this, &CheckableListMenu::updateEmpty);
+}
+
+void CheckableListMenu::updateEmpty()
+{
+    m_empty->setVisible(m_model->rowCount() == 0);
 }
 
 // ListMenuHelper
