@@ -23,8 +23,8 @@ player-system    | 0 | none | @sample.mp4           | sleep:3 move:900,500 sleep
 player-seekhover | 2 | none | @sample.mp4           | sleep:3 move:900,500 sleep:0.3 move:600,1052 sleep:0.3 move:620,1053 sleep:0.3 move:640,1052 sleep:0.8 shot:a
 player-audio     | 2 | none | @neon.mp3             | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.6 shot:a
 player-longtitle | 2 | none | @A_very_long_title_that_should_be_elided_somewhere_in_the_interface.mp4 | sleep:3 move:900,500 sleep:0.6 shot:a
-panel-tabs       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 shot:subs geom:subs click:1570,64 sleep:0.8 shot:play click:1660,64 sleep:0.8 shot:video click:1745,64 sleep:0.8 shot:audio
-panel-day        | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 shot:subs
+panel-tabs       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 shot:subs geom:subs click:1570,64 sleep:0.8 shot:play click:1660,64 sleep:0.8 shot:video click:1745,64 sleep:0.8 shot:audio
+panel-day        | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 shot:subs
 queue-open       | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 click:1884,1052 sleep:1.5 move:1500,700 sleep:0.5 shot:a
 rclick-menu      | 2 | none | @sample.mp4           | sleep:3 rclick:960,400 sleep:1.2 shot:a
 main-menu        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 shot:a
@@ -57,8 +57,9 @@ a11y-home        | 2 | ml   |                       | sleep:3 move:960,600 audit
 a11y-video       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 audit:a
 a11y-music       | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 audit:a
 a11y-player      | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 audit:a
-a11y-panel       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 audit:a
+a11y-panel       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 audit:a
 a11y-prefs       | 2 | ml   |                       | sleep:2 click:80,1036 sleep:2.5 audit:a
-effects-video    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 click:1660,64 sleep:0.8 press:Expand_Essential sleep:0.8 shot:essential press:Collapse_Essential press:Expand_Colors sleep:0.8 shot:colors press:Negate_Colors sleep:1.5 shot:negate press:Negate_Colors sleep:0.5 press:Collapse_Colors press:Expand_Crop sleep:0.8 shot:crop audit:a
-effects-audio    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.5 click:1745,64 sleep:0.8 press:Expand_Equalizer sleep:0.8 shot:eq press:Collapse_Equalizer press:Expand_Compressor sleep:0.8 shot:compressor audit:a
+effects-video    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1660,64 sleep:0.8 press:Expand_Essential sleep:0.8 shot:essential press:Collapse_Essential press:Expand_Colors sleep:0.8 shot:colors press:Negate_Colors sleep:1.5 shot:negate press:Negate_Colors sleep:0.5 press:Collapse_Colors press:Expand_Crop sleep:0.8 shot:crop audit:a
+effects-audio    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 press:Expand_Equalizer sleep:0.8 shot:eq press:Collapse_Equalizer press:Expand_Compressor sleep:0.8 shot:compressor audit:a
 effects-gear     | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Extended_settings sleep:1.5 shot:a
+tracks-picker    | 2 | none | @multi.mkv --sub-file=@fr.srt | sleep:3 move:900,500 sleep:0.3 press:Languages_and_tracks sleep:1.2 shot:subs geom:p audit:a click:1702,518 sleep:0.8 shot:audio click:1572,518 sleep:0.8 shot:video

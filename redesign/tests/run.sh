@@ -9,8 +9,11 @@ export FIX=${FIX:-$T/out/fixtures}
 FILTER=${1:-.}
 # no logind session (e.g. over ssh): the nested kwin only needs a private runtime dir
 if [ ! -d "$XDG_RUNTIME_DIR" ]; then export XDG_RUNTIME_DIR=$(mktemp -d -t vlc-xdg.XXXX); chmod 700 "$XDG_RUNTIME_DIR"; fi
-# and no sound server then: an audio output error would show a toast over the scene
-[ -S "$XDG_RUNTIME_DIR/pipewire-0" ] || [ -S "$XDG_RUNTIME_DIR/pulse/native" ] || export VLCARGS="--aout=adummy $VLCARGS"
+# always silent: scenes must never play through the speakers (and without a sound server an audio
+# output error would show a toast over the scene)
+export VLCARGS="--aout=adummy $VLCARGS"
+# warnings in the logs: QML errors are printed only from verbosity 1 (check.py looks for them)
+export VLCARGS="--verbose=1 $VLCARGS"
 mkdir -p "$OUT"
 "$T/fixtures.sh" >/dev/null
 # fresh copy of the library profile per run, so scenes do not leak state into each other
