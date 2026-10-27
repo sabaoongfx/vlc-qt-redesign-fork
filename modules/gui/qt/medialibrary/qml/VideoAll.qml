@@ -229,6 +229,8 @@ MainViewLoader {
                 root.onAction(selectionModel.selectedIndexes)
             }
 
+            activateOnClick: true
+
             onItemDoubleClicked: (index, model) => root.onDoubleClick(model)
 
             onRightClick: (_,_,globalMousePos) => {

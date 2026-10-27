@@ -79,6 +79,10 @@ T.ItemDelegate {
     signal addToPlaylistClicked
     signal itemClicked(int modifier, bool select)
     signal itemDoubleClicked(int modifier)
+
+    // redesign: a plain left click activates the item (plays a video, opens a group), like the
+    // prototype; modifier clicks still only select
+    property bool activateOnClick: false
     signal contextMenuButtonClicked(Item menuParent, point globalMousePos)
 
     // Settings
@@ -221,12 +225,15 @@ T.ItemDelegate {
                 //        Right click does not fire itemClicked?
                 if (button === Qt.RightButton)
                     contextMenuButtonClicked(picture, eventPoint.globalPosition);
-                else
+                else {
                     root.itemClicked(point.modifiers, true);
+                    if (root.activateOnClick && point.modifiers === Qt.NoModifier)
+                        root.itemDoubleClicked(Qt.NoModifier)
+                }
             }
 
             onDoubleTapped: (eventPoint, button) => {
-                if (button === Qt.LeftButton)
+                if (button === Qt.LeftButton && !root.activateOnClick)
                     root.itemDoubleClicked(point.modifiers)
             }
 

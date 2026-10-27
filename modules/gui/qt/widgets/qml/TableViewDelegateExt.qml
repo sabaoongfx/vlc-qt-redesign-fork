@@ -68,6 +68,9 @@ T.Control {
     signal rightClick(Item menuParent, var menuModel, point globalMousePos)
     signal itemDoubleClicked(var index, var model)
 
+    // redesign: a plain left click activates the row, like the prototype (see GridItem)
+    property bool activateOnClick: false
+
     signal selectAndFocus(int modifiers, int focusReason)
 
     Connections {
@@ -131,6 +134,13 @@ T.Control {
 
         z: -1
 
+        // redesign: the hand cursor over the row, like the prototype; on the delegate itself
+        // this handler kept clicks from reaching the TapHandler below
+        HoverHandler {
+            cursorShape: Qt.PointingHandCursor
+            enabled: delegate.enabled
+        }
+
         DragHandler {
             id: dragHandler
 
@@ -175,10 +185,12 @@ T.Control {
 
                 if (button === Qt.RightButton)
                     delegate.rightClick(delegate, delegate.rowModel, eventPoint.globalPosition)
+                else if (delegate.activateOnClick && point.modifiers === Qt.NoModifier)
+                    delegate.itemDoubleClicked(delegate.index, delegate.rowModel)
             }
 
             onDoubleTapped: (point, button) => {
-                if (button === Qt.LeftButton)
+                if (button === Qt.LeftButton && !delegate.activateOnClick)
                     delegate.itemDoubleClicked(delegate.index, delegate.rowModel)
             }
 
@@ -359,9 +371,4 @@ T.Control {
         view: delegate.ListView.view
     }
 
-    // redesign: the hand cursor over everything clickable, like the prototype
-    HoverHandler {
-        cursorShape: Qt.PointingHandCursor
-        enabled: delegate.enabled
-    }
 }

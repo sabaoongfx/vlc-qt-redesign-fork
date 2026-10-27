@@ -106,6 +106,8 @@ Widgets.ExpandGridItemView {
 
         dragItem: gridView.dragItem
 
+        activateOnClick: true
+
         labels: gridView.labels(model)
 
         // Events
