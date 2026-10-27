@@ -6,6 +6,8 @@ R=$(cd "$T/../.." && pwd)
 export VLC=${VLC:-$R/build/vlc}
 export OUT=${OUT:-$T/out/run}
 export FIX=${FIX:-$T/out/fixtures}
+# SCEN: another scene list (showcase.sh uses showcase.txt, with its own fixtures and no checks)
+SCEN=${SCEN:-$T/scenarios.txt}
 FILTER=${1:-.}
 # no logind session (e.g. over ssh): the nested kwin only needs a private runtime dir
 if [ ! -d "$XDG_RUNTIME_DIR" ]; then export XDG_RUNTIME_DIR=$(mktemp -d -t vlc-xdg.XXXX); chmod 700 "$XDG_RUNTIME_DIR"; fi
@@ -15,11 +17,11 @@ export VLCARGS="--aout=adummy $VLCARGS"
 # warnings in the logs: QML errors are printed only from verbosity 1 (check.py looks for them)
 export VLCARGS="--verbose=1 $VLCARGS"
 mkdir -p "$OUT"
-"$T/fixtures.sh" >/dev/null
+[ -n "$SKIP_FIXTURES" ] || "$T/fixtures.sh" >/dev/null
 # fresh copy of the library profile per run, so scenes do not leak state into each other
 # the nested session's helpers can still be writing for a moment: retry
 for i in 1 2 3 4 5; do rm -rf "$OUT"/*.png "$OUT"/*.log "$OUT"/*.at "$OUT"/*.geom "$OUT"/*.a11y "$OUT"/*.tree "$OUT"/profiles "$OUT"/profile 2>/dev/null && break; sleep 1; done
-grep -v '^\s*#' "$T/scenarios.txt" | grep -v '^\s*$' | while IFS='|' read -r name theme kind media actions; do
+grep -v '^\s*#' "$SCEN" | grep -v '^\s*$' | while IFS='|' read -r name theme kind media actions; do
     name=$(echo $name); [[ "$name" =~ $FILTER ]] || continue
     media=$(echo $media | sed "s|@|$FIX/|g")
     kind=$(echo $kind)
@@ -39,4 +41,4 @@ grep -v '^\s*#' "$T/scenarios.txt" | grep -v '^\s*$' | while IFS='|' read -r nam
     echo "scene $name"
     NAME=$name THEME=$(echo $theme) MEDIA="$media" ACTIONS="$actions" "$T/lib/scene.sh"
 done
-python3 "$T/check.py" "$OUT"
+[ -n "$SKIP_FIXTURES" ] || python3 "$T/check.py" "$OUT"

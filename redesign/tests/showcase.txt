@@ -1,0 +1,15 @@
+# Website screenshots (showcase.sh): name | theme (1 day, 2 night) | kind | media (@ = showcase dir) | actions
+# 1920x1080. Sidebar rows: Home 75, Video 121, Music 167, Browse 213.
+home             | 2 | ml   |               | sleep:3 move:960,1000 shot:a
+videos           | 2 | ml   |               | sleep:2 click:80,125 sleep:4 move:960,1000 shot:a
+videos-day       | 1 | ml   |               | sleep:2 click:80,125 sleep:4 move:960,1000 shot:a
+videos-list      | 2 | ml   |               | sleep:2 click:80,125 sleep:3 press:List/Grid sleep:2 move:960,1000 shot:a
+music            | 2 | ml   |               | sleep:2 click:80,171 sleep:3 press:Albums sleep:3 move:960,1000 shot:a geom:a
+player           | 2 | none | @golden.mp4   | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.6 shot:a
+player-day       | 1 | none | @golden.mp4   | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.6 shot:a
+tracks           | 2 | none | @subs.mkv     | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.2 shot:a
+panel            | 2 | none | @subs.mkv     | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 shot:subs click:1660,64 sleep:0.8 shot:video
+menu             | 2 | none | @golden.mp4   | sleep:4 rclick:960,400 sleep:1.2 shot:a
+mini             | 2 | ml   | @golden.mp4   | sleep:4 press:Back_to_* sleep:1.5 click:80,125 sleep:4 move:960,1000 shot:a
+settings         | 2 | ml   |               | sleep:2 click:80,1036 sleep:2.5 shotwin:a
+settings-day     | 1 | ml   |               | sleep:2 click:80,1036 sleep:2.5 shotwin:a
