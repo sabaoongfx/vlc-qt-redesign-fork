@@ -17,7 +17,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Test harness: `redesign/tests/run.sh [scene-regex]` runs each scene of `scenarios.txt` in a headless nested KWin
   (xdotool clicks, AT-SPI `press:Name`, `shot`/`shotwin`/`geom`), then `check.py` (QML warnings, colours and geometry
   measured on the Figma frames, unchanged vlcrc after Settings Save). Output in `redesign/tests/out/run/` (`report.html`);
-  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-27): 152 checks, the one failure (prefs-cats) fixed and rerun.
+  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-27, second batch): 164 checks, one flaky AT-SPI miss (customize-day) that passed on rerun.
   Do not rebuild while a run is going (scenes use the build tree).
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
@@ -45,6 +45,11 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   `scenarios.txt` has uncommitted `open-network`/`open-network-day` scenes (Menu, then click 200,156: Ctrl+N does not reach
   the window in the harness). Fix on the way: the "Clear History" button text is clipped.
   Then: Keyboard Shortcuts, onboarding; then phase 5 (push, Linux + Windows CI, docs, refresh COMPARISON.md).
+- Done 2026-10-27 (second batch): video items play on one click (list rows took no clicks: a root HoverHandler);
+  Keyboard Shortcuts menu opens the Controls page; empty library pages offer Add Folder (the Video page lists only
+  indexed folders, Home's Continue Watching also played files); Figma transport glyphs; side panels as stage cards;
+  appearance applies live; empty list submenus say "Not available"; a folder plays its own files before its
+  subfolders (core `rdh_compar_type`, keep when rebasing). The seek preview was checked on the user's HEVC episodes and follows the cursor (~90 ms a frame).
 - Done 2026-10-26/27 (user requests): collapsed sidebar centred 48px card; Settings opens on General and is widened to 1078px;
   menu-button Figma Icon Wrapper hover; play button has no press effect; player-bar audio button (AUDIO_BUTTON, popup of
   tracks + output devices); seek bar preview card (`player/seek_preview.*`, preparser thumbnailer); smooth unhinted icons
@@ -142,6 +147,15 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Icon glyphs use `Font.PreferNoHinting` + `Text.CurveRendering` (IconLabel, IconToolButton/IconButton fonts, PlayButton):
   native rendering hinted them to sharp corners with subpixel fringes. A full `font:` assignment drops the hinting
   preference, so set it on the control's font too.
+- Live palette changes (theme/accent switched in Settings): Widgets stylesheets with colours as text, `palette()`
+  references and palette-coloured pixmaps are built once; use `Redesign::liveStyleSheet` / `onPaletteChange`
+  (`style/redesign.hpp`, they listen on qApp: styled child widgets get no palette events; stylesheets are rebuilt
+  first because re-setting one restores its widgets' palettes). `qt-accent-color` is a variable on the intf that
+  each `SystemPalette` listens to; `prefs-live-day` checks the window matches one opened in Day.
+- Transport glyphs (previous/next/play/pause) are the Figma fills grown by their 1.5px round stroke at the Figma
+  sub-pixel positions in a 24px box (`pixmaps/icons/redesign/*.svg` hold the same outlines); the play button draws
+  its glyph at 24px.
+- The play queue and tracks panel are cards in `Player.panelArea` (8px inside the stage).
 - Hand cursor: a `HoverHandler` on `TableViewDelegateExt`'s root kept every click from reaching the row's TapHandler (in a z:-1
   child); put it next to the TapHandler. Library video items activate on a plain click (`activateOnClick`), like the prototype.
 - Qt Quick accessible nodes report no SHOWING/VISIBLE states; hidden ones have a 0x0 box (`at.py audit` relies on that).
