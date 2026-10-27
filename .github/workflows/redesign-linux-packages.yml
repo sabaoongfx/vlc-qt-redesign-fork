@@ -45,7 +45,8 @@ jobs:
           host: linux
           target: desktop
           arch: linux_gcc_64
-          modules: qtshadertools qtimageformats qtwayland
+          # qtwayland is part of the base install since 6.7 (not an add-on module)
+          modules: qtshadertools qtimageformats
           cache: true
 
       - name: Restore ccache
