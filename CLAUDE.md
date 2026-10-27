@@ -17,12 +17,23 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Test harness: `redesign/tests/run.sh [scene-regex]` runs each scene of `scenarios.txt` in a headless nested KWin
   (xdotool clicks, AT-SPI `press:Name`, `shot`/`shotwin`/`geom`), then `check.py` (QML warnings, colours and geometry
   measured on the Figma frames, unchanged vlcrc after Settings Save). Output in `redesign/tests/out/run/` (`report.html`);
-  each run wipes the previous PNGs. Full run ~25 min (run it in the background), last full run (2026-10-27, second batch): 164 checks, one flaky AT-SPI miss (customize-day) that passed on rerun.
-  Do not rebuild while a run is going (scenes use the build tree).
+  each run wipes the previous PNGs. Full run ~25 min (run it in the background). `OUT=<dir>` runs a few scenes without
+  wiping the main output; `QPA=wayland` runs VLC as a native Wayland client (what the user's KDE session does; scenes run
+  on Xwayland by default, and some bugs only show on Wayland, e.g. the every-other right-click).
+  Test runs are always silent (`--aout=adummy`) and log at `--verbose=1`: QML warnings only reach the log from verbosity 1,
+  so before 2026-10-27 check.py saw none. Last full run (2026-10-27, first with QML warnings visible): 124 failures, all
+  QML warnings: a `SideNavigationDelegate` implicitWidth binding loop (SideNavigationPane.qml:185/288, ~40 scenes, likely
+  the collapsed-sidebar `rowLeftPadding`), a `DefaultPageHeader` binding loop (PageExt.qml:112), `PlaylistButton.qml:34`
+  playlistWidget undefined, `BrowseDeviceView.qml:139` forceActiveFocus of undefined; on Wayland `Player.qml:668`
+  DualKawaseBlur.scheduleUpdate is not a function. Fix these next.
+  Do not rebuild while a run is going (scenes use the build tree). The user may be watching something in their own
+  `./build/vlc`: never kill or restart it unless asked; rebuilding under it is safe (the running process keeps the old plugin).
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Nothing is pushed since 2026-10-25: `redesign` is about 100 commits ahead of `origin/redesign`. Push and run CI is phase 5.
+- Pushed 2026-10-27 (`70c0b913f4`, 123 commits): `origin/redesign` matches local. Both workflows (Linux and Windows)
+  run on every push to `redesign`; a push whose head commit says `[skip ci]` runs neither, so do not end a push with a
+  docs/harness-only commit when the code needs CI. One build per workflow at a time (concurrency group, no cancelling).
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
 
 ## Where we are (2026-10-26)
@@ -50,6 +61,16 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   indexed folders, Home's Continue Watching also played files); Figma transport glyphs; side panels as stage cards;
   appearance applies live; empty list submenus say "Not available"; a folder plays its own files before its
   subfolders (core `rdh_compar_type`, keep when rebasing). The seek preview was checked on the user's HEVC episodes and follows the cursor (~90 ms a frame).
+- Done 2026-10-27 (third batch): one click opens everything in the library (`GridItem`/`TableViewExt.activateOnClick`,
+  default true); right-side bar buttons toggle (`TracksMenu.toggle`, a press outside closes the popup before the
+  button's click); pause icon in the right-click menu; seek bar with chapters keeps the field look (chapter breaks), the
+  handle is always shown; Languages and tracks opens the Figma tracks picker (`player/qml/TracksPicker.qml`, from the
+  user's Subtitles SVGs: Video/Audio/Subtitles tabs, None, output devices with refresh, external tracks with edit/add,
+  Show Preferences opens the side panel on the same tab; `TrackListModel` "external" role, `AudioDeviceModel.refresh`,
+  `edit` glyph); right-click on the video opens every time (`VideoSurfaceProvider` reports mouse releases on
+  `DialogsProvider::releaseMouseEvents`, upstream 64e6301a6c lost in the QML move).
+- Audio button vs picker: the bar's audio button still opens the prototype's small menu (tracks + output devices); the
+  picker's Audio tab covers the same, ask the user before merging them.
 - Done 2026-10-26/27 (user requests): collapsed sidebar centred 48px card; Settings opens on General and is widened to 1078px;
   menu-button Figma Icon Wrapper hover; play button has no press effect; player-bar audio button (AUDIO_BUTTON, popup of
   tracks + output devices); seek bar preview card (`player/seek_preview.*`, preparser thumbnailer); smooth unhinted icons
@@ -83,7 +104,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 
 ## CI: `.github/workflows/redesign-build.yml`
 
-- Runs on push to `redesign` and on manual dispatch. About 6 minutes with a warm ccache (about 14 cold).
+- Runs on push to `redesign` and on manual dispatch. About 15 minutes now (about 6 with a warm ccache in the early runs).
 - Builds inside `registry.videolan.org/vlc-debian-unstable:...` (the image upstream CI uses; it has Qt 6.10 and all deps).
   The container runs `--user root` and needs `git config --global --add safe.directory "$GITHUB_WORKSPACE"`.
 - Uploads two artifacts: `vlc-linux-install` (the install tree) and `screenshots`.
@@ -127,7 +148,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 | 4 Player | play button (accent pill, dark glyph, rect hit area), slider track colours and 8px seek bar done and verified; seek handle is now a narrow accent bar (`SliderBar.qml`, verified); elapsed/remaining time now sit left/right of the bar in one row (`Player.qml` forces `LeftRightSlider`; verified); icon-button hover is already a rounded square; top bar title is now small (14px, dim) and centered in every layout, falling back to `Player.name` when the media has no title meta (`TopBar.qml`, `Player.qml`) |
 | 5 Settings sidebar | done for the chosen scope (Subtitles + Audio tabs, no new backend), verified: `TracksMenu` docks right (full height down to the seek bar); `TracksListPage` has Subtitles/Audio/Video tabs (accent pill for the active tab), an inline Delay row (spin box + Reset) on the Subtitles and Audio tabs, and a drawn playback-speed pill at the end of the tab row. Not done: Video/Playback tabs, equalizer, bookmarks (would need backend wiring; the equalizer dialog is Qt Widgets) |
 | 6 Dialogs and preferences | done via palette, verified day+night for Preferences and the Open File dialog: `SystemPalette::updatePalette` builds a `QPalette` from the redesign tokens and applies it with `QApplication::setPalette` (only for the `themePalette` instance, in Day/Night). Category bar is now text pills with an accent active tab (`SPrefsCatList` stylesheet, verified day+night). About dialog fixed and verified day+night (`about.ui` hardcoded white/grey -> palette roles; `help.cpp` swaps the hardcoded rich-text colours for palette Text/Link; the overflow menu in the CI shots reaches it: click 1138,20 then Help then About). Effects/Equalizer, Messages and Plugins dialogs also verified day+night with no further changes (`dlg-*` shots; Escape does not close them, so they stack). Preferences tabs (Audio/Video/Hotkeys), the Effects, Messages and Plugins windows and the toolbar editor are verified day+night with the shared widgets stylesheet. Convert/Stream (Open Media), Media Information, Codec Information and Track Synchronization verified day+night; the Media Information cover placeholder is a palette tile with the faded cone (`CoverArtLabel`, `widgets/native/interface_widgets.cpp`) |
-| 7 Polish and release | in progress: day+night review of home, library (grid, list, albums, tracks), player, tracks panel, Preferences and file dialog done; floating sidebar panel intentionally skipped (the content pane's rounded top-left corner over the sidebar is close enough and avoids layout risk). Artist page captured (`lib-artist-*`; album section backgrounds now follow the theme, were pure white in Day; the artist banner is a dark scrim over artwork on purpose). Open: icon set, macOS build, upstream patches. Windows x64 cross-build compiles and packages a portable zip (`.github/workflows/redesign-windows.yml`; artifact `vlc-win64-portable`, ~93 MB; the first run takes ~80-120 min because the prebuilt contrib URL 404s and contribs build from source, the contrib cache is saved right after the build; runs on push to that file; build dir is `win64`, not `x86_64`; a second job runs the portable build on `windows-latest` and uploads the `windows-screenshots` artifact via `.github/scripts/win-shots.ps1`: system/day/night main, Preferences tabs, player; 1024x768 runner; the desktop is captured, UI Automation clicks the tabs; verified System mode: accent palette, ticks, chevrons, start screen; Day/Night shots need the .ini fix, rerun pending) |
+| 7 Polish and release | in progress: day+night review of home, library (grid, list, albums, tracks), player, tracks panel, Preferences and file dialog done; floating sidebar panel intentionally skipped (the content pane's rounded top-left corner over the sidebar is close enough and avoids layout risk). Artist page captured (`lib-artist-*`; album section backgrounds now follow the theme, were pure white in Day; the artist banner is a dark scrim over artwork on purpose). Open: icon set, macOS build, upstream patches. Windows x64 cross-build compiles and packages a portable zip (`.github/workflows/redesign-windows.yml`; artifact `vlc-win64-portable`, ~93 MB; the first run takes ~80-120 min because the prebuilt contrib URL 404s and contribs build from source, the contrib cache is saved right after the build; runs on every push to `redesign` since 2026-10-27; build dir is `win64`, not `x86_64`; a second job runs the portable build on `windows-latest` and uploads the `windows-screenshots` artifact via `.github/scripts/win-shots.ps1`: system/day/night main, Preferences tabs, player; 1024x768 runner; the desktop is captured, UI Automation clicks the tabs; verified System mode: accent palette, ticks, chevrons, start screen; Day/Night shots need the .ini fix, rerun pending) |
 
 `redesign/TOKENS.md` holds the prototype-to-Qt token map and the Phase 1 decisions.
 
@@ -178,8 +199,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Qt Quick Controls `indicator`/`background`/`contentItem` are deferred: a grouped override (`indicator.x:`) from a
   derived file is silently ignored. Add a property on the base component instead (`ComboBoxExt.indicatorRightMargin`).
 - `SliderBar.showHandle` hides the handle via opacity (its `visible` is driven by hover states).
-- Harness without a graphical login (machine at the SDDM greeter, shell env says XFCE): `run.sh` makes a private `XDG_RUNTIME_DIR` and uses
-  `--aout=adummy`, `inner.sh` pins `XDG_CURRENT_DESKTOP=KDE` (else Qt loads the GTK theme and its ATK bridge hides the tree from `at.py`) and runs
+- Harness without a graphical login (machine at the SDDM greeter, shell env says XFCE): `run.sh` makes a private `XDG_RUNTIME_DIR`, `inner.sh` pins `XDG_CURRENT_DESKTOP=KDE` (else Qt loads the GTK theme and its ATK bridge hides the tree from `at.py`) and runs
   spectacle on Wayland (as an X11 client it hangs there).
 - Harness: `at.py press` prefers on-screen matches; Widgets QMenu items are not reachable by AT-SPI (click by position).
   AT-SPI presses toggle without a click: controls wired to `clicked` (e.g. the Simple/All/Expert radios) need `click:x,y`
