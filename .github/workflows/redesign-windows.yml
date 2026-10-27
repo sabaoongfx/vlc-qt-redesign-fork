@@ -53,7 +53,7 @@ jobs:
       - name: Build (release)
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          # configure looks for makensis (the installer target exists only if it finds it)
+          # -r runs `make package-win32` (zip, 7z and the NSIS installer); configure must find makensis
           command -v makensis || { apt-get update -qq && apt-get install -y -qq nsis; }
           extras/package/win32/build.sh -r -a x86_64 -p
 
@@ -70,14 +70,12 @@ jobs:
             extras/tools
           key: win64-contrib-v2-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
 
-      - name: Package portable zip and installer
+      - name: Collect portable zip and installer
         run: |
           # build.sh names the build directory after the short arch (win64), find it instead of guessing
           BUILD=$(dirname "$(find . -maxdepth 2 -name config.status -path './win*' | head -1)")
           echo "build dir: $BUILD"
-          make -C "$BUILD" package-win32-zip
-          # after the zip: the installer adds its NSIS files to the same tree, the zip leaves them out
-          make -C "$BUILD" package-win32-exe
+          # build.sh -r already made the zip and the installer (make package-win32)
           mkdir -p out
           cp -v "$BUILD"/vlc-*-win*.zip "$BUILD"/vlc-*-win*.exe out/
           ls -la out
