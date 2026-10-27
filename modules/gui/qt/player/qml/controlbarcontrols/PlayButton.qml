@@ -200,7 +200,9 @@ T.Control {
             colorSet: ColorContext.ButtonAccent
         }
 
-        font.pixelSize: Math.round(parent.height * 0.82) // redesign: Figma glyph is about half the pill height
+        // redesign: the glyph box is 24px so one font unit lands on Figma's pixel grid (the glyph is drawn at its
+        // Figma position inside that box)
+        font.pixelSize: VLCStyle.icon_normal
 
         font.family: VLCIcons.fontFamily
         font.hintingPreference: Font.PreferNoHinting
