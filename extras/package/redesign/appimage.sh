@@ -23,6 +23,23 @@ find "$A/usr/share/applications" -name '*.desktop' ! -name vlc.desktop -delete
 sed -i -e 's/^Name=.*/Name=VLC (juxtopposed)/' -e '/^Name\[/d' \
     -e 's|^Exec=[^ ]*/vlc |Exec=vlc |' -e '/^TryExec=/d' "$D"
 
+# a /usr build has no rpath to its own libraries (libvlc, libvlccore, the plugin helpers), so
+# linuxdeploy could not find them ("Could not find dependency: libvlc.so.12"): point every VLC file
+# at them relative to itself. (LD_LIBRARY_PATH into the AppDir is no good: qmake then loads the Qt
+# copied there and reports the wrong QML path.) patchelf comes from linuxdeploy's own AppImage.
+( cd "$WORK" && "$TOOLS/linuxdeploy-x86_64.AppImage" --appimage-extract usr/bin/patchelf >/dev/null )
+PATCHELF=$WORK/squashfs-root/usr/bin/patchelf
+setrpath() { # setrpath <rpath> <files...>: only ELF files
+    local r=$1; shift
+    for f in "$@"; do [ -f "$f" ] && head -c4 "$f" | grep -q ELF && "$PATCHELF" --set-rpath "$r" "$f"; done
+    return 0
+}
+setrpath '$ORIGIN/../lib' "$A"/usr/bin/*
+setrpath '$ORIGIN/../../lib' "$A"/usr/libexec/vlc/*
+setrpath '$ORIGIN' "$A"/usr/lib/*.so*
+setrpath '$ORIGIN/..:$ORIGIN' "$A"/usr/lib/vlc/*.so*
+setrpath '$ORIGIN/../../..:$ORIGIN/../..' "$A"/usr/lib/vlc/plugins/*/*.so
+
 # the VLC plugins and their helper libraries are loaded at run time: deploy their dependencies too
 DEPS=()
 for d in "$A"/usr/lib/vlc "$A"/usr/lib/vlc/plugins/*/; do DEPS+=(--deploy-deps-only "$d"); done
