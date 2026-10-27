@@ -827,6 +827,26 @@ bool ControlbarProfileModel::reload()
                     data[2].insert(1, ControlListModel::AUDIO_BUTTON);
             }
 
+            // redesign: the built-in profiles are saved on the first run and never refreshed, so a Default Style
+            // saved by a build before the Figma one-row bar keeps upstream's centred transport (skips, previous,
+            // play, next) and two rows. Swap such a bar for the current default.
+            {
+                static const QVector<int> upstreamVideoCentre { ControlListModel::SKIP_BACK_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                                                                ControlListModel::PLAY_BUTTON, ControlListModel::NEXT_BUTTON,
+                                                                ControlListModel::SKIP_FW_BUTTON };
+                static const QVector<int> upstreamAudioCentre { ControlListModel::RANDOM_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                                                                ControlListModel::PLAY_BUTTON, ControlListModel::NEXT_BUTTON,
+                                                                ControlListModel::LOOP_BUTTON };
+                const bool upstreamCentre = (identifier == PlayerControlbarModel::Videoplayer)
+                                                ? (data[1] == upstreamVideoCentre)
+                                                : (data[1] == upstreamAudioCentre);
+                if (upstreamCentre && ptrNewProfile->name() == qfut(N_("Default Style")))
+                {
+                    const std::unique_ptr<ControlbarProfile> current(generateProfileFromStyle(Style::DEFAULT_STYLE));
+                    if (current)
+                        data = current->getModelData(identifier);
+                }
+            }
             ptrNewProfile->setModelData(identifier, data);
             ptrNewProfile->resetDirty(); // Newly loaded model can not be dirty
         }
