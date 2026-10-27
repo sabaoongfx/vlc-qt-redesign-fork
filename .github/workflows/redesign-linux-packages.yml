@@ -46,7 +46,8 @@ jobs:
           target: desktop
           arch: linux_gcc_64
           # qtwayland is part of the base install since 6.7 (not an add-on module)
-          modules: qtshadertools qtimageformats
+          # no qtimageformats: its TIFF/WebP plugins link libtiff.so.5, which Ubuntu 24.04 lacks (linuxdeploy stops)
+          modules: qtshadertools
           cache: true
 
       - name: Restore ccache
