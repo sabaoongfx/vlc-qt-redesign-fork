@@ -53,6 +53,26 @@ AudioDeviceModel::AudioDeviceModel(vlc_player_t *player, QObject *parent)
         m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
 }
 
+void AudioDeviceModel::refresh()
+{
+    if (!m_aout)
+        return;
+    beginResetModel();
+    for (int i=0; i<m_inputs; i++)
+    {
+        free(m_ids[i]);
+        free(m_names[i]);
+    }
+    free(m_ids);
+    free(m_names);
+    m_ids = nullptr;
+    m_names = nullptr;
+    m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
+    if (m_inputs < 0)
+        m_inputs = 0;
+    endResetModel();
+}
+
 AudioDeviceModel::~AudioDeviceModel()
 {
     for (int i=0; i<m_inputs; i++)

@@ -48,6 +48,9 @@ public:
 
     void updateCurrent(QString current);
 
+    // redesign: read the output's device list again (it was read once, when the model was made)
+    Q_INVOKABLE void refresh();
+
     QHash<int, QByteArray> roleNames() const override;
 
 private:

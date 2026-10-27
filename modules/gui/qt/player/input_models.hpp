@@ -66,6 +66,10 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    // redesign: "external", the track comes from a file loaded next to the media (a subtitle or
+    // audio file), not from the media itself
+    enum Roles { ExternalRole = Qt::UserRole + 1 };
+
     inline int getCount() const { return m_data.size(); }
 
     inline bool getMultiSelect() const { return m_multiSelect; }
@@ -92,6 +96,7 @@ private:
         //vlc_es_id_t *m_id = NULL;
         ::vlc::vlc_shared_data_ptr<vlc_es_id_t, &vlc_es_id_Hold, &vlc_es_id_Release> m_id;
         bool m_selected = false;
+        bool m_external = false;
     };
     QList<Data> m_data;
     bool m_multiSelect = false; // this only work for subtitles
