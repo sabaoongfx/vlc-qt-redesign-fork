@@ -755,6 +755,7 @@ qml_modules += {
        'player/qml/SliderBar.qml',
        'player/qml/TopBar.qml',
        'player/qml/TracksMenu.qml',
+       'player/qml/TracksPicker.qml',
        'player/qml/TracksPage.qml',
        'player/qml/TracksPageAudio.qml',
        'player/qml/TracksPageSpeed.qml',

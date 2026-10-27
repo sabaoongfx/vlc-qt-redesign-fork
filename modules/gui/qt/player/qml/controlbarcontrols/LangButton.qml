@@ -53,10 +53,18 @@ Widgets.IconToolButton {
 
     // Events
 
-    onClicked: menuLoader.item.toggle()
+    // redesign: the Figma "Languages and tracks" picker on its Subtitles tab; its Show Preferences
+    // button opens the full side panel
+    onClicked: {
+        if (menuLoader.item?.visible)
+            menuLoader.item.close()
+        else
+            pickerLoader.item?.toggle()
+    }
 
-    // redesign: accent while the tracks panel is open (Figma active state)
-    color: (menuLoader.item && menuLoader.item.visible) ? colorContext.accent : colorContext.fg.primary
+    // redesign: accent while the picker or the panel is open (Figma active state)
+    color: ((menuLoader.item && menuLoader.item.visible) || (pickerLoader.item && pickerLoader.item.visible))
+           ? colorContext.accent : colorContext.fg.primary
 
     // Children
 
@@ -88,8 +96,38 @@ Widgets.IconToolButton {
         }
     }
 
+    Loader {
+        id: pickerLoader
+
+        active: !root.paintOnly
+
+        sourceComponent: TracksPicker {
+            id: picker
+
+            parent: root._parentItem
+            z: 1
+
+            colorContext.palette: root.colorContext.palette
+
+            onPreferencesRequested: (panelTab) => menuLoader.item?.openTab(panelTab)
+
+            onOpened: {
+                root.requestLockUnlockAutoHide(true)
+                root.menuOpened(picker)
+            }
+
+            onClosed: {
+                root.requestLockUnlockAutoHide(false)
+                root.forceActiveFocus()
+                root.menuOpened(null)
+            }
+        }
+    }
+
     function forceUnlock() {
         if((menuLoader)&&(menuLoader.item))
             menuLoader.item.close()
+        // also called while the bar is torn down, after the loader
+        pickerLoader?.item?.close()
     }
 }

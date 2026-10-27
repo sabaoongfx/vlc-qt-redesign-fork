@@ -124,7 +124,7 @@ Widgets.IconToolButton {
     }
 
     function forceUnlock() {
-        if (panelLoader.item)
-            panelLoader.item.close()
+        // also called while the bar is torn down, after the loader
+        panelLoader?.item?.close()
     }
 }
