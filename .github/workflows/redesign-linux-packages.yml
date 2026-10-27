@@ -50,6 +50,11 @@ jobs:
           modules: qtshadertools
           cache: true
 
+      - name: Drop Qt image plugins linking libraries Ubuntu 24.04 lacks
+        run: |
+          # the Qt cache can still hold qtimageformats from an older key (restore-keys fall back to it)
+          rm -f "$QT_ROOT_DIR"/plugins/imageformats/libq{tiff,webp,mng}.so
+
       - name: Restore ccache
         uses: actions/cache@v4
         with:
