@@ -142,6 +142,8 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Icon glyphs use `Font.PreferNoHinting` + `Text.CurveRendering` (IconLabel, IconToolButton/IconButton fonts, PlayButton):
   native rendering hinted them to sharp corners with subpixel fringes. A full `font:` assignment drops the hinting
   preference, so set it on the control's font too.
+- Hand cursor: a `HoverHandler` on `TableViewDelegateExt`'s root kept every click from reaching the row's TapHandler (in a z:-1
+  child); put it next to the TapHandler. Library video items activate on a plain click (`activateOnClick`), like the prototype.
 - Qt Quick accessible nodes report no SHOWING/VISIBLE states; hidden ones have a 0x0 box (`at.py audit` relies on that).
   Qt gives every item SetFocus/ShowMenu actions; only Press/Toggle/Increase... mean a control. AT-SPI calls buttons "button".
 - QMenu ignores its maximum width when laying out rows: `RedesignMenuStyle::sizeFromContents` caps them and labels elide.
