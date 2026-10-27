@@ -68,9 +68,7 @@ Widgets.IconToolButton {
 
             parent: root._parentItem
 
-            // redesign: right side, 10px from the window edge, below the top bar
-            x: parent.width - width - VLCStyle.dp(10, VLCStyle.scale)
-            y: _topBarHeight
+            // redesign: TracksMenu places itself (right side, below the top bar)
             z: 1
 
             focus: true

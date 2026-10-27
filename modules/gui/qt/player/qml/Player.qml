@@ -40,6 +40,16 @@ FocusScope {
 
     readonly property int positionSliderY: controlBar.y + controlBar.sliderY
 
+    // redesign: the side panels (play queue, tracks panel) are rounded cards inside the video
+    // stage, 8px from its edges (they touched the top bar with square corners)
+    readonly property real panelRadius: VLCStyle.dp(8, VLCStyle.scale)
+    readonly property rect panelArea: {
+        const gap = VLCStyle.dp(8, VLCStyle.scale)
+        const side = (_videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0) + gap
+        const top = topBar.y + topBar.height + gap
+        return Qt.rect(side, top, width - 2 * side, controlBar.y - gap - top)
+    }
+
     readonly property string coverSource: {
         if (Player.artwork &&
             Player.artwork.toString())
@@ -1098,15 +1108,15 @@ FocusScope {
     Loader {
         id: playlistpopup
 
+        // redesign: a card in the panel area (see panelArea)
         anchors {
-            // NOTE: When the controls are pinned we display the playqueue under the topBar.
-            top: (rootPlayer._controlsUnderVideo) ? topBar.bottom
-                                                  : parent.top
-
+            top: parent.top
             right: parent.right
             bottom: parent.bottom
 
-            bottomMargin: parent.height - rootPlayer.positionSliderY
+            topMargin: rootPlayer.panelArea.y
+            rightMargin: parent.width - rootPlayer.panelArea.x - rootPlayer.panelArea.width
+            bottomMargin: parent.height - rootPlayer.panelArea.y - rootPlayer.panelArea.height
         }
 
         focus: false
@@ -1175,17 +1185,14 @@ FocusScope {
             wheelEnabled: true
 
             rightPadding: VLCStyle.applicationHorizontalMargin
-            topPadding:  {
-                if (rootPlayer._controlsUnderVideo)
-                    return VLCStyle.margin_normal
-                else
-                    // NOTE: We increase the padding accordingly to avoid overlapping the TopBar.
-                    return topBar.reservedHeight
-            }
+            // redesign: the card starts below the top bar (panelArea)
+            topPadding: VLCStyle.margin_normal
             bottomPadding: 0
 
+            // redesign: a solid rounded card like the tracks panel (was 80% opaque and square)
             background: Rectangle {
-                color: windowTheme.bg.primary.alpha(0.8)
+                radius: rootPlayer.panelRadius
+                color: VLCStyle.figmaColors(windowTheme.palette.isDark).section
             }
 
             view.fadingEdge.pixelAlignedForDPR: !controlBar.visible

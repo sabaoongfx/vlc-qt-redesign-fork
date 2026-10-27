@@ -37,9 +37,15 @@ T.Popup {
                           ? preferredWidth : Number.MAX_VALUE
                     , root.parent.width)
 
-    // redesign: docked right panel between the top bar and the bottom bar (Figma / prototype)
+    // redesign: docked right panel between the top bar and the bottom bar (Figma / prototype); in the
+    // player a rounded card in its panel area, inside the video stage
     readonly property real _topBarHeight: VLCStyle.dp(40, VLCStyle.scale)
-    height: root.parent.positionSliderY - _topBarHeight - VLCStyle.dp(6, VLCStyle.scale)
+    readonly property bool _inPanelArea: root.parent?.panelArea !== undefined
+    x: _inPanelArea ? parent.panelArea.x + parent.panelArea.width - width
+                    : parent.width - width - VLCStyle.dp(10, VLCStyle.scale)
+    y: _inPanelArea ? parent.panelArea.y : _topBarHeight
+    height: _inPanelArea ? parent.panelArea.height
+                         : root.parent.positionSliderY - _topBarHeight - VLCStyle.dp(6, VLCStyle.scale)
 
     // redesign: open on one tab of the list page (0 Playback, 1 Video, 2 Audio, 3 Subtitles)
     function openTab(tab) {
@@ -91,6 +97,7 @@ T.Popup {
 
         initialItem: TracksListPage {
             trackMenuController: trackMenuController
+            cornerRadius: root.background.radius
         }
 
         pushEnter: Transition {

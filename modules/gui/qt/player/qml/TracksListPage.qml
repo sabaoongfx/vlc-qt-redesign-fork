@@ -54,6 +54,9 @@ FocusScope {
     readonly property color fieldColor: _figma.field
     readonly property color labelColor: _figma.hint
     readonly property color valueColor: _figma.label
+
+    // redesign: the panel's rounded corners (TracksMenu); the tab bar and footer round theirs
+    property real cornerRadius: 0
     readonly property color headingColor: _figma.title
     readonly property color iconColor: _figma.tabIcon
 
@@ -80,6 +83,7 @@ FocusScope {
     // Figma: the whole panel is the section colour, 2px lines divide the sections
     Rectangle {
         anchors.fill: parent
+        radius: root.cornerRadius
         color: root.sectionColor
     }
 
@@ -91,6 +95,8 @@ FocusScope {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: VLCStyle.dp(50, VLCStyle.scale)
+            topLeftRadius: root.cornerRadius
+            topRightRadius: root.cornerRadius
             color: root.barColor
 
             // Figma: tabs sized to their content, underline 8px wider than the content on
@@ -519,6 +525,8 @@ FocusScope {
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: VLCStyle.dp(64, VLCStyle.scale)
+            bottomLeftRadius: root.cornerRadius
+            bottomRightRadius: root.cornerRadius
             color: root.sectionColor
 
             Rectangle {
