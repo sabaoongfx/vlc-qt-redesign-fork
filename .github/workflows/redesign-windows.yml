@@ -1,6 +1,7 @@
 name: Redesign Windows build
 
-# Cross-builds VLC (with the redesigned Qt UI) for Windows x64 and uploads a portable zip.
+# Cross-builds VLC (with the redesigned Qt UI) for Windows x64 and uploads a portable zip and the
+# NSIS installer (the release workflow, redesign-release.yml, publishes both for a tag).
 # The second job runs the portable build on a Windows runner and uploads screenshots of it.
 on:
   # every push to redesign, like the Linux build (a head commit with [skip ci] skips both)
@@ -14,7 +15,7 @@ concurrency:
   group: redesign-windows-${{ github.ref }}
   cancel-in-progress: false
 
-# revision: 9
+# revision: 10
 jobs:
   win64:
     runs-on: ubuntu-latest
@@ -52,6 +53,8 @@ jobs:
       - name: Build (release)
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          # configure looks for makensis (the installer target exists only if it finds it)
+          command -v makensis || { apt-get update -qq && apt-get install -y -qq nsis; }
           extras/package/win32/build.sh -r -a x86_64 -p
 
       # Save right after the build so a later packaging failure does not throw away the contribs.
@@ -67,14 +70,16 @@ jobs:
             extras/tools
           key: win64-contrib-v2-${{ hashFiles('contrib/src/**', 'extras/package/win32/build.sh') }}
 
-      - name: Package portable zip
+      - name: Package portable zip and installer
         run: |
           # build.sh names the build directory after the short arch (win64), find it instead of guessing
           BUILD=$(dirname "$(find . -maxdepth 2 -name config.status -path './win*' | head -1)")
           echo "build dir: $BUILD"
           make -C "$BUILD" package-win32-zip
+          # after the zip: the installer adds its NSIS files to the same tree, the zip leaves them out
+          make -C "$BUILD" package-win32-exe
           mkdir -p out
-          cp -v "$BUILD"/vlc-*-win*.zip out/
+          cp -v "$BUILD"/vlc-*-win*.zip "$BUILD"/vlc-*-win*.exe out/
           ls -la out
 
       - name: Upload

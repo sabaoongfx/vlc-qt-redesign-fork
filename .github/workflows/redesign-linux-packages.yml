@@ -1,0 +1,135 @@
+name: Redesign Linux packages
+
+# Builds the redesign for Linux x86_64 as an AppImage and a self-contained tarball (the same
+# AppDir). Built on Ubuntu 24.04 (glibc 2.39) with Qt 6.10 from the Qt online installer, so the
+# packages run on Ubuntu 24.04+, Debian 13+, Fedora 40+, Arch/Manjaro. The release workflow
+# (redesign-release.yml) picks the artifact up for a tag.
+on:
+  push:
+    branches: [redesign]
+  workflow_dispatch:
+
+concurrency:
+  group: redesign-linux-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  appimage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dependencies
+        run: |
+          # Ubuntu's own VLC 3 build dependencies cover nearly all of VLC 4's
+          sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
+          sudo apt-get update -qq
+          sudo apt-get build-dep -y -qq vlc
+          sudo apt-get install -y -qq ccache meson ninja-build nasm flex bison gettext autopoint \
+            libtool-bin pkg-config libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor0 libxcb-cursor-dev \
+            libwayland-dev wayland-protocols libegl-dev libgl-dev libvulkan-dev libsqlite3-dev \
+            libjpeg-dev libplacebo-dev libdav1d-dev libpipewire-0.3-dev libsoxr-dev libtag1-dev \
+            libfuse2t64 desktop-file-utils
+
+      - name: Qt 6.10
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.10.*'
+          host: linux
+          target: desktop
+          arch: linux_gcc_64
+          modules: qtshadertools qtimageformats qtwayland
+          cache: true
+
+      - name: Restore ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: appimage-ccache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            appimage-ccache-${{ github.ref_name }}-
+            appimage-ccache-
+
+      - name: Restore medialibrary contrib cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            contrib/native
+            contrib/x86_64-linux-gnu
+            contrib/tarballs
+          key: appimage-contrib-medialibrary-${{ hashFiles('contrib/src/medialibrary/**', 'contrib/src/sqlite/**') }}
+
+      - name: Build medialibrary contrib
+        run: |
+          # no medialibrary package on Ubuntu; without it there is no Video/Music library
+          cd contrib
+          mkdir -p native && cd native
+          ../bootstrap
+          make -j"$(nproc)" .medialibrary
+
+      - name: Configure
+        run: |
+          ./bootstrap
+          CC="ccache gcc" CXX="ccache g++" ./configure --prefix=/usr --disable-nls \
+            QMAKE6="$QT_ROOT_DIR/bin/qmake6"
+          grep -E "^(QT_|HAVE_QT|ENABLE_QT)" config.log | head || true
+
+      - name: Build
+        run: |
+          make -j"$(nproc)"
+          make install DESTDIR="$PWD/AppDir"
+          ccache -s
+
+      - name: AppImage and tarball
+        run: |
+          set -euo pipefail
+          A=$PWD/AppDir
+          # plugin cache for the relocated tree (VLC finds its plugins next to libvlccore)
+          "$A/usr/lib/vlc/vlc-cache-gen" "$A/usr/lib/vlc/plugins"
+          # the menu entry carries the release name
+          D=$A/usr/share/applications/vlc.desktop
+          # (and runs the AppImage's own binary, not /usr/bin/vlc)
+          sed -i -e 's/^Name=.*/Name=VLC (juxtopposed)/' -e '/^Name\[/d' \
+            -e 's|^Exec=/usr/bin/vlc|Exec=vlc|' -e '/^TryExec=/d' "$D"
+
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+
+          # the VLC plugins are loaded at run time: deploy their libraries too
+          DEPS=()
+          for d in "$A"/usr/lib/vlc/plugins/*/; do DEPS+=(--deploy-deps-only "$d"); done
+
+          export QMAKE="$QT_ROOT_DIR/bin/qmake6"
+          export QML_SOURCES_PATHS="$PWD/modules/gui/qt"
+          export EXTRA_PLATFORM_PLUGINS="libqwayland-egl.so;libqwayland-generic.so"
+          export EXTRA_QT_PLUGINS="wayland-shell-integration;wayland-decoration-client;wayland-graphics-integration-client;svg;iconengines;imageformats"
+          export LDAI_OUTPUT="VLC-juxtopposed-x86_64.AppImage"
+          ./linuxdeploy-x86_64.AppImage --appdir "$A" \
+            -e "$A/usr/bin/vlc" -d "$D" \
+            -i "$A/usr/share/icons/hicolor/256x256/apps/vlc.png" \
+            "${DEPS[@]}" --plugin qt --output appimage
+
+          # the same tree as a tarball: extract, then run ./vlc-juxtopposed
+          mv "$A" VLC-juxtopposed-x86_64
+          ln -s AppRun VLC-juxtopposed-x86_64/vlc-juxtopposed
+          tar czf VLC-juxtopposed-x86_64.tar.gz VLC-juxtopposed-x86_64
+          mkdir -p out && mv VLC-juxtopposed-x86_64.AppImage VLC-juxtopposed-x86_64.tar.gz out/
+          ls -la out
+
+      - name: Smoke test
+        run: |
+          # starts, lists the Qt interface and exits (no display needed)
+          chmod +x out/VLC-juxtopposed-x86_64.AppImage
+          out/VLC-juxtopposed-x86_64.AppImage --version | head -3
+          out/VLC-juxtopposed-x86_64.AppImage --list 2>/dev/null | grep -E "^ +qt " || { echo "Qt interface missing"; exit 1; }
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: vlc-linux-packages
+          path: out/
+          retention-days: 30
