@@ -22,6 +22,13 @@ commit each fix on its own, push a code commit before any docs-only one (see the
    (40763153420 Linux, ...534 packages, ...468 Windows) was started 2026-10-28 20:25; check it with `gh run list` and look at
    `lib-video-*` and `lib-browse-*` in its screenshots. Without a build machine, QML is checked with PySide6's `qmlcachegen
    --only-bytecode` and `qmllint` (venv in the Windows scratchpad; CI also runs qmlcachegen, so a QML syntax error fails the build).
+   Run 4 (`5371054`, 40767290174 Linux build): CI now runs VLC at `--verbose=1` and a "QML warnings" step lists them (annotations +
+   `shots/qml-warnings.txt`). It showed why the Network buttons were blank: `ButtonExt.qml:196/205 Unable to assign [undefined] to
+   ButtonExt_QMLTYPE_n` (inline components typed `required property ButtonExt control`; CI's Qt resolves the file's own type to
+   several type objects, so every stock button in that build lost icon and text), the same in `ListViewExt.qml:424`, and
+   `PageExt.qml:238/244` (crumbs briefly undefined). Fixed in the next commit (`var` properties, `?? []`). Also listed, older and
+   CI-only: `Unsupported image format` for every SVG (the CI Qt has no SVG image plugin; the cone and placeholders). Read the list
+   after every run: it is the first real view of QML errors on screens the screenshots do not reach.
    Still unseen at runtime: compact library and rail in the player, both dialogs, resume card, mini player queue, menus, the
    Export Playlist file, the 10 s buttons; the unit test `test_navigation_model` has not run (CI does not build tests).
 1. `git pull`, `make -C build -j$(nproc)` (it compiles in CI now; a local build still has to be clean). QML load errors do not fail
