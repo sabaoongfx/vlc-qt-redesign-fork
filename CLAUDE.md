@@ -7,31 +7,32 @@ Working notes for the VLC Qt redesign. This repo is a fork of `videolan/vlc`; th
 Port the HTML prototype (`sabaoongfx/vlc`, local `..\vlc`) into VLC's real Qt/QML interface (`modules/gui/qt`).
 The prototype is the visual reference only; do not copy its data layer. Back the new look with VLC's real models.
 
-## FIRST on Manjaro: 17 commits written on Windows, never built (2026-10-28)
+## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
-`git log d3064c2..HEAD` (a158ebc ... 938efbd, all say "untested"). Nothing below was compiled, run or looked at. Do this in order,
+`git log d3064c2..HEAD` (commits that say "untested"). It compiles in CI (step 0); only a few screens were seen in CI screenshots. Do this in order,
 commit each fix on its own, push a code commit before any docs-only one (see the CI note below).
 
-0. CI ran once on `938efbd` (2026-10-28, runs 40746908202 Linux build, ...185 Linux packages, ...608607 Windows): all three FAILED at
-   compile, the Linux build in `menus/qml_menu_wrapper.cpp` (the M3U `"
-"` of Export Playlist had become real line breaks inside the
-   string literals). Fixed in `4170fbd`. Checked after that without a build: the CI log shows the other new/changed C++ files
-   compiled cleanly (mlvideofoldertreemodel, mainctx, mainui, navigationmodel, medialib, mlurlmodel, mlplaylistlistmodel,
-   dialogs_provider); control_list_filter.cpp and controlbar_profile_model.cpp were never reached and were reviewed by hand; all 29
-   changed QML files pass `qmlcachegen --only-bytecode` (what CI runs) and `qmllint` shows no real warning (PySide6 6.12 tools in
-   a scratch venv on the Windows machine). Still unbuilt: the moc link, the unit test `test_navigation_model`, and every runtime
-   behaviour. Next push = the fix plus the docs commits.
-1. `git pull`, `make -C build -j$(nproc)`. Expect compile errors in the new C++ (`mlvideofoldertreemodel.*`, `mainctx` libraryPanel,
-   `medialib.cpp` mediaProgress, `dialogs_provider` getOpenFileUrls, `qml_menu_wrapper.cpp` exportPlaylist/Shuffle, the
-   `control_list_model.hpp` LIBRARY_BUTTON rename, `controlbar_profile_model.cpp`) and in QML (a QML load error does not fail the
-   build: run `./build/vlc --verbose=1` and read the log for `is not a type`, `ReferenceError`, `Cannot assign`, `binding loop`).
+0. CI state (2026-10-28). Run 1 on `938efbd` (40746908202 / ...185 / ...607): all three failed to compile in
+   `menus/qml_menu_wrapper.cpp` (Export Playlist: the M3U newline escapes had become real line breaks in the string literals).
+   Fixed in `4170fbd`; run 2 on it (40755132685 / ...948 / ...677): Linux build, Linux packages and Windows all PASSED, so all the
+   new C++ compiles, links and packages. Its screenshots (artifact `screenshots`) showed the new sidebar (Home, Videos, Music,
+   Network, Playlists, expanded while idle), the top bar without cone/menu, and Videos opening on the folder tree, plus two bugs:
+   "0 ms" under every folder card (fixed `c79ac2d`: folders report no duration) and the Network page buttons not drawn (fixed
+   `ce12e07`: the page and both Figma dialogs had no ColorContext palette, see the gotcha below). Run 3 on `ce12e07`
+   (40763153420 Linux, ...534 packages, ...468 Windows) was started 2026-10-28 20:25; check it with `gh run list` and look at
+   `lib-video-*` and `lib-browse-*` in its screenshots. Without a build machine, QML is checked with PySide6's `qmlcachegen
+   --only-bytecode` and `qmllint` (venv in the Windows scratchpad; CI also runs qmlcachegen, so a QML syntax error fails the build).
+   Still unseen at runtime: compact library and rail in the player, both dialogs, resume card, mini player queue, menus, the
+   Export Playlist file, the 10 s buttons; the unit test `test_navigation_model` has not run (CI does not build tests).
+1. `git pull`, `make -C build -j$(nproc)` (it compiles in CI now; a local build still has to be clean). QML load errors do not fail
+   the build: run `./build/vlc --verbose=1` and read the log for `is not a type`, `ReferenceError`, `Cannot assign`, `binding loop`.
    New QML files must be in `Makefile.am` AND `meson.build` (both were edited by hand).
 2. `redesign/tests/run.sh 'folder-tree|browse'`, then a full run in the background; compare QML warnings with the 2026-10-27 list
    (the blind fixes: `SideNavigationPane.rowLeftPadding`, `PageExt` header padding, `PlaylistButton`, `BrowseDeviceView`, Player blur).
 3. Fix the harness: Video scenes (`video-grid`, `search`, `sort`, `video-ctx`, `video-hover/click`, `a11y-video`, `lib-mini-video`,
    showcase `videos*`) click the first card at 390,220 and now land on a folder; sidebar rows moved (Home 75, Videos 121, Music 167,
    Network 213, Playlists 259; the Discover row is gone; `.github/workflows/redesign-build.yml` click targets were shifted by hand too).
-   `src/` tests: `modules/gui/qt/tests/test_navigation_model.cpp` was rewritten blind (6 rows with the media library, 2 without).
+   `src/` tests: `modules/gui/qt/tests/test_navigation_model.cpp` was rewritten blind (5 rows with the media library: Home, Videos, Music, Network, Playlists; 2 without).
 4. Look at each feature on a real window (the checklist; the Figma frame is named in brackets, all in
    `~/Downloads/VLC Redesign (Community)(1)/`, status per frame in `redesign/remaining/index.html`):
    - Sidebar (Home, Videos, Music, Network, Playlists): expanded while nothing plays, collapsed during playback; the toggle button
@@ -65,7 +66,7 @@ commit each fix on its own, push a code commit before any docs-only one (see the
    `VideoGroupDisplay.qml`, `SortMenuVideo` grouping, `MLVideoFoldersModel`; `DiscoverDisplay` pages are unreachable.
    Smells left: `useGlobalShortcuts` focus line repeated ten times, the sidebar entries exist in `navigationmodel.cpp` and in
    `LibraryRail.qml`, `MLVideoFolderTreeModel` loads the subfolder list twice per refresh.
-7. After the fixes update this file (drop "NEVER BUILT" from the two sections below and from `redesign/remaining/index.html`).
+7. After checking on a real window, update this file and `redesign/remaining/index.html` (both still say the new screens are untested).
 
 ## Linux machine (current, Manjaro KDE) — read this first
 
@@ -91,7 +92,7 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Pushed 2026-10-27 (`18bcace619`): `origin/redesign` matches local. Three workflows run on every push to `redesign`
+- Pushed 2026-10-28 (`b40a549`, code head `ce12e07`): `origin/redesign` matches local. Three workflows run on every push to `redesign`
   (Linux build, Windows build, Linux packages); a push whose head commit says `[skip ci]` runs none, so push a code
   commit on its own first (`git push origin <sha>:redesign`) when a harness/docs commit sits on top. One run per
   workflow at a time; a newer push replaces a still-pending run (it shows as "cancelled"), it never stops a running one.
@@ -175,9 +176,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 - Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
   Save/Cancel. The user said leave it for now.
 
-## Folder-tree Videos page with an address line (written 2026-10-28 on Windows, NEVER BUILT)
+## Folder-tree Videos page with an address line (written 2026-10-28 on Windows, compiles in CI, not run by hand)
 
-**Status: all code below was written blind on the Windows machine (no build possible). First thing on Manjaro:
+**Status: written blind on the Windows machine; it compiles in CI (see the FIRST section). First thing on Manjaro:
 `make -C build -j$(nproc)`, fix compile errors, run `redesign/tests/run.sh 'folder-tree|browse'`, look at the shots.**
 What exists: `include/vlc_media_library.h` `vlc_ml_list_subfolders/count_subfolders`; `medialibrary/mlvideofoldertreemodel.*`
 (`MLVideoFolderTreeModel` derives from `MLVideoGroupsModel`: entry points or subfolders, filtered by the search text and
@@ -199,7 +200,7 @@ no longer reads the row width (binding loop), `PageExt` header padding uses the 
 called an undefined `playlistWidget`, `BrowseDeviceView.onClicked` guards `currentItem`, `Player.qml` calls
 `blurredBackground?.scheduleUpdate?.()`. Re-run the full harness to see which warnings are left.
 
-Compact library in the player (Figma `Player - customize-8`, written blind, NEVER BUILT): `player/qml/Player.qml` shows a
+Compact library in the player (Figma `Player - customize-8`, written blind, compiles in CI, never seen running): `player/qml/Player.qml` shows a
 icon rail `player/qml/LibraryRail.qml` (Home, Videos, Music, Network, Playlists, Recent, Add; the active one picks what the card shows, `Player.librarySection`) and a `Loader` with
 `medialibrary/qml/CompactLibrary.qml` (own `trail`/forward stack, address line with "..." for long paths, count, search, rows;
 a video plays at once, no sort/view toggle yet) left of the video, only on the video stage (`_libraryRail`); the video margin,
