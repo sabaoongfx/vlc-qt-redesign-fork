@@ -7,6 +7,57 @@ Working notes for the VLC Qt redesign. This repo is a fork of `videolan/vlc`; th
 Port the HTML prototype (`sabaoongfx/vlc`, local `..\vlc`) into VLC's real Qt/QML interface (`modules/gui/qt`).
 The prototype is the visual reference only; do not copy its data layer. Back the new look with VLC's real models.
 
+## FIRST on Manjaro: 17 commits written on Windows, never built (2026-10-28)
+
+`git log d3064c2..HEAD` (a158ebc ... 938efbd, all say "untested"). Nothing below was compiled, run or looked at. Do this in order,
+commit each fix on its own, push a code commit before any docs-only one (see the CI note below).
+
+1. `git pull`, `make -C build -j$(nproc)`. Expect compile errors in the new C++ (`mlvideofoldertreemodel.*`, `mainctx` libraryPanel,
+   `medialib.cpp` mediaProgress, `dialogs_provider` getOpenFileUrls, `qml_menu_wrapper.cpp` exportPlaylist/Shuffle, the
+   `control_list_model.hpp` LIBRARY_BUTTON rename, `controlbar_profile_model.cpp`) and in QML (a QML load error does not fail the
+   build: run `./build/vlc --verbose=1` and read the log for `is not a type`, `ReferenceError`, `Cannot assign`, `binding loop`).
+   New QML files must be in `Makefile.am` AND `meson.build` (both were edited by hand).
+2. `redesign/tests/run.sh 'folder-tree|browse'`, then a full run in the background; compare QML warnings with the 2026-10-27 list
+   (the blind fixes: `SideNavigationPane.rowLeftPadding`, `PageExt` header padding, `PlaylistButton`, `BrowseDeviceView`, Player blur).
+3. Fix the harness: Video scenes (`video-grid`, `search`, `sort`, `video-ctx`, `video-hover/click`, `a11y-video`, `lib-mini-video`,
+   showcase `videos*`) click the first card at 390,220 and now land on a folder; sidebar rows moved (Home 75, Videos 121, Music 167,
+   Network 213, Playlists 259; the Discover row is gone; `.github/workflows/redesign-build.yml` click targets were shifted by hand too).
+   `src/` tests: `modules/gui/qt/tests/test_navigation_model.cpp` was rewritten blind (6 rows with the media library, 2 without).
+4. Look at each feature on a real window (the checklist; the Figma frame is named in brackets, all in
+   `~/Downloads/VLC Redesign (Community)(1)/`, status per frame in `redesign/remaining/index.html`):
+   - Sidebar (Home, Videos, Music, Network, Playlists): expanded while nothing plays, collapsed during playback; the toggle button
+     still overrides (`MainDisplay` `pannelVisiblity.stopped`). Discover (Services, URL pages) is no longer reachable.
+   - Videos = folder tree [Player-4]: first level = added folders, folder with subfolders AND videos, back/forward, address line
+     crumbs, search and sort inside a folder, empty folder label, a video plays on click. Check `History.push` takes the `trail`
+     array; "Mark as watched" on a folder row (cast hazard, same as group rows); context menu Play of a folder = its own videos only.
+   - Network page: saved streams list, "Add stream" opens the dialog [Open network stream], "Browse devices" opens the old Browse.
+     A saved stream must show in the list without a restart (the list model may need a reset event after `MLUrlModel::add`).
+   - New Playlist dialog [new playlist]: floating button on the Video and Music playlist lists, drop files, file chooser, Save with
+     and without files (`MLPlaylistListModel::create` with an empty list), the name-only playlist.
+   - Playlist "..." menu [playlist context menu]: Play, Shuffle (sets random on), Export Playlist writes a valid .m3u, Add to Queue,
+     Rename, Delete.
+   - Folder "..." menu [folder context menu] on the right of the search (page header and compact card): Add File, Add Folder,
+     Resync, Info. The library top bar lost the cone and the menu button (no way into View/Tools/Help/Quit there now: decide).
+   - Player: compact library [Player - customize-8, sidebar]: rail left of the video (Home, Videos, Music, Network, Playlists,
+     Recent, Add), card with the address line, the bottom-bar library button (new control 0x2B; a saved Default Style should get it
+     and the 10 s buttons automatically: check a profile saved by an old build), `panelArea`/video margins with the card open, the
+     play queue and tracks panels still placed right, each rail section loads its model (Home = continue watching, Music = Songs/
+     Albums/Artists/Genres lists, Network, Playlists, Recent).
+   - Control bar: library button, previous, 10 s back, play, 10 s forward, next [play]; the play pill is grey while playing.
+   - Resume prompt [continue watching]: at the bottom centre above the seek bar, "You already watched till HH:MM:SS" (needs
+     `MediaLib::mediaProgress`; shows "You already watched this" when the library has no progress), Continue Watching resumes.
+   - Mini player [Miniplayer]: the queue button opens the Queue card above it (count and duration, sort, clear, add, rows play on
+     click). The old docked play queue panel is no longer opened from there. Missing: hover overlay (close, pop-out, prev/play/next),
+     drag to reorder.
+5. Not built, still open: Onboarding (11 frames), Keyboard Shortcuts dialog, Home rows (Listen Again, Frequently Visited), subtitle
+   timeline, waveform seek bar, bookmarks panel, shortcut in the OSD, Setting Presets/Profiles, Add Subtitles to Playlist, audio
+   visualizer/HDR/spatializer/stereo-widener/EQ presets frames, Podcasts/Radio in the card, sort/view/pop-out buttons in the card.
+6. Dead code to remove once it builds (kept for rebase-ability): `VideoAllDisplay.qml`, `VideoAllSubDisplay.qml`,
+   `VideoGroupDisplay.qml`, `SortMenuVideo` grouping, `MLVideoFoldersModel`; `DiscoverDisplay` pages are unreachable.
+   Smells left: `useGlobalShortcuts` focus line repeated ten times, the sidebar entries exist in `navigationmodel.cpp` and in
+   `LibraryRail.qml`, `MLVideoFolderTreeModel` loads the subfolder list twice per refresh.
+7. After the fixes update this file (drop "NEVER BUILT" from the two sections below and from `redesign/remaining/index.html`).
+
 ## Linux machine (current, Manjaro KDE) — read this first
 
 - Tree: `~/Documents/vlc-qt-redesign-fork`, LF line endings. Remotes differ from the Windows notes below:
