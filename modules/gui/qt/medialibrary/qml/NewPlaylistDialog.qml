@@ -93,38 +93,12 @@ T.Popup {
     contentItem: ColumnLayout {
         spacing: 0
 
-        // Title band
-        Rectangle {
+        Widgets.DialogTitleBand {
             Layout.fillWidth: true
-            Layout.preferredHeight: VLCStyle.dp(50, VLCStyle.scale)
 
-            color: root._colors.bar
-            topLeftRadius: VLCStyle.dp(12, VLCStyle.scale)
-            topRightRadius: VLCStyle.dp(12, VLCStyle.scale)
+            title: qsTr("New Playlist")
 
-            Widgets.LabelExt {
-                anchors.left: parent.left
-                anchors.leftMargin: VLCStyle.dp(20, VLCStyle.scale)
-                anchors.verticalCenter: parent.verticalCenter
-
-                text: qsTr("New Playlist")
-                font.pixelSize: VLCStyle.fontSize_normal
-                color: root._colors.label
-            }
-
-            Widgets.IconToolButton {
-                anchors.right: parent.right
-                anchors.rightMargin: VLCStyle.dp(12, VLCStyle.scale)
-                anchors.verticalCenter: parent.verticalCenter
-
-                text: VLCIcons.close
-                description: qsTr("Close")
-                font.pixelSize: VLCStyle.icon_banner
-                width: VLCStyle.bannerButton_width
-                height: VLCStyle.bannerButton_height
-
-                onClicked: root.close()
-            }
+            onCloseRequested: root.close()
         }
 
         ColumnLayout {
@@ -337,74 +311,22 @@ T.Popup {
             Layout.bottomMargin: VLCStyle.dp(20, VLCStyle.scale)
             Layout.topMargin: VLCStyle.margin_normal
 
-            Rectangle {
-                Layout.preferredWidth: VLCStyle.dp(100, VLCStyle.scale)
-                Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
+            Widgets.DialogButton {
+                text: qsTr("Cancel")
 
-                radius: VLCStyle.dp(6, VLCStyle.scale)
-                color: root._colors.previewCard
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("Cancel")
-                Accessible.onPressAction: root.close()
-
-                Widgets.LabelExt {
-                    anchors.centerIn: parent
-
-                    text: qsTr("Cancel")
-                    font.pixelSize: VLCStyle.fontSize_normal
-                    font.weight: Font.DemiBold
-                    color: root._colors.previewText
-                }
-
-                HoverHandler {
-                    cursorShape: Qt.PointingHandCursor
-                }
-
-                TapHandler {
-                    onTapped: root.close()
-                }
+                onClicked: root.close()
             }
 
             Item {
                 Layout.fillWidth: true
             }
 
-            Rectangle {
-                id: saveButton
+            Widgets.DialogButton {
+                text: qsTr("Save")
+                primary: true
+                enabled: nameField.text.trim() !== ""
 
-                // a name is enough, the files can be added to the playlist later
-                readonly property bool active: nameField.text.trim() !== ""
-
-                Layout.preferredWidth: VLCStyle.dp(100, VLCStyle.scale)
-                Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
-
-                radius: VLCStyle.dp(6, VLCStyle.scale)
-                color: active ? theme.accent : root._colors.previewCard
-                opacity: active ? 1.0 : 0.5
-
-                Accessible.role: Accessible.Button
-                Accessible.name: qsTr("Save")
-                Accessible.onPressAction: root.save()
-
-                Widgets.LabelExt {
-                    anchors.centerIn: parent
-
-                    text: qsTr("Save")
-                    font.pixelSize: VLCStyle.fontSize_normal
-                    font.weight: Font.DemiBold
-                    color: saveButton.active ? "#1A0E02" : root._colors.hint
-                }
-
-                HoverHandler {
-                    enabled: saveButton.active
-                    cursorShape: Qt.PointingHandCursor
-                }
-
-                TapHandler {
-                    enabled: saveButton.active
-                    onTapped: root.save()
-                }
+                onClicked: root.save()
             }
         }
     }

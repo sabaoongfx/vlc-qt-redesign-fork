@@ -346,70 +346,17 @@ Rectangle {
 
             // A long path keeps its last two names, "... > Shows > The Wand"; depth is the length
             // of the trail a name leads to
-            Repeater {
-                id: crumbs
+            Widgets.Breadcrumbs {
+                Layout.fillWidth: true
 
-                readonly property var names: {
+                names: {
                     const all = [{ text: root._rootTitle, depth: 0 },
                                  ...root.trail.map((place, i) => ({ text: place.title, depth: i + 1 }))]
                     return all.length > 3 ? [{ text: "…", depth: all[all.length - 3].depth }, ...all.slice(all.length - 2)]
                                           : all
                 }
 
-                model: names
-
-                delegate: RowLayout {
-                    id: crumb
-
-                    required property int index
-                    required property var modelData
-
-                    readonly property bool isLast: index === crumbs.names.length - 1
-
-                    Layout.fillWidth: isLast
-                    Layout.maximumWidth: implicitWidth
-                    Layout.minimumWidth: 0
-
-                    spacing: VLCStyle.margin_xxxsmall
-
-                    Widgets.LabelExt {
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-
-                        text: crumb.modelData.text
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        font.pixelSize: VLCStyle.fontSize_large
-                        font.weight: crumb.isLast ? Font.DemiBold : Font.Normal
-                        color: crumb.isLast ? theme.fg.primary : theme.fg.secondary
-
-                        Accessible.role: Accessible.Button
-                        Accessible.name: crumb.modelData.text
-                        Accessible.onPressAction: if (!crumb.isLast) root.goTo(crumb.modelData.depth)
-
-                        HoverHandler {
-                            enabled: !crumb.isLast
-                            cursorShape: Qt.PointingHandCursor
-                        }
-
-                        TapHandler {
-                            enabled: !crumb.isLast
-                            onTapped: root.goTo(crumb.modelData.depth)
-                        }
-                    }
-
-                    Widgets.IconLabel {
-                        visible: !crumb.isLast
-                        text: VLCIcons.breadcrumb_sep
-                        font.pixelSize: VLCStyle.icon_small
-                        color: Qt.alpha(theme.fg.secondary, 0.6)
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                }
-            }
-
-            Item {
-                Layout.fillWidth: true
+                onCrumbClicked: (depth) => root.goTo(depth)
             }
 
             // the folder context menu

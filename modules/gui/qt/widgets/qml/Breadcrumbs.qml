@@ -1,0 +1,113 @@
+/*****************************************************************************
+ * Copyright (C) 2026 VLC authors and VideoLAN
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * ( at your option ) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
+ *****************************************************************************/
+
+import QtQuick
+import QtQuick.Layouts
+
+import VLC.MainInterface
+import VLC.Style
+import VLC.Util
+
+// redesign: the Figma address line, "Videos > Shows > The Wand". Every name but the last one is
+// clickable and tells which place it leads to.
+RowLayout {
+    id: root
+
+    // [{ text, depth }, ...]; depth is given back by crumbClicked
+    property var names: []
+
+    property int pixelSize: VLCStyle.fontSize_large
+
+    signal crumbClicked(int depth)
+
+    spacing: VLCStyle.margin_xxxsmall
+
+    readonly property ColorContext colorContext: ColorContext {
+        id: theme
+        colorSet: ColorContext.View
+    }
+
+    Repeater {
+        model: root.names
+
+        delegate: RowLayout {
+            id: crumb
+
+            required property int index
+            required property var modelData
+
+            readonly property bool isLast: index === root.names.length - 1
+
+            Layout.fillWidth: isLast
+            Layout.maximumWidth: implicitWidth
+            Layout.minimumWidth: 0
+
+            spacing: VLCStyle.margin_xxxsmall
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                Layout.preferredHeight: label.implicitHeight + VLCStyle.margin_xxsmall * 2
+                Layout.preferredWidth: label.implicitWidth + VLCStyle.margin_xsmall
+
+                radius: VLCStyle.button_radius
+                color: (!crumb.isLast && hover.hovered) ? Qt.alpha(theme.fg.primary, 0.08) : "transparent"
+
+                Accessible.role: Accessible.Button
+                Accessible.name: crumb.modelData.text
+                Accessible.onPressAction: if (!crumb.isLast) root.crumbClicked(crumb.modelData.depth)
+
+                LabelExt {
+                    id: label
+
+                    anchors.fill: parent
+                    anchors.leftMargin: VLCStyle.margin_xxsmall
+                    anchors.rightMargin: VLCStyle.margin_xxsmall
+
+                    text: crumb.modelData.text
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    verticalAlignment: Text.AlignVCenter
+                    font.pixelSize: root.pixelSize
+                    font.weight: crumb.isLast ? Font.DemiBold : Font.Normal
+                    color: crumb.isLast ? theme.fg.primary : theme.fg.secondary
+                }
+
+                HoverHandler {
+                    id: hover
+
+                    enabled: !crumb.isLast
+                    cursorShape: Qt.PointingHandCursor
+                }
+
+                TapHandler {
+                    enabled: !crumb.isLast
+                    onTapped: root.crumbClicked(crumb.modelData.depth)
+                }
+            }
+
+            IconLabel {
+                visible: !crumb.isLast
+                text: VLCIcons.breadcrumb_sep
+                font.pixelSize: VLCStyle.icon_small
+                color: Qt.alpha(theme.fg.secondary, 0.6)
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+    }
+}

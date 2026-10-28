@@ -232,7 +232,7 @@ T.Page {
 
             // redesign: Figma address line, "Videos > Shows > The Wand", every part but the
             // last takes you back to that folder
-            RowLayout {
+            Breadcrumbs {
                 id: crumbRow
 
                 visible: defaultPageHeader.crumbs.length > 0
@@ -240,84 +240,10 @@ T.Page {
                 Layout.fillWidth: true
                 Layout.leftMargin: VLCStyle.margin_xsmall
 
-                spacing: VLCStyle.margin_xxxsmall
+                pixelSize: VLCStyle.fontSize_xlarge
+                names: defaultPageHeader.crumbs.map((text, index) => ({ text: text, depth: index }))
 
-                Repeater {
-                    model: defaultPageHeader.crumbs
-
-                    delegate: RowLayout {
-                        id: crumbDelegate
-
-                        required property int index
-                        required property var modelData
-
-                        readonly property bool isLast: index === defaultPageHeader.crumbs.length - 1
-
-                        Layout.fillWidth: isLast
-                        Layout.maximumWidth: implicitWidth
-                        Layout.minimumWidth: 0
-
-                        spacing: VLCStyle.margin_xxxsmall
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.minimumWidth: 0
-                            Layout.preferredHeight: crumbLabel.implicitHeight + VLCStyle.margin_xxsmall * 2
-                            Layout.preferredWidth: crumbLabel.implicitWidth + VLCStyle.margin_xsmall
-
-                            radius: VLCStyle.button_radius
-                            color: (!crumbDelegate.isLast && crumbHover.hovered)
-                                   ? Qt.alpha(theme.fg.primary, 0.08) : "transparent"
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: crumbDelegate.modelData
-                            Accessible.onPressAction: {
-                                if (!crumbDelegate.isLast)
-                                    root.crumbClicked(crumbDelegate.index)
-                            }
-
-                            LabelExt {
-                                id: crumbLabel
-
-                                anchors.fill: parent
-                                anchors.leftMargin: VLCStyle.margin_xxsmall
-                                anchors.rightMargin: VLCStyle.margin_xxsmall
-
-                                text: crumbDelegate.modelData
-                                textFormat: Text.PlainText
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: VLCStyle.fontSize_xlarge
-                                font.weight: crumbDelegate.isLast ? Font.DemiBold : Font.Normal
-                                color: crumbDelegate.isLast ? theme.fg.primary : theme.fg.secondary
-                            }
-
-                            HoverHandler {
-                                id: crumbHover
-
-                                enabled: !crumbDelegate.isLast
-                                cursorShape: Qt.PointingHandCursor
-                            }
-
-                            TapHandler {
-                                enabled: !crumbDelegate.isLast
-                                onTapped: root.crumbClicked(crumbDelegate.index)
-                            }
-                        }
-
-                        IconLabel {
-                            visible: !crumbDelegate.isLast
-                            text: VLCIcons.breadcrumb_sep
-                            font.pixelSize: VLCStyle.icon_small
-                            color: Qt.alpha(theme.fg.secondary, 0.6)
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                    }
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
+                onCrumbClicked: (depth) => root.crumbClicked(depth)
             }
 
             LabelExt {

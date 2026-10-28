@@ -126,6 +126,11 @@ FocusScope {
         hideResumePanel()
     }
 
+    ColorContext {
+        id: accentTheme
+        colorSet: ColorContext.ButtonAccent
+    }
+
     // redesign: Figma "continue watching" card: "You already watched till 00:00:02", an accent
     // "Continue Watching" button and a close button
     Row {
@@ -181,7 +186,7 @@ FocusScope {
                 anchors.centerIn: parent
 
                 text: qsTr("Continue Watching")
-                color: "#1A0E02" // dark text on the accent, like the other accent buttons
+                color: accentTheme.fg.primary // dark text on the accent fill, from the palette
                 font.pixelSize: VLCStyle.fontSize_normal
                 font.bold: true
             }
