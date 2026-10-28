@@ -67,6 +67,7 @@ T.ItemDelegate {
             "home": "homeNavBar",
             "video": "videoNavBar",
             "music": "musicNavBar",
+            "playlists": "playlistsNavBar",
             "network": "browseNavBar",
             "discover": "discoverNavBar"
         }

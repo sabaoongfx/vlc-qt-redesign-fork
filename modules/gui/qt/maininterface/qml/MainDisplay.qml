@@ -117,6 +117,9 @@ FocusScope {
             name: "music",
             url: "qrc:///qt/qml/VLC/MediaLibrary/MusicDisplay.qml"
         }, {
+            name: "playlists",
+            url: "qrc:///qt/qml/VLC/MediaLibrary/VideoPlaylistsDisplay.qml"
+        }, {
             name: "network",
             url: "qrc:///qt/qml/VLC/Network/BrowseDisplay.qml"
         }, {

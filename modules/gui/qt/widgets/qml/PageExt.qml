@@ -41,6 +41,12 @@ T.Page {
 
     property var sortModel: _firstChild?.sortModel ?? null
 
+    // The address line: when not empty, the header shows these names as a clickable path
+    // (the last one is the current place) instead of the title.
+    property var crumbs: []
+
+    signal crumbClicked(int index)
+
     //property is *not* readOnly, a PageLoader may define a localMenuDelegate common for its subviews (music, video)
     property SortMenu sortMenu: null
 
@@ -112,8 +118,11 @@ T.Page {
     header: DefaultPageHeader {
         text: root.title
 
-        leftPadding: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_left_margin + root.leftPadding
-        rightPadding: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_right_margin + root.rightPadding
+        // NOTE: the page width, not the header's own: its padding feeds its implicit width,
+        //       and the width of an unsized item follows the implicit one (a binding loop)
+
+        leftPadding: VLCStyle.dynamicAppMargins(root.width) + VLCStyle.layout_left_margin + root.leftPadding
+        rightPadding: VLCStyle.dynamicAppMargins(root.width) + VLCStyle.layout_right_margin + root.rightPadding
 
         sortMenu: root.sortMenu
 
@@ -136,6 +145,8 @@ T.Page {
 
         // Properties
         property alias text: label.text
+
+        readonly property var crumbs: root.crumbs
 
         property alias sortMenu: gridSortFilter.sortMenu
 
@@ -219,8 +230,100 @@ T.Page {
                 onClicked: History.next(Qt.MouseFocusReason)
             }
 
+            // redesign: Figma address line, "Videos > Shows > The Wand", every part but the
+            // last takes you back to that folder
+            RowLayout {
+                id: crumbRow
+
+                visible: defaultPageHeader.crumbs.length > 0
+
+                Layout.fillWidth: true
+                Layout.leftMargin: VLCStyle.margin_xsmall
+
+                spacing: VLCStyle.margin_xxxsmall
+
+                Repeater {
+                    model: defaultPageHeader.crumbs
+
+                    delegate: RowLayout {
+                        id: crumbDelegate
+
+                        required property int index
+                        required property var modelData
+
+                        readonly property bool isLast: index === defaultPageHeader.crumbs.length - 1
+
+                        Layout.fillWidth: isLast
+                        Layout.maximumWidth: implicitWidth
+                        Layout.minimumWidth: 0
+
+                        spacing: VLCStyle.margin_xxxsmall
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            Layout.preferredHeight: crumbLabel.implicitHeight + VLCStyle.margin_xxsmall * 2
+                            Layout.preferredWidth: crumbLabel.implicitWidth + VLCStyle.margin_xsmall
+
+                            radius: VLCStyle.button_radius
+                            color: (!crumbDelegate.isLast && crumbHover.hovered)
+                                   ? Qt.alpha(theme.fg.primary, 0.08) : "transparent"
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: crumbDelegate.modelData
+                            Accessible.onPressAction: {
+                                if (!crumbDelegate.isLast)
+                                    root.crumbClicked(crumbDelegate.index)
+                            }
+
+                            LabelExt {
+                                id: crumbLabel
+
+                                anchors.fill: parent
+                                anchors.leftMargin: VLCStyle.margin_xxsmall
+                                anchors.rightMargin: VLCStyle.margin_xxsmall
+
+                                text: crumbDelegate.modelData
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                                font.pixelSize: VLCStyle.fontSize_xlarge
+                                font.weight: crumbDelegate.isLast ? Font.DemiBold : Font.Normal
+                                color: crumbDelegate.isLast ? theme.fg.primary : theme.fg.secondary
+                            }
+
+                            HoverHandler {
+                                id: crumbHover
+
+                                enabled: !crumbDelegate.isLast
+                                cursorShape: Qt.PointingHandCursor
+                            }
+
+                            TapHandler {
+                                enabled: !crumbDelegate.isLast
+                                onTapped: root.crumbClicked(crumbDelegate.index)
+                            }
+                        }
+
+                        IconLabel {
+                            visible: !crumbDelegate.isLast
+                            text: VLCIcons.breadcrumb_sep
+                            font.pixelSize: VLCStyle.icon_small
+                            color: Qt.alpha(theme.fg.secondary, 0.6)
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+            }
+
             LabelExt {
                 id: label
+
+                visible: !crumbRow.visible
 
                 Layout.fillWidth: true
                 Layout.leftMargin: VLCStyle.margin_xsmall

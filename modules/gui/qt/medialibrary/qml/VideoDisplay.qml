@@ -43,15 +43,12 @@ Widgets.PageLoader {
     // Settings
     //---------------------------------------------------------------------------------------------
 
+    // The Videos page is the folder tree, the playlists have their own entry in the sidebar.
     pageModel: [{
-            name: "all",
+            name: "folders",
             default: true,
-            displayText: qsTr("All"),
-            url: "qrc:///qt/qml/VLC/MediaLibrary/VideoAllDisplay.qml"
-        },{
-            name: "playlists",
-            displayText: qsTr("Playlists"),
-            url: "qrc:///qt/qml/VLC/MediaLibrary/VideoPlaylistsDisplay.qml"
+            displayText: qsTr("Videos"),
+            url: "qrc:///qt/qml/VLC/MediaLibrary/VideoFolderTreeDisplay.qml"
         }
     ]
 

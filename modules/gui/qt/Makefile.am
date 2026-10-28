@@ -238,6 +238,8 @@ libqt_plugin_la_SOURCES = \
 	medialibrary/mlvideo.hpp \
 	medialibrary/mlvideofoldersmodel.cpp \
 	medialibrary/mlvideofoldersmodel.hpp \
+	medialibrary/mlvideofoldertreemodel.cpp \
+	medialibrary/mlvideofoldertreemodel.hpp \
 	medialibrary/mlvideogroupsmodel.cpp \
 	medialibrary/mlvideogroupsmodel.hpp \
 	medialibrary/mlmediamodel.cpp \
@@ -477,6 +479,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	medialibrary/mlplaylistlistmodel.moc.cpp \
 	medialibrary/mlplaylistmodel.moc.cpp \
 	medialibrary/mlvideofoldersmodel.moc.cpp \
+	medialibrary/mlvideofoldertreemodel.moc.cpp \
 	medialibrary/mlvideogroupsmodel.moc.cpp \
 	medialibrary/thumbnailcollector.moc.cpp \
 	menus/custom_menus.moc.cpp \
@@ -1200,6 +1203,7 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/HomeDisplay.qml \
 	medialibrary/qml/HomePage.qml \
 	medialibrary/qml/MediaView.qml \
+	medialibrary/qml/VideoFolderTreeDisplay.qml \
 	medialibrary/qml/VideoGroupDisplay.qml \
 	medialibrary/qml/MusicAlbums.qml \
 	medialibrary/qml/MusicAlbumsDisplay.qml \

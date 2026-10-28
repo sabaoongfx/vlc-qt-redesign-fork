@@ -209,13 +209,13 @@ jobs:
             import -window root "$1/shots/lib-video-$2.png" || true
             xdotool mousemove 400 200; sleep 0.3; xdotool mousemove 402 202; sleep 0.6
             import -window root "$1/shots/lib-video-$2-hover.png" || true
-            click 80 246; sleep 6 # Music (Video is expanded: All, Playlists)
+            click 80 154; sleep 6 # Music (expands: Artists, Albums, Tracks, Genres, Playlists)
             import -window root "$1/shots/lib-music-$2.png" || true
             click 80 108; sleep 4; click 1138 78; sleep 4 # Video again, switch to list view
             import -window root "$1/shots/lib-videolist-$2.png" || true
             xdotool mousemove 600 150; sleep 0.3; xdotool mousemove 602 152; sleep 0.6
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
-            click 80 246; sleep 4; click 80 246; sleep 5 # Music > Albums
+            click 80 154; sleep 4; click 80 246; sleep 5 # Music > Albums
             import -window root "$1/shots/lib-albums-$2.png" || true
             xdotool mousemove 330 178; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first album: double-click opens it
             import -window root "$1/shots/lib-album-$2.png" || true
@@ -224,9 +224,9 @@ jobs:
             click 80 200; sleep 5 # Artists
             xdotool mousemove 297 190; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first artist
             import -window root "$1/shots/lib-artist-$2.png" || true
-            click 80 431; sleep 5 # Browse
+            click 80 476; sleep 5 # Browse (Playlists sits above it)
             import -window root "$1/shots/lib-browse-$2.png" || true
-            click 80 477; sleep 5 # Discover
+            click 80 522; sleep 5 # Discover
             import -window root "$1/shots/lib-discover-$2.png" || true
             click 80 108; sleep 5; click 1182 78; sleep 2 # Video, sort menu
             import -window root "$1/shots/lib-sort-$2.png" || true

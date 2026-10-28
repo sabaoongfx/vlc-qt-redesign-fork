@@ -2052,6 +2052,33 @@ static inline size_t vlc_ml_count_folder_media(vlc_medialibrary_t * p_ml,
     return count;
 }
 
+// Subfolders
+
+static inline vlc_ml_folder_list_t * vlc_ml_list_subfolders(vlc_medialibrary_t * p_ml,
+                                                            int64_t i_folder_id)
+{
+    vlc_assert(p_ml != NULL);
+
+    vlc_ml_folder_list_t * res;
+
+    if (vlc_ml_list(p_ml, VLC_ML_LIST_SUBFOLDERS, NULL, i_folder_id, &res) != VLC_SUCCESS)
+        return NULL;
+
+    return res;
+}
+
+static inline size_t vlc_ml_count_subfolders(vlc_medialibrary_t * p_ml, int64_t i_folder_id)
+{
+    vlc_assert(p_ml != NULL);
+
+    size_t count;
+
+    if (vlc_ml_list(p_ml, VLC_ML_COUNT_SUBFOLDERS, NULL, i_folder_id, &count) != VLC_SUCCESS)
+        return 0;
+
+    return count;
+}
+
 static inline int vlc_ml_folder_set_favorite( vlc_medialibrary_t* p_ml, const char* psz_mrl, bool b_favorite )
 {
     return vlc_ml_control( p_ml, VLC_ML_FOLDER_SET_FAVORITE, psz_mrl, (int)b_favorite );

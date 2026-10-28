@@ -270,8 +270,6 @@ public:
         if (m_hasMedialib)
         {
             ModelEntry videoEntry{ qtr("Video"), "video", VLCIcons::topbar_video, QStringLiteral(":/icons/ic_fluent_filmstrip.svg") };
-            videoEntry.children.emplace_back(qtr("All"), "all");
-            videoEntry.children.emplace_back(qtr("Playlists"), "playlists");
             m_model.children.push_back(std::move(videoEntry));
 
             ModelEntry musicEntry{ qtr("Music"), "music", VLCIcons::topbar_music, QStringLiteral(":/icons/ic_fluent_music_note_2.svg") };
@@ -281,6 +279,8 @@ public:
             musicEntry.children.emplace_back(qtr("Genres"), "genres");
             musicEntry.children.emplace_back(qtr("Playlists"), "playlists");
             m_model.children.push_back(std::move(musicEntry));
+
+            m_model.children.emplace_back(qtr("Playlists"), "playlists", VLCIcons::playlist, QStringLiteral(":/icons/ic_fluent_apps_list.svg"));
         }
 
         m_model.children.emplace_back(qtr("Browse"), "network", VLCIcons::topbar_network, QStringLiteral(":/icons/ic_fluent_wifi_1.svg"));

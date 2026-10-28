@@ -198,6 +198,18 @@ if g:
     b = g.get('Add to medialibrary') or g.get('Remove from medialibrary')
     (ok if b and b[0][2] <= 40 else fail)('browse-folder', f'media library button is an icon ({b[0][2] if b else "missing"} px wide)')
 
+# 9b. Videos is a folder tree: the first level lists the added folders, every level has the address
+#     line (Videos > Shows > The Wand > S01) with back / forward, the season holds its 12 episodes
+for shot, crumbs in (('root', ('Videos',)), ('videos', ('Videos',)), ('shows', ('Videos', 'Shows')),
+                     ('season', ('Videos', 'Shows', 'The Wand', 'S01'))):
+    g = geom('folder-tree', shot)
+    if g:
+        for name in ('Back', 'Forward') + crumbs:
+            (ok if name in g else fail)('folder-tree', f'{shot}: header shows "{name}"')
+g = geom('folder-tree', 'season')
+if g:
+    (ok if '12 items' in g else fail)('folder-tree', 'season: 12 items')
+
 # 10. saving after visiting the new settings pages changes no option
 saved = glob.glob(f'{OUT}/profiles/prefs-save.*/config/vlc/vlcrc')
 if saved:

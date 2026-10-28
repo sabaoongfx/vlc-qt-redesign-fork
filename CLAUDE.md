@@ -109,7 +109,31 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
   Save/Cancel. The user said leave it for now.
 
-## NEXT: folder-tree Videos page with an address line (planned 2026-10-28, not started)
+## Folder-tree Videos page with an address line (written 2026-10-28 on Windows, NEVER BUILT)
+
+**Status: all code below was written blind on the Windows machine (no build possible). First thing on Manjaro:
+`make -C build -j$(nproc)`, fix compile errors, run `redesign/tests/run.sh 'folder-tree|browse'`, look at the shots.**
+What exists: `include/vlc_media_library.h` `vlc_ml_list_subfolders/count_subfolders`; `medialibrary/mlvideofoldertreemodel.*`
+(`MLVideoFolderTreeModel` derives from `MLVideoGroupsModel`: entry points or subfolders, filtered by the search text and
+sorted by name in C++, then the folder's videos via `vlc_ml_list_video_of`; paging spans both; registered in `mainui.cpp`,
+`Makefile.am`, `meson.build`); `medialibrary/qml/VideoFolderTreeDisplay.qml` (PageLoader, pages `base` and `folder`, the
+inline `VideoFolderLevel` page carries a `trail` of `{id, title}`); `PageExt.crumbs` / `crumbClicked` draw the address line
+(own crumb buttons: `VLC.Widgets` cannot import `VLC.Network`, so `NetworkAddressbar` is not reused); `VideoDisplay.qml` has
+the single page `folders`; sidebar: Video is a leaf, Playlists is a top-level entry (`navigationmodel.cpp`, `MainDisplay`
+page `playlists` = `VideoPlaylistsDisplay`), `tests/test_navigation_model.cpp` rewritten for it (unrun). Unchecked guesses:
+`History.push` accepting the `trail` array of objects, the context menu "Mark as watched" on a folder row (the base
+`setItemPlayed` casts to `MLVideo`, same hazard as group rows), the Playlists icon (`ic_fluent_apps_list`), a folder of only
+subfolders plays nothing from the context menu (`list_media_of` is direct media only).
+Harness: scene `folder-tree` + a `check.py` block were added; the other Video scenes (`video-grid`, `search`, `sort`,
+`video-ctx`, `video-hover/click`, `a11y-video`, `lib-mini-video`, showcase `videos*`) still click the first card at 390,220 and
+now land on the first-level folder card or a subfolder instead of a video: add one `click:390,220 sleep:2.5` to enter the
+`Videos` folder and re-measure. Sidebar coordinates in `scenarios.txt` and `.github/workflows/redesign-build.yml` were shifted
+for the Playlists row. Also fixed blind in the same commit (from the 2026-10-27 warning list): `SideNavigationPane.rowLeftPadding`
+no longer reads the row width (binding loop), `PageExt` header padding uses the page width (binding loop), `PlaylistButton`
+called an undefined `playlistWidget`, `BrowseDeviceView.onClicked` guards `currentItem`, `Player.qml` calls
+`blurredBackground?.scheduleUpdate?.()`. Re-run the full harness to see which warnings are left.
+
+Original plan (kept for the reasoning):
 
 Source: Juxtopposed's video (the "address line": breadcrumb + back/forward) and Figma `Player-4.png` (`VLC Redesign
 (Community)(1)`: `Videos > Shows > The Wand > S01`, folder content below). Decided with the user. Build it on the Linux
