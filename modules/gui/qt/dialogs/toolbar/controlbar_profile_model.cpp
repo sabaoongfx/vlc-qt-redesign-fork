@@ -103,6 +103,7 @@ decltype (ControlbarProfileModel::m_defaults)
                         {
                             {
                                 {
+                                    ControlListModel::LIBRARY_BUTTON,
                                     ControlListModel::PREVIOUS_BUTTON,
                                     ControlListModel::PLAY_BUTTON,
                                     ControlListModel::NEXT_BUTTON
@@ -826,6 +827,14 @@ bool ControlbarProfileModel::reload()
                 if (data[0] == transport && data[1].isEmpty() && data[2] == oldRight)
                     data[2].insert(1, ControlListModel::AUDIO_BUTTON);
             }
+
+            // redesign: a video bar saved exactly as the Default Style was before the library button existed
+            // gets the button before the transport, where the default now has it
+            if (identifier == PlayerControlbarModel::Videoplayer && ptrNewProfile->name() == qfut(N_("Default Style"))
+                && data[0].size() == 3 && data[1].isEmpty()
+                && data[0] == QVector<int> { ControlListModel::PREVIOUS_BUTTON, ControlListModel::PLAY_BUTTON,
+                                             ControlListModel::NEXT_BUTTON })
+                data[0].prepend(ControlListModel::LIBRARY_BUTTON);
 
             // redesign: the built-in profiles are saved on the first run and never refreshed, so a Default Style
             // saved by a build before the Figma one-row bar keeps upstream's centred transport (skips, previous,

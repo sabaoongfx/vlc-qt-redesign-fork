@@ -133,6 +133,16 @@ no longer reads the row width (binding loop), `PageExt` header padding uses the 
 called an undefined `playlistWidget`, `BrowseDeviceView.onClicked` guards `currentItem`, `Player.qml` calls
 `blurredBackground?.scheduleUpdate?.()`. Re-run the full harness to see which warnings are left.
 
+Compact library in the player (Figma `Player - customize-8`, written blind, NEVER BUILT): `player/qml/Player.qml` shows a
+collapsed `SideNavigationPane` rail (z 2, click = `History.push(uri)` then `playerView = false`) and a `Loader` with
+`medialibrary/qml/CompactLibrary.qml` (own `trail`/forward stack, address line with "..." for long paths, count, search, rows;
+a video plays at once, no sort/view toggle yet) left of the video, only on the video stage (`_libraryRail`); the video margin,
+`panelArea` and the panels start after them (`_leftInset`). The bottom-bar button is the new control `LIBRARY_BUTTON`
+(0x2B, was RESERVED_0X2B; `LibraryButton.qml`, icon `panel_left`, toggles `MainCtx.libraryPanel.visible`, a new `SidePanelCtx`
+saved as `library-panel-visible/width`), first in the Default Style video bar (`controlbar_profile_model.cpp`, with a
+migration for saved Default Styles). The main sidebar is Home, Videos, Music, Network, Playlists (Discover is no longer in it)
+and `MainDisplay` expands it while nothing plays and collapses it during playback (`pannelVisiblity.stopped`).
+
 Original plan (kept for the reasoning):
 
 Source: Juxtopposed's video (the "address line": breadcrumb + back/forward) and Figma `Player-4.png` (`VLC Redesign

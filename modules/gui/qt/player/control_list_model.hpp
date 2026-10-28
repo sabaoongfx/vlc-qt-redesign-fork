@@ -82,7 +82,7 @@ public:
         NAVIGATION_BUTTONS,
         PROGRAM_BUTTON,
         NAVIGATION_BOX,
-        RESERVED_0X2B,
+        LIBRARY_BUTTON, // redesign: shows and hides the library card beside the video
         RESERVED_0X2C,
         RESERVED_0X2D,
         RESERVED_0X2E,
@@ -111,7 +111,7 @@ public:
     Q_ENUM(ControlType)
 
     static_assert(AUDIO_BUTTON == 0x1F, "missaligned");
-    static_assert(RESERVED_0X2B == 0x2B, "missaligned");
+    static_assert(LIBRARY_BUTTON == 0x2B, "missaligned");
     static_assert(RESERVED_0X3F == 0x3F, "missaligned");
 
     // Basic functionality:

@@ -1203,6 +1203,7 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/HomeDisplay.qml \
 	medialibrary/qml/HomePage.qml \
 	medialibrary/qml/MediaView.qml \
+	medialibrary/qml/CompactLibrary.qml \
 	medialibrary/qml/VideoFolderTreeDisplay.qml \
 	medialibrary/qml/VideoGroupDisplay.qml \
 	medialibrary/qml/MusicAlbums.qml \
@@ -1328,6 +1329,7 @@ libqml_module_playercontrols_a_QML = \
 	player/qml/controlbarcontrols/AudioButton.qml \
 	player/qml/controlbarcontrols/BackButton.qml \
 	player/qml/controlbarcontrols/BookmarkButton.qml \
+	player/qml/controlbarcontrols/LibraryButton.qml \
 	player/qml/controlbarcontrols/ChapterNextButton.qml \
 	player/qml/controlbarcontrols/ChapterPreviousButton.qml \
 	player/qml/controlbarcontrols/DvdMenuButton.qml \

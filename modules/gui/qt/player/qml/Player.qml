@@ -47,8 +47,21 @@ FocusScope {
         const gap = VLCStyle.dp(8, VLCStyle.scale)
         const side = (_videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0) + gap
         const top = topBar.y + topBar.height + gap
-        return Qt.rect(side, top, width - 2 * side, controlBar.y - gap - top)
+        return Qt.rect(side + _leftInset, top, width - 2 * side - _leftInset, controlBar.y - gap - top)
     }
+
+    // redesign: the navigation rail and the library card beside the video (Figma "Player -
+    // customize-8"), only with the video on its stage. The video and the panels start after them.
+    readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable
+    readonly property bool _libraryCardVisible: _libraryRail && MainCtx.libraryPanel.visible
+    readonly property real _railWidth: _libraryRail
+                                       ? VLCStyle.margin_xsmall + VLCStyle.icon_banner + 2 * VLCStyle.margin_small
+                                         + VLCStyle.applicationHorizontalMargin
+                                       : 0
+    readonly property real _libraryCardWidth: Helpers.clamp(MainCtx.libraryPanel.width, VLCStyle.dp(240, VLCStyle.scale),
+                                                            width / 2)
+    readonly property real _leftInset: _railWidth + (_libraryCardVisible ? _libraryCardWidth + VLCStyle.dp(8, VLCStyle.scale)
+                                                                         : 0)
 
     readonly property string coverSource: {
         if (Player.artwork &&
@@ -201,7 +214,7 @@ FocusScope {
             top: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? topBar.bottom : parent.top
             bottom: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? controlBar.top : parent.bottom
             // redesign: the video sits in a stage inset 10px from the window sides (Figma player)
-            leftMargin: rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0
+            leftMargin: (rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0) + rootPlayer._leftInset
             rightMargin: rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0
         }
 
@@ -983,6 +996,64 @@ FocusScope {
         border.width: ringWidth
         border.color: controlBar.background ? controlBar.background.color : "black"
         antialiasing: true
+    }
+
+    // redesign: the collapsed navigation rail; a click leaves the player for that page
+    SideNavigationPane {
+        id: libraryRail
+
+        z: 2
+
+        visible: rootPlayer._libraryRail
+
+        anchors {
+            left: parent.left
+            top: topBar.bottom
+            bottom: controlBar.top
+        }
+
+        width: rootPlayer._railWidth
+
+        delegateShowText: false
+        useAcrylic: false
+
+        topPadding: VLCStyle.margin_small
+        leftPadding: VLCStyle.margin_xsmall
+        rightPadding: 0
+        bottomPadding: VLCStyle.margin_small
+
+        safeAreaLeftMargin: VLCStyle.applicationHorizontalMargin
+
+        onItemClicked: (modelUri, item) => {
+            if (!modelUri || modelUri.length === 0)
+                return
+
+            History.push(modelUri)
+            MainCtx.playerView = false
+        }
+    }
+
+    // redesign: the folder tree beside the video, a video plays at once (see CompactLibrary)
+    Loader {
+        id: libraryCard
+
+        z: 2
+
+        active: rootPlayer._libraryCardVisible
+        visible: active
+
+        anchors {
+            left: libraryRail.right
+            top: topBar.bottom
+            bottom: controlBar.top
+
+            topMargin: VLCStyle.dp(8, VLCStyle.scale)
+            bottomMargin: VLCStyle.dp(8, VLCStyle.scale)
+        }
+
+        width: rootPlayer._libraryCardWidth
+
+        source: "qrc:///qt/qml/VLC/MediaLibrary/CompactLibrary.qml"
     }
 
     TopBar {

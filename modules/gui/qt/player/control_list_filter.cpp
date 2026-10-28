@@ -75,6 +75,10 @@ bool ControlListFilter::filterAcceptsRow(int source_row, const QModelIndex &) co
     {
         return (m_ctx->hasMediaLibrary() || m_player->hasChapters() || m_player->hasTitles());
     }
+    else if (type == ControlListModel::LIBRARY_BUTTON)
+    {
+        return m_ctx->hasMediaLibrary();
+    }
     else if (type == ControlListModel::PROGRAM_BUTTON)
     {
         return m_player->hasPrograms();

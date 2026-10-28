@@ -101,6 +101,7 @@ class MainCtx : public QObject
     Q_PROPERTY(double playerPlaylistWidth READ getPlayerPlaylistWidth WRITE setPlayerPlaylistWidth NOTIFY playerPlaylistWidthChanged FINAL)
     Q_PROPERTY(SidePanelCtx* playqueuePanel READ getPlayqueuePanel CONSTANT FINAL)
     Q_PROPERTY(SidePanelCtx* navigationPanel READ getNavigationPanel CONSTANT FINAL)
+    Q_PROPERTY(SidePanelCtx* libraryPanel READ getLibraryPanel CONSTANT FINAL)
     Q_PROPERTY(double artistAlbumsWidth READ artistAlbumsWidth WRITE setArtistAlbumsWidth NOTIFY artistAlbumsWidthChanged FINAL)
     Q_PROPERTY(bool interfaceAlwaysOnTop READ isInterfaceAlwaysOnTop WRITE setInterfaceAlwaysOnTop NOTIFY interfaceAlwaysOnTopChanged FINAL)
     Q_PROPERTY(bool hasEmbededVideo READ hasEmbededVideo NOTIFY hasEmbededVideoChanged FINAL)
@@ -224,6 +225,7 @@ public:
     inline QWindow::Visibility interfaceVisibility() const { return m_windowVisibility; }
     inline SidePanelCtx* getPlayqueuePanel() const { return m_playqueuePanel; }
     inline SidePanelCtx* getNavigationPanel() const { return m_navigationPanel; }
+    inline SidePanelCtx* getLibraryPanel() const { return m_libraryPanel; }
     inline double getPlayerPlaylistWidth() const { return m_playerPlaylistWidth; }
     bool isInterfaceAlwaysOnTop() { return b_interfaceOnTop; }
     inline bool isHideAfterCreation() const { return b_hideAfterCreation; }
@@ -442,6 +444,7 @@ protected:
     bool                 b_hideAfterCreation = false; /// --qt-start-minimized
     SidePanelCtx*   m_playqueuePanel = nullptr;
     SidePanelCtx*   m_navigationPanel = nullptr;
+    SidePanelCtx*   m_libraryPanel = nullptr; // redesign: the library card beside the video
     QWindow::Visibility  m_windowVisibility = QWindow::Windowed;
     bool                 b_interfaceOnTop = false;      ///keep UI on top
     bool                 b_hasWayland = false;
