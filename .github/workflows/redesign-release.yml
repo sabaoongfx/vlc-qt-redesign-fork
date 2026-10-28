@@ -3,9 +3,9 @@ name: Redesign release
 # Publishes a GitHub release for a v* tag from the builds every push to redesign already makes
 # (a tag run cannot read the redesign branch's caches, so building here would rebuild the Windows
 # contribs from scratch). Push the commit, then the tag: this waits for the Windows and Linux
-# package runs of the tagged commit, takes their artifacts and attaches them twice, versioned and
-# under fixed names, so https://github.com/<repo>/releases/latest/download/<name> always gives the
-# newest one (the website links those):
+# package runs of the tagged commit, takes their artifacts and attaches them under fixed names
+# (no version: the tag has it), so https://github.com/<repo>/releases/latest/download/<name> always
+# gives the newest one (the website links those):
 #   VLC-juxtopposed-x64-setup.exe, VLC-juxtopposed-x64-portable.zip,
 #   VLC-juxtopposed-x86_64.AppImage, VLC-juxtopposed-x86_64.tar.gz
 # A v*-something tag (v0.1.0-rc1) or any v0.x is published as a pre-release.
@@ -56,9 +56,8 @@ jobs:
           set -euo pipefail
           V=${TAG#v}
           mkdir out
-          # copy <file> <name>: versioned and fixed-name copies
+          # fixed names, no version: /releases/latest/download/<name> never changes (the release tag has the version)
           copy() {
-            cp "$1" "out/VLC-juxtopposed-$V-$2"
             cp "$1" "out/VLC-juxtopposed-$2"
           }
           copy "$(ls dl/win/*.exe | head -1)" x64-setup.exe
@@ -80,8 +79,8 @@ jobs:
 
           | Platform | Download |
           |---|---|
-          | Windows 10/11 x64 | \`VLC-juxtopposed-$V-x64-setup.exe\` (installer) or \`-x64-portable.zip\` |
-          | Linux x86_64 (glibc 2.39+: Ubuntu 24.04, Debian 13, Fedora 40, Arch) | \`VLC-juxtopposed-$V-x86_64.AppImage\` or \`.tar.gz\` |
+          | Windows 10/11 x64 | \`VLC-juxtopposed-x64-setup.exe\` (installer) or \`-x64-portable.zip\` |
+          | Linux x86_64 (glibc 2.39+: Ubuntu 24.04, Debian 13, Fedora 40, Arch) | \`VLC-juxtopposed-x86_64.AppImage\` or \`.tar.gz\` |
           | macOS | coming later |
 
           The Windows builds are not code-signed: SmartScreen asks for confirmation (More info, Run anyway).
