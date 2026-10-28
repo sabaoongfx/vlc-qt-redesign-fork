@@ -35,6 +35,11 @@ Widgets.PageExt {
     hasGridListMode: false
     isSearchable: urlListDisplay.active
 
+    // the side margins of the content, the same as the page header's (PageExt), so the buttons and
+    // the list line up with the header instead of touching the sidebar and the window edge
+    readonly property real _leftMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_left_margin
+    readonly property real _rightMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_right_margin
+
     // Asks the parent to show the device browser (local network, UPnP, SMB...)
     signal showBrowse(int reason)
 
@@ -70,8 +75,8 @@ Widgets.PageExt {
                 Layout.fillWidth: true
                 Layout.topMargin: VLCStyle.margin_normal
                 Layout.bottomMargin: VLCStyle.margin_normal
-                Layout.leftMargin: root.leftPadding
-                Layout.rightMargin: root.rightPadding
+                Layout.leftMargin: root._leftMargin + root.leftPadding
+                Layout.rightMargin: root._rightMargin + root.rightPadding
 
                 spacing: VLCStyle.margin_xsmall
 
@@ -115,8 +120,8 @@ Widgets.PageExt {
                     source: "qrc:///qt/qml/VLC/MediaLibrary/UrlListDisplay.qml"
 
                     onLoaded: {
-                        item.leftPadding = Qt.binding(() => root.leftPadding)
-                        item.rightPadding = Qt.binding(() => root.rightPadding)
+                        item.leftPadding = Qt.binding(() => root._leftMargin + root.leftPadding)
+                        item.rightPadding = Qt.binding(() => root._rightMargin + root.rightPadding)
 
                         item.displayMarginEnd = Qt.binding(() => root.displayMarginEnd)
 
