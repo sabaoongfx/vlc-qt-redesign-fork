@@ -69,8 +69,10 @@ QVariant MLVideoFolderTreeModel::itemRoleData(const MLItem * item, const int rol
                                       QSize(MLVIDEOFOLDERTREEMODEL_COVER_WIDTH,
                                             MLVIDEOFOLDERTREEMODEL_COVER_HEIGHT),
                                       QStringLiteral(":/placeholder/noart_videoCover.svg"));
+        // NOTE: The library has no duration for a folder (MLFolder reads 0), the grid would
+        //       print "0 ms" under every folder; the video count is shown instead.
         case MEDIA_DURATION:
-            return QVariant::fromValue(folder->getDuration());
+            return QVariant();
         case GROUP_IS_VIDEO:
             return false;
         case GROUP_TITLE_FIRST_SYMBOL:
