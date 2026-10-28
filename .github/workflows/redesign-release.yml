@@ -16,6 +16,8 @@ on:
 permissions:
   contents: write
   actions: read
+  id-token: write      # build provenance attestation
+  attestations: write
 
 jobs:
   release:
@@ -67,6 +69,13 @@ jobs:
           (cd out && sha256sum * > SHA256SUMS)
           ls -la out
 
+      # GitHub artifact attestation: `gh attestation verify <file> -R <repo>` proves the file is the one this
+      # workflow published for the tag (the files themselves are built by the Windows and Linux-packages runs)
+      - name: Attest the assets
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: out/VLC-juxtopposed-*
+
       - name: Publish
         run: |
           set -euo pipefail
@@ -85,6 +94,9 @@ jobs:
 
           The Windows builds are not code-signed: SmartScreen asks for confirmation (More info, Run anyway).
           It installs next to VideoLAN's VLC and shares its settings folder.
+
+          Check a download: \`sha256sum -c SHA256SUMS --ignore-missing\`, or with the GitHub CLI
+          \`gh attestation verify <file> -R $GITHUB_REPOSITORY\` (build provenance, from this release workflow).
 
           Website: https://vlc.sabaoon.dev
           EOF

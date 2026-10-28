@@ -56,7 +56,8 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   commit (a tag run cannot read the redesign branch caches, so it does not build), downloads their artifacts and
   publishes fixed-name assets only, no version in the file names (the tag has it; `VLC-juxtopposed-x64-setup.exe`,
   `-x64-portable.zip`, `-x86_64.AppImage`, `-x86_64.tar.gz`) and SHA256SUMS, like notz, so the website links never
-  change. Tag a commit whose Windows and Linux-packages runs both passed.
+  change. The assets are attested (`actions/attest-build-provenance`, from the next release on; v0.1.0/v0.1.1 have none),
+  notes show `gh attestation verify <file> -R <repo>`. Tag a commit whose Windows and Linux-packages runs both passed.
 - Windows: `build.sh -r` already runs `make package-win32` (zip, 7z, NSIS exe; the image has makensis); the NSIS script
   (`extras/package/win32/NSIS/vlc.win32.nsi.in`) has its own name/folder/registry key/uninstall entry/product id so it
   installs next to VideoLAN's VLC; paths with `${PRODUCT_PUBLISHER}` must be quoted (it has a space). Passing.
