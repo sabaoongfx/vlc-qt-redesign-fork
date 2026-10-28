@@ -413,7 +413,8 @@ FocusScope{
 
     }
 
-    // redesign: the resume prompt as a floating card centred below the top bar
+    // redesign: the resume prompt (Figma "continue watching") as a floating card at the bottom
+    // centre, above the progress bar
     Rectangle {
         id: resumeToast
 
@@ -422,7 +423,7 @@ FocusScope{
         visible: resumeDialog.shown
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: root.y + root.height + VLCStyle.margin_small
+        y: (root.parent.positionSliderY ?? (root.parent.height - height)) - height - VLCStyle.margin_normal
 
         width: resumeDialog.implicitWidth + VLCStyle.margin_normal * 2
         height: resumeDialog.implicitHeight + VLCStyle.margin_xsmall + VLCStyle.margin_small

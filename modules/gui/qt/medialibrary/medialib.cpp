@@ -238,6 +238,30 @@ void MediaLib::insertIntoPlaylist(const size_t index, const QVariantList &itemId
     });
 }
 
+void MediaLib::mediaProgress(const QUrl& url, QJSValue callback)
+{
+    if (!callback.isCallable())
+        return;
+
+    struct Ctx {
+        double progress = 0.0;
+    };
+
+    const QByteArray mrl = url.toString(QUrl::FullyEncoded).toUtf8();
+
+    runOnMLThread<Ctx>(this,
+    //ML thread
+    [mrl](vlc_medialibrary_t* ml, Ctx& ctx){
+        ml_unique_ptr<vlc_ml_media_t> media{vlc_ml_get_media_by_mrl(ml, mrl.constData())};
+        if (media)
+            ctx.progress = media->f_progress;
+    },
+    //UI thread
+    [callback](quint64, Ctx& ctx) mutable {
+        callback.call({ctx.progress});
+    });
+}
+
 void MediaLib::reload()
 {
     runOnMLThread(this,

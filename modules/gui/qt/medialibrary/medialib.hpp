@@ -61,6 +61,10 @@ public:
 
     Q_INVOKABLE void reload();
 
+    // redesign: the saved playback position of a media, as a fraction of its length (0 when
+    // unknown), given to the callback
+    Q_INVOKABLE void mediaProgress(const QUrl& url, QJSValue callback);
+
     Q_INVOKABLE void mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callback);
 
     inline bool idle() const { return m_idle; }
