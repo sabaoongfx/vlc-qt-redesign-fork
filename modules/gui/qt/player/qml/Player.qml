@@ -666,7 +666,7 @@ FocusScope {
                                     blurredBackground.sourceTextureProviderObserver.hasMipmapsChanged.connect(blurredBackground,
                                                                                                               (hasMipmaps /*: bool */) => {
                                                                                                                   if (hasMipmaps) {
-                                                                                                                      blurredBackground.scheduleUpdate()
+                                                                                                                      blurredBackground?.scheduleUpdate?.()
                                                                                                                   }
                                                                                                               })
                                 }

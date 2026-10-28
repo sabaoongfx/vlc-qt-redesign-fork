@@ -136,7 +136,7 @@ FocusScope {
 
         _currentView.currentIndex = index
 
-        _currentView.currentItem.forceActiveFocus(Qt.MouseFocusReason)
+        _currentView.currentItem?.forceActiveFocus(Qt.MouseFocusReason)
     }
 
     function onDoubleClicked(model, index) {

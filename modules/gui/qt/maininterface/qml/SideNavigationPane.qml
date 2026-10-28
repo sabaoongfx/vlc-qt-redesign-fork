@@ -92,11 +92,13 @@ T.Pane {
     // content background
     readonly property real cardMargin: VLCStyle.margin_xsmall
 
-    // redesign: left padding of a row; collapsed (icon only) rows centre the icon in the card
-    function rowLeftPadding(row : Item, expandedPadding : real) : real {
+    // redesign: left padding of a row; collapsed (icon only) rows centre the icon in the card.
+    // It is computed from the pane, not from the row: the row width follows the content width,
+    // which follows the rows' implicit width (a binding loop).
+    function rowLeftPadding(expandedPadding : real) : real {
         if (delegateShowText)
             return safeAreaLeftMargin + expandedPadding
-        return safeAreaLeftMargin + Math.round((row.width - safeAreaLeftMargin - safeAreaRightMargin - VLCStyle.icon_banner) / 2)
+        return safeAreaLeftMargin + Math.round((availableWidth - safeAreaLeftMargin - safeAreaRightMargin - VLCStyle.icon_banner) / 2)
     }
 
     background: Rectangle {
@@ -191,7 +193,7 @@ T.Pane {
                     property real preferredHeight: shouldShow ? VLCStyle.buttonHeightNavigationPane : 0.0
 
                     // redesign: Figma icons sit 22px into the card
-                    leftPadding: root.rowLeftPadding(this, VLCStyle.dp(18, VLCStyle.scale))
+                    leftPadding: root.rowLeftPadding(VLCStyle.dp(18, VLCStyle.scale))
                     rightPadding: root.safeAreaRightMargin
 
                     leftInset: root.safeAreaLeftMargin + implicitLeftInset
@@ -293,7 +295,7 @@ T.Pane {
                 Layout.fillWidth: true
                 Layout.preferredHeight: VLCStyle.buttonHeightNavigationPane
 
-                leftPadding: root.rowLeftPadding(this, VLCStyle.margin_xsmall)
+                leftPadding: root.rowLeftPadding(VLCStyle.margin_xsmall)
                 rightPadding: root.safeAreaRightMargin
 
                 leftInset: root.safeAreaLeftMargin + implicitLeftInset
