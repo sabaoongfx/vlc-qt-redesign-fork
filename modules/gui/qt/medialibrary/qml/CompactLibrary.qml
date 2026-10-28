@@ -26,27 +26,68 @@ import VLC.MediaLibrary
 import VLC.Widgets as Widgets
 import VLC.Style
 import VLC.Util
+import VLC.Dialogs
 
-// The folder tree of the video library as a card beside the video in the player (Figma
-// "Player - customize-8"): address line, item count, search and a list of the folders and
-// videos of the current folder. It keeps its own path, so it never moves the library page
-// behind the player. A video plays right away, a folder opens in place.
+// The library as a card beside the video in the player (Figma "sidebar" frames): address line,
+// item count, search and a list. What the list shows follows the rail on its left: Home
+// (continue watching), Videos (the folder tree), Music (songs, albums, artists, genres), Network
+// (saved streams), Playlists and Recent. It keeps its own path, so the library page behind the
+// player never moves. A media plays right away, a folder opens in place.
 Rectangle {
     id: root
 
-    // The folders from the first level down to the one shown: [{ id, title }, ...]
+    // "home", "videos", "music", "network", "playlists" or "recent"
+    property string section: "videos"
+
+    // The path below the first level of the section: [{ title, kind, id }, ...]. A folder
+    // has the kind "folder" and its id, the music kinds are "songs", "albums", "artists", "genres".
     property var trail: []
 
-    // The folders left by Back, in the order Forward goes through them
+    // The places left by Back, in the order Forward goes through them
     property var _forward: []
 
-    readonly property var _model: trail.length > 0 ? folderModel : rootModel
+    readonly property var _current: trail.length > 0 ? trail[trail.length - 1] : null
 
     readonly property var _colors: VLCStyle.figmaColors(theme.palette.isDark)
 
-    function open(folder) {
+    readonly property string _rootTitle: {
+        switch (section) {
+        case "home": return qsTr("Home")
+        case "music": return qsTr("Music")
+        case "network": return qsTr("Network")
+        case "playlists": return qsTr("Playlists")
+        case "recent": return qsTr("Recent")
+        default: return qsTr("Videos")
+        }
+    }
+
+    // The row that starts the list ("Add"), none for Home, Recent and the music lists
+    readonly property string _addLabel: {
+        switch (section) {
+        case "videos": return qsTr("Add")
+        case "music": return _current ? "" : qsTr("Add")
+        case "network": return qsTr("Add Network Stream")
+        case "playlists": return qsTr("Create playlist")
+        default: return ""
+        }
+    }
+
+    readonly property var _model: modelLoader.item
+
+    // The glyph of the rows that have no cover
+    readonly property string _rowIcon: {
+        switch (section) {
+        case "music": return VLCIcons.topbar_music
+        case "network": return VLCIcons.topbar_network
+        case "playlists": return VLCIcons.playlist
+        case "recent": return VLCIcons.history
+        default: return VLCIcons.topbar_video
+        }
+    }
+
+    function open(place) {
         _forward = []
-        trail = [...trail, folder]
+        trail = [...trail, place]
     }
 
     function goTo(depth) {
@@ -71,6 +112,37 @@ Rectangle {
         trail = [...trail, next]
     }
 
+    // The "Add" row
+    function add() {
+        switch (section) {
+        case "network":
+            streamDialog.open()
+            break
+        case "playlists":
+            playlistDialog.open()
+            break
+        default:
+            DialogsProvider.addLibraryFolderDialog()
+        }
+    }
+
+    // A click on a row
+    function activate(item) {
+        if (section === "videos" && item.isVideo === false) {
+            open({ title: item.title, kind: "folder", id: item.id })
+        } else if (section === "music" && !_current) {
+            open({ title: item.title, kind: item.kind })
+        } else {
+            MediaLib.addAndPlay(item.id)
+        }
+    }
+
+    onSectionChanged: {
+        trail = []
+        _forward = []
+        searchField.text = ""
+    }
+
     color: _colors.section
     radius: VLCStyle.dp(8, VLCStyle.scale)
     clip: true
@@ -83,29 +155,157 @@ Rectangle {
         colorSet: ColorContext.View
     }
 
-    MLVideoFolderTreeModel {
-        id: rootModel
+    // The model of what is shown, created only while it is shown
+    Loader {
+        id: modelLoader
 
-        ml: MediaLib
-
-        searchPattern: searchField.text
+        sourceComponent: {
+            switch (root.section) {
+            case "home": return continueModel
+            case "music":
+                switch (root._current?.kind) {
+                case "songs": return songsModel
+                case "albums": return albumsModel
+                case "artists": return artistsModel
+                case "genres": return genresModel
+                default: return musicMenuModel
+                }
+            case "network": return urlsModel
+            case "playlists": return playlistsModel
+            case "recent": return recentModel
+            default: return root._current ? folderModel : rootFolderModel
+            }
+        }
     }
 
-    MLVideoFolderTreeModel {
+    Component {
+        id: rootFolderModel
+
+        MLVideoFolderTreeModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
         id: folderModel
 
-        ml: MediaLib
-
-        searchPattern: searchField.text
+        MLVideoFolderTreeModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+            parentId: root._current?.id
+        }
     }
 
-    // NOTE: the folder model shows the first level until a folder is given.
-    Binding {
-        target: folderModel
-        property: "parentId"
-        value: root.trail[root.trail.length - 1]?.id
-        when: root.trail.length > 0
-        restoreMode: Binding.RestoreNone
+    Component {
+        id: continueModel
+
+        MLRecentVideoModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: songsModel
+
+        MLAudioModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: albumsModel
+
+        MLAlbumModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: artistsModel
+
+        MLArtistModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: genresModel
+
+        MLGenreModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: urlsModel
+
+        MLUrlModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: playlistsModel
+
+        MLPlaylistListModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: recentModel
+
+        MLRecentMediaModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+        }
+    }
+
+    Component {
+        id: musicMenuModel
+
+        ListModel {
+            ListElement { title: qsTr("Songs"); kind: "songs" }
+            ListElement { title: qsTr("Albums"); kind: "albums" }
+            ListElement { title: qsTr("Artists"); kind: "artists" }
+            ListElement { title: qsTr("Genres"); kind: "genres" }
+        }
+    }
+
+    // Figma "Open network stream" and "New playlist", for the Add row of Network and Playlists
+    NetworkStreamDialog {
+        id: streamDialog
+
+        onSaved: (urls) => {
+            urls.forEach(url => urlAdder.add(url))
+        }
+    }
+
+    // saves the addresses of the stream dialog
+    MLUrlModel {
+        id: urlAdder
+
+        ml: MediaLib
+    }
+
+    NewPlaylistDialog {
+        id: playlistDialog
+
+        onSaved: (name, urls) => playlistCreator.create(name, urls)
+    }
+
+    MLPlaylistListModel {
+        id: playlistCreator
+
+        ml: MediaLib
     }
 
     ColumnLayout {
@@ -115,7 +315,7 @@ Rectangle {
 
         spacing: VLCStyle.margin_xsmall
 
-        // Address line: back, forward, the path
+        // Address line: back, forward, the path, the menu
         RowLayout {
             Layout.fillWidth: true
 
@@ -144,14 +344,14 @@ Rectangle {
                 onClicked: root.forward()
             }
 
-            // A long path keeps its last two folders, "... > The Wand > S01"; depth is the length
+            // A long path keeps its last two names, "... > Shows > The Wand"; depth is the length
             // of the trail a name leads to
             Repeater {
                 id: crumbs
 
                 readonly property var names: {
-                    const all = [{ text: qsTr("Videos"), depth: 0 },
-                                 ...root.trail.map((folder, i) => ({ text: folder.title, depth: i + 1 }))]
+                    const all = [{ text: root._rootTitle, depth: 0 },
+                                 ...root.trail.map((place, i) => ({ text: place.title, depth: i + 1 }))]
                     return all.length > 3 ? [{ text: "…", depth: all[all.length - 3].depth }, ...all.slice(all.length - 2)]
                                           : all
                 }
@@ -211,6 +411,12 @@ Rectangle {
             Item {
                 Layout.fillWidth: true
             }
+
+            // the folder context menu
+            Widgets.LibraryMenuButton {
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+            }
         }
 
         // Item count and search
@@ -220,7 +426,7 @@ Rectangle {
             spacing: VLCStyle.margin_xsmall
 
             Widgets.LabelExt {
-                text: qsTr("%1 items").arg(root._model.count)
+                text: qsTr("%1 items").arg(root._model?.count ?? 0)
                 font.pixelSize: VLCStyle.fontSize_normal
                 color: theme.fg.secondary
             }
@@ -273,6 +479,9 @@ Rectangle {
 
                     Accessible.name: qsTr("Search")
 
+                    // typed letters must not run the global shortcuts
+                    onActiveFocusChanged: MainCtx.useGlobalShortcuts = !activeFocus
+
                     Text {
                         anchors.fill: parent
 
@@ -285,12 +494,6 @@ Rectangle {
                     }
                 }
             }
-
-            // the folder context menu, on the right of the search
-            Widgets.LibraryMenuButton {
-                Layout.preferredWidth: VLCStyle.bannerButton_width
-                Layout.preferredHeight: VLCStyle.bannerButton_height
-            }
         }
 
         Rectangle {
@@ -298,6 +501,53 @@ Rectangle {
             Layout.preferredHeight: VLCStyle.border
 
             color: root._colors.line
+        }
+
+        // The "Add" row
+        T.ItemDelegate {
+            id: addRow
+
+            Layout.fillWidth: true
+            Layout.preferredHeight: VLCStyle.dp(42, VLCStyle.scale)
+
+            visible: root._addLabel !== ""
+            padding: 0
+
+            Accessible.role: Accessible.Button
+            Accessible.name: root._addLabel
+
+            onClicked: root.add()
+
+            background: Rectangle {
+                radius: VLCStyle.dp(6, VLCStyle.scale)
+                color: addRow.hovered ? root._colors.raised : "transparent"
+            }
+
+            contentItem: RowLayout {
+                spacing: VLCStyle.margin_xsmall
+
+                Widgets.IconLabel {
+                    Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
+                    Layout.leftMargin: VLCStyle.margin_xxsmall
+
+                    horizontalAlignment: Text.AlignHCenter
+                    text: VLCIcons.add
+                    font.pixelSize: VLCStyle.icon_banner
+                    color: theme.fg.secondary
+                }
+
+                Widgets.LabelExt {
+                    Layout.fillWidth: true
+
+                    text: root._addLabel
+                    font.pixelSize: VLCStyle.fontSize_normal
+                    color: theme.fg.secondary
+                }
+            }
+
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
+            }
         }
 
         ListView {
@@ -319,7 +569,10 @@ Rectangle {
                 required property int index
                 required property var model
 
-                readonly property bool isVideo: model.isVideo === true
+                // only the folder tree has folders, everything else plays or opens
+                readonly property bool isFolder: root.section === "videos" && model.isVideo === false
+                readonly property string title: model.title ?? model.name ?? model.url ?? ""
+                readonly property string cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
 
                 width: ListView.view.width
                 height: VLCStyle.dp(42, VLCStyle.scale)
@@ -327,15 +580,14 @@ Rectangle {
                 padding: 0
 
                 Accessible.role: Accessible.Button
-                Accessible.name: model.title ?? ""
+                Accessible.name: title
 
-                onClicked: {
-                    if (isVideo) {
-                        MediaLib.addAndPlay(model.id)
-                    } else {
-                        root.open({ id: model.id, title: model.title })
-                    }
-                }
+                onClicked: root.activate({
+                    id: model.id,
+                    title: title,
+                    kind: model.kind,
+                    isVideo: model.isVideo
+                })
 
                 background: Rectangle {
                     radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -345,7 +597,7 @@ Rectangle {
                 contentItem: RowLayout {
                     spacing: VLCStyle.margin_xsmall
 
-                    // the cover of a video, a folder glyph for a folder
+                    // the cover when there is one, else a glyph (a folder for a folder)
                     Item {
                         Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
                         Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
@@ -354,8 +606,8 @@ Rectangle {
                         Image {
                             anchors.fill: parent
 
-                            visible: row.isVideo
-                            source: row.isVideo ? (row.model.thumbnail ?? "") : ""
+                            visible: !row.isFolder && row.cover !== ""
+                            source: visible ? row.cover : ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
                             sourceSize.width: VLCStyle.dp(64, VLCStyle.scale)
@@ -365,8 +617,8 @@ Rectangle {
                         Widgets.IconLabel {
                             anchors.centerIn: parent
 
-                            visible: !row.isVideo
-                            text: VLCIcons.ic_fluent_folder_open_24_regular
+                            visible: row.isFolder || row.cover === ""
+                            text: row.isFolder ? VLCIcons.ic_fluent_folder_open_24_regular : root._rowIcon
                             font.pixelSize: VLCStyle.icon_banner
                             color: theme.fg.secondary
                         }
@@ -375,7 +627,7 @@ Rectangle {
                     Widgets.LabelExt {
                         Layout.fillWidth: true
 
-                        text: row.model.title ?? ""
+                        text: row.title
                         textFormat: Text.PlainText
                         elide: Text.ElideRight
                         font.pixelSize: VLCStyle.fontSize_normal

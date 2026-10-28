@@ -52,6 +52,9 @@ FocusScope {
 
     // redesign: the navigation rail and the library card beside the video (Figma "Player -
     // customize-8"), only with the video on its stage. The video and the panels start after them.
+    // what the library card shows: home, videos, music, network, playlists or recent
+    property string librarySection: "videos"
+
     readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable
     readonly property bool _libraryCardVisible: _libraryRail && MainCtx.libraryPanel.visible
     readonly property real _railWidth: _libraryRail
@@ -998,8 +1001,8 @@ FocusScope {
         antialiasing: true
     }
 
-    // redesign: the collapsed navigation rail; a click leaves the player for that page
-    SideNavigationPane {
+    // redesign: the icon rail left of the video; it picks what the library card shows
+    Rectangle {
         id: libraryRail
 
         z: 2
@@ -1014,22 +1017,23 @@ FocusScope {
 
         width: rootPlayer._railWidth
 
-        delegateShowText: false
-        useAcrylic: false
+        color: controlBar.background ? controlBar.background.color : "black"
 
-        topPadding: VLCStyle.margin_small
-        leftPadding: VLCStyle.margin_xsmall
-        rightPadding: 0
-        bottomPadding: VLCStyle.margin_small
+        LibraryRail {
+            anchors.fill: parent
 
-        safeAreaLeftMargin: VLCStyle.applicationHorizontalMargin
+            section: rootPlayer.librarySection
+            open: MainCtx.libraryPanel.visible
 
-        onItemClicked: (modelUri, item) => {
-            if (!modelUri || modelUri.length === 0)
-                return
-
-            History.push(modelUri)
-            MainCtx.playerView = false
+            onSelected: (section) => {
+                // the active one again hides the card
+                if (MainCtx.libraryPanel.visible && section === rootPlayer.librarySection) {
+                    MainCtx.libraryPanel.visible = false
+                } else {
+                    rootPlayer.librarySection = section
+                    MainCtx.libraryPanel.visible = true
+                }
+            }
         }
     }
 
@@ -1054,6 +1058,8 @@ FocusScope {
         width: rootPlayer._libraryCardWidth
 
         source: "qrc:///qt/qml/VLC/MediaLibrary/CompactLibrary.qml"
+
+        onLoaded: item.section = Qt.binding(() => rootPlayer.librarySection)
     }
 
     TopBar {

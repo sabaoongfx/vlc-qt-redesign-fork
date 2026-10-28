@@ -134,7 +134,7 @@ called an undefined `playlistWidget`, `BrowseDeviceView.onClicked` guards `curre
 `blurredBackground?.scheduleUpdate?.()`. Re-run the full harness to see which warnings are left.
 
 Compact library in the player (Figma `Player - customize-8`, written blind, NEVER BUILT): `player/qml/Player.qml` shows a
-collapsed `SideNavigationPane` rail (z 2, click = `History.push(uri)` then `playerView = false`) and a `Loader` with
+icon rail `player/qml/LibraryRail.qml` (Home, Videos, Music, Network, Playlists, Recent, Add; the active one picks what the card shows, `Player.librarySection`) and a `Loader` with
 `medialibrary/qml/CompactLibrary.qml` (own `trail`/forward stack, address line with "..." for long paths, count, search, rows;
 a video plays at once, no sort/view toggle yet) left of the video, only on the video stage (`_libraryRail`); the video margin,
 `panelArea` and the panels start after them (`_leftInset`). The bottom-bar button is the new control `LIBRARY_BUTTON`
