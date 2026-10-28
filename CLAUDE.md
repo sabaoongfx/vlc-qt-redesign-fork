@@ -109,6 +109,39 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
   Save/Cancel. The user said leave it for now.
 
+## NEXT: folder-tree Videos page with an address line (planned 2026-10-28, not started)
+
+Source: Juxtopposed's video (the "address line": breadcrumb + back/forward) and Figma `Player-4.png` (`VLC Redesign
+(Community)(1)`: `Videos > Shows > The Wand > S01`, folder content below). Decided with the user. Build it on the Linux
+machine (compile in ~25 s, harness with nested-folder media), not through Windows CI: the Windows CI has no media library,
+a QML load error does not fail a build, and a C++ mistake costs a whole CI run.
+
+- The story: the user adds many folders; a folder with subfolders shows them; a folder with subfolders AND media shows both
+  (subfolders first, then its own videos). Clicking a folder goes in, a video plays, a path segment or back goes up.
+- Videos page: drop the "All / Playlists" switch (`VideoDisplay.qml` pageModel, sidebar `navigationmodel.cpp` Video
+  children All/Playlists); Videos opens straight on the folder view. First level = the added folders (ML entry points,
+  `vlc_ml_list_entry_points`). Header = back/forward + clickable path (reuse `network/qml/NetworkAddressbar.qml`,
+  `AddressbarButton.qml`) + item count + sort + grid/list + search (already in `PageExt`). Sort and search apply inside a folder.
+- Playlists: a separate top-level sidebar entry as in the Figma (Home, Videos, Music, Network, Playlists, Recent, Add
+  item); the old Video > Playlists page (`VideoPlaylistsDisplay.qml`) moves there. Music keeps its own Playlists child.
+- Backend: the ML already has `VLC_ML_LIST_SUBFOLDERS` / `VLC_ML_COUNT_SUBFOLDERS` (arg: parent folder id; used by the
+  UPnP server in `modules/control/upnp_server/ml.hpp`, NOT paginated: `query->all()`) and `vlc_ml_list_folder_media` /
+  `vlc_ml_count_folder_media` (paginated). `include/vlc_media_library.h` has no inline wrapper for subfolders yet: add
+  them. Qt side: a new `MLVideoFolderTreeModel` (subfolders then videos, an `isVideo`-style role, like
+  `MLVideoGroupsModel` which already mixes groups and videos), items `MLFolder` + `MLVideo`.
+- Pages are pushed with `History.push([...pagePrefix, "folder"], { parentId, title })` like `VideoAllDisplay.qml` does for
+  groups; the path is rebuilt from the History stack (or a folder id chain).
+- Known gaps: the ML gives no recursive video count, so a folder with only subfolders looks the same as an empty one (show
+  every present, non-banned subfolder); empty-folder state needs a label.
+- Test: a nested-folder fixture in `redesign/tests/fixtures.sh` (e.g. Shows/The Wand/S01 with videos, one folder with both a
+  subfolder and videos) and a scene in `scenarios.txt` with `check.py` geometry against Player-4.
+- Also open (from the same review, see `redesign/remaining/index.html` for the frame list): Onboarding, Keyboard Shortcuts
+  dialog, Home rows (Listen Again, Frequently Visited Folders), sidebar Network/Recent/Add item, subtitle timeline, waveform seek
+  bar, bookmarks panel + Ctrl+B, shortcut in the OSD, compact library beside the video.
+- Sort menus (`8e6442a`, `4bea61f`, unbuilt when written): video pages offer Unwatched/Watched First, Newest/Oldest First,
+  Title A-Z/Z-A, URI Asc/Desc; the music tracks page the Figma list minus Disc Number (no ML criterion). `SortControl` entries
+  may carry a fixed `order`. Check them in the harness before relying on them.
+
 ## Where we are (2026-10-27)
 
 - Done 2026-10-27 (fourth batch): library search field takes clicks (its Templates TextField had no implicit height:
