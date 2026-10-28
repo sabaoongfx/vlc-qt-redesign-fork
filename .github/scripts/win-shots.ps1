@@ -94,7 +94,7 @@ foreach ($scheme in @(@('system', 0), @('day', 1), @('night', 2))) {
         Set-Content "$conf\$name" "[MainWindow]`ncolor-scheme-index=$($scheme[1])`n"
     }
     # player: a generated test video, like the Linux shots
-    $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', '--aout=adummy', '--verbose=1', '--file-logging', "--logfile=$Outlc-$tag-player.log", "`"$Video`"" -PassThru
+    $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', '--aout=adummy', '--verbose=1', '--file-logging', "--logfile=$Out\vlc-$tag-player.log", "`"$Video`"" -PassThru
     Start-Sleep -Seconds 12
     # the controls auto-hide over video: wake them up by moving the mouse
     $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
