@@ -453,6 +453,10 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - The Widgets palette is applied in System mode too (dark/light from `QStyleHints::colorScheme`), not only Day/Night: Windows defaults to System and
   showed native blue/white before. On Windows the Qt settings file is `%APPDATA%\vlc\vlc-qt-interface.ini`.
 - `NoMedialibHome.qml` must keep the `ConeNButtons` component: the media library `HomePage.qml` uses it for the cone + Open File row. The start screen rewrite dropped it once and Home rendered blank whenever the media library was on (QML load errors do not fail the build).
+- A page whose root is `PageExt` (or any custom root without one) needs its own `ColorContext` at the root: the CI shot of the
+  new Network page drew no `ButtonExt` at all (no palette, transparent fill and text) while a label with a fixed colour showed.
+  Popups are not items, so their context never finds the window palette: set `palette: VLCStyle.palette` on it and give the
+  `contentItem` its own context (`ModalDialog.qml`, `TracksMenu.qml`). Fixed 2026-10-28 in the Network page and both Figma dialogs.
 - `ControlRepeater` rebinds every control bar widget's `visible` to its loader, so a control cannot hide itself with `visible:` on its root; hide a child instead (see the idle cover in `ArtworkInfoWidget.qml`).
 - Start screen (no media library): `NoMedialibHome.qml` is a dim cone plus the "Drop a video... Ctrl+O" hint like the prototype; `MiniPlayer` is always
   in view (control bar visible while idle), `ArtworkInfoWidget` is hidden until something plays. The cone SVG does not render in the Linux CI shots.
