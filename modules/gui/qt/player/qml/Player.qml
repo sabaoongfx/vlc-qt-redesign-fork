@@ -139,7 +139,8 @@ FocusScope {
         id: windowTheme
 
         // NOTE: We force the night theme when playing a video.
-        palette: (MainCtx.hasEmbededVideo && MainCtx.pinVideoControls === false)
+        // redesign: the video stage is dark in every theme, also with the controls pinned under the video
+        palette: MainCtx.hasEmbededVideo
                  ? VLCStyle.darkPalette
                  : VLCStyle.palette
 

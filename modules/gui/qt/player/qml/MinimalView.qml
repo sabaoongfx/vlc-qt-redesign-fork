@@ -35,7 +35,8 @@ FocusScope {
     readonly property ColorContext colorContext: ColorContext {
         id: theme
 
-        palette: (MainCtx.hasEmbededVideo && MainCtx.pinVideoControls === false)
+        // redesign: the video stage is dark in every theme, also with the controls pinned under the video
+        palette: MainCtx.hasEmbededVideo
                  ? VLCStyle.darkPalette
                  : VLCStyle.palette
 
