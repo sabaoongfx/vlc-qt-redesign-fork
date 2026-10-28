@@ -39,6 +39,9 @@ T.Control {
     // true when the PIP video is shown over the preview
     property bool hasVideo: false
 
+    // the queue list above the card is open (the queue button is drawn in the accent colour)
+    property bool queueOpen: false
+
     signal togglePlayqueue()
 
     readonly property ColorContext colorContext: ColorContext {
@@ -212,6 +215,7 @@ T.Control {
 
                 text: VLCIcons.playlist
                 description: qsTr("Play Queue")
+                color: root.queueOpen ? theme.accent : colorContext.fg.primary
                 font.pixelSize: VLCStyle.icon_banner
                 width: VLCStyle.bannerButton_width
                 height: VLCStyle.bannerButton_height

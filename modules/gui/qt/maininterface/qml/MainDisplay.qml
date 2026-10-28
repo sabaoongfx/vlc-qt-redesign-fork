@@ -1070,6 +1070,21 @@ FocusScope {
         }
     }
 
+    // redesign: the queue list above the mini player (Figma "Miniplayer")
+    MiniPlayerQueue {
+        id: miniPlayerQueue
+
+        z: 4
+
+        visible: floatingMiniPlayer.visible && floatingMiniPlayer.queueOpen
+
+        anchors.right: floatingMiniPlayer.right
+        anchors.bottom: floatingMiniPlayer.top
+        anchors.bottomMargin: VLCStyle.margin_xsmall
+
+        width: floatingMiniPlayer.width
+    }
+
     FloatingMiniPlayer {
         id: floatingMiniPlayer
 
@@ -1081,7 +1096,7 @@ FocusScope {
         visible: Player.isStarted
         hasVideo: g_mainDisplay._showMiniPlayer && MainCtx.hasEmbededVideo
 
-        onTogglePlayqueue: pannelVisiblity.togglePlayqueueVisibility()
+        onTogglePlayqueue: queueOpen = !queueOpen
     }
 
     MiniPlayer {
