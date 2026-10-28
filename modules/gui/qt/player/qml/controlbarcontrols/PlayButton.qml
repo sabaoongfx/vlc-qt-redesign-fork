@@ -47,6 +47,11 @@ T.Control {
 
     property bool _keyOkPressed: false
 
+    // redesign: Figma "play": the pill is orange for play and grey for pause
+    readonly property bool _showsPause: !paintOnly
+                                        && Player.playingState !== Player.PLAYING_STATE_PAUSED
+                                        && Player.playingState !== Player.PLAYING_STATE_STOPPED
+
     // Aliases
 
     property alias cursorInside: mouseArea.cursorInside
@@ -182,14 +187,7 @@ T.Control {
 
     contentItem: T.Label {
         text: {
-            const state = Player.playingState
-
-            if (!paintOnly
-                    && state !== Player.PLAYING_STATE_PAUSED
-                    && state !== Player.PLAYING_STATE_STOPPED)
-                return VLCIcons.pause_filled
-            else
-                return VLCIcons.play_filled
+            return root._showsPause ? VLCIcons.pause_filled : VLCIcons.play_filled
         }
 
         // redesign: dark glyph on the accent fill (prototype --on-accent), from the palette
@@ -244,7 +242,15 @@ T.Control {
 
             radius: VLCStyle.button_radius
 
-            color: theme.accent
+            color: root._showsPause ? VLCStyle.figmaColors(theme.palette.isDark).hint : theme.accent
+
+            Behavior on color {
+                enabled: theme.initialized
+
+                ColorAnimation {
+                    duration: VLCStyle.duration_veryShort
+                }
+            }
 
             Widgets.RoundedRectangleShadow {
                 id: hoverShadow
@@ -255,7 +261,7 @@ T.Control {
                 blurRadius: VLCStyle.dp(9, VLCStyle.scale)
                 yOffset: VLCStyle.dp(4, VLCStyle.scale)
 
-                color: theme.accent.alpha(0.29)
+                color: Qt.alpha(root._showsPause ? VLCStyle.figmaColors(theme.palette.isDark).hint : theme.accent, 0.29)
             }
         }
     }
