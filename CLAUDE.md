@@ -15,9 +15,12 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 0. CI ran once on `938efbd` (2026-10-28, runs 40746908202 Linux build, ...185 Linux packages, ...608607 Windows): all three FAILED at
    compile, the Linux build in `menus/qml_menu_wrapper.cpp` (the M3U `"
 "` of Export Playlist had become real line breaks inside the
-   string literals). Fixed in a later local commit (`Export Playlist: the M3U newlines ...`), NOT pushed yet, so the pushed head is
-   broken; `git pull` is fine, but expect more compile errors behind that first one (the compiler stops at the first failing file per
-   target). Do not push again until `make -C build` is clean locally. The two docs commits after `938efbd` are also unpushed.
+   string literals). Fixed in `4170fbd`. Checked after that without a build: the CI log shows the other new/changed C++ files
+   compiled cleanly (mlvideofoldertreemodel, mainctx, mainui, navigationmodel, medialib, mlurlmodel, mlplaylistlistmodel,
+   dialogs_provider); control_list_filter.cpp and controlbar_profile_model.cpp were never reached and were reviewed by hand; all 29
+   changed QML files pass `qmlcachegen --only-bytecode` (what CI runs) and `qmllint` shows no real warning (PySide6 6.12 tools in
+   a scratch venv on the Windows machine). Still unbuilt: the moc link, the unit test `test_navigation_model`, and every runtime
+   behaviour. Next push = the fix plus the docs commits.
 1. `git pull`, `make -C build -j$(nproc)`. Expect compile errors in the new C++ (`mlvideofoldertreemodel.*`, `mainctx` libraryPanel,
    `medialib.cpp` mediaProgress, `dialogs_provider` getOpenFileUrls, `qml_menu_wrapper.cpp` exportPlaylist/Shuffle, the
    `control_list_model.hpp` LIBRARY_BUTTON rename, `controlbar_profile_model.cpp`) and in QML (a QML load error does not fail the
