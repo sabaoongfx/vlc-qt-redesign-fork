@@ -92,6 +92,15 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   embedded video even with the controls pinned (the Windows default; `Player.qml`/`MinimalView.qml`), Windows build
   without VideoLAN's update check (`build.sh` no longer passes `--enable-update-check`: it pointed at VideoLAN's
   releases). Its assets had versioned copies that were deleted afterwards (fixed names only now).
+- Released 2026-10-28: **v0.1.2** on `4662c04` (an empty commit, so CI ran on a head that carries the new release workflow:
+  the release workflow waits for runs of the tagged commit, and `[skip ci]` commits have none). Same code as v0.1.1; the
+  first release with fixed names only and GitHub attestations (`gh attestation verify <file> -R <repo>` checked: exit 0).
+  It was flipped from pre-release to a full release so `releases/latest/download/<name>` works (the website fallback links).
+- Not signed: the Windows installer and exe have no Authenticode signature (`Get-AuthenticodeSignature`: NotSigned), so
+  SmartScreen warns; the attestation is provenance only, Windows ignores it. Options noted for later: Azure Trusted
+  Signing (~$10/month), an OV/EV certificate (~$100-400/year, reputation still builds slowly), SignPath Foundation (free
+  for open source; the fork's GPL/VideoLAN relationship may complicate it). Nothing decided; it would be a signing step
+  in the Windows workflow before NSIS. Linux files are unsigned too (checksums + attestation only).
 - Windows shots (`win-shots.ps1`) play an ffmpeg test video (installed with choco in the workflow) and shoot the tracks,
   audio and play queue panels (`*-player-{tracks,audio,queue}.png`, found by their button descriptions via UI Automation)
   plus `vlc-<scheme>-player.log`. In the Day shots the title and bottom bars look mid-grey (probably the Windows blur over
