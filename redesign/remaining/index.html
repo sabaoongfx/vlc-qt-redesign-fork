@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VLC Redesign: Remaining</title>
+<style>
+:root {
+  --bg: #f4f3f1; --card: #ffffff; --text: #1d1b19; --dim: #6b655e; --line: #e2dfda;
+  --accent: #d37918; --accent-ink: #1a0e02;
+  --todo: #b3402a; --part: #a8740f; --left: #5b5f66;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e0e; --card: #181818; --text: #e8e6e3; --dim: #8f8f8f; --line: #262626;
+    --todo: #ef8a73; --part: #e0b252; --left: #9aa0a8;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e0e; --card: #181818; --text: #e8e6e3; --dim: #8f8f8f; --line: #262626;
+  --todo: #ef8a73; --part: #e0b252; --left: #9aa0a8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; font-weight: 600; }
+h2 { font-size: 20px; margin: 40px 0 12px; font-weight: 600; }
+p.lede { color: var(--dim); margin: 0 0 20px; max-width: 70ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--dim); margin-bottom: 8px; }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.tag.todo { color: var(--todo); } .tag.part { color: var(--part); } .tag.left { color: var(--left); }
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; }
+.item h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.item p { margin: 6px 0; } .item ul { margin: 6px 0; padding-left: 20px; } .item li { margin: 3px 0; }
+.dim { color: var(--dim); }
+.shots { display: grid; gap: 10px; align-content: start; }
+.shots figure { margin: 0; }
+.shots img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); background: #0e0e0e; }
+.shots figcaption { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.shots.row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.nofigma { border: 1px dashed var(--line); border-radius: 8px; padding: 14px; color: var(--dim); font-size: 13px; }
+table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--dim); }
+tr:last-child td { border-bottom: 0; }
+.note { font-size: 13px; color: var(--dim); margin-top: 28px; }
+@media (max-width: 760px) { .item { grid-template-columns: 1fr; } main { padding: 20px 16px 48px; } }
+
+.tag.used { color: #3f9b5b; } .tag.none { color: var(--todo); }
+.frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; margin-bottom: 8px; }
+.frame { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.frame img { width: 100%; height: 150px; object-fit: contain; display: block; border-radius: 8px; background: #0e0e0e; }
+.frame figcaption { font-size: 12.5px; line-height: 1.45; }
+.frame figcaption b { font-size: 13.5px; }
+h3 { font-size: 16px; margin: 28px 0 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>VLC Redesign: what is left</h1>
+  <p class="lede">Figma frames from the Community file next to the work still open in the Qt port. The ideas come from Juxtopposed's video
+  ("I Redesigned VLC After 25 Years") and the status from <code>CLAUDE.md</code> and <code>redesign/PLAN.md</code> (2026-10-28).
+  The first section lists every Figma frame with the code that uses it (checked 2026-10-28). The older sections below it were written before the folder tree, compact library, dialogs and menus; where they disagree, the first section is the current one.</p>
+  <div class="legend">
+    <span><span class="tag todo">Not started</span> nothing in the Qt UI yet</span>
+    <span><span class="tag part">Partly</span> some of it exists</span>
+    <span><span class="tag left">Left on purpose</span> needs a new backend, or you chose to skip it</span>
+  </div>
+
+  <h2 id="all-frames">Every Figma frame: where it is used</h2>
+<p class="lede">All 105 images of the Figma export (VLC Redesign (Community)(1), with the Add Subtitles to Playlist folder), each with the part of the code that implements it. Checked against the repository on 2026-10-28. The newest work (folder tree, compact library, dialogs, menus) was written without a build and has not been run yet.</p>
+<div class="legend"><span><span class="tag used">Used</span> 61 built</span><span><span class="tag part">Partly used</span> 16 built with gaps</span><span><span class="tag none">Not used</span> 28 no Qt screen</span></div>
+<h3>Not used (28)</h3>
+<div class="frames">
+<figure class="frame none" data-status="none"><a href="img/all/audio-spatializer-settings.webp"><img loading="lazy" src="img/all/audio-spatializer-settings.webp" alt="Audio - Spatializer Settings"></a><figcaption><b>Audio - Spatializer Settings</b> <span class="tag none">Not used</span><br><span class="dim">Still the old Effects window (reached from Open Advanced Settings); no Figma card</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/audio-stereo-widener.webp"><img loading="lazy" src="img/all/audio-stereo-widener.webp" alt="Audio - Stereo Widener"></a><figcaption><b>Audio - Stereo Widener</b> <span class="tag none">Not used</span><br><span class="dim">Still the old Effects window (reached from Open Advanced Settings); no Figma card</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/audio-visualizer.webp"><img loading="lazy" src="img/all/audio-visualizer.webp" alt="Audio Visualizer"></a><figcaption><b>Audio Visualizer</b> <span class="tag none">Not used</span><br><span class="dim">Still the old Effects window (reached from Open Advanced Settings); no Figma card</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/eq-presets.webp"><img loading="lazy" src="img/all/eq-presets.webp" alt="EQ presets"></a><figcaption><b>EQ presets</b> <span class="tag none">Not used</span><br><span class="dim">Still the old Effects window (reached from Open Advanced Settings); no Figma card</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/hdr-options.webp"><img loading="lazy" src="img/all/hdr-options.webp" alt="HDR Options"></a><figcaption><b>HDR Options</b> <span class="tag none">Not used</span><br><span class="dim">Still the old Effects window (reached from Open Advanced Settings); no Figma card</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-1.webp"><img loading="lazy" src="img/all/onboarding-1.webp" alt="Onboarding-1"></a><figcaption><b>Onboarding-1</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-10.webp"><img loading="lazy" src="img/all/onboarding-10.webp" alt="Onboarding-10"></a><figcaption><b>Onboarding-10</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-2.webp"><img loading="lazy" src="img/all/onboarding-2.webp" alt="Onboarding-2"></a><figcaption><b>Onboarding-2</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-3.webp"><img loading="lazy" src="img/all/onboarding-3.webp" alt="Onboarding-3"></a><figcaption><b>Onboarding-3</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-4.webp"><img loading="lazy" src="img/all/onboarding-4.webp" alt="Onboarding-4"></a><figcaption><b>Onboarding-4</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-5.webp"><img loading="lazy" src="img/all/onboarding-5.webp" alt="Onboarding-5"></a><figcaption><b>Onboarding-5</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-6.webp"><img loading="lazy" src="img/all/onboarding-6.webp" alt="Onboarding-6"></a><figcaption><b>Onboarding-6</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-7.webp"><img loading="lazy" src="img/all/onboarding-7.webp" alt="Onboarding-7"></a><figcaption><b>Onboarding-7</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-8.webp"><img loading="lazy" src="img/all/onboarding-8.webp" alt="Onboarding-8"></a><figcaption><b>Onboarding-8</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding-9.webp"><img loading="lazy" src="img/all/onboarding-9.webp" alt="Onboarding-9"></a><figcaption><b>Onboarding-9</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/onboarding.webp"><img loading="lazy" src="img/all/onboarding.webp" alt="Onboarding"></a><figcaption><b>Onboarding</b> <span class="tag none">Not used</span><br><span class="dim">First-run onboarding: not started (dialogs/firstrun is still the old wizard)</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/player-hide-ui.webp"><img loading="lazy" src="img/all/player-hide-ui.webp" alt="Player - hide UI"></a><figcaption><b>Player - hide UI</b> <span class="tag none">Not used</span><br><span class="dim">Hide-UI state (right-click option and shortcut): not confirmed in the code</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/profiles.webp"><img loading="lazy" src="img/all/profiles.webp" alt="Profiles"></a><figcaption><b>Profiles</b> <span class="tag none">Not used</span><br><span class="dim">Per-show presets and saved control bar profiles: VLC stores neither, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/setting-preset.webp"><img loading="lazy" src="img/all/setting-preset.webp" alt="Setting Preset"></a><figcaption><b>Setting Preset</b> <span class="tag none">Not used</span><br><span class="dim">Per-show presets and saved control bar profiles: VLC stores neither, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/origin.webp"><img loading="lazy" src="img/all/origin.webp" alt="origin"></a><figcaption><b>origin</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow (matching subtitles to files): no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/sub-filename.webp"><img loading="lazy" src="img/all/sub-filename.webp" alt="sub filename"></a><figcaption><b>sub filename</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow (matching subtitles to files): no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/subtitle-multiple.webp"><img loading="lazy" src="img/all/subtitle-multiple.webp" alt="subtitle multiple"></a><figcaption><b>subtitle multiple</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow (matching subtitles to files): no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/subtitle-one.webp"><img loading="lazy" src="img/all/subtitle-one.webp" alt="subtitle one"></a><figcaption><b>subtitle one</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow (matching subtitles to files): no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/target.webp"><img loading="lazy" src="img/all/target.webp" alt="target"></a><figcaption><b>target</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow (matching subtitles to files): no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/add-subtitles-to-playlist-folder-1.webp"><img loading="lazy" src="img/all/add-subtitles-to-playlist-folder-1.webp" alt="Add Subtitles to Playlist/Folder-1"></a><figcaption><b>Add Subtitles to Playlist/Folder-1</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow: no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/add-subtitles-to-playlist-folder-2.webp"><img loading="lazy" src="img/all/add-subtitles-to-playlist-folder-2.webp" alt="Add Subtitles to Playlist/Folder-2"></a><figcaption><b>Add Subtitles to Playlist/Folder-2</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow: no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/add-subtitles-to-playlist-folder-3.webp"><img loading="lazy" src="img/all/add-subtitles-to-playlist-folder-3.webp" alt="Add Subtitles to Playlist/Folder-3"></a><figcaption><b>Add Subtitles to Playlist/Folder-3</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow: no batch backend, left on purpose</span></figcaption></figure>
+<figure class="frame none" data-status="none"><a href="img/all/add-subtitles-to-playlist-folder.webp"><img loading="lazy" src="img/all/add-subtitles-to-playlist-folder.webp" alt="Add Subtitles to Playlist/Folder"></a><figcaption><b>Add Subtitles to Playlist/Folder</b> <span class="tag none">Not used</span><br><span class="dim">Add Subtitles to Playlist flow: no batch backend, left on purpose</span></figcaption></figure>
+</div>
+<h3>Partly used (16)</h3>
+<div class="frames">
+<figure class="frame part" data-status="part"><a href="img/all/icon.webp"><img loading="lazy" src="img/all/icon.webp" alt="Icon"></a><figcaption><b>Icon</b> <span class="tag part">Partly used</span><br><span class="dim">icon set: glyphs are added one by one to pixmaps/VLCIcons.ttf; the full set was deferred on purpose</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/keyboard-shortcuts.webp"><img loading="lazy" src="img/all/keyboard-shortcuts.webp" alt="Keyboard Shortcuts"></a><figcaption><b>Keyboard Shortcuts</b> <span class="tag part">Partly used</span><br><span class="dim">the menu entry opens the Controls page of Settings; the separate dialog is not built</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/miniplayer.webp"><img loading="lazy" src="img/all/miniplayer.webp" alt="Miniplayer"></a><figcaption><b>Miniplayer</b> <span class="tag part">Partly used</span><br><span class="dim">maininterface/qml/FloatingMiniPlayer.qml and MiniPlayerQueue.qml (queue list). The hover controls on the video (close, pop-out, previous/play/next) and the replay icon are not built</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/player-music-1.webp"><img loading="lazy" src="img/all/player-music-1.webp" alt="Player - Music-1"></a><figcaption><b>Player - Music-1</b> <span class="tag part">Partly used</span><br><span class="dim">audio player in player/qml/Player.qml (audioComponent); the waveform seek bar is not built</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/player-music.webp"><img loading="lazy" src="img/all/player-music.webp" alt="Player - Music"></a><figcaption><b>Player - Music</b> <span class="tag part">Partly used</span><br><span class="dim">audio player in player/qml/Player.qml (audioComponent); the waveform seek bar is not built</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/player-5.webp"><img loading="lazy" src="img/all/player-5.webp" alt="Player-5"></a><figcaption><b>Player-5</b> <span class="tag part">Partly used</span><br><span class="dim">Home page: medialibrary/qml/HomePage.qml has Continue Watching; Listen Again and Frequently Visited rows are missing</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/player-6.webp"><img loading="lazy" src="img/all/player-6.webp" alt="Player-6"></a><figcaption><b>Player-6</b> <span class="tag part">Partly used</span><br><span class="dim">Player top bar and stage (TopBar.qml); the library button sits in the bottom bar (controlbarcontrols/LibraryButton.qml), not in the top bar as in this frame</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/toggle.webp"><img loading="lazy" src="img/all/toggle.webp" alt="Toggle"></a><figcaption><b>Toggle</b> <span class="tag part">Partly used</span><br><span class="dim">On/Off switch of the Settings rows; drawn as the Figma checkbox, not the ON/OFF pill</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/view-options.webp"><img loading="lazy" src="img/all/view-options.webp" alt="View Options"></a><figcaption><b>View Options</b> <span class="tag part">Partly used</span><br><span class="dim">grid / list: a toggle icon in the page header (GridSortFilterControls.qml), not a menu with both entries</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/file-context-menu.webp"><img loading="lazy" src="img/all/file-context-menu.webp" alt="file context menu"></a><figcaption><b>file context menu</b> <span class="tag part">Partly used</span><br><span class="dim">medialibrary/qml/MLContextMenu.qml drawn by menus/menus.cpp (RedesignMenuStyle); the entries differ from the frame (no Stream, Convert, subtitle/audio tracks)</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/folder-context-menu.webp"><img loading="lazy" src="img/all/folder-context-menu.webp" alt="folder context menu"></a><figcaption><b>folder context menu</b> <span class="tag part">Partly used</span><br><span class="dim">widgets/qml/LibraryMenuButton.qml: Add File, Add Folder, Resync, Info. Edit Subtitle/Audio Tracks have no backend</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/menu.webp"><img loading="lazy" src="img/all/menu.webp" alt="menu"></a><figcaption><b>menu</b> <span class="tag part">Partly used</span><br><span class="dim">the main menu (Open Files, Open Network Stream, ... About): menus/ + QmlGlobalMenu. Its button was removed from the library top bar, so the library has no entry to it now</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/new-playlist.webp"><img loading="lazy" src="img/all/new-playlist.webp" alt="new playlist"></a><figcaption><b>new playlist</b> <span class="tag part">Partly used</span><br><span class="dim">medialibrary/qml/NewPlaylistDialog.qml, button in PlaylistMediaList.qml. The thumbnail square is left out (playlists have no custom cover)</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/playlist-context-menu.webp"><img loading="lazy" src="img/all/playlist-context-menu.webp" alt="playlist context menu"></a><figcaption><b>playlist context menu</b> <span class="tag part">Partly used</span><br><span class="dim">menus/qml_menu_wrapper.cpp (PlaylistListContextMenu): Play, Shuffle, Export, Add to Queue, Rename, Delete. Favorite, subtitle/audio tracks and properties have no backend</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/right-click-menu.webp"><img loading="lazy" src="img/all/right-click-menu.webp" alt="right-click menu"></a><figcaption><b>right-click menu</b> <span class="tag part">Partly used</span><br><span class="dim">player right-click menu: menus/menus.cpp (RedesignMenuStyle). Entry order and separators left as VLC has them</span></figcaption></figure>
+<figure class="frame part" data-status="part"><a href="img/all/sidebar.webp"><img loading="lazy" src="img/all/sidebar.webp" alt="sidebar"></a><figcaption><b>sidebar</b> <span class="tag part">Partly used</span><br><span class="dim">player/qml/LibraryRail.qml + CompactLibrary.qml (Home, Videos, Music, Network, Playlists, Recent, Add). Missing: Home sections, Podcasts / Radio, pop-out, sort and view buttons; the main sidebar has no Recent / Add item</span></figcaption></figure>
+</div>
+<h3>Used (61)</h3>
+<div class="frames">
+<figure class="frame used" data-status="used"><a href="img/all/audio-compressor-settings.webp"><img loading="lazy" src="img/all/audio-compressor-settings.webp" alt="Audio - Compressor Settings"></a><figcaption><b>Audio - Compressor Settings</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/audio-equalizer.webp"><img loading="lazy" src="img/all/audio-equalizer.webp" alt="Audio - Equalizer"></a><figcaption><b>Audio - Equalizer</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/button.webp"><img loading="lazy" src="img/all/button.webp" alt="Button"></a><figcaption><b>Button</b> <span class="tag used">Used</span><br><span class="dim">components: 220x48 dropdowns of the side panel (TracksListPage), accent buttons, icon hover wrapper (IconToolButton, menu button)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/components.webp"><img loading="lazy" src="img/all/components.webp" alt="Components"></a><figcaption><b>Components</b> <span class="tag used">Used</span><br><span class="dim">section heading of the Figma page, nothing to build</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/controls.webp"><img loading="lazy" src="img/all/controls.webp" alt="Controls"></a><figcaption><b>Controls</b> <span class="tag used">Used</span><br><span class="dim">overview of the control bar and its side panels: player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/current-time.webp"><img loading="lazy" src="img/all/current-time.webp" alt="Current Time"></a><figcaption><b>Current Time</b> <span class="tag used">Used</span><br><span class="dim">time labels left and right of the seek bar (player/qml/Player.qml, 15px)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/designs.webp"><img loading="lazy" src="img/all/designs.webp" alt="Designs"></a><figcaption><b>Designs</b> <span class="tag used">Used</span><br><span class="dim">section heading of the Figma page, nothing to build</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/dropdown.webp"><img loading="lazy" src="img/all/dropdown.webp" alt="Dropdown"></a><figcaption><b>Dropdown</b> <span class="tag used">Used</span><br><span class="dim">components: 220x48 dropdowns of the side panel (TracksListPage), accent buttons, icon hover wrapper (IconToolButton, menu button)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/duration.webp"><img loading="lazy" src="img/all/duration.webp" alt="Duration"></a><figcaption><b>Duration</b> <span class="tag used">Used</span><br><span class="dim">time labels left and right of the seek bar (player/qml/Player.qml, 15px)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/eq.webp"><img loading="lazy" src="img/all/eq.webp" alt="EQ"></a><figcaption><b>EQ</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/icon-wrapper.webp"><img loading="lazy" src="img/all/icon-wrapper.webp" alt="Icon Wrapper"></a><figcaption><b>Icon Wrapper</b> <span class="tag used">Used</span><br><span class="dim">components: 220x48 dropdowns of the side panel (TracksListPage), accent buttons, icon hover wrapper (IconToolButton, menu button)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/open-network-stream.webp"><img loading="lazy" src="img/all/open-network-stream.webp" alt="Open network stream"></a><figcaption><b>Open network stream</b> <span class="tag used">Used</span><br><span class="dim">medialibrary/qml/NetworkStreamDialog.qml, opened from network/qml/NetworkStreamsDisplay.qml (written without a build)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-light.webp"><img loading="lazy" src="img/all/player-light.webp" alt="Player - Light"></a><figcaption><b>Player - Light</b> <span class="tag used">Used</span><br><span class="dim">Day theme of the same player (style/systempalette.cpp, VLCStyle.figmaDay)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-1.webp"><img loading="lazy" src="img/all/player-customize-1.webp" alt="Player - customize-1"></a><figcaption><b>Player - customize-1</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-2.webp"><img loading="lazy" src="img/all/player-customize-2.webp" alt="Player - customize-2"></a><figcaption><b>Player - customize-2</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-3.webp"><img loading="lazy" src="img/all/player-customize-3.webp" alt="Player - customize-3"></a><figcaption><b>Player - customize-3</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-4.webp"><img loading="lazy" src="img/all/player-customize-4.webp" alt="Player - customize-4"></a><figcaption><b>Player - customize-4</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-5.webp"><img loading="lazy" src="img/all/player-customize-5.webp" alt="Player - customize-5"></a><figcaption><b>Player - customize-5</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-6.webp"><img loading="lazy" src="img/all/player-customize-6.webp" alt="Player - customize-6"></a><figcaption><b>Player - customize-6</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-7.webp"><img loading="lazy" src="img/all/player-customize-7.webp" alt="Player - customize-7"></a><figcaption><b>Player - customize-7</b> <span class="tag used">Used</span><br><span class="dim">player/qml/TracksMenu.qml, TracksPicker.qml, TracksListPage.qml (side panel tabs: tracks, subtitles, audio, video). Sleep timer and reverse left out on purpose</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize-8.webp"><img loading="lazy" src="img/all/player-customize-8.webp" alt="Player - customize-8"></a><figcaption><b>Player - customize-8</b> <span class="tag used">Used</span><br><span class="dim">player/qml/LibraryRail.qml + medialibrary/qml/CompactLibrary.qml, button controlbarcontrols/LibraryButton.qml (written without a build)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-customize.webp"><img loading="lazy" src="img/all/player-customize.webp" alt="Player - customize"></a><figcaption><b>Player - customize</b> <span class="tag used">Used</span><br><span class="dim">Customize Player modal: dialogs/toolbar (controlbar_profile_model.cpp, toolbar editor)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-1.webp"><img loading="lazy" src="img/all/player-1.webp" alt="Player-1"></a><figcaption><b>Player-1</b> <span class="tag used">Used</span><br><span class="dim">player/qml/Player.qml, ControlBar.qml, TopBar.qml: one-row control bar, stage with rounded corners, 40px top and 55px bottom bars</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-2.webp"><img loading="lazy" src="img/all/player-2.webp" alt="Player-2"></a><figcaption><b>Player-2</b> <span class="tag used">Used</span><br><span class="dim">player/qml/Player.qml, ControlBar.qml, TopBar.qml: one-row control bar, stage with rounded corners, 40px top and 55px bottom bars</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-3.webp"><img loading="lazy" src="img/all/player-3.webp" alt="Player-3"></a><figcaption><b>Player-3</b> <span class="tag used">Used</span><br><span class="dim">player/qml/Player.qml, ControlBar.qml, TopBar.qml: one-row control bar, stage with rounded corners, 40px top and 55px bottom bars</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player-4.webp"><img loading="lazy" src="img/all/player-4.webp" alt="Player-4"></a><figcaption><b>Player-4</b> <span class="tag used">Used</span><br><span class="dim">medialibrary/qml/VideoFolderTreeDisplay.qml and widgets/qml/PageExt.qml (address line &quot;Videos &gt; Shows &gt; The Wand &gt; S01&quot;); written without a build</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/player.webp"><img loading="lazy" src="img/all/player.webp" alt="Player"></a><figcaption><b>Player</b> <span class="tag used">Used</span><br><span class="dim">player/qml/Player.qml, ControlBar.qml, TopBar.qml: one-row control bar, stage with rounded corners, 40px top and 55px bottom bars</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-audio-1.webp"><img loading="lazy" src="img/all/settings-audio-1.webp" alt="Settings - audio-1"></a><figcaption><b>Settings - audio-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-audio.webp"><img loading="lazy" src="img/all/settings-audio.webp" alt="Settings - audio"></a><figcaption><b>Settings - audio</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-controls.webp"><img loading="lazy" src="img/all/settings-controls.webp" alt="Settings - controls"></a><figcaption><b>Settings - controls</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-extensions.webp"><img loading="lazy" src="img/all/settings-extensions.webp" alt="Settings - extensions"></a><figcaption><b>Settings - extensions</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-global-1.webp"><img loading="lazy" src="img/all/settings-global-1.webp" alt="Settings - global-1"></a><figcaption><b>Settings - global-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-global.webp"><img loading="lazy" src="img/all/settings-global.webp" alt="Settings - global"></a><figcaption><b>Settings - global</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-interface-1.webp"><img loading="lazy" src="img/all/settings-interface-1.webp" alt="Settings - interface-1"></a><figcaption><b>Settings - interface-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-interface.webp"><img loading="lazy" src="img/all/settings-interface.webp" alt="Settings - interface"></a><figcaption><b>Settings - interface</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-library.webp"><img loading="lazy" src="img/all/settings-library.webp" alt="Settings - library"></a><figcaption><b>Settings - library</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-network.webp"><img loading="lazy" src="img/all/settings-network.webp" alt="Settings - network"></a><figcaption><b>Settings - network</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-performance.webp"><img loading="lazy" src="img/all/settings-performance.webp" alt="Settings - performance"></a><figcaption><b>Settings - performance</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-playback-1.webp"><img loading="lazy" src="img/all/settings-playback-1.webp" alt="Settings - playback-1"></a><figcaption><b>Settings - playback-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-playback.webp"><img loading="lazy" src="img/all/settings-playback.webp" alt="Settings - playback"></a><figcaption><b>Settings - playback</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-privacy.webp"><img loading="lazy" src="img/all/settings-privacy.webp" alt="Settings - privacy"></a><figcaption><b>Settings - privacy</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-recording.webp"><img loading="lazy" src="img/all/settings-recording.webp" alt="Settings - recording"></a><figcaption><b>Settings - recording</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-subtitles-1.webp"><img loading="lazy" src="img/all/settings-subtitles-1.webp" alt="Settings - subtitles-1"></a><figcaption><b>Settings - subtitles-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-subtitles.webp"><img loading="lazy" src="img/all/settings-subtitles.webp" alt="Settings - subtitles"></a><figcaption><b>Settings - subtitles</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-video-1.webp"><img loading="lazy" src="img/all/settings-video-1.webp" alt="Settings - video-1"></a><figcaption><b>Settings - video-1</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/settings-video.webp"><img loading="lazy" src="img/all/settings-video.webp" alt="Settings - video"></a><figcaption><b>Settings - video</b> <span class="tag used">Used</span><br><span class="dim">dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/sorting-options.webp"><img loading="lazy" src="img/all/sorting-options.webp" alt="Sorting Options"></a><figcaption><b>Sorting Options</b> <span class="tag used">Used</span><br><span class="dim">sort menus of the library pages (widgets/qml/SortControl.qml, VideoAll.qml sortModel)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/values-1.webp"><img loading="lazy" src="img/all/values-1.webp" alt="Values-1"></a><figcaption><b>Values-1</b> <span class="tag used">Used</span><br><span class="dim">segmented values and &quot;Remember last volume&quot; rows of Settings: dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/values.webp"><img loading="lazy" src="img/all/values.webp" alt="Values"></a><figcaption><b>Values</b> <span class="tag used">Used</span><br><span class="dim">segmented values and &quot;Remember last volume&quot; rows of Settings: dialogs/preferences/simple_preferences.cpp (SettingsRows, Figma rows bound to real options)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/video-colors.webp"><img loading="lazy" src="img/all/video-colors.webp" alt="Video - Colors"></a><figcaption><b>Video - Colors</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/video-crop.webp"><img loading="lazy" src="img/all/video-crop.webp" alt="Video - Crop"></a><figcaption><b>Video - Crop</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/video-essential.webp"><img loading="lazy" src="img/all/video-essential.webp" alt="Video - Essential"></a><figcaption><b>Video - Essential</b> <span class="tag used">Used</span><br><span class="dim">player/effects_controller.*, the effects side panel cards in player/qml</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/audio-value.webp"><img loading="lazy" src="img/all/audio-value.webp" alt="audio value"></a><figcaption><b>audio value</b> <span class="tag used">Used</span><br><span class="dim">value fields of the side panel (138x34, 1px lines)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/context-menu.webp"><img loading="lazy" src="img/all/context-menu.webp" alt="context menu"></a><figcaption><b>context menu</b> <span class="tag used">Used</span><br><span class="dim">row style of every popup menu: menus/menus.cpp (RedesignMenuStyle)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/media.webp"><img loading="lazy" src="img/all/media.webp" alt="media"></a><figcaption><b>media</b> <span class="tag used">Used</span><br><span class="dim">library list rows (medialibrary/qml/VideoListDisplay.qml, TableViewDelegateExt)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/option.webp"><img loading="lazy" src="img/all/option.webp" alt="option"></a><figcaption><b>option</b> <span class="tag used">Used</span><br><span class="dim">row style of every popup menu: menus/menus.cpp (RedesignMenuStyle)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/play.webp"><img loading="lazy" src="img/all/play.webp" alt="play"></a><figcaption><b>play</b> <span class="tag used">Used</span><br><span class="dim">player/qml/controlbarcontrols/PlayButton.qml: orange play pill, grey while playing</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/playlist.webp"><img loading="lazy" src="img/all/playlist.webp" alt="playlist"></a><figcaption><b>playlist</b> <span class="tag used">Used</span><br><span class="dim">playlist rows (medialibrary/qml/PlaylistMediaList.qml)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/setting-category.webp"><img loading="lazy" src="img/all/setting-category.webp" alt="setting category"></a><figcaption><b>setting category</b> <span class="tag used">Used</span><br><span class="dim">Settings sidebar rows (dialogs/preferences, SPrefsCatList)</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/thumbnail.webp"><img loading="lazy" src="img/all/thumbnail.webp" alt="thumbnail"></a><figcaption><b>thumbnail</b> <span class="tag used">Used</span><br><span class="dim">seek bar preview card: player/seek_preview.*</span></figcaption></figure>
+<figure class="frame used" data-status="used"><a href="img/all/volume.webp"><img loading="lazy" src="img/all/volume.webp" alt="volume"></a><figcaption><b>volume</b> <span class="tag used">Used</span><br><span class="dim">player/qml/controlbarcontrols/VolumeWidget.qml (gradient wedge)</span></figcaption></figure>
+</div>
+<!--/all-frames-->
+<h2>Frames with no Qt screen yet</h2>
+
+  <section class="item">
+    <div>
+      <h3>Onboarding <span class="tag todo">Not started</span></h3>
+      <p>First-run flow of ten frames: welcome and media folder, then theme and shortcut introduction. Listed as next after Dialogs in the plan.</p>
+      <ul>
+        <li>Folder picker feeds the media library (the current first-run wizard only adds folders).</li>
+        <li>Theme choice should write the same setting as Settings, General.</li>
+        <li>The video asks for a shortcut introduction at the end.</li>
+      </ul>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/onboarding.png" alt="Onboarding welcome" loading="lazy"><figcaption>Onboarding, welcome</figcaption></figure>
+      <figure><img src="img/onboarding-3.png" alt="Onboarding step 3" loading="lazy"><figcaption>Onboarding-3</figcaption></figure>
+      <figure><img src="img/onboarding-6.png" alt="Onboarding step 6" loading="lazy"><figcaption>Onboarding-6</figcaption></figure>
+      <figure><img src="img/onboarding-10.png" alt="Onboarding last step" loading="lazy"><figcaption>Onboarding-10</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Keyboard Shortcuts dialog <span class="tag part">Partly</span></h3>
+      <p>The menu entry already opens the Controls page of Settings. The Figma frame is a separate dialog, with the hotkeys moved out of Settings.</p>
+    </div>
+    <div class="shots"><figure><img src="img/keyboard-shortcuts.png" alt="Keyboard shortcuts frame" loading="lazy"><figcaption>Keyboard Shortcuts</figcaption></figure></div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Home and sidebar entries <span class="tag part">Partly (built 2026-10-28)</span></h3>
+      <p>Home, Videos and Music exist. The frame also has these rows and sections:</p>
+      <ul>
+        <li><b>Network, Playlists, Recent</b> and <b>Add item</b> (pinned folders and playlists) in the sidebar.</li>
+        <li><b>Listen Again</b> and <b>Frequently Visited Folders</b> rows on Home.</li>
+      </ul>
+      <p class="dim">These need new pages or models, so they were left on purpose until now.</p>
+    </div>
+    <div class="shots">
+      <figure><img src="img/player-5.png" alt="Home frame" loading="lazy"><figcaption>Home (Player-5)</figcaption></figure>
+      <figure><img src="img/sidebar.png" alt="Sidebar frame" loading="lazy"><figcaption>Sidebar</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>New Playlist <span class="tag part">Partly (built 2026-10-28)</span></h3>
+      <p>Name field and file selection, plus the playlist context menu. VLC's library has playlists, but not this dialog.</p>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/new-playlist.png" alt="New playlist dialog" loading="lazy"><figcaption>New playlist</figcaption></figure>
+      <figure><img src="img/playlist-context-menu.png" alt="Playlist context menu" loading="lazy"><figcaption>Playlist context menu</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Add Subtitles to Playlist <span class="tag left">Left on purpose</span></h3>
+      <p>Add subtitles to a file, a folder or a playlist, from this computer or OpenSubtitles, matched automatically or one by one for every episode.
+      VLC has no batch matching backend.</p>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/folder.png" alt="Add subtitles, folder" loading="lazy"><figcaption>Folder</figcaption></figure>
+      <figure><img src="img/subtitle-multiple.png" alt="Several subtitle files" loading="lazy"><figcaption>Several files</figcaption></figure>
+      <figure><img src="img/sub-filename.png" alt="Subtitle file names" loading="lazy"><figcaption>File name matching</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Setting Presets and Profiles <span class="tag left">Left on purpose</span></h3>
+      <p>Per-show presets for subtitle and audio settings (delay, font, default track) and saved control bar layouts as profiles.
+      VLC stores neither per show, so this is new storage plus UI.</p>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/setting-preset.png" alt="Setting preset menu" loading="lazy"><figcaption>Setting Preset</figcaption></figure>
+      <figure><img src="img/profiles.png" alt="Profiles" loading="lazy"><figcaption>Profiles</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Audio and video effect frames <span class="tag part">Partly</span></h3>
+      <p>Equalizer, compressor, video essential, colours and crop are side-panel cards. These frames are still on the old Effects window (reached from Open Advanced Settings):</p>
+      <ul>
+        <li>Spatializer and Stereo Widener settings.</li>
+        <li>Audio visualizer picker, HDR options and the EQ presets list.</li>
+      </ul>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/audio---spatializer-settings.png" alt="Spatializer" loading="lazy"><figcaption>Spatializer</figcaption></figure>
+      <figure><img src="img/audio---stereo-widener.png" alt="Stereo widener" loading="lazy"><figcaption>Stereo Widener</figcaption></figure>
+      <figure><img src="img/audio-visualizer.png" alt="Audio visualizer" loading="lazy"><figcaption>Audio Visualizer</figcaption></figure>
+      <figure><img src="img/hdr-options.png" alt="HDR options" loading="lazy"><figcaption>HDR Options</figcaption></figure>
+      <figure><img src="img/eq-presets.png" alt="EQ presets" loading="lazy"><figcaption>EQ presets</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="item">
+    <div>
+      <h3>Player: hide UI and customise <span class="tag part">Partly</span></h3>
+      <p>The Customize Player modal is done. The hide-UI state (an option in the right-click menu and a shortcut, per the video) is not confirmed in the notes: check it.</p>
+    </div>
+    <div class="shots row">
+      <figure><img src="img/player---hide-ui.png" alt="Hide UI" loading="lazy"><figcaption>Player, hide UI</figcaption></figure>
+      <figure><img src="img/player---customize.png" alt="Customize" loading="lazy"><figcaption>Player, customize</figcaption></figure>
+    </div>
+  </section>
+
+  <h2>From the video, no frame here</h2>
+  <table>
+    <thead><tr><th>Idea</th><th>What the video says</th><th>State</th></tr></thead>
+    <tbody>
+      <tr><td>Subtitle timeline</td><td>Shows when text appears, so a delay is fixed by dragging.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Waveform seek bar</td><td>A setting in the Playback tab, also used for music.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Bookmarks in the side panel</td><td>Bookmark timeline with chapters; Ctrl+B adds a bookmark instead of opening the editor.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Shortcut in the OSD message</td><td>The on-screen message also shows the key that was pressed.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Compact library beside the video</td><td>A sidebar icon opens the library in the player, drag items to the queue.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Continue Watching prompt</td><td>Appears near the controls, not far away, since there are about five seconds to answer.</td><td><span class="tag todo">Not started</span></td></tr>
+      <tr><td>Sleep timer, reverse</td><td>Playback tab of the side panel.</td><td><span class="tag left">Left on purpose</span></td></tr>
+      <tr><td>Settings top bar</td><td>Frameless window with a close button, no Save and Cancel.</td><td><span class="tag left">Left on purpose</span></td></tr>
+      <tr><td>Fullscreen button order, menu drop shadows, right-click menu order</td><td>Small differences from the frames.</td><td><span class="tag left">Left on purpose</span></td></tr>
+    </tbody>
+  </table>
+
+  <p class="note">Frames are from <code>VLC Redesign (Community)(1)</code> in Downloads. Frames already built (player bars, library, Settings, menus, side panels, dialogs started) are not repeated here.
+  See <code>redesign/PLAN.md</code> for the phases.</p>
+</main>
+</body>
+</html>
