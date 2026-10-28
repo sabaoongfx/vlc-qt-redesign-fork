@@ -54,8 +54,9 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   VLC's Mac app is Cocoa). Ask the user before pushing a tag (it publishes the release).
 - `.github/workflows/redesign-release.yml` (on `v*` tags): waits for the Windows and Linux-packages runs of the tagged
   commit (a tag run cannot read the redesign branch caches, so it does not build), downloads their artifacts and
-  publishes versioned + fixed-name assets (`VLC-juxtopposed-x64-setup.exe`, `-x64-portable.zip`, `-x86_64.AppImage`,
-  `-x86_64.tar.gz`) and SHA256SUMS. Tag a commit whose Windows and Linux-packages runs both passed.
+  publishes fixed-name assets only, no version in the file names (the tag has it; `VLC-juxtopposed-x64-setup.exe`,
+  `-x64-portable.zip`, `-x86_64.AppImage`, `-x86_64.tar.gz`) and SHA256SUMS, like notz, so the website links never
+  change. Tag a commit whose Windows and Linux-packages runs both passed.
 - Windows: `build.sh -r` already runs `make package-win32` (zip, 7z, NSIS exe; the image has makensis); the NSIS script
   (`extras/package/win32/NSIS/vlc.win32.nsi.in`) has its own name/folder/registry key/uninstall entry/product id so it
   installs next to VideoLAN's VLC; paths with `${PRODUCT_PUBLISHER}` must be quoted (it has a space). Passing.
@@ -76,17 +77,25 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
   for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
   caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
-  `releases/latest/download` skips pre-releases); the no-JavaScript fallback links in `index.html` are the v0.1.0 files
-  (update those four with each release; `vlc-web` `982f97e`). Screenshots come from
+  `releases/latest/download` skips pre-releases); the no-JavaScript fallback links in `index.html` are the v0.1.1 files
+  (update those four and the two comments in `main.js` with each release; `vlc-web` `550d820`). Screenshots come from
   showcase.sh (WebP 1600 + 800). Audited clean: Lighthouse 100 (mobile perf 98 on the home page), pa11y WCAG2AA 0
   issues, html-validate. Blog: `blog/porting-juxtopposeds-vlc-redesign/` (first person as the user; facts checked
   against the repo; uses Juxtopposed's Figma Settings frame, credited). Keep it accurate when things change.
 - Released 2026-10-27: **v0.1.0** (pre-release) on `43d2e8b`, all nine assets published by `redesign-release.yml`. The first
   v0.1.0 (on `18bcace`) was deleted and re-tagged: its Windows build showed only the video, no interface (see the Canvas
   gotcha under Windows CI gotchas). Delete a release with `gh release delete v0.1.0 --cleanup-tag --yes`, then re-tag.
-- Open: the build still carries VideoLAN's update check ("An error occurred while checking for updates" dialogs in the
-  Windows shots); Windows CI has no playback shot (night-player.png is a pile of update dialogs), so Windows playback is
-  verified by hand only; a retry for the apt hang in the Linux packages workflow.
+- Released 2026-10-28: **v0.1.1** (pre-release) on `e403c1b`: "Remove from list" in the Continue Watching context menu
+  (`MLRecentVideoModel::removeFromHistory`: marks the video unplayed, which drops it from the history; the file stays),
+  opening a tracks/audio/effects panel closes the play queue (`ControlBar.applyMenu`), the player is dark for every
+  embedded video even with the controls pinned (the Windows default; `Player.qml`/`MinimalView.qml`), Windows build
+  without VideoLAN's update check (`build.sh` no longer passes `--enable-update-check`: it pointed at VideoLAN's
+  releases). Its assets had versioned copies that were deleted afterwards (fixed names only now).
+- Windows shots (`win-shots.ps1`) play an ffmpeg test video (installed with choco in the workflow) and shoot the tracks,
+  audio and play queue panels (`*-player-{tracks,audio,queue}.png`, found by their button descriptions via UI Automation)
+  plus `vlc-<scheme>-player.log`. In the Day shots the title and bottom bars look mid-grey (probably the Windows blur over
+  the desktop; not checked).
+- Open: a retry for the apt hang in the Linux packages workflow.
 - Open: Settings top bar is still the system one + Save/Cancel; the Figma window is frameless with a close x and no
   Save/Cancel. The user said leave it for now.
 
