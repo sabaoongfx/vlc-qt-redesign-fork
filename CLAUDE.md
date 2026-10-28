@@ -56,7 +56,7 @@ The prototype is the visual reference only; do not copy its data layer. Back the
   commit (a tag run cannot read the redesign branch caches, so it does not build), downloads their artifacts and
   publishes fixed-name assets only, no version in the file names (the tag has it; `VLC-juxtopposed-x64-setup.exe`,
   `-x64-portable.zip`, `-x86_64.AppImage`, `-x86_64.tar.gz`) and SHA256SUMS, like notz, so the website links never
-  change. The assets are attested (`actions/attest-build-provenance`, from the next release on; v0.1.0/v0.1.1 have none),
+  change (`releases/latest/download`, so releases must not be pre-releases: only `-rc` tags are, since 2026-10-28). The assets are attested (`actions/attest-build-provenance`, from the next release on; v0.1.0/v0.1.1 have none),
   notes show `gh attestation verify <file> -R <repo>`. Tag a commit whose Windows and Linux-packages runs both passed.
 - Windows: `build.sh -r` already runs `make package-win32` (zip, 7z, NSIS exe; the image has makensis); the NSIS script
   (`extras/package/win32/NSIS/vlc.win32.nsi.in`) has its own name/folder/registry key/uninstall entry/product id so it
@@ -78,8 +78,8 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 - Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
   for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
   caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
-  `releases/latest/download` skips pre-releases); the no-JavaScript fallback links in `index.html` are the v0.1.1 files
-  (update those four and the two comments in `main.js` with each release; `vlc-web` `550d820`). Screenshots come from
+  `releases/latest/download` skips pre-releases, which is why releases are full ones); the no-JavaScript fallback links in `index.html` are
+  `releases/latest/download/<fixed name>` (no version, never edited, like notz). Screenshots come from
   showcase.sh (WebP 1600 + 800). Audited clean: Lighthouse 100 (mobile perf 98 on the home page), pa11y WCAG2AA 0
   issues, html-validate. Blog: `blog/porting-juxtopposeds-vlc-redesign/` (first person as the user; facts checked
   against the repo; uses Juxtopposed's Figma Settings frame, credited). Keep it accurate when things change.
