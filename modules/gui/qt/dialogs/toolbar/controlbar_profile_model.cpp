@@ -105,7 +105,9 @@ decltype (ControlbarProfileModel::m_defaults)
                                 {
                                     ControlListModel::LIBRARY_BUTTON,
                                     ControlListModel::PREVIOUS_BUTTON,
+                                    ControlListModel::SKIP_BACK_BUTTON,
                                     ControlListModel::PLAY_BUTTON,
+                                    ControlListModel::SKIP_FW_BUTTON,
                                     ControlListModel::NEXT_BUTTON
                                 },
                                 {
@@ -828,13 +830,20 @@ bool ControlbarProfileModel::reload()
                     data[2].insert(1, ControlListModel::AUDIO_BUTTON);
             }
 
-            // redesign: a video bar saved exactly as the Default Style was before the library button existed
-            // gets the button before the transport, where the default now has it
+            // redesign: a video bar saved exactly as an older Default Style (transport only, or with the library
+            // button) gets the current left group: library button, previous, 10 s back, play, 10 s forward, next
             if (identifier == PlayerControlbarModel::Videoplayer && ptrNewProfile->name() == qfut(N_("Default Style"))
-                && data[0].size() == 3 && data[1].isEmpty()
-                && data[0] == QVector<int> { ControlListModel::PREVIOUS_BUTTON, ControlListModel::PLAY_BUTTON,
-                                             ControlListModel::NEXT_BUTTON })
-                data[0].prepend(ControlListModel::LIBRARY_BUTTON);
+                && data[1].isEmpty())
+            {
+                static const QVector<int> oldTransport { ControlListModel::PREVIOUS_BUTTON, ControlListModel::PLAY_BUTTON,
+                                                         ControlListModel::NEXT_BUTTON };
+                static const QVector<int> oldWithLibrary { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                                                           ControlListModel::PLAY_BUTTON, ControlListModel::NEXT_BUTTON };
+                if (data[0] == oldTransport || data[0] == oldWithLibrary)
+                    data[0] = { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                                ControlListModel::SKIP_BACK_BUTTON, ControlListModel::PLAY_BUTTON,
+                                ControlListModel::SKIP_FW_BUTTON, ControlListModel::NEXT_BUTTON };
+            }
 
             // redesign: the built-in profiles are saved on the first run and never refreshed, so a Default Style
             // saved by a build before the Figma one-row bar keeps upstream's centred transport (skips, previous,
