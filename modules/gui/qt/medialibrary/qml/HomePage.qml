@@ -39,7 +39,9 @@ Widgets.PageExt {
         { text: qsTr("Newest First"),    criteria: "insertion", order: Qt.DescendingOrder },
         { text: qsTr("Oldest First"),    criteria: "insertion", order: Qt.AscendingOrder  },
         { text: qsTr("Title A-Z"),       criteria: "title",     order: Qt.AscendingOrder  },
-        { text: qsTr("Title Z-A"),       criteria: "title",     order: Qt.DescendingOrder }
+        { text: qsTr("Title Z-A"),       criteria: "title",     order: Qt.DescendingOrder },
+        { text: qsTr("URI Ascending"),   criteria: "filename",  order: Qt.AscendingOrder  },
+        { text: qsTr("URI Descending"),  criteria: "filename",  order: Qt.DescendingOrder }
     ]
 
     title: qsTr("Home")

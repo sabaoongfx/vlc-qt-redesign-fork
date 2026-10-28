@@ -33,13 +33,20 @@ Widgets.PageExt {
     property alias model: tracklistdisplay_id.model
     property alias selectionModel: tracklistdisplay_id.selectionModel
 
+    // Figma Sorting Options. The Disc Number entries are left out: the media library has no disc sort criterion.
     property var sortModel: [
-        { text: qsTr("Title"),    criteria: "title"},
-        { text: qsTr("Album"),    criteria: "album_title" },
-        { text: qsTr("Artist"),   criteria: "main_artist" },
-        { text: qsTr("Duration"), criteria: "duration" },
-        { text: qsTr("Track"),    criteria: "track_number" },
-        { text: qsTr("Disc"),     criteria: "disc_number" }
+        { text: qsTr("Newest First"),             criteria: "insertion",    order: Qt.DescendingOrder },
+        { text: qsTr("Oldest First"),             criteria: "insertion",    order: Qt.AscendingOrder  },
+        { text: qsTr("Title A-Z"),                criteria: "title",        order: Qt.AscendingOrder  },
+        { text: qsTr("Title Z-A"),                criteria: "title",        order: Qt.DescendingOrder },
+        { text: qsTr("Artist A-Z"),               criteria: "main_artist",  order: Qt.AscendingOrder  },
+        { text: qsTr("Artist Z-A"),               criteria: "main_artist",  order: Qt.DescendingOrder },
+        { text: qsTr("Album A-Z"),                criteria: "album_title",  order: Qt.AscendingOrder  },
+        { text: qsTr("Album Z-A"),                criteria: "album_title",  order: Qt.DescendingOrder },
+        { text: qsTr("Track Number Ascending"),   criteria: "track_number", order: Qt.AscendingOrder  },
+        { text: qsTr("Track Number Descending"),  criteria: "track_number", order: Qt.DescendingOrder },
+        { text: qsTr("URI Ascending"),            criteria: "filename",     order: Qt.AscendingOrder  },
+        { text: qsTr("URI Descending"),           criteria: "filename",     order: Qt.DescendingOrder }
     ]
 
     function setCurrentItemFocus(reason) {
