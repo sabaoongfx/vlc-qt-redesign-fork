@@ -77,6 +77,10 @@ Widgets.IconToolButton {
         ctx: MainCtx
 
         onAboutToShow: {
+
+            // redesign: one side panel at a time, the play queue gives way
+
+            MainCtx.playqueuePanel.visible = false
             root._menuShown = true
             root.requestLockUnlockAutoHide(true)
         }
@@ -111,6 +115,10 @@ Widgets.IconToolButton {
             colorContext.palette: root.colorContext.palette
 
             onOpened: {
+
+                // redesign: one side panel at a time, the play queue gives way
+
+                MainCtx.playqueuePanel.visible = false
                 root.requestLockUnlockAutoHide(true)
                 root.menuOpened(panel)
             }
