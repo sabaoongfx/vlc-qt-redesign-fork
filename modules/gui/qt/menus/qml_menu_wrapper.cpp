@@ -997,14 +997,11 @@ void PlaylistListContextMenu::exportPlaylist(MediaLib * ml, const QVariant & pla
 
         QTextStream out(&file);
 
-        out << "#EXTM3U
-";
+        out << "#EXTM3U\n";
 
         for (const auto & entry : ctx.entries)
-            out << "#EXTINF:" << std::get<1>(entry) << ',' << std::get<0>(entry) << '
-'
-                << std::get<2>(entry) << '
-';
+            out << "#EXTINF:" << std::get<1>(entry) << ',' << std::get<0>(entry) << '\n'
+                << std::get<2>(entry) << '\n';
     });
 }
 
