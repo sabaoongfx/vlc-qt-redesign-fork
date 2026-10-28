@@ -39,26 +39,15 @@ Widgets.PageExt {
     signal showBrowse(int reason)
 
     function setCurrentItemFocus(reason) {
-        addressField.forceActiveFocus(reason)
+        addButton.forceActiveFocus(reason)
     }
 
-    // Saves the address, and plays it when asked to
-    function addAddress(play) {
-        const text = addressField.text.trim()
-
-        if (text === "")
-            return
-
-        if (urlListDisplay.status === Loader.Ready) {
-            if (play)
-                urlListDisplay.item.model.addAndPlay(text)
-            else
-                urlListDisplay.item.model.add(text)
-        } else if (play) {
-            MainPlaylistController.append([text], true)
-        }
-
-        addressField.text = ""
+    // Saves the addresses the dialog returned
+    function addAddresses(urls) {
+        if (urlListDisplay.status === Loader.Ready)
+            urls.forEach(url => urlListDisplay.item.model.add(url))
+        else
+            MainPlaylistController.append(urls, false)
     }
 
     FocusScope {
@@ -79,41 +68,21 @@ Widgets.PageExt {
 
                 spacing: VLCStyle.margin_xsmall
 
-                Widgets.TextFieldExt {
-                    id: addressField
-
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: VLCStyle.dp(34, VLCStyle.scale)
+                Widgets.ButtonExt {
+                    id: addButton
 
                     focus: true
 
-                    placeholderText: qsTr("Paste or write a network address (http://, rtsp://, ...)")
-                    selectByMouse: true
-
-                    AccessibleCompat.id: "networkAddressField"
-
-                    onAccepted: root.addAddress(false)
-
-                    // typed letters must not run the global shortcuts
-                    onActiveFocusChanged: MainCtx.useGlobalShortcuts = !activeFocus
-                }
-
-                Widgets.ButtonExt {
                     text: qsTr("Add stream")
                     iconTxt: VLCIcons.add
 
-                    enabled: addressField.text.trim() !== ""
+                    enabled: dialogLoader.status === Loader.Ready
 
-                    onClicked: root.addAddress(false)
+                    onClicked: dialogLoader.item.open()
                 }
 
-                Widgets.ButtonExt {
-                    text: qsTr("Play")
-                    iconTxt: VLCIcons.play
-
-                    enabled: addressField.text.trim() !== ""
-
-                    onClicked: root.addAddress(true)
+                Item {
+                    Layout.fillWidth: true
                 }
 
                 Widgets.ButtonExt {
@@ -145,7 +114,7 @@ Widgets.PageExt {
                         item.fadingEdge.enableBeginningFade = Qt.binding(() => root.enableBeginningFade)
                         item.fadingEdge.enableEndFade = Qt.binding(() => root.enableEndFade)
 
-                        item.Navigation.upItem = addressField
+                        item.Navigation.upItem = addButton
                         item.Navigation.parentItem = root
 
                         item.searchPattern = Qt.binding(() => root.search.pattern)
@@ -165,5 +134,14 @@ Widgets.PageExt {
                 }
             }
         }
+    }
+
+    // The Figma "Open network stream" dialog (in the media library module, so loaded by url)
+    Loader {
+        id: dialogLoader
+
+        source: "qrc:///qt/qml/VLC/MediaLibrary/NetworkStreamDialog.qml"
+
+        onLoaded: item.saved.connect(root.addAddresses)
     }
 }
