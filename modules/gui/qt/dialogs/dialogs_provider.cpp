@@ -121,6 +121,18 @@ QString DialogsProvider::getSaveFileName( QWidget *parent,
     return QFileDialog::getSaveFileUrl( parent, caption, dir, filter, selectedFilter, QFileDialog::Options(), schemes).toLocalFile();
 }
 
+QStringList DialogsProvider::getOpenFileUrls(const QString& title)
+{
+    QStringList result;
+
+    const QList<QUrl> urls = QFileDialog::getOpenFileUrls(nullptr, title);
+
+    for (const QUrl& url : urls)
+        result.append(url.toString(QUrl::FullyEncoded));
+
+    return result;
+}
+
 QVariant DialogsProvider::getTextDialog(QWidget *parent,
                                         const QString &title,
                                         const QString &label,

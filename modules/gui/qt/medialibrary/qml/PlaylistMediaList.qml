@@ -520,6 +520,29 @@ MainViewLoader {
         }
     }
 
+    // redesign: Figma "New playlist"
+    NewPlaylistDialog {
+        id: newPlaylistDialog
+
+        onSaved: (name, urls) => playlistModel.create(name, urls)
+    }
+
+    Widgets.ButtonExt {
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.rightMargin: VLCStyle.margin_large
+        anchors.bottomMargin: VLCStyle.margin_large + root.displayMarginEnd
+
+        z: 2
+
+        text: qsTr("New Playlist")
+        iconTxt: VLCIcons.add
+
+        enabled: !root.model?.transactionPending
+
+        onClicked: newPlaylistDialog.open()
+    }
+
     Component {
         id: emptyLabel
 

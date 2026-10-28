@@ -1221,6 +1221,7 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/MusicTrackListDisplay.qml \
 	medialibrary/qml/MusicTracksDisplay.qml \
 	medialibrary/qml/NetworkStreamDialog.qml \
+	medialibrary/qml/NewPlaylistDialog.qml \
 	medialibrary/qml/UrlListDisplay.qml \
 	medialibrary/qml/VideoDisplay.qml \
 	medialibrary/qml/VideoAll.qml \

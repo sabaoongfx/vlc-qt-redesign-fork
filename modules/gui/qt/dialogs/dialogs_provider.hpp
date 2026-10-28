@@ -152,6 +152,10 @@ public:
                                               const QString& placeholder,
                                               bool* ok = nullptr);
 
+    // redesign: a file chooser for the QML dialogs; the chosen files as encoded urls (empty when
+    // cancelled)
+    Q_INVOKABLE static QStringList getOpenFileUrls(const QString& title);
+
 protected:
     void customEvent( QEvent *) override;
 
