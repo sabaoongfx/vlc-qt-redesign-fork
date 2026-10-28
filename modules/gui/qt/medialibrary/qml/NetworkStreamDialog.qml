@@ -69,8 +69,11 @@ T.Popup {
         close()
     }
 
+    // a popup is not an item, its context cannot find the window's palette by itself: give it the
+    // palette like VLC's own dialogs (ModalDialog.qml) do
     readonly property ColorContext colorContext: ColorContext {
         id: theme
+        palette: VLCStyle.palette
         colorSet: ColorContext.View
     }
 
@@ -92,6 +95,13 @@ T.Popup {
 
     contentItem: ColumnLayout {
         spacing: 0
+
+        // the content is not parented to the popup either: its children (title band, buttons) find
+        // their palette here (TracksMenu does the same)
+        readonly property ColorContext colorContext: ColorContext {
+            colorSet: theme.colorSet
+            palette: theme.palette
+        }
 
         Widgets.DialogTitleBand {
             Layout.fillWidth: true

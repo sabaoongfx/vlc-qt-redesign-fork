@@ -38,6 +38,13 @@ Widgets.PageExt {
     // Asks the parent to show the device browser (local network, UPnP, SMB...)
     signal showBrowse(int reason)
 
+    // the buttons take their colours from here: without a context at the root of the page they had no
+    // palette and were not drawn at all (CI screenshot lib-browse, 2026-10-28)
+    readonly property ColorContext colorContext: ColorContext {
+        id: theme
+        colorSet: ColorContext.View
+    }
+
     function setCurrentItemFocus(reason) {
         addButton.forceActiveFocus(reason)
     }
@@ -127,10 +134,10 @@ Widgets.PageExt {
 
                     visible: !(urlListDisplay.item?.visible ?? false)
 
-                    text: qsTr("No saved streams yet\nAdd a network address above")
+                    text: qsTr("No saved streams yet\nUse Add stream to save a network address")
                     horizontalAlignment: Text.AlignHCenter
                     font.pixelSize: VLCStyle.fontSize_large
-                    color: VLCStyle.figmaColors(true).hint
+                    color: VLCStyle.figmaColors(theme.palette?.isDark ?? true).hint
                 }
             }
         }
