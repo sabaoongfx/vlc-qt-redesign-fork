@@ -75,13 +75,14 @@ Widgets.PageExt {
 
                 spacing: VLCStyle.margin_xsmall
 
-                Widgets.ButtonExt {
+                Widgets.DialogButton {
                     id: addButton
 
                     focus: true
+                    activeFocusOnTab: true
 
                     text: qsTr("Add stream")
-                    iconTxt: VLCIcons.add
+                    primary: true
 
                     enabled: dialogLoader.status === Loader.Ready
 
@@ -92,9 +93,10 @@ Widgets.PageExt {
                     Layout.fillWidth: true
                 }
 
-                Widgets.ButtonExt {
+                Widgets.DialogButton {
                     text: qsTr("Browse devices")
-                    iconTxt: VLCIcons.topbar_network
+
+                    activeFocusOnTab: true
 
                     onClicked: root.showBrowse(Qt.MouseFocusReason)
                 }

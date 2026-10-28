@@ -37,7 +37,7 @@ Rectangle {
 
     readonly property bool _accent: primary && enabled
 
-    implicitWidth: VLCStyle.dp(100, VLCStyle.scale)
+    implicitWidth: Math.max(VLCStyle.dp(100, VLCStyle.scale), label.implicitWidth + VLCStyle.margin_normal * 2)
     implicitHeight: VLCStyle.dp(32, VLCStyle.scale)
 
     radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -48,18 +48,24 @@ Rectangle {
     Accessible.name: text
     Accessible.onPressAction: if (enabled) root.clicked()
 
+    // the palette is given, not looked up through the parents: on the Network page the stock buttons
+    // found none and were not drawn (CI screenshots, 2026-10-28); VLC's own dialogs do the same
     readonly property ColorContext colorContext: ColorContext {
         id: theme
+        palette: VLCStyle.palette
         colorSet: ColorContext.View
     }
 
     // the text colour on the accent fill comes from the palette
     ColorContext {
         id: accentTheme
+        palette: VLCStyle.palette
         colorSet: ColorContext.ButtonAccent
     }
 
     LabelExt {
+        id: label
+
         anchors.centerIn: parent
 
         text: root.text
