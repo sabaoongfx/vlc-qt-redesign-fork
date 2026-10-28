@@ -230,7 +230,7 @@ Rectangle {
             }
 
             Rectangle {
-                Layout.preferredWidth: VLCStyle.dp(180, VLCStyle.scale)
+                Layout.preferredWidth: VLCStyle.dp(150, VLCStyle.scale)
                 Layout.preferredHeight: VLCStyle.dp(30, VLCStyle.scale)
 
                 radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -284,6 +284,12 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                     }
                 }
+            }
+
+            // the folder context menu, on the right of the search
+            Widgets.LibraryMenuButton {
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
             }
         }
 

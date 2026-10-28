@@ -175,4 +175,9 @@ NavigableRow {
             }
         }
     }
+
+    // redesign: the folder context menu (Figma), on the right of the search
+    LibraryMenuButton {
+        anchors.verticalCenter: parent.verticalCenter
+    }
 }

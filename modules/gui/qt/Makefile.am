@@ -1454,6 +1454,7 @@ libqml_module_widgets_a_QML = \
 	widgets/qml/EmptyLabelHint.qml \
 	widgets/qml/GridItem.qml \
 	widgets/qml/GridSortFilterControls.qml \
+	widgets/qml/LibraryMenuButton.qml \
 	widgets/qml/HorizontalResizeHandle.qml \
 	widgets/qml/IconLabel.qml \
 	widgets/qml/IconButton.qml \
