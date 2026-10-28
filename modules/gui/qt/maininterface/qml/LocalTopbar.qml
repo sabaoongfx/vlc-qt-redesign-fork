@@ -102,52 +102,9 @@ T.ToolBar {
                 Navigation.parentItem: root
                 Navigation.rightItem: playqueueButtonsTop
 
-                // redesign: Figma library top bar, cone and menu on the left; back/forward live in
-                // the page header, the play queue button in the mini player
-                Widgets.BannerCone {
-                    id: logo
-
-                    sourceSize.width: VLCStyle.bannerButton_height
-                    sourceSize.height: VLCStyle.bannerButton_height
-                    color: theme.accent
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Widgets.IconToolButton {
-                    id: menuBtn
-
-                    visible: !MainCtx.hasToolbarMenu
-                    font.pixelSize: VLCStyle.icon_banner
-                    text: VLCIcons.more
-                    description: qsTr("Menu")
-                    width: VLCStyle.bannerButton_width
-                    height: VLCStyle.bannerButton_height
-                    checked: contextMenu.shown
-
-                    // redesign: Figma Icon Wrapper, a 30x32 box with a 4px radius around the
-                    // 24px icon, kept while the menu is open; drawn outside the item so the bar
-                    // layout does not move
-                    leftInset: -VLCStyle.dp(3, VLCStyle.scale)
-                    rightInset: -VLCStyle.dp(3, VLCStyle.scale)
-                    topInset: -VLCStyle.dp(4, VLCStyle.scale)
-                    bottomInset: -VLCStyle.dp(4, VLCStyle.scale)
-                    radius: VLCStyle.dp(4, VLCStyle.scale)
-                    backgroundColor: (hovered || checked) ? VLCStyle.figmaColors(colorContext.palette.isDark).iconHover
-                                                          : "transparent"
-                    color: checked ? colorContext.fg.secondary : colorContext.fg.primary
-
-                    Navigation.parentItem: navigationButtons
-                    Navigation.leftItem: logo
-                    Navigation.rightItem: navigationVisibilty
-
-                    onClicked: contextMenu.popup(this.mapToGlobal(0, height))
-
-                    Menus.QmlGlobalMenu {
-                        id: contextMenu
-                        ctx: MainCtx
-                    }
-                }
-
+                // redesign: no cone and no menu button here, Open File and the rest are in the library menu
+                // (the "..." next to the search); back/forward live in the page header, the play queue
+                // button in the mini player
                 Widgets.IconToolButton {
                     id: navigationVisibilty
 
@@ -232,7 +189,6 @@ T.ToolBar {
                     plListView: root.plListView
 
                     Navigation.parentItem: playqueueButtonsTop
-                    Navigation.rightItem: menuBtn
                     Navigation.leftItem: historyBack
 
                     onClicked:  root.togglePlayqueueVisibility()
