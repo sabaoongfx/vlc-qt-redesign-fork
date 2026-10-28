@@ -130,7 +130,10 @@ T.Button {
     }
 
     component DefaultContentIconLabel : Widgets.IconLabel {
-        required property ButtonExt control
+        // redesign: `var`, not `ButtonExt`: the CI Qt build resolved the file's own type to another type
+        // object, `control: root` failed ("Unable to assign [undefined] to ButtonExt_QMLTYPE_n") and every
+        // stock button was drawn without its icon and text
+        required property var control
 
         visible: text.length > 0 && control.display !== AbstractButton.TextOnly
 
@@ -159,7 +162,10 @@ T.Button {
     }
 
     component DefaultContentLabel : Label {
-        required property ButtonExt control
+        // redesign: `var`, not `ButtonExt`: the CI Qt build resolved the file's own type to another type
+        // object, `control: root` failed ("Unable to assign [undefined] to ButtonExt_QMLTYPE_n") and every
+        // stock button was drawn without its icon and text
+        required property var control
 
         visible: control.showText && control.display !== AbstractButton.IconOnly
 

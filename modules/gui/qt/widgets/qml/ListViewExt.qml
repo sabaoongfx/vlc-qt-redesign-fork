@@ -410,7 +410,8 @@ ListView {
         // does not have a "target" property, and wants a valid parent.
         enabled: !!view.acceptDropFunc
 
-        required property ListViewExt view
+        // redesign: `var`, not `ListViewExt` (same failed self-type assignment as ButtonExt.control)
+        required property var view
 
         NumberAnimation {
             // TODO: Use YAnimator >= Qt 6.0 (QTBUG-66475)

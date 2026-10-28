@@ -235,13 +235,13 @@ T.Page {
             Breadcrumbs {
                 id: crumbRow
 
-                visible: defaultPageHeader.crumbs.length > 0
+                visible: (defaultPageHeader.crumbs ?? []).length > 0
 
                 Layout.fillWidth: true
                 Layout.leftMargin: VLCStyle.margin_xsmall
 
                 pixelSize: VLCStyle.fontSize_xlarge
-                names: defaultPageHeader.crumbs.map((text, index) => ({ text: text, depth: index }))
+                names: (defaultPageHeader.crumbs ?? []).map((text, index) => ({ text: text, depth: index }))
 
                 onCrumbClicked: (depth) => root.crumbClicked(depth)
             }
