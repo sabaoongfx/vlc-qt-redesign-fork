@@ -19,7 +19,6 @@
 import QtQuick
 
 
-import VLC.MainInterface
 import VLC.Widgets as Widgets
 import VLC.Style
 import VLC.Player
@@ -85,10 +84,6 @@ Widgets.IconToolButton {
             colorContext.palette: root.colorContext.palette
 
             onOpened: {
-
-                // redesign: one side panel at a time, the play queue gives way
-
-                MainCtx.playqueuePanel.visible = false
                 root.requestLockUnlockAutoHide(true)
                 root.menuOpened(menu)
             }
@@ -117,10 +112,6 @@ Widgets.IconToolButton {
             onPreferencesRequested: (panelTab) => menuLoader.item?.openTab(panelTab)
 
             onOpened: {
-
-                // redesign: one side panel at a time, the play queue gives way
-
-                MainCtx.playqueuePanel.visible = false
                 root.requestLockUnlockAutoHide(true)
                 root.menuOpened(picker)
             }

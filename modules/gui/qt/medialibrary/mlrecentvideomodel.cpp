@@ -19,6 +19,8 @@
 #include "mlrecentvideomodel.hpp"
 #include "mlhelper.hpp"
 
+#include <QPointer>
+
 // Ctor / dtor
 
 MLRecentVideoModel::MLRecentVideoModel(QObject * parent) : MLVideoModel(parent) {}
@@ -37,14 +39,15 @@ void MLRecentVideoModel::removeFromHistory(const QModelIndex & index)
     const int64_t id = video->getId().id;
 
     // ML thread
-    m_mediaLib->runOnMLThread(this, [id] (vlc_medialibrary_t * ml)
+    m_mediaLib->runOnMLThread(this, [id, self = QPointer<MLRecentVideoModel>(this)] (vlc_medialibrary_t * ml)
     {
         // NOTE: Marking a media as unplayed removes it from the history, the file stays.
         vlc_ml_media_set_played(ml, id, false);
-    });
 
-    // NOTE: The row disappears right away.
-    emit resetRequested();
+        // NOTE: Reload once the history is updated, so the row disappears.
+        if (self)
+            QMetaObject::invokeMethod(self, &MLRecentVideoModel::resetRequested, Qt::QueuedConnection);
+    });
 }
 
 // Protected MLBaseModel implementation

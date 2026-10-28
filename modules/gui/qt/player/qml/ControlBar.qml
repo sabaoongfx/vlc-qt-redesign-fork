@@ -85,8 +85,11 @@ T.Pane {
             return
 
         // NOTE: When applying a new menu we hide the previous one.
-        if (menu)
+        if (menu) {
             dismiss()
+            // redesign: one side panel at a time, the play queue gives way
+            MainCtx.playqueuePanel.visible = false
+        }
 
         root.menu = menu
     }
