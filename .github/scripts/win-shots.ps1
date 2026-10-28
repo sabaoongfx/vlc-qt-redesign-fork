@@ -1,6 +1,6 @@
 # Launches the portable Windows build on the runner's desktop and takes screenshots.
-# usage: win-shots.ps1 <folder with vlc.exe> <output folder>
-param([string]$Vlc, [string]$Out)
+# usage: win-shots.ps1 <folder with vlc.exe> <output folder> <test video>
+param([string]$Vlc, [string]$Out, [string]$Video)
 
 $ErrorActionPreference = 'Continue'
 New-Item -ItemType Directory -Force $Out | Out-Null
@@ -93,13 +93,25 @@ foreach ($scheme in @(@('system', 0), @('day', 1), @('night', 2))) {
     foreach ($name in @('vlc-qt-interface.ini', 'vlc-qt-interface.conf')) {
         Set-Content "$conf\$name" "[MainWindow]`ncolor-scheme-index=$($scheme[1])`n"
     }
-    # player: capture the desktop as a video source so the player UI has something to show
-    $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', 'screen://' -PassThru
+    # player: a generated test video, like the Linux shots
+    $p = Start-Process $exe -ArgumentList '--no-qt-privacy-ask', '--no-media-library', '--aout=adummy', '--verbose=1', '--file-logging', "--logfile=$Outlc-$tag-player.log", "`"$Video`"" -PassThru
     Start-Sleep -Seconds 12
     # the controls auto-hide over video: wake them up by moving the mouse
     $b = [System.Windows.Forms.SystemInformation]::VirtualScreen
     foreach ($dy in 40, 80, 120) { [void][Native]::SetCursorPos([int]($b.Width / 2), [int]($b.Height - $dy)); Start-Sleep -Milliseconds 400 }
     Start-Sleep -Seconds 1
     Shot "$tag-player"
+
+    # side panels over the video: the tracks panel and the play queue (names are the buttons' descriptions)
+    foreach ($panel in @(@('Languages and tracks', 'tracks'), @('Audio tracks and output', 'audio'), @('Play Queue', 'queue'))) {
+        foreach ($dy in 40, 80) { [void][Native]::SetCursorPos([int]($b.Width / 2), [int]($b.Height - $dy)); Start-Sleep -Milliseconds 300 }
+        if (ClickByName $panel[0]) {
+            Start-Sleep -Seconds 2
+            Shot ("$tag-player-" + $panel[1])
+            # Escape closes the audio button's popup menu; a panel closes on the next press outside it
+            [System.Windows.Forms.SendKeys]::SendWait('{ESC}')
+            Start-Sleep -Milliseconds 500
+        }
+    }
     Get-Process vlc -ErrorAction SilentlyContinue | Stop-Process -Force
 }

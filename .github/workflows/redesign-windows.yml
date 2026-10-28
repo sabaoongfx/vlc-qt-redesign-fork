@@ -106,11 +106,18 @@ jobs:
           Expand-Archive (Get-ChildItem dl -Filter *.zip | Select-Object -First 1).FullName -DestinationPath app
           Get-ChildItem app
 
+      - name: Test video
+        shell: pwsh
+        run: |
+          choco install ffmpeg -y --no-progress | Select-Object -Last 3
+          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=854x480:rate=30" -f lavfi -i "sine=frequency=440" -t 60 -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest test.mp4
+          Get-Item test.mp4
+
       - name: Screenshots
         shell: pwsh
         run: |
           $dir = (Get-ChildItem app -Directory | Select-Object -First 1).FullName
-          .github/scripts/win-shots.ps1 $dir "$PWD/shots"
+          .github/scripts/win-shots.ps1 $dir "$PWD/shots" "$PWD/test.mp4"
 
       - uses: actions/upload-artifact@v4
         if: always()
