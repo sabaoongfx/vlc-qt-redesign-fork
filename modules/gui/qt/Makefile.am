@@ -1271,6 +1271,8 @@ libqml_module_network_a_QML = \
 	network/qml/BrowseTreeHeader.qml \
 	network/qml/DiscoverDisplay.qml \
 	network/qml/DiscoverUrlDisplay.qml \
+	network/qml/NetworkDisplay.qml \
+	network/qml/NetworkStreamsDisplay.qml \
 	network/qml/NetworkAddressbar.qml \
 	network/qml/NetworkGridItem.qml \
 	network/qml/NetworkThumbnailItem.qml \

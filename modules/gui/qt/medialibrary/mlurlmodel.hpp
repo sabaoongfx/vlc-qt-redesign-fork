@@ -63,6 +63,9 @@ public:
 
     Q_INVOKABLE void addAndPlay( const QString& url );
 
+    // redesign: saves the address in the library without playing it
+    Q_INVOKABLE void add( const QString& url );
+
     Q_INVOKABLE void deleteStream( const MLItemId itemId );
 
 protected:
