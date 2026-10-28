@@ -19,6 +19,8 @@
 #include "menus.hpp"
 #include "medialibrary/medialib.hpp"
 #include "medialibrary/mlplaylistlistmodel.hpp"
+#include "medialibrary/mlhelper.hpp"
+#include <vlc_media_library.h>
 #include "medialibrary/mlplaylistmodel.hpp"
 #include "medialibrary/mlbookmarkmodel.hpp"
 #include "network/networkdevicemodel.hpp"
@@ -43,6 +45,11 @@
 #include <QScreen>
 #include <QActionGroup>
 #include <QAbstractProxyModel>
+#include <QFile>
+#include <QTextStream>
+
+#include <tuple>
+#include <vector>
 
 namespace
 {
@@ -943,6 +950,64 @@ PlaylistListContextMenu::PlaylistListContextMenu(QObject * parent)
 {}
 
 
+// Writes the media of a playlist to an M3U file the user chooses
+void PlaylistListContextMenu::exportPlaylist(MediaLib * ml, const QVariant & playlistId)
+{
+    struct Ctx {
+        // title, duration (s), mrl
+        std::vector<std::tuple<QString, int64_t, QString>> entries;
+    };
+
+    const MLItemId itemId = playlistId.value<MLItemId>();
+
+    ml->runOnMLThread<Ctx>(this,
+    //ML thread
+    [itemId](vlc_medialibrary_t * vlc_ml, Ctx & ctx)
+    {
+        vlc_ml_query_params_t query = vlc_ml_query_params_create();
+
+        ml_unique_ptr<vlc_ml_media_list_t> list(vlc_ml_list_media_of(vlc_ml, &query, itemId.type, itemId.id));
+
+        if (!list)
+            return;
+
+        for (const vlc_ml_media_t & media : ml_range_iterate<vlc_ml_media_t>(list))
+        {
+            if (!media.p_files || media.p_files->i_nb_items == 0)
+                continue;
+
+            ctx.entries.emplace_back(QString::fromUtf8(media.psz_title ? media.psz_title : ""),
+                                     media.i_duration / 1000,
+                                     QString::fromUtf8(media.p_files->p_items[0].psz_mrl));
+        }
+    },
+    //UI thread
+    [this](quint64, Ctx & ctx)
+    {
+        const QString path = DialogsProvider::getSaveFileName(nullptr, qtr("Export Playlist"), QUrl(),
+                                                              qtr("M3U playlist (*.m3u *.m3u8)"));
+
+        if (path.isEmpty())
+            return;
+
+        QFile file(path);
+
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+
+        QTextStream out(&file);
+
+        out << "#EXTM3U
+";
+
+        for (const auto & entry : ctx.entries)
+            out << "#EXTINF:" << std::get<1>(entry) << ',' << std::get<0>(entry) << '
+'
+                << std::get<2>(entry) << '
+';
+    });
+}
+
 void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos, QVariantMap)
 {
     assert(m_ctx);
@@ -959,13 +1024,34 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
 
     MediaLib * ml = m_model->ml();
 
-    QAction * action = menu->addAction(qtr("Add and play"));
+    qt_intf_t * p_intf = m_ctx->getIntf();
+
+    // redesign: the Figma "playlist context menu" (Play, Shuffle, Export Playlist, Add to Queue),
+    // with Rename and Delete kept. Favorite, Add Subtitle / Audio Tracks and Properties have no
+    // backend for playlists.
+    QAction * action = menu->addAction(qtr("Play"));
 
     connect(action, &QAction::triggered, [ml, ids]() {
         ml->addAndPlay(ids);
     });
 
-    action = menu->addAction(qtr("Enqueue"));
+    action = menu->addAction(qtr("Shuffle"));
+
+    connect(action, &QAction::triggered, [ml, ids, p_intf]() {
+        THEMPL->setRandom(true);
+        ml->addAndPlay(ids);
+    });
+
+    if (ids.count() == 1)
+    {
+        action = menu->addAction(qtr("Export Playlist"));
+
+        connect(action, &QAction::triggered, [this, ml, ids]() {
+            exportPlaylist(ml, ids.first());
+        });
+    }
+
+    action = menu->addAction(qtr("Add to Queue"));
 
     connect(action, &QAction::triggered, [ml, ids]() {
         ml->addToPlaylist(ids);

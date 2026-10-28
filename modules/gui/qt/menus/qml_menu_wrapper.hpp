@@ -429,6 +429,9 @@ public slots:
 
 signals:
     void requestDeleteSelectedPlaylists();
+
+private:
+    void exportPlaylist(MediaLib * ml, const QVariant & playlistId);
 };
 
 class QmlAudioContextMenu : public VLCMenuBar
