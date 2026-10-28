@@ -23,6 +23,30 @@
 
 MLRecentVideoModel::MLRecentVideoModel(QObject * parent) : MLVideoModel(parent) {}
 
+// Interface
+
+void MLRecentVideoModel::removeFromHistory(const QModelIndex & index)
+{
+    const MLVideo * video = static_cast<MLVideo *>(item(index.row()));
+
+    if (video == nullptr)
+        return;
+
+    assert(m_mediaLib);
+
+    const int64_t id = video->getId().id;
+
+    // ML thread
+    m_mediaLib->runOnMLThread(this, [id] (vlc_medialibrary_t * ml)
+    {
+        // NOTE: Marking a media as unplayed removes it from the history, the file stays.
+        vlc_ml_media_set_played(ml, id, false);
+    });
+
+    // NOTE: The row disappears right away.
+    emit resetRequested();
+}
+
 // Protected MLBaseModel implementation
 
 std::unique_ptr<MLListCacheLoader>

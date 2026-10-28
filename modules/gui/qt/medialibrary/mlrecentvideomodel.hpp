@@ -34,6 +34,9 @@ public:
 
     virtual ~MLRecentVideoModel() = default;
 
+    // Takes the video off the history (Continue Watching) without touching the file.
+    Q_INVOKABLE void removeFromHistory(const QModelIndex & index);
+
 protected: // MLBaseModel implementation
     std::unique_ptr<MLListCacheLoader> createMLLoader() const override;
 

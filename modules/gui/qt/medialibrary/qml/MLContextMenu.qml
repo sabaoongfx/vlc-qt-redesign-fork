@@ -96,6 +96,10 @@ NativeMenu {
             "action": markUnseen,
             "visible": _showUnseen
         }, {
+            "text": qsTr("Remove from list"),
+            "action": removeFromHistory,
+            "visible": _removeFromHistory
+        }, {
             "text": qsTr("Open Containing Folder"),
             "action": openContainingFolder,
             "visible": _openContainingFolder
@@ -184,6 +188,10 @@ NativeMenu {
         model.setItemPlayed(indexes[0], false)
     }
 
+    function removeFromHistory(dataList, options, indexes) {
+        model.removeFromHistory(indexes[0])
+    }
+
     function openContainingFolder(dataList, options, indexes) {
         const parentDir = model.getParentURL(indexes[0]);
 
@@ -234,6 +242,10 @@ NativeMenu {
 
     function _showUnseen(dataList, options, indexes) {
         return _checkRole(dataList, "isNew", false)
+    }
+
+    function _removeFromHistory(dataList, options, indexes) {
+        return (dataList.length === 1) && (model instanceof MLRecentVideoModel)
     }
 
     function _openContainingFolder(dataList, options, indexes) {
