@@ -12,6 +12,12 @@ The prototype is the visual reference only; do not copy its data layer. Back the
 `git log d3064c2..HEAD` (a158ebc ... 938efbd, all say "untested"). Nothing below was compiled, run or looked at. Do this in order,
 commit each fix on its own, push a code commit before any docs-only one (see the CI note below).
 
+0. CI ran once on `938efbd` (2026-10-28, runs 40746908202 Linux build, ...185 Linux packages, ...608607 Windows): all three FAILED at
+   compile, the Linux build in `menus/qml_menu_wrapper.cpp` (the M3U `"
+"` of Export Playlist had become real line breaks inside the
+   string literals). Fixed in a later local commit (`Export Playlist: the M3U newlines ...`), NOT pushed yet, so the pushed head is
+   broken; `git pull` is fine, but expect more compile errors behind that first one (the compiler stops at the first failing file per
+   target). Do not push again until `make -C build` is clean locally. The two docs commits after `938efbd` are also unpushed.
 1. `git pull`, `make -C build -j$(nproc)`. Expect compile errors in the new C++ (`mlvideofoldertreemodel.*`, `mainctx` libraryPanel,
    `medialib.cpp` mediaProgress, `dialogs_provider` getOpenFileUrls, `qml_menu_wrapper.cpp` exportPlaylist/Shuffle, the
    `control_list_model.hpp` LIBRARY_BUTTON rename, `controlbar_profile_model.cpp`) and in QML (a QML load error does not fail the
@@ -126,6 +132,12 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   step deletes them after the Qt install (dropping the `qtimageformats` module alone did nothing, install-qt-action's
   restore-keys brought back an older cached Qt that still had it). `apt-get build-dep` hangs now and then and hits the
   20 min step timeout (twice): re-run the failed job (`gh run rerun <id> --failed`); a retry in the workflow would help.
+- Website additions 2026-10-28 (all pushed to `main`): a second blog post `blog/videos-as-a-folder-tree/` (a design note that says
+  plainly the code was never built; update or follow it with a real post once the folder tree runs, and do not let it claim
+  behaviour before then); the tour section "Every screen, redrawn" is an autoplay slideshow in `main.js` (STEP 1500 ms, kept in
+  step with `.tour-progress.running` in `style.css`), with a fade, prev/next arrows, a pause button, a progress bar, off with
+  reduced motion, stopped by any manual move. `style.css` and `main.js` are linked with `?v=N` in `index.html` because
+  `vercel.json` caches them for an hour: bump N when they change.
 - Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
   for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
   caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
