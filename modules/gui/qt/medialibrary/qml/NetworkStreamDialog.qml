@@ -62,8 +62,12 @@ T.Popup {
         if (urls.length === 0)
             return
 
-        if (nameField.text.trim() !== "")
-            playlistModel.create(nameField.text.trim(), urls)
+        if (MainCtx.mediaLibraryAvailable && nameField.text.trim() !== "") {
+            if (!_playlistModel)
+                _playlistModel = Qt.createQmlObject("import VLC.MediaLibrary; MLPlaylistListModel { ml: MediaLib }",
+                                                    root, "NetworkStreamDialog.playlistModel")
+            _playlistModel.create(nameField.text.trim(), urls)
+        }
 
         saved(urls)
         close()
@@ -77,11 +81,11 @@ T.Popup {
         colorSet: ColorContext.View
     }
 
-    MLPlaylistListModel {
-        id: playlistModel
-
-        ml: MediaLib
-    }
+    // NOTE: the media library types are registered only when VLC runs with a media library; a
+    //       declared MLPlaylistListModel kept the whole dialog from loading without one ("is not a
+    //       type", Add stream disabled). Made on first use and kept: create() adds the addresses
+    //       back on this thread.
+    property var _playlistModel: null
 
     T.Overlay.modal: Rectangle {
         color: Qt.rgba(0, 0, 0, 0.5)
@@ -188,9 +192,11 @@ T.Popup {
                 }
             }
 
+            // the playlist name: only with a media library (it keeps the playlists)
             RowLayout {
                 Layout.topMargin: VLCStyle.margin_normal
 
+                visible: MainCtx.mediaLibraryAvailable
                 spacing: VLCStyle.margin_xxsmall
 
                 Widgets.LabelExt {
@@ -207,6 +213,7 @@ T.Popup {
             }
 
             Widgets.LabelExt {
+                visible: MainCtx.mediaLibraryAvailable
                 text: qsTr("The playlist will be saved and displayed with this title.")
                 font.pixelSize: VLCStyle.fontSize_normal
                 color: root._colors.hint
@@ -217,6 +224,7 @@ T.Popup {
                 Layout.preferredHeight: VLCStyle.dp(36, VLCStyle.scale)
                 Layout.topMargin: VLCStyle.margin_xsmall
 
+                visible: MainCtx.mediaLibraryAvailable
                 radius: VLCStyle.dp(6, VLCStyle.scale)
                 color: root._colors.field
                 border.width: nameField.activeFocus ? VLCStyle.border : 0
