@@ -40,12 +40,12 @@ FocusScope {
 
     readonly property int positionSliderY: controlBar.y + controlBar.sliderY
 
-    // redesign: the side panels (play queue, tracks panel) are rounded cards inside the video
-    // stage, 8px from its edges (they touched the top bar with square corners)
+    // redesign: the side panels (play queue, tracks panel) are rounded cards over the video,
+    // 8px from its edges (they touched the top bar with square corners)
     readonly property real panelRadius: VLCStyle.dp(8, VLCStyle.scale)
     readonly property rect panelArea: {
         const gap = VLCStyle.dp(8, VLCStyle.scale)
-        const side = (_videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0) + gap
+        const side = gap
         const top = topBar.y + topBar.height + gap
         return Qt.rect(side + _leftInset, top, width - 2 * side - _leftInset, controlBar.y - gap - top)
     }
@@ -65,8 +65,8 @@ FocusScope {
                                        : 0
     readonly property real _libraryCardWidth: Helpers.clamp(MainCtx.libraryPanel.width, VLCStyle.dp(240, VLCStyle.scale),
                                                             width / 2)
-    readonly property real _leftInset: _railWidth + (_libraryCardVisible ? _libraryCardWidth + VLCStyle.dp(8, VLCStyle.scale)
-                                                                         : 0)
+    // Figma Player: the card touches the video, no gap
+    readonly property real _leftInset: _railWidth + (_libraryCardVisible ? _libraryCardWidth : 0)
 
     readonly property string coverSource: {
         if (Player.artwork &&
@@ -93,6 +93,26 @@ FocusScope {
                                         (MainCtx.intfMainWindow.visibility !== Window.FullScreen))
 
     property bool _keyPressed: false
+
+    // redesign: in fullscreen only the bar the pointer is near shows (the video): the top one when
+    // the pointer is in the upper part of the screen, the bottom one in the lower part; in between
+    // the last one stays. "" (windowed, or before the pointer moved) shows both as before.
+    readonly property bool _fullscreen: MainCtx.intfMainWindow.visibility === Window.FullScreen
+    property string _activeBar: ""
+
+    on_FullscreenChanged: _activeBar = _fullscreen ? "bottom" : ""
+
+    HoverHandler {
+        enabled: rootPlayer._fullscreen
+
+        onPointChanged: {
+            const y = point.position.y
+            if (y < Math.max(rootPlayer.height * 0.2, topBar.implicitHeight * 2))
+                rootPlayer._activeBar = "top"
+            else if (y > rootPlayer.height - Math.max(rootPlayer.height * 0.25, controlBar.implicitHeight * 1.5))
+                rootPlayer._activeBar = "bottom"
+        }
+    }
 
     // Settings
 
@@ -218,9 +238,9 @@ FocusScope {
             right: parent.right
             top: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? topBar.bottom : parent.top
             bottom: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? controlBar.top : parent.bottom
-            // redesign: the video sits in a stage inset 10px from the window sides (Figma player)
-            leftMargin: (rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0) + rootPlayer._leftInset
-            rightMargin: rootPlayer._videoStage ? VLCStyle.dp(10, VLCStyle.scale) : 0
+            // redesign: the video fills the space between the bars, square, from the rail (or the
+            // library card) to the window edge (Figma Player, Player - customize-8)
+            leftMargin: rootPlayer._leftInset
         }
 
         sourceComponent: MainCtx.hasEmbededVideo ? videoComponent : audioComponent
@@ -983,25 +1003,9 @@ FocusScope {
         }
     }
 
-    // redesign: rounded stage corners; the video surface cannot be clipped, so a ring in the bar colour
-    // (inner edge a rounded rect over the stage, like PIPPlayer) covers them. No Canvas: the Windows Qt
-    // build does not have it and the whole player failed to load there.
-    Rectangle {
-        readonly property real r: VLCStyle.dp(10, VLCStyle.scale) // measured on the Figma Player-6 frame
-        readonly property real ringWidth: Math.ceil(r / 2)
-
-        z: 1
-        visible: rootPlayer._videoStage
-        x: playerSpecializationLoader.x - ringWidth
-        y: playerSpecializationLoader.y - ringWidth
-        width: playerSpecializationLoader.width + 2 * ringWidth
-        height: playerSpecializationLoader.height + 2 * ringWidth
-        radius: r + ringWidth
-        color: "transparent"
-        border.width: ringWidth
-        border.color: controlBar.background ? controlBar.background.color : "black"
-        antialiasing: true
-    }
+    // NOTE: the video used to have rounded corners (a ring in the bar colour over the stage); the
+    //       Figma player is square and flush with the bars, and the ring showed over the bottom bar
+    //       where that bar is translucent (Windows), so there is none.
 
     // redesign: the icon rail left of the video; it picks what the library card shows
     Rectangle {
@@ -1053,8 +1057,6 @@ FocusScope {
             top: topBar.bottom
             bottom: controlBar.top
 
-            topMargin: VLCStyle.dp(8, VLCStyle.scale)
-            bottomMargin: VLCStyle.dp(8, VLCStyle.scale)
         }
 
         width: rootPlayer._libraryCardWidth
@@ -1132,7 +1134,8 @@ FocusScope {
         //initial state value is "", using a binding avoid animation on startup
         Binding on state {
             when: playerToolbarVisibilityFSM.started
-            value: (playerToolbarVisibilityFSM.isVisible || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
+            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._activeBar !== "bottom")
+                    || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
         }
 
         onTogglePlaylistVisibility: playlistVisibility.togglePlaylistVisibility()
@@ -1469,7 +1472,8 @@ FocusScope {
         //initial state value is "", using a binding avoid animation on startup
         Binding on state {
             when: playerToolbarVisibilityFSM.started
-            value: (playerToolbarVisibilityFSM.isVisible || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
+            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._activeBar !== "top")
+                    || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
         }
 
         onRequestLockUnlockAutoHide: (lock) => rootPlayer.lockUnlockAutoHide(lock)

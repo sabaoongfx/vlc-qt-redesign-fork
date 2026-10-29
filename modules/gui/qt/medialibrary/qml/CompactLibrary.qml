@@ -295,7 +295,8 @@ Rectangle {
     Component.onCompleted: if (_homeRoot) refreshHome()
 
     color: _colors.section
-    radius: VLCStyle.dp(8, VLCStyle.scale)
+    // Figma: a square column between the rail and the video
+    radius: 0
     clip: true
 
     Accessible.role: Accessible.Pane
