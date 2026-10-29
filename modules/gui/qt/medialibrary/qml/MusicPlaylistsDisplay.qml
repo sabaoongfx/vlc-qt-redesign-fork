@@ -62,6 +62,9 @@ Widgets.PageLoader {
         Widgets.PageExt {
             id: playlistPage
 
+            // History hands its initialIndex back to this page (the list below sets it)
+            property int initialIndex: 0
+
             title: qsTr("Playlists")
 
             PlaylistMediaList {

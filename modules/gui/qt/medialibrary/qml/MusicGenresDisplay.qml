@@ -84,6 +84,9 @@ Widgets.PageLoader {
 
         Widgets.PageExt {
             id: albumGenrePage
+            // History hands its initialIndex back to this page (the list below sets it)
+            property int initialIndex: 0
+
             property string genreName: ""
             property alias parentId: albumsView.parentId
 
