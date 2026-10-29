@@ -40,6 +40,9 @@ Widgets.PageExt {
     readonly property real _leftMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_left_margin
     readonly property real _rightMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_right_margin
 
+    // No saved stream: the text and the two buttons sit together in the middle of the page
+    readonly property bool _empty: !(urlListDisplay.item?.visible ?? false)
+
     // Asks the parent to show the device browser (local network, UPnP, SMB...)
     signal showBrowse(int reason)
 
@@ -63,90 +66,94 @@ Widgets.PageExt {
     }
 
     FocusScope {
+        id: content
+
         anchors.fill: parent
         focus: true
 
-        ColumnLayout {
-            anchors.fill: parent
+        // With streams: a bar above the list, Add stream on the left and Browse devices on the
+        // right. Without: both side by side, centred under the empty text.
+        RowLayout {
+            id: buttonRow
 
-            spacing: 0
+            x: root._empty ? Math.round((content.width - width) / 2) : root._leftMargin + root.leftPadding
+            y: root._empty ? emptyText.y + emptyText.height + VLCStyle.margin_large : VLCStyle.margin_normal
+            width: root._empty ? implicitWidth
+                               : content.width - x - root._rightMargin - root.rightPadding
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: VLCStyle.margin_normal
-                Layout.bottomMargin: VLCStyle.margin_normal
-                Layout.leftMargin: root._leftMargin + root.leftPadding
-                Layout.rightMargin: root._rightMargin + root.rightPadding
+            spacing: root._empty ? VLCStyle.margin_small : VLCStyle.margin_xsmall
 
-                spacing: VLCStyle.margin_xsmall
+            Widgets.DialogButton {
+                id: addButton
 
-                Widgets.DialogButton {
-                    id: addButton
+                focus: true
+                activeFocusOnTab: true
 
-                    focus: true
-                    activeFocusOnTab: true
+                text: qsTr("Add stream")
+                primary: true
 
-                    text: qsTr("Add stream")
-                    primary: true
+                enabled: dialogLoader.status === Loader.Ready
 
-                    enabled: dialogLoader.status === Loader.Ready
-
-                    onClicked: dialogLoader.item.open()
-                }
-
-                Item {
-                    Layout.fillWidth: true
-                }
-
-                Widgets.DialogButton {
-                    text: qsTr("Browse devices")
-
-                    activeFocusOnTab: true
-
-                    onClicked: root.showBrowse(Qt.MouseFocusReason)
-                }
+                onClicked: dialogLoader.item.open()
             }
 
             Item {
+                visible: !root._empty
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+            }
 
-                Loader {
-                    id: urlListDisplay
+            Widgets.DialogButton {
+                text: qsTr("Browse devices")
 
-                    anchors.fill: parent
+                activeFocusOnTab: true
 
-                    active: MainCtx.mediaLibraryAvailable
-                    source: "qrc:///qt/qml/VLC/MediaLibrary/UrlListDisplay.qml"
+                onClicked: root.showBrowse(Qt.MouseFocusReason)
+            }
+        }
 
-                    onLoaded: {
-                        item.leftPadding = Qt.binding(() => root._leftMargin + root.leftPadding)
-                        item.rightPadding = Qt.binding(() => root._rightMargin + root.rightPadding)
+        Item {
+            anchors.fill: parent
+            anchors.topMargin: buttonRow.implicitHeight + VLCStyle.margin_normal * 2
 
-                        item.displayMarginEnd = Qt.binding(() => root.displayMarginEnd)
+            Loader {
+                id: urlListDisplay
 
-                        item.fadingEdge.enableBeginningFade = Qt.binding(() => root.enableBeginningFade)
-                        item.fadingEdge.enableEndFade = Qt.binding(() => root.enableEndFade)
+                anchors.fill: parent
 
-                        item.Navigation.upItem = addButton
-                        item.Navigation.parentItem = root
+                active: MainCtx.mediaLibraryAvailable
+                source: "qrc:///qt/qml/VLC/MediaLibrary/UrlListDisplay.qml"
 
-                        item.searchPattern = Qt.binding(() => root.search.pattern)
-                    }
-                }
+                onLoaded: {
+                    item.leftPadding = Qt.binding(() => root._leftMargin + root.leftPadding)
+                    item.rightPadding = Qt.binding(() => root._rightMargin + root.rightPadding)
 
-                // the list hides itself while it has no stream
-                Widgets.LabelExt {
-                    anchors.centerIn: parent
+                    item.displayMarginEnd = Qt.binding(() => root.displayMarginEnd)
 
-                    visible: !(urlListDisplay.item?.visible ?? false)
+                    item.fadingEdge.enableBeginningFade = Qt.binding(() => root.enableBeginningFade)
+                    item.fadingEdge.enableEndFade = Qt.binding(() => root.enableEndFade)
 
-                    text: qsTr("No saved streams yet\nUse Add stream to save a network address")
-                    horizontalAlignment: Text.AlignHCenter
-                    font.pixelSize: VLCStyle.fontSize_large
-                    color: VLCStyle.figmaColors(theme.palette?.isDark ?? true).hint
+                    item.Navigation.upItem = addButton
+                    item.Navigation.parentItem = root
+
+                    item.searchPattern = Qt.binding(() => root.search.pattern)
                 }
             }
+        }
+
+        // the list hides itself while it has no stream; the text and the buttons below it are
+        // centred together on the page
+        Widgets.LabelExt {
+            id: emptyText
+
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: -(buttonRow.implicitHeight + VLCStyle.margin_large) / 2
+
+            visible: root._empty
+
+            text: qsTr("No saved streams yet\nUse Add stream to save a network address")
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: VLCStyle.fontSize_large
+            color: VLCStyle.figmaColors(theme.palette?.isDark ?? true).hint
         }
     }
 

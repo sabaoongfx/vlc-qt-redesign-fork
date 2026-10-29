@@ -527,6 +527,7 @@ MainViewLoader {
         onSaved: (name, urls) => playlistModel.create(name, urls)
     }
 
+    // bottom right over the list; with no playlist it is under the empty text instead
     Widgets.ButtonExt {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -534,6 +535,8 @@ MainViewLoader {
         anchors.bottomMargin: VLCStyle.margin_large + root.displayMarginEnd
 
         z: 2
+
+        visible: playlistModel.count > 0
 
         text: qsTr("New Playlist")
         iconTxt: VLCIcons.add
@@ -555,6 +558,17 @@ MainViewLoader {
             hint: qsTr("Right click on a media\nto add it to a playlist")
 
             cover: VLCStyle.noArtAlbumCover
+
+            Widgets.ButtonExt {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                text: qsTr("New Playlist")
+                iconTxt: VLCIcons.add
+
+                enabled: !playlistModel.transactionPending
+
+                onClicked: newPlaylistDialog.open()
+            }
         }
     }
 }
