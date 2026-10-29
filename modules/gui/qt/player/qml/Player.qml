@@ -1177,6 +1177,9 @@ FocusScope {
             // redesign: the Figma player bars are the secondary window colour (#1B1B1B, light #ABABAA)
             tintColor: windowTheme.bg.secondary
 
+            // redesign: opaque like the bottom bar, no Windows acrylic (the desktop showed through)
+            enabled: false
+
             visible: MainCtx.pinVideoControls || (MainCtx.hasEmbededVideo && !rootPlayer.displayFadeRectangles)
         }
     }
@@ -1494,11 +1497,9 @@ FocusScope {
                     return 0.6
                 } else if ((Window.visibility === Window.FullScreen) && MainCtx.hasEmbededVideo) {
                     return MainCtx.pinOpacity
-                } else if (!MainCtx.hasEmbededVideo) {
-                    return 0.7
                 } else {
-                    // redesign: solid under a video (Figma #191919 at 95%); with Windows acrylic
-                    // it was 0.7 and the desktop showed through it (blue in a user screenshot)
+                    // redesign: opaque, for video and audio (it was 0.7 for audio and with Windows
+                    // acrylic, and the desktop showed through it)
                     return 1.0
                 }
             }
