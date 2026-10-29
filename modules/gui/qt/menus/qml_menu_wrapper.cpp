@@ -911,11 +911,17 @@ void QmlAudioMenu::beforePopup(QMenu * menu) /* override */
     {
         AudioDeviceModel * deviceModel = player->getAudioDevices();
         const QList<QAction *> deviceActions = devices->getActionGroup()->actions();
+        int named = 0;
         for (int row = 0; row < deviceModel->rowCount() && row < deviceActions.size(); row++)
         {
             if (deviceModel->data(deviceModel->index(row), AudioDeviceModel::IsDefaultRole).toBool())
                 deviceActions[row]->setVisible(false);
+            else
+                named++;
         }
+        // only the default one (a machine without a sound card): no empty "Output device" heading
+        if (named == 0)
+            devicesSection->setVisible(false);
     }
 
     if (tracks->count() == 0)
