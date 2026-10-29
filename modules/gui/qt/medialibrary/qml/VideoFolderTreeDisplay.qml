@@ -94,6 +94,10 @@ Widgets.PageLoader {
 
         property alias currentIndex: videoAll.currentIndex
 
+        // History gives it back when the page is shown again (PageLoader assigns it; it was
+        // missing: "Cannot assign to non-existent property", CI run 6)
+        property int initialIndex: 0
+
         signal showFolder(var trail, int reason)
 
         title: trail.length > 0 ? trail[trail.length - 1].title : qsTr("Videos")
