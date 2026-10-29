@@ -226,7 +226,9 @@ jobs:
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
             # Music has no Albums/Tracks entries any more (the sidebar is Home, Videos, Music, Network, Playlists)
             click 80 154; sleep 5 # Music: the artists
-            xdotool mousemove 297 190; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first artist, full width
+            # first artist, full width: one click opens it (a second one landed on a track and
+            # played it, so the shot showed the player)
+            xdotool mousemove 297 190; sleep 0.3; xdotool click 1; sleep 5
             import -window root "$1/shots/lib-artist-$2.png" || true
             click 80 200; sleep 5 # Network
             import -window root "$1/shots/lib-browse-$2.png" || true
