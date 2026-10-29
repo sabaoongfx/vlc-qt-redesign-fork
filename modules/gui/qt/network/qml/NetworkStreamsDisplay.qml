@@ -81,8 +81,10 @@ Widgets.PageExt {
 
             x: root._empty ? Math.round((content.width - width) / 2) : root._leftMargin + root.leftPadding
             y: root._empty ? emptyText.y + emptyText.height + VLCStyle.margin_large : VLCStyle.margin_normal
+            // NOTE: not from x, which follows the width while the page is empty (binding loop)
             width: root._empty ? implicitWidth
-                               : content.width - x - root._rightMargin - root.rightPadding
+                               : content.width - root._leftMargin - root.leftPadding
+                                 - root._rightMargin - root.rightPadding
 
             spacing: root._empty ? VLCStyle.margin_small : VLCStyle.margin_xsmall
 
