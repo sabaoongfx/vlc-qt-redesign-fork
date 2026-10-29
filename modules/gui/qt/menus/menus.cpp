@@ -522,7 +522,7 @@ void VLCMenuBar::FileMenu(qt_intf_t *p_intf, QMenu *menu)
     addDPStaticEntry( menu, qtr( "Open &Disc..." ),
         ":/menu/disc.svg", &DialogsProvider::openDiscDialog, "Ctrl+D" );
     addDPStaticEntry( menu, qtr( "Open &Network Stream..." ),
-        ":/menu/network.svg", &DialogsProvider::openNetDialog, "Ctrl+N" );
+        ":/menu/network.svg", &DialogsProvider::openNetworkStreamDialog, "Ctrl+N" );
     addDPStaticEntry( menu, qtr( "Open &Capture Device..." ),
         ":/menu/capture-card.svg", &DialogsProvider::openCaptureDialog, "Ctrl+C" );
 
@@ -1028,7 +1028,7 @@ void VLCMenuBar::PopupMenuStaticEntries( QMenu *menu )
     addDPStaticEntry( openmenu, qtr( "Open &Disc..." ),
         ":/menu/disc.svg", &DialogsProvider::openDiscDialog);
     addDPStaticEntry( openmenu, qtr( "Open &Network..." ),
-        ":/menu/network.svg", &DialogsProvider::openNetDialog);
+        ":/menu/network.svg", &DialogsProvider::openNetworkStreamDialog);
     addDPStaticEntry( openmenu, qtr( "Open &Capture Device..." ),
         ":/menu/capture-card.svg", &DialogsProvider::openCaptureDialog);
     menu->addMenu( openmenu );

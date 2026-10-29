@@ -55,7 +55,7 @@ Widgets.SplitButton {
             DialogsProvider.openDiscDialog()
             break
         case 3:
-            DialogsProvider.openNetDialog()
+            DialogsProvider.openNetworkStreamDialog()
             break
         case 4:
             DialogsProvider.openCaptureDialog()

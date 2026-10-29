@@ -325,7 +325,7 @@ void QmlGlobalMenu::popup(QPoint pos)
 
     entry(":/menu/redesign-file.svg", qtr("Open File(s)"), []() { THEDP->simpleOpenDialog(); }, "Ctrl+O");
     entry(":/menu/redesign-folder.svg", qtr("Open Folder"), &DialogsProvider::PLOpenDir, "Ctrl+F");
-    entry(":/menu/redesign-network.svg", qtr("Open Network Stream"), &DialogsProvider::openNetDialog, "Ctrl+N");
+    entry(":/menu/redesign-network.svg", qtr("Open Network Stream"), &DialogsProvider::openNetworkStreamDialog, "Ctrl+N");
     entry(":/menu/redesign-disc.svg", qtr("Open Disc"), &DialogsProvider::openDiscDialog, "Ctrl+D");
     entry(":/menu/redesign-capture.svg", qtr("Open Capture Device"), &DialogsProvider::openCaptureDialog, "Ctrl+C");
     entry(":/menu/redesign-convert.svg", qtr("Convert"), &DialogsProvider::openAndTranscodingDialogs, "Ctrl+R");

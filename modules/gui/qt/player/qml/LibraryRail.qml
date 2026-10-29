@@ -105,7 +105,7 @@ Item {
                         DialogsProvider.addLibraryFolderDialog()
                         break
                     case 2:
-                        DialogsProvider.openNetDialog()
+                        DialogsProvider.openNetworkStreamDialog()
                         break
                     }
                 }

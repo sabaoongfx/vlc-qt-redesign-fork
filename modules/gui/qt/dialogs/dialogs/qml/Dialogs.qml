@@ -608,4 +608,23 @@ Item {
             }
         }
     }
+
+    // redesign: "Open Network Stream" of the menus and Ctrl+N (the Figma dialog, in the media
+    // library module, so loaded by url)
+    Loader {
+        id: networkStreamDialogLoader
+        active: false
+        source: "qrc:///qt/qml/VLC/MediaLibrary/NetworkStreamDialog.qml"
+
+        onLoaded: item.saveStreams = true
+
+        Connections {
+            target: DialogsProvider
+
+            function onShowNetworkStreamDialog() {
+                networkStreamDialogLoader.active = true
+                networkStreamDialogLoader.item?.open()
+            }
+        }
+    }
 }

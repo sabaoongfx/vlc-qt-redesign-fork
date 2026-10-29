@@ -69,6 +69,7 @@
 #include <QInputDialog>
 #include <QPointer>
 #include <QMessageBox>
+#include <QMetaMethod>
 
 #define I_OP_DIR_WINTITLE I_DIR_OR_FOLDER( N_("Open Directory"), \
                                            N_("Open Folder") )
@@ -687,6 +688,13 @@ void DialogsProvider::openDiscDialog()
 void DialogsProvider::openNetDialog()
 {
     openDialog( OpenDialog::OPEN_NETWORK_TAB );
+}
+void DialogsProvider::openNetworkStreamDialog()
+{
+    if( isSignalConnected( QMetaMethod::fromSignal( &DialogsProvider::showNetworkStreamDialog ) ) )
+        emit showNetworkStreamDialog();
+    else
+        openNetDialog();
 }
 void DialogsProvider::openCaptureDialog()
 {

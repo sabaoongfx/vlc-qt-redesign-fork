@@ -22,6 +22,7 @@ import QtQuick.Templates as T
 
 import VLC.MainInterface
 import VLC.MediaLibrary
+import VLC.Playlist
 
 import VLC.Widgets as Widgets
 import VLC.Style
@@ -35,6 +36,10 @@ T.Popup {
 
     // Emitted by Save, with the addresses (one per line, empty lines dropped)
     signal saved(var urls)
+
+    // Opened from a menu (Dialogs.qml): Save keeps the addresses as saved streams itself, or
+    // plays them without a media library
+    property bool saveStreams: false
 
     readonly property var urls: urlField.text.split("\n").map(line => line.trim()).filter(line => line !== "")
 
@@ -69,6 +74,17 @@ T.Popup {
             _playlistModel.create(nameField.text.trim(), urls)
         }
 
+        if (saveStreams) {
+            if (MainCtx.mediaLibraryAvailable) {
+                if (!_urlModel)
+                    _urlModel = Qt.createQmlObject("import VLC.MediaLibrary; MLUrlModel { ml: MediaLib }",
+                                                   root, "NetworkStreamDialog.urlModel")
+                urls.forEach(url => _urlModel.add(url))
+            } else {
+                MainPlaylistController.append(urls, true)
+            }
+        }
+
         saved(urls)
         close()
     }
@@ -86,6 +102,7 @@ T.Popup {
     //       type", Add stream disabled). Made on first use and kept: create() adds the addresses
     //       back on this thread.
     property var _playlistModel: null
+    property var _urlModel: null
 
     T.Overlay.modal: Rectangle {
         color: Qt.rgba(0, 0, 0, 0.5)

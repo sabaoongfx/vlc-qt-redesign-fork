@@ -251,6 +251,9 @@ public slots:
     void openFileDialog();
     void openUrlDialog();
     void openNetDialog();
+    // redesign: the Figma "Open network stream" dialog of the main window (Open Media's
+    // Network tab when no window shows it)
+    void openNetworkStreamDialog();
     void openCaptureDialog();
 
     void PLOpenDir();
@@ -294,6 +297,7 @@ public:
 signals:
     void releaseMouseEvents();
     void showToolbarEditorDialog();
+    void showNetworkStreamDialog();
 
     //visiblity signal
     void openDialogVisibleChanged();
