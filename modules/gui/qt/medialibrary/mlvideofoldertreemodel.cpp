@@ -122,7 +122,15 @@ QVariant MLVideoFolderTreeModel::itemRoleData(const MLItem * item, const int rol
         return QVariant();
 
     if (item->getId().type != VLC_ML_PARENT_FOLDER)
+    {
+        // NOTE: Two roles are named "isVideo" (the group one, and the media one, false for a
+        //       song); the views read it as "a media, not a folder", so a song must answer true
+        //       to both (the songs of the music tree were drawn as folders, CI run 40932298301).
+        if (role == GROUP_IS_VIDEO || role == MEDIA_IS_VIDEO)
+            return true;
+
         return MLVideoGroupsModel::itemRoleData(item, role);
+    }
 
     const MLFolder * folder = static_cast<const MLFolder *> (item);
 
@@ -143,6 +151,7 @@ QVariant MLVideoFolderTreeModel::itemRoleData(const MLItem * item, const int rol
         case MEDIA_DURATION:
             return QVariant();
         case GROUP_IS_VIDEO:
+        case MEDIA_IS_VIDEO:
             return false;
         case GROUP_TITLE_FIRST_SYMBOL:
             return QVariant::fromValue(getFirstSymbol(folder->getTitle()));
