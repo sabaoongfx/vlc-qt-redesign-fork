@@ -63,8 +63,8 @@ Widgets.GridItem {
         }
         return (model?.duration && model.duration.valid()) ? model.duration.formatHMS() : ""
     }
-    pictureWidth: VLCStyle.gridCover_video_width
-    pictureHeight: VLCStyle.gridCover_video_height
+    pictureWidth: audio ? VLCStyle.gridCover_music_width : VLCStyle.gridCover_video_width
+    pictureHeight: audio ? VLCStyle.gridCover_music_height : VLCStyle.gridCover_video_height
 
     // Bottom rounding is provided by the progress bar if it is visible:
     mediaCover.radiusBottomLeft: progressBar.visible ? 0.0 : mediaCover.radius

@@ -45,8 +45,9 @@ Widgets.ExpandGridItemView {
 
     // Settings
 
-    basePictureWidth: VLCStyle.gridCover_video_width
-    basePictureHeight: VLCStyle.gridCover_video_height
+    // the music tree has square album covers (user request), videos are 16:9
+    basePictureWidth: audio ? VLCStyle.gridCover_music_width : VLCStyle.gridCover_video_width
+    basePictureHeight: audio ? VLCStyle.gridCover_music_height : VLCStyle.gridCover_video_height
 
     activeFocusOnTab: true
 

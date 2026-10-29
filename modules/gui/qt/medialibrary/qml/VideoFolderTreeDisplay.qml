@@ -130,6 +130,10 @@ Widgets.PageLoader {
 
             audio: level.audio
 
+            // square covers in the music list, 16:9 for videos
+            listCoverWidth: level.audio ? VLCStyle.trackListAlbumCover_width : VLCStyle.listAlbumCover_width
+            listCoverHeight: level.audio ? VLCStyle.trackListAlbumCover_heigth : VLCStyle.listAlbumCover_height
+
             displayMarginBeginning: level.displayMarginBeginning
             displayMarginEnd: level.displayMarginEnd
             enableBeginningFade: level.enableBeginningFade
@@ -212,7 +216,7 @@ Widgets.PageLoader {
             id: emptyComponent
 
             Widgets.EmptyLabelButton {
-                coverWidth : VLCStyle.dp(182, VLCStyle.scale)
+                coverWidth : VLCStyle.dp(level.audio ? 114 : 182, VLCStyle.scale)
                 coverHeight: VLCStyle.dp(114, VLCStyle.scale)
 
                 focus: true
