@@ -32,8 +32,15 @@ FocusScope {
 
     property int maxWidth
 
-    // The place where the media was left, in seconds; negative while unknown
-    property real watchedTill: -1
+    // The saved progress (a fraction of the length) from the media library; 0 while unknown
+    property real _progress: 0
+
+    // The place where the media was left, in seconds; negative while unknown. A binding: the prompt
+    // opens before the player knows the length, reading it once left "You already watched this"
+    readonly property real watchedTill: {
+        const length = Player.length.toSeconds()
+        return (_progress > 0 && length > 0) ? _progress * length : -1
+    }
 
     implicitHeight: row.implicitHeight
     // redesign: fit the content (shown as a floating card), never wider than maxWidth
@@ -59,16 +66,13 @@ FocusScope {
 
     // The saved position is a fraction of the length in the media library
     function _queryWatchedTill() {
-        watchedTill = -1
+        _progress = 0
 
         if (!MainCtx.mediaLibraryAvailable || !Player.url)
             return
 
         MainCtx.mediaLibrary.mediaProgress(Player.url, (progress) => {
-            const length = Player.length.toSeconds()
-
-            if (progress > 0 && length > 0)
-                resumePanel.watchedTill = progress * length
+            resumePanel._progress = progress
         })
     }
 
