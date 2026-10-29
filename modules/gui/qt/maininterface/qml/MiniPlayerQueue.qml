@@ -64,12 +64,25 @@ Rectangle {
 
         spacing: 0
 
-        // Header band
+        // Header band. clip only cuts to the square box, not the card's rounded corners, so the
+        // band is rounded itself on top; a square strip fills its bottom corners.
         Rectangle {
+            id: headerBand
+
             Layout.fillWidth: true
             Layout.preferredHeight: VLCStyle.dp(50, VLCStyle.scale)
 
+            radius: root.radius
             color: root._colors.bar
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+
+                height: headerBand.radius
+                color: headerBand.color
+            }
 
             Widgets.LabelExt {
                 anchors.centerIn: parent
