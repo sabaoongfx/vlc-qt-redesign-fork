@@ -45,6 +45,11 @@ Widgets.PageExt {
 
     property bool isScreenSmall: VLCStyle.isScreenSmall
 
+    // redesign: an open artist fills the page, there is no list of the other artists on its
+    // left (the Artists page is one step back); the layout is the one upstream uses on a
+    // small screen
+    readonly property bool _noArtistList: true
+
     //padding is handled internally
     leftPadding: 0
     rightPadding: 0
@@ -74,7 +79,7 @@ Widgets.PageExt {
     }
 
     function resetFocus() {
-        if (VLCStyle.isScreenSmall) {
+        if (root._noArtistList) {
             albumSubView.setCurrentItemFocus(Qt.OtherFocusReason)
             return
         }
@@ -87,7 +92,7 @@ Widgets.PageExt {
     }
 
     function setCurrentItemFocus(reason) {
-        if (VLCStyle.isScreenSmall) {
+        if (root._noArtistList) {
             albumSubView.setCurrentItemFocus(reason);
         } else {
             artistList.setCurrentItemFocus(reason);
@@ -172,11 +177,11 @@ Widgets.PageExt {
             z: 1
             Layout.fillHeight: true
 
-            Layout.preferredWidth: VLCStyle.isScreenSmall
+            Layout.preferredWidth: root._noArtistList
                                    ? 0
                                    : Helpers.clamp(resizeHandle.requestedWidth, minimumWidth, maximumWidth)
-            visible: !VLCStyle.isScreenSmall && (artistModel.count > 0)
-            focus: !VLCStyle.isScreenSmall && (artistModel.count > 0)
+            visible: !root._noArtistList && (artistModel.count > 0)
+            focus: !root._noArtistList && (artistModel.count > 0)
 
             displayMarginBeginning: root.displayMarginBeginning
             displayMarginEnd: root.displayMarginEnd
@@ -259,7 +264,7 @@ Widgets.PageExt {
                 minimumWidth: artistList.minimumWidth
                 maximumWidth: artistList.maximumWidth
 
-                visible: !VLCStyle.isScreenSmall
+                visible: !root._noArtistList
 
                 onRequestedWidthChanged: {
                     if (!_inhibitMainCtxUpdate)
@@ -317,7 +322,7 @@ Widgets.PageExt {
             focus: true
             initialIndex: root.initialAlbumIndex
             Navigation.parentItem: root
-            Navigation.leftItem: VLCStyle.isScreenSmall ? null : artistList
+            Navigation.leftItem: root._noArtistList ? null : artistList
         }
     }
 
