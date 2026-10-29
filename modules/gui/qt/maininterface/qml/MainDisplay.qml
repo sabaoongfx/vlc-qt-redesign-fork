@@ -84,7 +84,9 @@ FocusScope {
                 MainPlaylistController.stop()
         }
 
-        if (History.previousEmpty) {
+        // redesign: only a history without any page starts on Home; a section is now a single
+        // page (History.reset), coming back from the player must keep it
+        if (History.viewPath.length === 0) {
             History.update(["home"])
         }
         loadCurrentHistoryView(Qt.OtherFocusReason)
@@ -603,7 +605,7 @@ FocusScope {
                         return
                     }
 
-                    History.push(uri)
+                    History.reset(uri)
                 }
             }
 
@@ -626,7 +628,8 @@ FocusScope {
                     return
                 }
 
-                History.push(modelUri)
+                // redesign: a section starts its own trail, back stays inside it
+                History.reset(modelUri)
             }
 
             implicitWidth: Math.round(Helpers.clamp(MainCtx.navigationPanel.width, minimumWidth, maximumWidth))

@@ -105,27 +105,27 @@ Rectangle {
         case "videos": {
             const folders = trail.filter(place => place.kind === "folder")
             if (folders.length === 0) {
-                History.push(["video"], {}, Qt.MouseFocusReason)
+                History.reset(["video"], {}, Qt.MouseFocusReason)
                 return
             }
             const last = folders[folders.length - 1]
-            History.push(["video", "folders", "folder"],
+            History.reset(["video", "folders", "folder"],
                          { parentId: last.id, title: last.title,
                            trail: folders.map(place => ({ id: place.id, title: place.title })) },
                          Qt.MouseFocusReason)
             return
         }
         case "music":
-            History.push(["music"], {}, Qt.MouseFocusReason)
+            History.reset(["music"], {}, Qt.MouseFocusReason)
             return
         case "network":
-            History.push(["network"], {}, Qt.MouseFocusReason)
+            History.reset(["network"], {}, Qt.MouseFocusReason)
             return
         case "playlists":
-            History.push(["playlists"], {}, Qt.MouseFocusReason)
+            History.reset(["playlists"], {}, Qt.MouseFocusReason)
             return
         default:
-            History.push(["home"], {}, Qt.MouseFocusReason)
+            History.reset(["home"], {}, Qt.MouseFocusReason)
         }
     }
 

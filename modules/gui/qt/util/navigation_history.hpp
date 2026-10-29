@@ -66,6 +66,13 @@ public slots:
     Q_INVOKABLE void push(QStringList path, const QVariantMap& properties, Qt::FocusReason focusReason = Qt::OtherFocusReason);
     Q_INVOKABLE void push(QStringList path, Qt::FocusReason focusReason = Qt::OtherFocusReason);
 
+    /**
+     * redesign: navigate to a new page and forget the pages before it (and the forward ones):
+     * a sidebar section starts its own trail, back and forward stay inside it
+     */
+    Q_INVOKABLE void reset(QStringList path, const QVariantMap& properties, Qt::FocusReason focusReason = Qt::OtherFocusReason);
+    Q_INVOKABLE void reset(QStringList path, Qt::FocusReason focusReason = Qt::OtherFocusReason);
+
 
 
     /**

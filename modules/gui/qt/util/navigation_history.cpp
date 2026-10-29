@@ -57,6 +57,35 @@ void NavigationHistory::push(QStringList path, Qt::FocusReason focusReason)
 
 }
 
+void NavigationHistory::reset(QStringList path, const QVariantMap& properties, Qt::FocusReason focusReason)
+{
+    const bool hadPrevious = !isPreviousEmpty();
+
+    // NOTE: the old pages live until the new one is shown, the views may still read their
+    //       properties while they are replaced
+    auto old = std::move(m_history);
+    m_history.clear();
+    clearForward();
+
+    auto prop = std::make_unique<QQmlPropertyMap>();
+    for (auto it =  properties.keyValueBegin(); it != properties.keyValueEnd(); ++it)
+        prop->insert((*it).first, (*it).second);
+
+    m_history.emplace_back(path, std::move(prop));
+
+    updateCurrent();
+
+    if (hadPrevious)
+        emit previousEmptyChanged(true);
+
+    emit navigate(focusReason);
+}
+
+void NavigationHistory::reset(QStringList path, Qt::FocusReason focusReason)
+{
+    reset(path, {}, focusReason);
+}
+
 static bool isNodeValid(const QVariant& value)
 {
     if (value.canConvert<QStringList>()

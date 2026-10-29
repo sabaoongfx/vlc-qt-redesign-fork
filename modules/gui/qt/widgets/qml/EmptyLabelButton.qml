@@ -47,7 +47,7 @@ EmptyLabel {
         if (addsFolder)
             DialogsProvider.addLibraryFolderDialog()
         else
-            History.push(["network"], reason)
+            History.reset(["network"], reason)
     }
 
     // Keys
