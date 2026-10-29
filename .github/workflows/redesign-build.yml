@@ -246,10 +246,14 @@ jobs:
             import -window root "$1/shots/lib-browse-$2.png" || true
             click 80 246; sleep 5 # Playlists
             import -window root "$1/shots/lib-playlists-$2.png" || true
-            click 80 108; sleep 5; click 1182 78; sleep 2 # Video, sort menu
+            # the header: count, sort 824, view 863, search 900-1215, '...' 1244
+            click 80 108; sleep 5; click 824 77; sleep 2 # Video, sort menu
             import -window root "$1/shots/lib-sort-$2.png" || true
-            xdotool key Escape; sleep 1; click 1226 78; sleep 2 # search field
+            xdotool key Escape; sleep 1; click 1050 77; sleep 2 # search field
             import -window root "$1/shots/lib-search-$2.png" || true
+            xdotool key Escape; sleep 1
+            click 1244 77; sleep 2 # '...': the folder context menu
+            import -window root "$1/shots/lib-foldermenu-$2.png" || true
             xdotool key Escape; sleep 1
             click 1094 20; sleep 3 # playlist pane
             import -window root "$1/shots/lib-playlist-$2.png" || true
