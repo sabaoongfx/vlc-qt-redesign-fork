@@ -18,6 +18,7 @@
 
 import QtQuick
 import QtQuick.Templates as T
+import QtQuick.Layouts
 
 import VLC.MainInterface
 import VLC.Style
@@ -181,55 +182,69 @@ T.Control {
             width: parent.width
             height: VLCStyle.dp(48, VLCStyle.scale)
 
-            Row {
+            // the folder and the artist stop before the queue button, long names end in "..."
+            // (a long artist ran under the button)
+            RowLayout {
                 anchors.left: parent.left
                 anchors.leftMargin: VLCStyle.dp(10, VLCStyle.scale)
+                anchors.right: queueButton.left
+                anchors.rightMargin: VLCStyle.margin_xsmall
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.verticalCenterOffset: VLCStyle.dp(6, VLCStyle.scale) // Figma: 27px above the card edge
-                spacing: VLCStyle.margin_normal
+                spacing: VLCStyle.margin_xsmall
 
-                Row {
+                Widgets.IconLabel {
                     visible: root.folderName !== ""
-                    spacing: VLCStyle.margin_xsmall
-
-                    Widgets.IconLabel {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: VLCIcons.ic_fluent_folder_open_24_regular
-                        font.pixelSize: VLCStyle.dp(22, VLCStyle.scale)
-                        color: theme.fg.secondary
-                    }
-
-                    T.Label {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: root.folderName
-                        color: theme.fg.secondary
-                        font.family: VLCStyle.fontFamily
-                        font.pixelSize: VLCStyle.fontSize_xlarge
-                    }
+                    text: VLCIcons.ic_fluent_folder_open_24_regular
+                    font.pixelSize: VLCStyle.dp(22, VLCStyle.scale)
+                    color: theme.fg.secondary
                 }
 
-                Row {
+                T.Label {
+                    // the folder keeps its name first, up to half the row
+                    Layout.maximumWidth: Math.min(implicitWidth, parent.width / 2)
+                    Layout.minimumWidth: 0
+
+                    visible: root.folderName !== ""
+                    text: root.folderName
+                    color: theme.fg.secondary
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_xlarge
+                    elide: Text.ElideRight
+                }
+
+                Widgets.IconLabel {
+                    Layout.leftMargin: root.folderName !== "" ? VLCStyle.margin_normal - VLCStyle.margin_xsmall : 0
+
                     visible: Player.artist !== ""
-                    spacing: VLCStyle.margin_xsmall
+                    text: VLCIcons.topbar_music
+                    font.pixelSize: VLCStyle.icon_normal
+                    color: theme.fg.secondary
+                }
 
-                    Widgets.IconLabel {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: VLCIcons.topbar_music
-                        font.pixelSize: VLCStyle.icon_normal
-                        color: theme.fg.secondary
-                    }
+                T.Label {
+                    Layout.fillWidth: true
+                    Layout.minimumWidth: 0
 
-                    T.Label {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: Player.artist
-                        color: theme.fg.secondary
-                        font.family: VLCStyle.fontFamily
-                        font.pixelSize: VLCStyle.fontSize_xlarge
-                    }
+                    visible: Player.artist !== ""
+                    text: Player.artist
+                    color: theme.fg.secondary
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_xlarge
+                    elide: Text.ElideRight
+                    // set, so a right-to-left name (Arabic) stays next to its icon
+                    horizontalAlignment: Text.AlignLeft
+                }
+
+                Item {
+                    // keeps the row on the left when the artist is empty
+                    Layout.fillWidth: Player.artist === ""
                 }
             }
 
             Widgets.IconToolButton {
+                id: queueButton
+
                 anchors.right: parent.right
                 anchors.rightMargin: VLCStyle.dp(10, VLCStyle.scale)
                 anchors.verticalCenter: parent.verticalCenter
