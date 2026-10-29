@@ -231,6 +231,8 @@ T.Pane {
 
                 barHeight: root._inline ? VLCStyle.dp(28, VLCStyle.scale) : root.sliderHeight
                 fieldStyle: root._inline
+                // music: the Figma bars instead of the filled bar
+                waveform: !Player.hasVideoOutput
 
                 Accessible.role: Accessible.Slider
                 Accessible.name: qsTr("Progress")

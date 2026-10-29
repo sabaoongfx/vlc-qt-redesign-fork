@@ -32,7 +32,11 @@ T.ProgressBar {
     property bool fieldStyle: false
     // redesign: the mini player card's progress field has no handle (Figma "Miniplayer")
     property bool showHandle: true
+    // redesign: the Figma music player seek bar (Player - Music), thin bars in the field, accent up
+    // to the position and grey after it, instead of the filled bar. Only with fieldStyle.
+    property bool waveform: false
     readonly property real _fieldInset: VLCStyle.dp(2, VLCStyle.scale)
+    readonly property bool _waveformShown: waveform && fieldStyle
 
     readonly property real _hoveredScalingFactor: fieldStyle ? 1 : 1.8
     property int barHeight: VLCStyle.dp(5, VLCStyle.scale)
@@ -449,7 +453,7 @@ T.ProgressBar {
             color: control.fieldStyle ? VLCStyle.accentDim(theme.accent, theme.palette.isDark) : theme.fg.primary
             height: control.fieldStyle ? control.barHeight - control._fieldInset * 2 : control.barHeight
             radius: control.fieldStyle ? VLCStyle.dp(4, VLCStyle.scale) : control._seekPointsRadius
-            visible: control.fieldStyle || !Player.hasChapters
+            visible: (control.fieldStyle || !Player.hasChapters) && !control._waveformShown
 
             // We use dynamic mutability group because time interpolation
             // may induce rapid change:
@@ -463,9 +467,55 @@ T.ProgressBar {
             }
         }
 
+        // redesign: the music seek bar. The bar heights are a fixed pattern picked from the title (the
+        // player has no waveform of the audio), the same for a song every time it plays.
+        Item {
+            id: waveformBars
+
+            x: control._fieldInset * 3
+            y: control._fieldInset * 2
+            width: parent.width - control._fieldInset * 6
+            height: control.barHeight - control._fieldInset * 4
+
+            visible: control._waveformShown
+
+            readonly property real step: VLCStyle.dp(4, VLCStyle.scale)
+
+            readonly property int seed: {
+                const text = Player.title + Player.name
+                let hash = 7
+                for (let i = 0; i < text.length; i++)
+                    hash = (hash * 31 + text.charCodeAt(i)) % 2147483647
+                return hash
+            }
+
+            Repeater {
+                model: control._waveformShown ? Math.max(0, Math.floor(waveformBars.width / waveformBars.step)) : 0
+
+                delegate: Rectangle {
+                    required property int index
+
+                    // 0.2 .. 1, a pseudo random value per bar
+                    readonly property real level: {
+                        const v = Math.sin((index + 1) * 12.9898 + waveformBars.seed * 0.0001 * 78.233) * 43758.5453
+                        return 0.2 + 0.8 * (v - Math.floor(v))
+                    }
+
+                    x: index * waveformBars.step
+                    width: VLCStyle.dp(1.5, VLCStyle.scale)
+                    height: Math.max(width, Math.round(waveformBars.height * level))
+                    y: Math.round((waveformBars.height - height) / 2)
+                    radius: width / 2
+
+                    color: (x / waveformBars.width) <= control.visualPosition ? theme.accent
+                                                                               : VLCStyle.figmaColors(theme.palette.isDark).hint
+                }
+            }
+        }
+
         // redesign: field style, chapter starts as 2px breaks across the inset fill
         Repeater {
-            model: (control.fieldStyle && Player.hasChapters) ? Player.chapters : 0
+            model: (control.fieldStyle && Player.hasChapters && !control._waveformShown) ? Player.chapters : 0
 
             delegate: Rectangle {
                 required property var model
