@@ -712,7 +712,10 @@ FocusScope {
             visible: false
             height: parent.height - g_mainDisplay.displayMargin
 
-            active: MainCtx.playqueuePanel.docked
+            // redesign: the library has no docked play queue, the mini player's queue card is its
+            // queue. playqueuePanel.visible is shared with the player, so a queue opened there
+            // showed here too, beside the picture in picture (user screenshot)
+            active: false
 
             state: ((status === Loader.Ready) && pannelVisiblity.showPlayqueue) ? "expanded" : ""
 
