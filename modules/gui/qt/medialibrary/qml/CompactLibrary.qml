@@ -74,6 +74,72 @@ Rectangle {
 
     readonly property var _model: modelLoader.item
 
+    // Figma card header: sort, list/grid and a magnifier that opens the search field
+    property string _sortCriteria: ""
+    property int _sortOrder: Qt.AscendingOrder
+    property bool _grid: false
+    property bool _searchOpen: false
+
+    // The Figma "Sorting Options" entries that apply to what the card shows (none for Home,
+    // Recent and the music menu, which keep their own order)
+    readonly property var _sortModel: {
+        const titles = (key) => [
+            { text: qsTr("Title A-Z"), criteria: key, order: Qt.AscendingOrder },
+            { text: qsTr("Title Z-A"), criteria: key, order: Qt.DescendingOrder }
+        ]
+        const dates = [
+            { text: qsTr("Newest First"), criteria: "insertion", order: Qt.DescendingOrder },
+            { text: qsTr("Oldest First"), criteria: "insertion", order: Qt.AscendingOrder }
+        ]
+        const uris = [
+            { text: qsTr("URI Ascending"),  criteria: "filename", order: Qt.AscendingOrder },
+            { text: qsTr("URI Descending"), criteria: "filename", order: Qt.DescendingOrder }
+        ]
+
+        switch (section) {
+        case "videos":
+            return [
+                { text: qsTr("Unwatched First"), criteria: "playcount", order: Qt.AscendingOrder },
+                { text: qsTr("Watched First"),   criteria: "playcount", order: Qt.DescendingOrder },
+                ...dates, ...titles("title"), ...uris
+            ]
+        case "music":
+            switch (_current?.kind) {
+            case "songs":
+                return [
+                    ...dates, ...titles("title"),
+                    { text: qsTr("Artist A-Z"), criteria: "main_artist", order: Qt.AscendingOrder },
+                    { text: qsTr("Artist Z-A"), criteria: "main_artist", order: Qt.DescendingOrder },
+                    { text: qsTr("Album A-Z"),  criteria: "album_title", order: Qt.AscendingOrder },
+                    { text: qsTr("Album Z-A"),  criteria: "album_title", order: Qt.DescendingOrder },
+                    { text: qsTr("Track Number Ascending"),  criteria: "track_number", order: Qt.AscendingOrder },
+                    { text: qsTr("Track Number Descending"), criteria: "track_number", order: Qt.DescendingOrder },
+                    ...uris,
+                    { text: qsTr("Disc Number Ascending"),  criteria: "disc_number", order: Qt.AscendingOrder },
+                    { text: qsTr("Disc Number Descending"), criteria: "disc_number", order: Qt.DescendingOrder }
+                ]
+            case "albums":
+                return titles("title")
+            case "artists":
+            case "genres":
+                return titles("name")
+            default:
+                return []
+            }
+        case "network":
+            return titles("url")
+        case "playlists":
+            return titles("name")
+        default:
+            return []
+        }
+    }
+
+    function closeSearch() {
+        searchField.text = ""
+        _searchOpen = false
+    }
+
     // The glyph of the rows that have no cover
     readonly property string _rowIcon: {
         switch (section) {
@@ -140,7 +206,15 @@ Rectangle {
     onSectionChanged: {
         trail = []
         _forward = []
-        searchField.text = ""
+        closeSearch()
+        _sortCriteria = ""
+        _sortOrder = Qt.AscendingOrder
+    }
+
+    // a sort key of one list means nothing to the next one
+    onTrailChanged: {
+        _sortCriteria = ""
+        _sortOrder = Qt.AscendingOrder
     }
 
     color: _colors.section
@@ -184,6 +258,8 @@ Rectangle {
         MLVideoFolderTreeModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -193,6 +269,8 @@ Rectangle {
         MLVideoFolderTreeModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
             parentId: root._current?.id
         }
     }
@@ -203,6 +281,8 @@ Rectangle {
         MLRecentVideoModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -212,6 +292,8 @@ Rectangle {
         MLAudioModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -221,6 +303,8 @@ Rectangle {
         MLAlbumModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -230,6 +314,8 @@ Rectangle {
         MLArtistModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -239,6 +325,8 @@ Rectangle {
         MLGenreModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -248,6 +336,8 @@ Rectangle {
         MLUrlModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -257,6 +347,8 @@ Rectangle {
         MLPlaylistListModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -266,6 +358,8 @@ Rectangle {
         MLRecentMediaModel {
             ml: MediaLib
             searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
         }
     }
 
@@ -366,24 +460,79 @@ Rectangle {
             }
         }
 
-        // Item count and search
+        // Item count, then sort, list/grid and search (Figma: three icons; the magnifier opens the
+        // search field in their place, Escape or leaving it empty closes it)
         RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: VLCStyle.dp(30, VLCStyle.scale)
 
-            spacing: VLCStyle.margin_xsmall
+            spacing: VLCStyle.margin_xxsmall
 
             Widgets.LabelExt {
+                visible: !root._searchOpen
+
                 text: qsTr("%1 items").arg(root._model?.count ?? 0)
                 font.pixelSize: VLCStyle.fontSize_normal
                 color: theme.fg.secondary
             }
 
             Item {
+                visible: !root._searchOpen
                 Layout.fillWidth: true
             }
 
+            Widgets.SortControl {
+                visible: !root._searchOpen && root._sortModel.length > 0
+
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                font.pixelSize: VLCStyle.icon_banner
+                description: qsTr("Sort")
+
+                popupAbove: false
+
+                model: root._sortModel
+                sortKey: root._sortCriteria
+                sortOrder: root._sortOrder
+
+                onSortSelected: (key) => root._sortCriteria = key
+                onSortOrderSelected: (type) => root._sortOrder = type
+            }
+
+            Widgets.IconToolButton {
+                visible: !root._searchOpen
+
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                font.pixelSize: VLCStyle.icon_banner
+                text: root._grid ? VLCIcons.list : VLCIcons.grid
+                description: root._grid ? qsTr("List View") : qsTr("Grid View")
+
+                onClicked: root._grid = !root._grid
+            }
+
+            Widgets.IconToolButton {
+                visible: !root._searchOpen
+
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                font.pixelSize: VLCStyle.icon_banner
+                text: VLCIcons.search
+                description: qsTr("Search")
+
+                onClicked: {
+                    root._searchOpen = true
+                    searchField.forceActiveFocus(Qt.MouseFocusReason)
+                }
+            }
+
             Rectangle {
-                Layout.preferredWidth: VLCStyle.dp(150, VLCStyle.scale)
+                visible: root._searchOpen
+
+                Layout.fillWidth: true
                 Layout.preferredHeight: VLCStyle.dp(30, VLCStyle.scale)
 
                 radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -413,8 +562,7 @@ Rectangle {
 
                     anchors.left: searchIcon.right
                     anchors.leftMargin: VLCStyle.margin_xsmall
-                    anchors.right: parent.right
-                    anchors.rightMargin: VLCStyle.margin_xsmall
+                    anchors.right: closeSearchButton.left
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
 
@@ -426,8 +574,15 @@ Rectangle {
 
                     Accessible.name: qsTr("Search")
 
-                    // typed letters must not run the global shortcuts
-                    onActiveFocusChanged: MainCtx.useGlobalShortcuts = !activeFocus
+                    // typed letters must not run the global shortcuts; an empty field closes
+                    // when it loses the focus
+                    onActiveFocusChanged: {
+                        MainCtx.useGlobalShortcuts = !activeFocus
+                        if (!activeFocus && text === "")
+                            root._searchOpen = false
+                    }
+
+                    Keys.onEscapePressed: root.closeSearch()
 
                     Text {
                         anchors.fill: parent
@@ -439,6 +594,22 @@ Rectangle {
                         font: searchField.font
                         verticalAlignment: Text.AlignVCenter
                     }
+                }
+
+                Widgets.IconToolButton {
+                    id: closeSearchButton
+
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    width: VLCStyle.dp(28, VLCStyle.scale)
+                    height: VLCStyle.dp(28, VLCStyle.scale)
+
+                    font.pixelSize: VLCStyle.icon_small
+                    text: VLCIcons.close
+                    description: qsTr("Close the search")
+
+                    onClicked: root.closeSearch()
                 }
             }
         }
@@ -499,6 +670,8 @@ Rectangle {
 
         ListView {
             id: list
+
+            visible: !root._grid
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -575,6 +748,106 @@ Rectangle {
                         Layout.fillWidth: true
 
                         text: row.title
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        font.pixelSize: VLCStyle.fontSize_normal
+                        color: theme.fg.primary
+                    }
+                }
+
+                HoverHandler {
+                    cursorShape: Qt.PointingHandCursor
+                }
+            }
+        }
+
+        // the same items as tiles (the view button): two columns, the cover and the title under it
+        GridView {
+            id: grid
+
+            readonly property bool _wide: root.section === "videos" || root.section === "home"
+                                          || root.section === "recent"
+
+            visible: root._grid
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            model: root._grid ? root._model : null
+
+            cellWidth: Math.floor(width / 2)
+            cellHeight: Math.round(cellWidth * (_wide ? 9 / 16 : 1)) + VLCStyle.dp(36, VLCStyle.scale)
+
+            T.ScrollBar.vertical: Widgets.ScrollBarExt { }
+
+            delegate: T.ItemDelegate {
+                id: tile
+
+                required property int index
+                required property var model
+
+                readonly property bool isFolder: root.section === "videos" && model.isVideo === false
+                readonly property string title: model.title ?? model.name ?? model.url ?? ""
+                readonly property string cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
+
+                width: GridView.view.cellWidth
+                height: GridView.view.cellHeight
+
+                padding: VLCStyle.margin_xxsmall
+
+                Accessible.role: Accessible.Button
+                Accessible.name: title
+
+                onClicked: root.activate({
+                    id: model.id,
+                    title: title,
+                    kind: model.kind,
+                    isVideo: model.isVideo
+                })
+
+                background: Rectangle {
+                    radius: VLCStyle.dp(6, VLCStyle.scale)
+                    color: tile.hovered ? root._colors.raised : "transparent"
+                }
+
+                contentItem: ColumnLayout {
+                    spacing: VLCStyle.margin_xxsmall
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        radius: VLCStyle.dp(6, VLCStyle.scale)
+                        color: root._colors.raised
+
+                        Widgets.ImageExt {
+                            anchors.fill: parent
+
+                            visible: !tile.isFolder && tile.cover !== ""
+                            radius: parent.radius
+                            source: visible ? tile.cover : ""
+                            fillMode: Image.PreserveAspectCrop
+                            asynchronous: true
+                            sourceSize.width: VLCStyle.dp(240, VLCStyle.scale)
+                        }
+
+                        Widgets.IconLabel {
+                            anchors.centerIn: parent
+
+                            visible: tile.isFolder || tile.cover === ""
+                            text: tile.isFolder ? VLCIcons.ic_fluent_folder_open_24_regular : root._rowIcon
+                            font.pixelSize: VLCStyle.icon_large
+                            color: theme.fg.secondary
+                        }
+                    }
+
+                    Widgets.LabelExt {
+                        Layout.fillWidth: true
+
+                        text: tile.title
                         textFormat: Text.PlainText
                         elide: Text.ElideRight
                         font.pixelSize: VLCStyle.fontSize_normal
