@@ -102,9 +102,105 @@ T.ToolBar {
                 Navigation.parentItem: root
                 Navigation.rightItem: playqueueButtonsTop
 
-                // redesign: no cone and no menu button here, Open File and the rest are in the library menu
-                // (the "..." next to the search); back/forward live in the page header, the play queue
-                // button in the mini player
+                // redesign: the same start as the player's top bar (Figma): the cone, the VLC menu, a
+                // divider and the folder name: the folder of what plays (a click opens the player),
+                // or the library page shown when nothing plays. Back/forward live in the page header.
+                Widgets.BannerCone {
+                    id: logo
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    color: theme.accent
+                }
+
+                Widgets.IconToolButton {
+                    id: menuBtn
+
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    font.pixelSize: VLCStyle.icon_banner
+                    text: VLCIcons.more
+                    description: qsTr("Menu")
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+                    checked: globalMenu.shown
+
+                    onClicked: globalMenu.popup(this.mapToGlobal(0, height))
+
+                    Menus.QmlGlobalMenu {
+                        id: globalMenu
+                        ctx: MainCtx
+                    }
+                }
+
+                Rectangle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: VLCStyle.border
+                    height: VLCStyle.dp(20, VLCStyle.scale)
+                    color: theme.separator
+                }
+
+                T.AbstractButton {
+                    id: folderBtn
+
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    readonly property string folderName: {
+                        const url = Player.isStarted && Player.url ? Player.url.toString() : ""
+                        if (url.startsWith("file://")) {
+                            const parts = decodeURIComponent(url.replace(/\/+$/, "")).split("/")
+                            if (parts.length > 1 && parts[parts.length - 2] !== "")
+                                return parts[parts.length - 2]
+                        }
+                        switch (History.viewPath[0] ?? "") {
+                        case "video": return qsTr("Videos")
+                        case "music": return qsTr("Music")
+                        case "network": return qsTr("Network")
+                        case "playlists": return qsTr("Playlists")
+                        default: return qsTr("Home")
+                        }
+                    }
+
+                    text: folderName
+                    enabled: Player.isStarted
+
+                    Accessible.name: Player.isStarted ? qsTr("Open the player (%1)").arg(folderName) : folderName
+
+                    implicitWidth: folderRow.implicitWidth + leftPadding + rightPadding
+                    implicitHeight: VLCStyle.bannerButton_height
+
+                    leftPadding: VLCStyle.margin_xxsmall
+                    rightPadding: VLCStyle.margin_xsmall
+
+                    background: Rectangle {
+                        radius: VLCStyle.button_radius
+                        color: folderBtn.hovered ? Qt.alpha(theme.fg.primary, 0.08) : "transparent"
+                    }
+
+                    contentItem: Row {
+                        id: folderRow
+
+                        spacing: VLCStyle.margin_xsmall
+
+                        Widgets.IconLabel {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: VLCIcons.ic_fluent_folder_open_24_regular
+                            font.pixelSize: VLCStyle.icon_banner
+                            color: folderBtn.hovered ? theme.fg.primary : theme.fg.secondary
+                        }
+
+                        T.Label {
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: folderBtn.text
+                            color: folderBtn.hovered ? theme.fg.primary : theme.fg.secondary
+                            font.family: VLCStyle.fontFamily
+                            font.pixelSize: VLCStyle.fontSize_large
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    onClicked: History.push(["player"])
+                }
+
                 Widgets.IconToolButton {
                     id: navigationVisibilty
 
