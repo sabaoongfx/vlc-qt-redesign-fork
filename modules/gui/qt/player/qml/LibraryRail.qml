@@ -44,7 +44,7 @@ Item {
         { name: "videos", icon: VLCIcons.topbar_video, filled: VLCIcons.topbar_video_filled, label: qsTr("Videos") },
         { name: "music", icon: VLCIcons.topbar_music, filled: VLCIcons.topbar_music_filled, label: qsTr("Music") },
         { name: "network", icon: VLCIcons.topbar_network, filled: VLCIcons.topbar_network_filled, label: qsTr("Network") },
-        { name: "playlists", icon: VLCIcons.playlist, filled: VLCIcons.playlist, label: qsTr("Playlists") },
+        { name: "playlists", icon: VLCIcons.playlists, filled: VLCIcons.playlists, label: qsTr("Playlists") },
         { name: "recent", icon: VLCIcons.history, filled: VLCIcons.history, label: qsTr("Recent") }
     ]
 

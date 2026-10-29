@@ -281,7 +281,7 @@ public:
         m_model.children.emplace_back(qtr("Network"), "network", VLCIcons::topbar_network, QStringLiteral(":/icons/ic_fluent_wifi_1.svg"));
 
         if (m_hasMedialib)
-            m_model.children.emplace_back(qtr("Playlists"), "playlists", VLCIcons::playlist, QStringLiteral(":/icons/ic_fluent_apps_list.svg"));
+            m_model.children.emplace_back(qtr("Playlists"), "playlists", VLCIcons::playlists, QStringLiteral(":/icons/ic_fluent_apps_list.svg"));
 
         m_model.visibleChildren = m_model.children.size();
     }

@@ -112,6 +112,7 @@
         {"key": "topbar_video_filled", "path": "./icons/redesign/topbar_video_filled.svg"},
         {"key": "topbar_music_filled", "path": "./icons/redesign/topbar_music_filled.svg"},
         {"key": "topbar_network_filled", "path": "./icons/redesign/topbar_network_filled.svg"},
-        {"key": "edit", "path": "./icons/redesign/edit.svg"}
+        {"key": "edit", "path": "./icons/redesign/edit.svg"},
+        {"key": "playlists", "path": "./icons/redesign/playlists.svg"}
     ]
 }

@@ -200,7 +200,7 @@ Rectangle {
         switch (section) {
         case "music": return VLCIcons.topbar_music
         case "network": return VLCIcons.topbar_network
-        case "playlists": return VLCIcons.playlist
+        case "playlists": return VLCIcons.playlists
         case "recent": return VLCIcons.history
         default: return VLCIcons.topbar_video
         }
@@ -958,7 +958,7 @@ Rectangle {
                             width: homeColumn.width
 
                             title: modelData.title
-                            glyph: VLCIcons.playlist
+                            glyph: VLCIcons.playlists
 
                             onClicked: root.activate({ id: modelData.id, title: modelData.title, kind: "homePlaylist" })
                         }
@@ -1030,7 +1030,7 @@ Rectangle {
                         || ((root.section === "videos" || root._current?.kind === "folder") && model.isVideo === false)
                 title: model.title ?? model.name ?? model.url ?? ""
                 cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
-                glyph: model.kind === "homePlaylist" ? VLCIcons.playlist
+                glyph: model.kind === "homePlaylist" ? VLCIcons.playlists
                      : model.kind === "homeArtist" ? VLCIcons.profile_new
                      : root._rowIcon
                 progress: (model.isVideo !== false) ? (model.progress ?? 0) : 0
