@@ -181,8 +181,15 @@ Widgets.TableViewExt {
 
     rowContextMenu: contextMenu
 
-    onActionForSelection: (selection) => model.addAndPlay(selection)
-    onItemDoubleClicked: (index, model) => MediaLib.addAndPlay(model.id)
+    // redesign: a track plays in the player, like a video
+    onActionForSelection: (selection) => {
+        model.addAndPlay(selection)
+        MainCtx.playerView = true
+    }
+    onItemDoubleClicked: (index, model) => {
+        MediaLib.addAndPlay(model.id)
+        MainCtx.playerView = true
+    }
     onRightClick: (_,_, globalMousePos) => {
         contextMenu.popup(selectionModel.selectedIndexes, globalMousePos)
     }

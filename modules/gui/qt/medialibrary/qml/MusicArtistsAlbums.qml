@@ -54,16 +54,14 @@ Widgets.PageExt {
     leftPadding: 0
     rightPadding: 0
 
-    hasGridListMode: true
+    // redesign: the artist's tracks are a list only
+    hasGridListMode: false
     isSearchable: true
 
     //we provide our own header
     header: null
 
-    sortModel: MainCtx.gridView ? [
-        { text: qsTr("Title"), criteria: "title" },
-        { text: qsTr("Release Year"), criteria: "release_year" },
-    ] : [
+    sortModel: [
         { text: qsTr("Title"), criteria: "title" },
         { text: qsTr("Release Year"), criteria: "release_year" },
         { text: qsTr("Album Title"), criteria: "album_title" },

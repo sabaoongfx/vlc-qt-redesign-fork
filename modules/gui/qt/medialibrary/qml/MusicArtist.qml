@@ -51,7 +51,8 @@ FocusScope {
 
     property bool isSearchable: true
 
-    readonly property MLBaseModel _effectiveModel: MainCtx.gridView ? albumModel : trackModel
+    // redesign: an artist shows its tracks, a plain list (no album grid, no album sections)
+    readonly property MLBaseModel _effectiveModel: trackModel
 
     on_EffectiveModelChanged: root._effectiveModel.sortCriteria = root.sort.criteria
 
@@ -222,7 +223,7 @@ FocusScope {
                         }
 
                         if (root._currentView)
-                            root._currentView.albumSections = MainCtx.albumSections
+                            root._currentView.albumSections = false // redesign: a plain track list
                     }
 
                     Component.onCompleted: {
@@ -241,7 +242,7 @@ FocusScope {
                     anchors.left: parent.left
                     anchors.right: parent.right
 
-                    active: (root._currentView instanceof Widgets.TableViewExt) && MainCtx.albumSections
+                    active: false // redesign: no album sections in the artist's track list
                     visible: active
 
                     sourceComponent: MusicAlbumSectionDelegate {
@@ -437,7 +438,7 @@ FocusScope {
             anchors.rightMargin: root.rightPadding
 
             focus: loader.status === Loader.Ready
-            sourceComponent: MainCtx.gridView ? gridComponent : tableComponent
+            sourceComponent: tableComponent // redesign: always the track list
         }
     }
 
@@ -686,13 +687,15 @@ FocusScope {
 
             model: trackModel
 
+            // redesign: a track plays in the player, like a video
             onActionForSelection: (selection) => {
                 model.addAndPlay(selection)
+                MainCtx.playerView = true
             }
 
             rowHeight: VLCStyle.tableCoverRow_height
 
-            property bool albumSections: true
+            property bool albumSections: false
 
             section.property: "album_id_serialized"
             section.delegate: albumSections ? musicAlbumSectionDelegateComponent : null
