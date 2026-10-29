@@ -108,6 +108,28 @@ T.Control {
                 onDoubleTapped: MainCtx.playerView = true
             }
 
+            // redesign: the Figma Miniplayer close button, it stops the playback (the card goes away)
+            Widgets.IconToolButton {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: VLCStyle.margin_xsmall
+
+                z: 1
+                visible: !root.hasVideo && (cardHover.hovered || hovered)
+
+                width: VLCStyle.bannerButton_width
+                height: VLCStyle.bannerButton_height
+                font.pixelSize: VLCStyle.icon_normal
+
+                text: VLCIcons.close
+                description: qsTr("Close")
+
+                backgroundColor: Qt.alpha(VLCStyle.figmaColors(theme.palette.isDark).frame, 0.7)
+                radius: VLCStyle.dp(6, VLCStyle.scale)
+
+                onClicked: MainPlaylistController.stop()
+            }
+
             Widgets.IconButton {
                 anchors.centerIn: parent
                 visible: !root.hasVideo && (previewHover.hovered || hovered)
@@ -227,6 +249,8 @@ T.Control {
 
     // redesign: the hand cursor over everything clickable, like the prototype
     HoverHandler {
+        id: cardHover
+
         cursorShape: Qt.PointingHandCursor
         enabled: root.enabled
     }
