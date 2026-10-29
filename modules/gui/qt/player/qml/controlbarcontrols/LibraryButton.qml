@@ -21,6 +21,7 @@ import QtQuick
 import VLC.MainInterface
 import VLC.Widgets as Widgets
 import VLC.Style
+import VLC.Util
 
 // redesign: shows and hides the library menu beside the video (the icon rail and its card,
 // Figma "Player - customize-8"), like the switcher in the top bar
