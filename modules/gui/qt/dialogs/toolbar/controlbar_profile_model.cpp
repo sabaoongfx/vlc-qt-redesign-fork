@@ -103,7 +103,8 @@ decltype (ControlbarProfileModel::m_defaults)
                         {
                             {
                                 {
-                                    ControlListModel::LIBRARY_BUTTON,
+                                    // redesign: no library button here, the switcher in the top bar
+                                    // shows and hides the library beside the video
                                     ControlListModel::PREVIOUS_BUTTON,
                                     ControlListModel::SKIP_BACK_BUTTON,
                                     ControlListModel::PLAY_BUTTON,
@@ -832,7 +833,8 @@ bool ControlbarProfileModel::reload()
             }
 
             // redesign: a video bar saved exactly as an older Default Style (transport only, or with the library
-            // button) gets the current left group: library button, previous, 10 s back, play, 10 s forward, next
+            // button, which the top bar switcher replaced) gets the current left group: previous, 10 s back,
+            // play, 10 s forward, next
             if (identifier == PlayerControlbarModel::Videoplayer && ptrNewProfile->name() == qfut(N_("Default Style"))
                 && data[1].isEmpty())
             {
@@ -840,8 +842,11 @@ bool ControlbarProfileModel::reload()
                                                          ControlListModel::NEXT_BUTTON };
                 static const QVector<int> oldWithLibrary { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
                                                            ControlListModel::PLAY_BUTTON, ControlListModel::NEXT_BUTTON };
-                if (data[0] == oldTransport || data[0] == oldWithLibrary)
-                    data[0] = { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                static const QVector<int> oldWithLibrarySkips { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
+                                                                ControlListModel::SKIP_BACK_BUTTON, ControlListModel::PLAY_BUTTON,
+                                                                ControlListModel::SKIP_FW_BUTTON, ControlListModel::NEXT_BUTTON };
+                if (data[0] == oldTransport || data[0] == oldWithLibrary || data[0] == oldWithLibrarySkips)
+                    data[0] = { ControlListModel::PREVIOUS_BUTTON,
                                 ControlListModel::SKIP_BACK_BUTTON, ControlListModel::PLAY_BUTTON,
                                 ControlListModel::SKIP_FW_BUTTON, ControlListModel::NEXT_BUTTON };
             }
