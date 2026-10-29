@@ -100,6 +100,14 @@ T.Control {
                                                                                : VLCStyle.noArtAlbumCover
             }
 
+            // the white play button stays readable on a light cover (PIPPlayer does the same over video)
+            Rectangle {
+                anchors.fill: parent
+                visible: !root.hasVideo && previewHover.hovered
+                radius: parent.radius
+                color: Qt.rgba(0, 0, 0, 0.5)
+            }
+
             HoverHandler {
                 id: previewHover
             }

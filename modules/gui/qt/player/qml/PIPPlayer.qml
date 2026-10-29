@@ -122,10 +122,13 @@ T.Control {
         id: videoSurface
         videoSurfaceProvider: MainCtx.videoSurfaceProvider
 
-        color: (hoverHandler.hovered ||
-                playButton?.hovered ||
-                closeButton?.hovered ||
-                fullscreenButton?.hovered) ? "#10000000" : "transparent"
+        // redesign: the buttons are plain white icons (no outline); a half dark scrim keeps them
+        // readable over a white frame (the old 6% tint left them invisible there)
+        color: (!root.hideControls &&
+                (hoverHandler.hovered ||
+                 playButton?.hovered ||
+                 closeButton?.hovered ||
+                 fullscreenButton?.hovered)) ? Qt.rgba(0, 0, 0, 0.5) : "transparent"
 
         // It is acceptable for effects to exceed the boundaries of the
         // parent. They are an exception to the "hypothetical clip test".
