@@ -96,7 +96,9 @@ void MLUrlModel::add( const QString &url )
         ml_unique_ptr<vlc_ml_media_t> s{vlc_ml_get_media_by_mrl( ml, qtu( url ))};
         if (!s)
             s.reset(vlc_ml_new_stream( ml, qtu( url ) ));
-        ctx.succeed = !!s;
+        // redesign: the list is the network history, a stream that was never played is not
+        // in it: a saved stream showed nowhere, with no error (user report)
+        ctx.succeed = s && vlc_ml_media_set_played( ml, s->i_id, true ) == VLC_SUCCESS;
     },
     //UI Thread
     [this](quint64, Ctx& ctx){
