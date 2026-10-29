@@ -270,7 +270,7 @@ T.Page {
                 readonly property var _count: root._firstChild?.model?.count
 
                 visible: (_count !== undefined && _count !== null)
-                text: qsTr("%1 items").arg(_count ?? 0)
+                text: _count === 1 ? qsTr("1 item") : qsTr("%1 items").arg(_count ?? 0)
                 font.pixelSize: VLCStyle.fontSize_large
                 color: theme.fg.secondary
                 Layout.rightMargin: VLCStyle.margin_small
