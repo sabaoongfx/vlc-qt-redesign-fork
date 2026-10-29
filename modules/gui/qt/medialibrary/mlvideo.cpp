@@ -76,7 +76,10 @@ unsigned int AudioDescription::getSampleRate() const
 MLVideo::MLVideo(const vlc_ml_media_t* data)
     : MLMedia ( data )
 {
-    assert( data->i_type == VLC_ML_MEDIA_TYPE_VIDEO || data->i_type == VLC_ML_MEDIA_TYPE_UNKNOWN );
+    // redesign: the music folder tree (MLVideoFolderTreeModel) lists songs with it too; it only
+    // reads what every media has (the recent media list already passed songs here)
+    assert( data->i_type == VLC_ML_MEDIA_TYPE_VIDEO || data->i_type == VLC_ML_MEDIA_TYPE_AUDIO
+            || data->i_type == VLC_ML_MEDIA_TYPE_UNKNOWN );
 
     m_isNew = (m_playCount == 0 && m_progress <= 0);
 
