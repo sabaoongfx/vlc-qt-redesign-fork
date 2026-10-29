@@ -542,6 +542,26 @@ T.ProgressBar {
             property bool display: false
             property bool buffering: Player.buffering > 0 && Player.buffering < 1
 
+            // redesign: the loading bar is for the first load only. A seek (the 10 s buttons, a click on
+            // the bar) empties the buffer again, and the bouncing bar then flashed over the seek bar.
+            property bool loaded: false
+
+            // the bar is also made while something already plays (the player opened mid-file)
+            Component.onCompleted: loaded = (Player.buffering >= 1)
+
+            Connections {
+                target: Player
+
+                function onInputChanged() {
+                    bufferRect.loaded = false
+                }
+
+                function onBufferingChanged() {
+                    if (Player.buffering >= 1)
+                        bufferRect.loaded = true
+                }
+            }
+
             height: control.barHeight
             opacity: 0.4
             color: theme.fg.neutral //FIXME buffer color ?
@@ -605,7 +625,7 @@ T.ProgressBar {
                 },
                 State {
                     name: "buffering not started"
-                    when: control.visible && Player.buffering === 0
+                    when: control.visible && Player.buffering === 0 && !bufferRect.loaded
                     PropertyChanges {
                         target: bufferRect
                         width: bufferAnimWidth
@@ -616,7 +636,7 @@ T.ProgressBar {
                 },
                 State {
                     name: "time to start playing known"
-                    when: control.visible && bufferRect.display
+                    when: control.visible && bufferRect.display && !bufferRect.loaded
                     PropertyChanges {
                         target: bufferRect
                         width: Player.buffering * parent.width
