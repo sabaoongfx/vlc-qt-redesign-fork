@@ -30,7 +30,8 @@ import VLC.Util
 
 // Figma "Open network stream": a modal card with a Network URL box (one address per line)
 // and an optional playlist name. Save keeps the addresses as saved streams; with a name the
-// addresses are also put in a new playlist of that name.
+// addresses are also put in a new playlist of that name. Play saves them too and plays them
+// at once, like Ctrl+N did with VLC's Open Media window.
 T.Popup {
     id: root
 
@@ -63,9 +64,11 @@ T.Popup {
         nameField.text = ""
     }
 
-    function save() {
+    function save(play) {
         if (urls.length === 0)
             return
+
+        const addresses = urls
 
         if (MainCtx.mediaLibraryAvailable && nameField.text.trim() !== "") {
             if (!_playlistModel)
@@ -80,12 +83,19 @@ T.Popup {
                     _urlModel = Qt.createQmlObject("import VLC.MediaLibrary; MLUrlModel { ml: MediaLib }",
                                                    root, "NetworkStreamDialog.urlModel")
                 urls.forEach(url => _urlModel.add(url))
-            } else {
+            } else if (!play) {
+                // no library to keep them: Save plays them (Play does it below)
                 MainPlaylistController.append(urls, true)
             }
         }
 
-        saved(urls)
+        // without a library the page queues what it is given: Play queues them itself
+        if (!play || MainCtx.mediaLibraryAvailable)
+            saved(addresses)
+
+        if (play)
+            MainPlaylistController.append(addresses, true)
+
         close()
     }
 
@@ -265,7 +275,7 @@ T.Popup {
 
                     onActiveFocusChanged: MainCtx.useGlobalShortcuts = !activeFocus
 
-                    onAccepted: root.save()
+                    onAccepted: root.save(false)
 
                     Text {
                         anchors.fill: parent
@@ -304,10 +314,17 @@ T.Popup {
 
             Widgets.DialogButton {
                 text: qsTr("Save")
+                enabled: root.urls.length > 0
+
+                onClicked: root.save(false)
+            }
+
+            Widgets.DialogButton {
+                text: qsTr("Play")
                 primary: true
                 enabled: root.urls.length > 0
 
-                onClicked: root.save()
+                onClicked: root.save(true)
             }
         }
     }
