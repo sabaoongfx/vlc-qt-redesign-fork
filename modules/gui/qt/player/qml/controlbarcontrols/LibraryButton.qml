@@ -22,7 +22,8 @@ import VLC.MainInterface
 import VLC.Widgets as Widgets
 import VLC.Style
 
-// redesign: shows and hides the library card beside the video (Figma "Player - customize-8")
+// redesign: shows and hides the library menu beside the video (the icon rail and its card,
+// Figma "Player - customize-8"), like the switcher in the top bar
 Widgets.IconToolButton {
     id: libraryBtn
 
@@ -40,8 +41,8 @@ Widgets.IconToolButton {
 
     checked: MainCtx.libraryPanel.visible
 
-    // accent while the card is shown (like the play queue button)
-    color: checked ? colorContext.accent : colorContext.fg.primary
+    // grey; the glyph shows the state (wide bar: the menu is shown)
+    color: colorContext.fg.primary
 
     AccessibleCompat.id: "libraryButton"
 }

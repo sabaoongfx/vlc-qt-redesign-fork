@@ -271,9 +271,16 @@ FocusScope{
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: VLCStyle.margin_xsmall
 
-                // redesign: the panel button at the top left shows and hides the library card
-                // beside the video (like the bar's library button); the sidebar itself expands and
-                // collapses by itself
+                Widgets.BannerCone {
+                    id: logo
+
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    color: theme.accent
+                }
+
+                // redesign: the switcher, after the cone: shows and hides the left menu (the icon
+                // rail and its card) beside the video, like the bar's library button
                 Widgets.IconToolButton {
                     id: libraryToggle
 
@@ -285,10 +292,11 @@ FocusScope{
                     height: VLCStyle.bannerButton_height
 
                     text: ""
-                    description: qsTr("Library")
+                    description: qsTr("Show or hide the library menu")
 
                     checked: MainCtx.libraryPanel.visible
-                    color: checked ? colorContext.accent : colorContext.fg.primary
+                    // grey like the Figma icons; the glyph shows the state (wide bar: shown)
+                    color: colorContext.fg.primary
 
                     Widgets.SidebarGlyph {
                         anchors.centerIn: parent
@@ -299,14 +307,6 @@ FocusScope{
                     onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
 
                     onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
-                }
-
-                Widgets.BannerCone {
-                    id: logo
-
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    color: theme.accent
                 }
 
                 Widgets.IconToolButton {

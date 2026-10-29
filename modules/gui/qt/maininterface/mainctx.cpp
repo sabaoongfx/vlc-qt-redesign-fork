@@ -485,7 +485,7 @@ void MainCtx::loadFromSettingsImpl(const bool callSignals)
     loadFromSettings(m_navigationPanel->m_visible, "MainWindow/navigation-panel-visible", true, m_navigationPanel, &SidePanelCtx::visibleChanged);
     loadFromSettings(m_navigationPanel->m_width, "MainWindow/navigation-panel-width", 120, m_navigationPanel, &SidePanelCtx::widthChanged);
 
-    m_libraryPanel->m_visible = false; // redesign: closed until a rail icon or the panel button opens it
+    m_libraryPanel->m_visible = true; // redesign: the player's left menu (icon rail) shows; the switcher hides it
     loadFromSettings(m_libraryPanel->m_width, "MainWindow/library-panel-width", 380, m_libraryPanel, &SidePanelCtx::widthChanged);
 
     loadFromSettings(m_playerPlaylistWidth, "MainWindow/player-playlist-width", 120, this, &MainCtx::playerPlaylistWidthChanged);

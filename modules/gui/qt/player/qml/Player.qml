@@ -57,8 +57,10 @@ FocusScope {
     // Videos.
     property string librarySection: ""
 
-    readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable
-    readonly property bool _libraryCardVisible: _libraryRail && MainCtx.libraryPanel.visible
+    // MainCtx.libraryPanel.visible: the left menu (the rail) is shown, the switcher in the top bar
+    // and the bar's library button hide it; the card beside it opens with a rail icon
+    readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable && MainCtx.libraryPanel.visible
+    readonly property bool _libraryCardVisible: _libraryRail && librarySection !== ""
     // Figma sidebar rail: 50px
     readonly property real _railWidth: _libraryRail
                                        ? VLCStyle.dp(50, VLCStyle.scale) + VLCStyle.applicationHorizontalMargin
@@ -1030,16 +1032,11 @@ FocusScope {
             anchors.fill: parent
 
             section: rootPlayer.librarySection
-            open: MainCtx.libraryPanel.visible
+            open: rootPlayer.librarySection !== ""
 
+            // the active one again hides the card
             onSelected: (section) => {
-                // the active one again hides the card
-                if (MainCtx.libraryPanel.visible && section === rootPlayer.librarySection) {
-                    MainCtx.libraryPanel.visible = false
-                } else {
-                    rootPlayer.librarySection = section
-                    MainCtx.libraryPanel.visible = true
-                }
+                rootPlayer.librarySection = (section === rootPlayer.librarySection) ? "" : section
             }
         }
     }
@@ -1071,9 +1068,9 @@ FocusScope {
         target: MainCtx.libraryPanel
 
         function onVisibleChanged() {
-            // opened by a panel button, not a rail icon
-            if (MainCtx.libraryPanel.visible && rootPlayer.librarySection === "")
-                rootPlayer.librarySection = "videos"
+            // hiding the left menu closes the card with it
+            if (!MainCtx.libraryPanel.visible)
+                rootPlayer.librarySection = ""
         }
     }
 
