@@ -39,6 +39,9 @@ Widgets.PageLoader {
 
     property bool enableBeginningFade: true
     property bool enableEndFade: true
+
+    // redesign: History hands it to every page of the path (CI run 7 warned it was missing)
+    property int initialIndex: 0
     //---------------------------------------------------------------------------------------------
     // Settings
     //---------------------------------------------------------------------------------------------

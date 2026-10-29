@@ -38,6 +38,9 @@ Widgets.PageLoader {
     property bool enableBeginningFade: true
     property bool enableEndFade: true
 
+    // History hands it to every page of the path (PageLoader); the folder page uses it
+    property int initialIndex: 0
+
     // Settings
 
     pageModel: [{
