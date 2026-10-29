@@ -33,6 +33,12 @@ RowLayout {
 
     property int pixelSize: VLCStyle.fontSize_large
 
+    // The library card style (Figma sidebar): every name regular in one colour, the separators a
+    // small dim triangle. Off: the last name semibold and brighter, an icon separator.
+    property bool plain: false
+    property color plainColor: theme.fg.secondary
+    property color separatorColor: theme.fg.secondary
+
     signal crumbClicked(int depth)
 
     spacing: VLCStyle.margin_xxxsmall
@@ -84,8 +90,8 @@ RowLayout {
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
                     font.pixelSize: root.pixelSize
-                    font.weight: crumb.isLast ? Font.DemiBold : Font.Normal
-                    color: crumb.isLast ? theme.fg.primary : theme.fg.secondary
+                    font.weight: (crumb.isLast && !root.plain) ? Font.DemiBold : Font.Normal
+                    color: root.plain ? root.plainColor : (crumb.isLast ? theme.fg.primary : theme.fg.secondary)
                 }
 
                 HoverHandler {
@@ -101,8 +107,16 @@ RowLayout {
                 }
             }
 
+            LabelExt {
+                visible: !crumb.isLast && root.plain
+                text: "\u25B6"
+                font.pixelSize: VLCStyle.dp(8, VLCStyle.scale)
+                color: root.separatorColor
+                verticalAlignment: Text.AlignVCenter
+            }
+
             IconLabel {
-                visible: !crumb.isLast
+                visible: !crumb.isLast && !root.plain
                 text: VLCIcons.breadcrumb_sep
                 font.pixelSize: VLCStyle.icon_small
                 color: Qt.alpha(theme.fg.secondary, 0.6)

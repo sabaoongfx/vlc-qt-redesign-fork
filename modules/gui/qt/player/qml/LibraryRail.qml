@@ -53,12 +53,13 @@ Item {
         colorSet: ColorContext.Window
     }
 
+    // Figma sidebar rail: 8px padding, 30x32 icon boxes 14px apart (46px pitch)
     Column {
         anchors.top: parent.top
-        anchors.topMargin: VLCStyle.margin_small
+        anchors.topMargin: VLCStyle.dp(8, VLCStyle.scale)
         anchors.horizontalCenter: parent.horizontalCenter
 
-        spacing: VLCStyle.dp(4, VLCStyle.scale)
+        spacing: VLCStyle.dp(14, VLCStyle.scale)
 
         Repeater {
             model: root.entries
@@ -71,8 +72,8 @@ Item {
                 text: active ? modelData.filled : modelData.icon
                 description: modelData.label
                 font.pixelSize: VLCStyle.icon_banner
-                width: VLCStyle.dp(40, VLCStyle.scale)
-                height: VLCStyle.dp(40, VLCStyle.scale)
+                width: VLCStyle.dp(30, VLCStyle.scale)
+                height: VLCStyle.dp(32, VLCStyle.scale)
 
                 color: active ? theme.accent : theme.fg.primary
 
@@ -85,8 +86,8 @@ Item {
             text: VLCIcons.add
             description: qsTr("Add item")
             font.pixelSize: VLCStyle.icon_banner
-            width: VLCStyle.dp(40, VLCStyle.scale)
-            height: VLCStyle.dp(40, VLCStyle.scale)
+            width: VLCStyle.dp(30, VLCStyle.scale)
+            height: VLCStyle.dp(32, VLCStyle.scale)
 
             onClicked: addMenu.popup(mapToGlobal(width, 0), [qsTr("Add File"), qsTr("Add Folder"), qsTr("Add Network Stream")])
 

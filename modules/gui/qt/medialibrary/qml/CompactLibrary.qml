@@ -521,18 +521,21 @@ Rectangle {
         ml: MediaLib
     }
 
+    // Figma sidebar card: 20px padding, two 24px header rows 20px apart, the divider 17px below
+    // them and the list 20px under the divider, icons 12px apart
     ColumnLayout {
         anchors.fill: parent
-        anchors.margins: VLCStyle.margin_normal
+        anchors.margins: VLCStyle.dp(20, VLCStyle.scale)
         anchors.bottomMargin: 0
 
-        spacing: VLCStyle.margin_xsmall
+        spacing: 0
 
         // Address line: back, forward, the path, the menu
         RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: VLCStyle.dp(24, VLCStyle.scale)
 
-            spacing: VLCStyle.margin_xxsmall
+            spacing: VLCStyle.dp(12, VLCStyle.scale)
 
             Widgets.IconToolButton {
                 text: VLCIcons.back
@@ -561,6 +564,12 @@ Rectangle {
             // of the trail a name leads to
             Widgets.Breadcrumbs {
                 Layout.fillWidth: true
+                Layout.leftMargin: -VLCStyle.dp(2, VLCStyle.scale) // the row gap is 10 there
+
+                pixelSize: VLCStyle.dp(16, VLCStyle.scale)
+                plain: true
+                plainColor: root._colors.label
+                separatorColor: root._colors.tabIcon
 
                 names: {
                     const all = [{ text: root._rootTitle, depth: 0 },
@@ -595,17 +604,18 @@ Rectangle {
         // search field in their place, Escape or leaving it empty closes it)
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: VLCStyle.dp(30, VLCStyle.scale)
+            Layout.topMargin: VLCStyle.dp(20, VLCStyle.scale)
+            Layout.preferredHeight: VLCStyle.dp(24, VLCStyle.scale)
 
-            spacing: VLCStyle.margin_xxsmall
+            spacing: VLCStyle.dp(12, VLCStyle.scale)
 
             Widgets.LabelExt {
                 // the Home sections page has no single count
                 visible: !root._searchOpen && !root._homeRoot
 
                 text: qsTr("%1 items").arg(root._model?.count ?? 0)
-                font.pixelSize: VLCStyle.fontSize_normal
-                color: theme.fg.secondary
+                font.pixelSize: VLCStyle.dp(14, VLCStyle.scale)
+                color: root._colors.hint
             }
 
             Item {
@@ -762,9 +772,14 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
+            Layout.topMargin: VLCStyle.dp(17, VLCStyle.scale)
             Layout.preferredHeight: VLCStyle.border
 
             color: root._colors.line
+        }
+
+        Item {
+            Layout.preferredHeight: VLCStyle.dp(15, VLCStyle.scale) // + the 5px a 42px row adds above its 32px
         }
 
         // The "Add" row
@@ -1159,17 +1174,17 @@ Rectangle {
         }
 
         contentItem: RowLayout {
-            spacing: VLCStyle.margin_xsmall
+            spacing: VLCStyle.dp(10, VLCStyle.scale)
 
             Item {
                 Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
                 Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
-                Layout.leftMargin: VLCStyle.margin_xxsmall
 
-                Image {
+                Widgets.ImageExt {
                     anchors.fill: parent
 
                     visible: !placeRow.folder && placeRow.cover !== ""
+                    radius: VLCStyle.dp(2, VLCStyle.scale)
                     source: visible ? placeRow.cover : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
@@ -1193,8 +1208,9 @@ Rectangle {
                     anchors.bottom: parent.bottom
 
                     visible: placeRow.progress > 0 || placeRow.watched
-                    width: parent.width * (placeRow.watched && placeRow.progress <= 0 ? 1 : Math.min(1, placeRow.progress))
-                    height: VLCStyle.dp(2, VLCStyle.scale)
+                    width: (parent.width - VLCStyle.dp(4, VLCStyle.scale))
+                           * (placeRow.watched && placeRow.progress <= 0 ? 1 : Math.min(1, placeRow.progress))
+                    height: VLCStyle.dp(3, VLCStyle.scale)
                     color: placeRow.card.colorContext.accent
                 }
             }
@@ -1205,9 +1221,8 @@ Rectangle {
                 text: placeRow.title
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
-                font.pixelSize: VLCStyle.fontSize_normal
-                color: placeRow.card.colorContext.fg.primary
-                opacity: placeRow.watched ? 0.5 : 1
+                font.pixelSize: VLCStyle.dp(14, VLCStyle.scale)
+                color: placeRow.watched ? placeRow.card._colors.hint : placeRow.card._colors.title
             }
         }
 
