@@ -48,7 +48,9 @@ Rectangle {
 
     readonly property var _current: trail.length > 0 ? trail[trail.length - 1] : null
 
-    readonly property var _colors: VLCStyle.figmaColors(theme.palette.isDark)
+    // NOTE: the context finds the window palette only once the card is in the window; until then
+    //       there is no palette (dark is assumed)
+    readonly property var _colors: VLCStyle.figmaColors(theme.palette?.isDark ?? true)
 
     readonly property string _rootTitle: {
         switch (section) {
@@ -324,7 +326,9 @@ Rectangle {
 
     Component.onCompleted: if (_homeRoot) refreshHome()
 
-    color: _colors.section
+    // transparent until the palette is there: the card's first frame was a white bar (a
+    // Rectangle's default colour) before it turned dark (user report)
+    color: theme.palette ? _colors.section : "transparent"
     // Figma: a square column between the rail and the video
     radius: 0
     clip: true
