@@ -203,6 +203,17 @@ T.Popup {
 
                         Accessible.name: qsTr("Network URL")
 
+                        // Tab goes on to the name (a tab is no part of an address), Ctrl+Enter
+                        // plays (Enter starts the next address)
+                        KeyNavigation.tab: nameField
+                        Keys.onPressed: (event) => {
+                            if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                                    && (event.modifiers & Qt.ControlModifier)) {
+                                event.accepted = true
+                                root.save(true)
+                            }
+                        }
+
                         // typed letters must not run the global shortcuts
                         onActiveFocusChanged: MainCtx.useGlobalShortcuts = !activeFocus
 
