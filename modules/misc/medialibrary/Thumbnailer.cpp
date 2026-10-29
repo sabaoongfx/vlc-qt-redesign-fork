@@ -93,7 +93,9 @@ bool Thumbnailer::generate( const medialibrary::IMedia&, const std::string& mrl,
             .seek = {
                 .type = vlc_thumbnailer_arg::seek::VLC_THUMBNAILER_SEEK_POS,
                 .pos = position,
-                .speed = vlc_thumbnailer_arg::seek::VLC_THUMBNAILER_SEEK_FAST,
+                // redesign: a fast seek gave some videos (4K, few key frames) a grey
+                // picture with specks, a frame decoded without its key frame
+                .speed = vlc_thumbnailer_arg::seek::VLC_THUMBNAILER_SEEK_PRECISE,
             },
             .hw_dec = false,
         };
