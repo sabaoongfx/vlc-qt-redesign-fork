@@ -76,6 +76,9 @@ MainViewLoader {
 
     signal showList(var model, int reason)
 
+    // redesign: counted for Home "Frequently Visited Playlists" in the player's library card
+    onShowList: (model, reason) => MediaLib.recordVisit("playlist", model.id, model.name)
+
     //---------------------------------------------------------------------------------------------
     // Events
     //---------------------------------------------------------------------------------------------

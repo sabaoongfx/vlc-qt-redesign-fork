@@ -69,6 +69,16 @@ public:
     // folders the user opened); other urls are ignored
     Q_INVOKABLE void addOpenedFolders(const QVariantList& urls);
 
+    // redesign: Home "Frequently Visited Folders / Playlists". The library keeps no visit count,
+    // so the interface counts them itself (kind: "folder" or "playlist"), kept in the Qt settings.
+    Q_INVOKABLE void recordVisit(const QString& kind, const QVariant& id, const QString& title);
+    // The most visited first: [{ id (MLItemId), title, count }, ...]
+    Q_INVOKABLE QVariantList frequentVisits(const QString& kind, int limit) const;
+
+    // redesign: Home "Frequently Listened Artists", the artists of the songs in the history, the
+    // one with the most songs first; the callback gets [{ id (MLItemId), title, count }, ...]
+    Q_INVOKABLE void frequentArtists(int limit, QJSValue callback);
+
     Q_INVOKABLE void mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callback);
 
     inline bool idle() const { return m_idle; }

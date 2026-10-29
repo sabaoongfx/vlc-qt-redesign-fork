@@ -151,6 +151,8 @@ Widgets.PageLoader {
             emptyLabel: emptyComponent
 
             function openFolder(object, reason) {
+                // counted for Home "Frequently Visited Folders" in the player's library card
+                MediaLib.recordVisit("folder", object.id, object.title)
                 level.showFolder([...level.trail, { id: object.id, title: object.title }], reason)
             }
 

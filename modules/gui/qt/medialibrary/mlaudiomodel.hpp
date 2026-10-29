@@ -56,9 +56,12 @@ protected:
 
     std::unique_ptr<MLListCacheLoader> createMLLoader() const override;
 
-private:
+protected:
+    // redesign: protected (was private) so MLRecentAudioModel can chain it
     vlc_ml_sorting_criteria_t nameToCriteria(QByteArray name) const override;
     void onVlcMlEvent( const MLEvent &event ) override;
+
+private:
 
     struct Loader : public MLListCacheLoader::MLOp
     {

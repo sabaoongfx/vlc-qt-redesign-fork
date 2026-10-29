@@ -232,6 +232,8 @@ libqt_plugin_la_SOURCES = \
 	medialibrary/mlrecentmediamodel.hpp \
 	medialibrary/mlrecentvideomodel.cpp \
 	medialibrary/mlrecentvideomodel.hpp \
+	medialibrary/mlrecentaudiomodel.cpp \
+	medialibrary/mlrecentaudiomodel.hpp \
 	medialibrary/mlurlmodel.cpp \
 	medialibrary/mlurlmodel.hpp \
 	medialibrary/mlvideo.cpp \
@@ -472,6 +474,7 @@ nodist_libqt_plugin_la_SOURCES = \
 	medialibrary/mlqmltypes.moc.cpp \
 	medialibrary/mlrecentmediamodel.moc.cpp \
 	medialibrary/mlrecentvideomodel.moc.cpp \
+	medialibrary/mlrecentaudiomodel.moc.cpp \
 	medialibrary/mlurlmodel.moc.cpp \
 	medialibrary/mlvideo.moc.cpp \
 	medialibrary/mlmediamodel.moc.cpp \

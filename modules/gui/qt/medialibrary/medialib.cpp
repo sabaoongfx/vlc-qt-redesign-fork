@@ -20,8 +20,10 @@
 #include "mlhelper.hpp"
 #include "playlist/playlist_controller.hpp"
 #include "util/shared_input_item.hpp"
+#include "maininterface/mainctx.hpp"
 
 #include <utility>
+#include <algorithm>
 
 #include <QQmlEngine>
 #include <QFileInfo>
@@ -281,6 +283,142 @@ void MediaLib::addOpenedFolders(const QVariantList& urls)
     [mrls](vlc_medialibrary_t* ml){
         for (const QByteArray& mrl : mrls)
             vlc_ml_add_folder(ml, mrl.constData());
+    });
+}
+
+static QString visitsKey(const QString& kind)
+{
+    return QStringLiteral("Redesign/visits-") + kind;
+}
+
+void MediaLib::recordVisit(const QString& kind, const QVariant& id, const QString& title)
+{
+    if (!id.canConvert<MLItemId>())
+        return;
+
+    const MLItemId itemId = id.value<MLItemId>();
+
+    QVariantList visits = m_intf->p_mi->settingValue(visitsKey(kind), QVariantList()).toList();
+
+    bool found = false;
+    for (QVariant& visit : visits)
+    {
+        QVariantMap entry = visit.toMap();
+        if (entry.value("id").toLongLong() == itemId.id && entry.value("type").toInt() == itemId.type)
+        {
+            entry["count"] = entry.value("count").toInt() + 1;
+            entry["title"] = title;
+            visit = entry;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        visits.append(QVariantMap {
+            { "id", QVariant::fromValue<qlonglong>(itemId.id) },
+            { "type", static_cast<int>(itemId.type) },
+            { "title", title },
+            { "count", 1 }
+        });
+    }
+
+    // keep the 50 most visited
+    std::stable_sort(visits.begin(), visits.end(), [](const QVariant& a, const QVariant& b) {
+        return a.toMap().value("count").toInt() > b.toMap().value("count").toInt();
+    });
+    while (visits.size() > 50)
+        visits.removeLast();
+
+    m_intf->p_mi->setSettingValue(visitsKey(kind), visits);
+}
+
+QVariantList MediaLib::frequentVisits(const QString& kind, int limit) const
+{
+    const QVariantList visits = m_intf->p_mi->settingValue(visitsKey(kind), QVariantList()).toList();
+
+    QVariantList result;
+    for (const QVariant& visit : visits)
+    {
+        if (limit > 0 && result.size() >= limit)
+            break;
+
+        const QVariantMap entry = visit.toMap();
+        const MLItemId itemId(entry.value("id").toLongLong(),
+                              static_cast<vlc_ml_parent_type>(entry.value("type").toInt()));
+        result.append(QVariantMap {
+            { "id", QVariant::fromValue(itemId) },
+            { "title", entry.value("title") },
+            { "count", entry.value("count") }
+        });
+    }
+    return result;
+}
+
+void MediaLib::frequentArtists(int limit, QJSValue callback)
+{
+    if (!callback.isCallable())
+        return;
+
+    struct Ctx {
+        std::vector<std::pair<int64_t, int>> counts; // artist id, songs in the history
+        QStringList names;
+    };
+
+    runOnMLThread<Ctx>(this,
+    //ML thread
+    [limit](vlc_medialibrary_t* ml, Ctx& ctx){
+        vlc_ml_query_params_t query = vlc_ml_query_params_create();
+        query.i_nbResults = 500;
+
+        ml_unique_ptr<vlc_ml_media_list_t> list{ vlc_ml_list_audio_history(ml, &query) };
+        if (!list)
+            return;
+
+        for (const vlc_ml_media_t& media : ml_range_iterate<vlc_ml_media_t>(list))
+        {
+            if (media.i_subtype != VLC_ML_MEDIA_SUBTYPE_ALBUMTRACK || media.album_track.i_artist_id <= 0)
+                continue;
+
+            const int64_t artistId = media.album_track.i_artist_id;
+            auto it = std::find_if(ctx.counts.begin(), ctx.counts.end(),
+                                   [artistId](const std::pair<int64_t, int>& c) { return c.first == artistId; });
+            if (it == ctx.counts.end())
+                ctx.counts.emplace_back(artistId, 1);
+            else
+                it->second++;
+        }
+
+        std::stable_sort(ctx.counts.begin(), ctx.counts.end(),
+                         [](const std::pair<int64_t, int>& a, const std::pair<int64_t, int>& b) {
+                             return a.second > b.second;
+                         });
+        if (limit > 0 && ctx.counts.size() > static_cast<size_t>(limit))
+            ctx.counts.resize(limit);
+
+        for (const auto& count : ctx.counts)
+        {
+            ml_unique_ptr<vlc_ml_artist_t> artist{ vlc_ml_get_artist(ml, count.first) };
+            ctx.names.append(artist && artist->psz_name ? QString::fromUtf8(artist->psz_name) : QString());
+        }
+    },
+    //UI thread
+    [this, callback](quint64, Ctx& ctx) mutable {
+        QJSEngine* engine = qjsEngine(this);
+        if (!engine)
+            return;
+
+        QJSValue result = engine->newArray(static_cast<uint>(ctx.counts.size()));
+        for (size_t i = 0; i < ctx.counts.size(); i++)
+        {
+            QJSValue entry = engine->newObject();
+            entry.setProperty("id", engine->toScriptValue(MLItemId(ctx.counts[i].first, VLC_ML_PARENT_ARTIST)));
+            entry.setProperty("title", ctx.names.value(static_cast<int>(i)));
+            entry.setProperty("count", ctx.counts[i].second);
+            result.setProperty(static_cast<quint32>(i), entry);
+        }
+        callback.call({result});
     });
 }
 
