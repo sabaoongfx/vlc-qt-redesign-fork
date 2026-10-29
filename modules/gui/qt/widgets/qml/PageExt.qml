@@ -118,6 +118,9 @@ T.Page {
     header: DefaultPageHeader {
         text: root.title
 
+        crumbs: root.crumbs
+        onCrumbClicked: (index) => root.crumbClicked(index)
+
         // NOTE: the page width, not the header's own: its padding feeds its implicit width,
         //       and the width of an unsized item follows the implicit one (a binding loop)
 
@@ -146,7 +149,10 @@ T.Page {
         // Properties
         property alias text: label.text
 
-        readonly property var crumbs: root.crumbs
+        // the address line; empty: the text instead
+        property var crumbs: []
+
+        signal crumbClicked(int index)
 
         property alias sortMenu: gridSortFilter.sortMenu
 
@@ -243,7 +249,7 @@ T.Page {
                 pixelSize: VLCStyle.fontSize_xlarge
                 names: (defaultPageHeader.crumbs ?? []).map((text, index) => ({ text: text, depth: index }))
 
-                onCrumbClicked: (depth) => root.crumbClicked(depth)
+                onCrumbClicked: (depth) => defaultPageHeader.crumbClicked(depth)
             }
 
             LabelExt {

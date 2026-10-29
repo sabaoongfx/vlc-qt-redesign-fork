@@ -167,10 +167,14 @@ FocusScope {
                 height: implicitHeight
                 width:  root.width
 
+                // redesign: no artist banner (picture, name, Play all); the page has the same header
+                // as the other library pages, with the path Music > artist. Kept, hidden, for the
+                // album section logic it carries.
                 ArtistTopBanner {
                     id: artistBanner
 
-                    focus: true
+                    visible: false
+                    focus: false
                     width: headerFs.width
 
                     rightPadding: root.rightPadding
@@ -385,7 +389,7 @@ FocusScope {
                         }
 
                         Navigation.parentItem: root
-                        Navigation.upItem: artistBanner
+                        Navigation.upItem: null // no banner above
                         Navigation.downItem: viewHeader
                     }
                 }
@@ -393,12 +397,20 @@ FocusScope {
                 Widgets.PageExt.DefaultPageHeader {
                     id: viewHeader
 
+                    focus: true
+
                     anchors {
                         left: parent.left
                         right: parent.right
                     }
 
-                    text: qsTr("Albums")
+                    text: root._artist.name ?? qsTr("Albums")
+
+                    crumbs: [qsTr("Music"), root._artist.name ?? ""]
+                    onCrumbClicked: (index) => {
+                        if (index === 0)
+                            History.push(["music"], {}, Qt.MouseFocusReason)
+                    }
 
                     sortMenu: sortMenuAlbums
 
@@ -407,10 +419,8 @@ FocusScope {
 
                     leftPadding: root._contentLeftMargin
                     rightPadding: root._contentRightMargin
-                    topPadding: VLCStyle.layoutTitle_top_padding
 
                     Navigation.parentItem: root
-                    Navigation.upItem: artistBanner
                     Navigation.downAction: function() {
                         root.setCurrentItemFocus(Qt.TabFocusReason)
                     }
