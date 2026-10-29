@@ -23,14 +23,16 @@ import VLC.Style
 import VLC.Util
 
 
+// redesign: picture in picture (Figma, the last icon of the bar): the player goes back to the
+// library and the video keeps playing in the mini player card
 Widgets.IconToolButton {
-    text: VLCIcons.fullscreen
+    text: VLCIcons.window_restore
 
     onClicked: {
         MainCtx.playerView = !MainCtx.playerView
     }
 
-    description: qsTr("Switch Player")
+    description: MainCtx.playerView ? qsTr("Picture in picture") : qsTr("Switch Player")
 
     AccessibleCompat.id: "playerSwitchButton"
 }

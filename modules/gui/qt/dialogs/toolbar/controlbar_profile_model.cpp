@@ -117,7 +117,8 @@ decltype (ControlbarProfileModel::m_defaults)
                                     ControlListModel::AUDIO_BUTTON,
                                     ControlListModel::LANG_BUTTON,
                                     ControlListModel::EXTENDED_BUTTON,
-                                    ControlListModel::PLAYLIST_BUTTON
+                                    ControlListModel::PLAYLIST_BUTTON,
+                                    ControlListModel::PLAYER_SWITCH_BUTTON // picture in picture
                                 }
                             }
                         }
@@ -843,6 +844,16 @@ bool ControlbarProfileModel::reload()
                     data[0] = { ControlListModel::LIBRARY_BUTTON, ControlListModel::PREVIOUS_BUTTON,
                                 ControlListModel::SKIP_BACK_BUTTON, ControlListModel::PLAY_BUTTON,
                                 ControlListModel::SKIP_FW_BUTTON, ControlListModel::NEXT_BUTTON };
+            }
+
+            // redesign: a video bar saved as the Default Style before the picture in picture button gets it last
+            if (identifier == PlayerControlbarModel::Videoplayer && ptrNewProfile->name() == qfut(N_("Default Style")))
+            {
+                static const QVector<int> rightWithoutPip { ControlListModel::VOLUME, ControlListModel::AUDIO_BUTTON,
+                                                            ControlListModel::LANG_BUTTON, ControlListModel::EXTENDED_BUTTON,
+                                                            ControlListModel::PLAYLIST_BUTTON };
+                if (data[2] == rightWithoutPip)
+                    data[2].append(ControlListModel::PLAYER_SWITCH_BUTTON);
             }
 
             // redesign: the built-in profiles are saved on the first run and never refreshed, so a Default Style
