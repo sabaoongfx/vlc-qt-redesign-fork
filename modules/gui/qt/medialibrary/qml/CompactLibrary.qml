@@ -879,26 +879,6 @@ Rectangle {
             }
         }
 
-        // Figma Network: the podcast and radio directories (VLC's services), opened in the library
-        Repeater {
-            model: (root.section === "network" && !root._current)
-                   ? [{ title: qsTr("Podcasts"), source: "podcast" }, { title: qsTr("Radio"), source: "radio" }]
-                   : []
-
-            delegate: PlaceRow {
-                required property var modelData
-
-                card: root
-                Layout.fillWidth: true
-
-                title: modelData.title
-                glyph: VLCIcons.topbar_network
-
-                onClicked: History.push(["discover", "services", "source_root"],
-                                        { source_name: modelData.source }, Qt.MouseFocusReason)
-            }
-        }
-
         // Figma Home: sections of three items with a chevron that opens the whole list
         Flickable {
             id: homeView
