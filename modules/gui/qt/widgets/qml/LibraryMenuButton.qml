@@ -21,45 +21,27 @@ import QtQuick
 import VLC.MainInterface
 import VLC.Style
 import VLC.Menus
-import VLC.Dialogs
 
-// redesign: the "..." button on the right of the library search, with the Figma "folder context
-// menu": Add File, Add Folder, Resync, Info. (Edit Subtitle / Audio Tracks have no backend.)
+// redesign: the "..." button on the right of the library search. It replaces the cone and menu
+// button that were on the left of the library top bar, so it opens the same VLC menu (Media with
+// Open File..., Playback, Audio, Video, Subtitle, Tools, View, Help).
 IconToolButton {
     id: root
 
     text: VLCIcons.ellipsis
     description: qsTr("More")
 
-    visible: MainCtx.mediaLibraryAvailable
-    enabled: visible
-
     width: VLCStyle.bannerButton_width
     height: VLCStyle.bannerButton_height
     font.pixelSize: VLCStyle.icon_banner
 
-    onClicked: menu.popup(root.mapToGlobal(0, root.height), [qsTr("Add File"), qsTr("Add Folder"), qsTr("Resync"), qsTr("Info")])
+    checked: menu.shown
 
-    StringListMenu {
+    onClicked: menu.popup(root.mapToGlobal(0, root.height))
+
+    QmlGlobalMenu {
         id: menu
 
         ctx: MainCtx
-
-        onSelected: (index) => {
-            switch (index) {
-            case 0:
-                DialogsProvider.openFileDialog()
-                break
-            case 1:
-                DialogsProvider.addLibraryFolderDialog()
-                break
-            case 2:
-                MainCtx.mediaLibrary.reload()
-                break
-            case 3:
-                DialogsProvider.mediaInfoDialog()
-                break
-            }
-        }
     }
 }
