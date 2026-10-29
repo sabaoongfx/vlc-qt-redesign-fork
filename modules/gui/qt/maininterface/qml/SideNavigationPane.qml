@@ -182,7 +182,7 @@ T.Pane {
                 }
 
                 Navigation.parentItem: root
-                Navigation.downItem: preferenceButton
+                Navigation.downItem: preferenceButton.visible ? preferenceButton : null
 
                 delegate: SideNavigationDelegate {
                     id: delegate
@@ -289,6 +289,10 @@ T.Pane {
 
             SideNavigationDelegate {
                 id: preferenceButton
+
+                // redesign: no Preferences row in the sidebar (Figma); Preferences opens from the
+                // "..." menu (Tools) or Ctrl+P
+                visible: false
 
                 AccessibleCompat.id: "preferencesButton"
 

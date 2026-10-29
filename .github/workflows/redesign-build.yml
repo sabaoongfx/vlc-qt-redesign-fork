@@ -88,11 +88,11 @@ jobs:
           xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
           sleep 5
           import -window root "$1/shots/$2.png" || true
-          # dialogs: Open Media (Ctrl+O), then Preferences (sidebar button)
+          # dialogs: Open Media (Ctrl+O), then Preferences (Ctrl+P: the sidebar has no Preferences row)
           xdotool mousemove 740 431; sleep 0.3; xdotool click 1; sleep 3 # "Open File" button
           import -window root "$1/shots/$2-open.png" || true
           xdotool key Escape; sleep 1
-          xdotool mousemove 60 764; sleep 0.3; xdotool click 1; sleep 4
+          xdotool windowfocus "$WID" || true; xdotool key --clearmodifiers ctrl+p; sleep 4
           import -window root "$1/shots/$2-prefs.png" || true
           xdotool mousemove 365 78; sleep 0.3; xdotool click 1; sleep 2 # Audio tab
           import -window root "$1/shots/$2-prefs-audio.png" || true
