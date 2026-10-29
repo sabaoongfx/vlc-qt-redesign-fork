@@ -41,6 +41,37 @@
 static const int MLVIDEOFOLDERTREEMODEL_COVER_WIDTH  = 260 * 3; // 16 / 10 ratio
 static const int MLVIDEOFOLDERTREEMODEL_COVER_HEIGHT = 162 * 3;
 
+// NOTE: How deep hasVideos looks under a folder for a video.
+static const int MLVIDEOFOLDERTREEMODEL_SCAN_DEPTH = 16;
+
+// Whether the folder or one of its subfolders holds a video: the library counts only a folder's
+// own videos (i_nb_video), a folder of seasons would read zero. Runs on the ML thread, stops at
+// the first video.
+static bool hasVideos(vlc_medialibrary_t * ml, const vlc_ml_folder_t & folder, int depth)
+{
+    if (folder.i_nb_video > 0)
+        return true;
+
+    if (depth <= 0)
+        return false;
+
+    ml_unique_ptr<vlc_ml_folder_list_t> list(vlc_ml_list_subfolders(ml, folder.i_id));
+
+    if (list == nullptr)
+        return false;
+
+    for (const vlc_ml_folder_t & subfolder : ml_range_iterate<vlc_ml_folder_t>(list))
+    {
+        if (subfolder.b_banned || subfolder.b_present == false)
+            continue;
+
+        if (hasVideos(ml, subfolder, depth - 1))
+            return true;
+    }
+
+    return false;
+}
+
 MLVideoFolderTreeModel::MLVideoFolderTreeModel(QObject * parent)
     : MLVideoGroupsModel(parent)
 {
@@ -186,6 +217,11 @@ MLVideoFolderTreeModel::Loader::folders(vlc_medialibrary_t * ml,
     for (const vlc_ml_folder_t & folder : ml_range_iterate<vlc_ml_folder_t>(list))
     {
         if (folder.b_banned || folder.b_present == false)
+            continue;
+
+        // NOTE: A folder without a video anywhere below it (a music folder the user opened)
+        //       is not shown. A video added later reloads the list (MLVideoGroupsModel).
+        if (hasVideos(ml, folder, MLVIDEOFOLDERTREEMODEL_SCAN_DEPTH) == false)
             continue;
 
         auto item = std::make_unique<MLFolder>(&folder);
