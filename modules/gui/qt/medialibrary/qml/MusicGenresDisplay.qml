@@ -25,6 +25,10 @@ import VLC.Widgets as Widgets
 import VLC.Style
 
 Widgets.PageLoader {
+    // History hands its properties to every page of the path (PageLoader assigns them;
+    // a missing one is a "Cannot assign to non-existent property" warning)
+    property int initialIndex: 0
+
     id: root
 
     pageModel: [{
