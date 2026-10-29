@@ -78,17 +78,17 @@ Widgets.PageExt {
         else if (newMusicRow.focus)
             newMusicRow.setCurrentItemFocus(reason)
         else
-            coneNButtons.forceActiveFocus(reason)
+            mediaRows.forceActiveFocus(reason)
     }
 
     contentItem: Flickable {
         id: flickable
 
-        implicitWidth: Math.max(coneNButtons.implicitWidth, mediaRows.implicitWidth)
-        implicitHeight: coneNButtons.implicitHeight + (_hasMedias ? mediaRows.implicitHeight : 0)
+        implicitWidth: Math.max(emptyHint.implicitWidth, mediaRows.implicitWidth)
+        implicitHeight: _hasMedias ? mediaRows.implicitHeight : emptyHint.implicitHeight
 
         contentWidth: width
-        contentHeight: _hasMedias ? coneNButtons.implicitHeight + mediaRows.implicitHeight
+        contentHeight: _hasMedias ? mediaRows.implicitHeight
                                   : height - topMargin - bottomMargin
 
         flickableDirection: Flickable.AutoFlickIfNeeded
@@ -159,40 +159,34 @@ Widgets.PageExt {
             // jumps when it is enabled again later on.
         }
 
-        NoMedialibHome.ConeNButtons {
-            id: coneNButtons
+        // redesign: no cone and Open File row (Open File is in the "..." menu next to the
+        // search); an empty library only shows a hint
+        Widgets.LabelExt {
+            id: emptyHint
 
-            focus: true
+            visible: !flickable._hasMedias
 
-            orientation: flickable._hasMedias ? Qt.Horizontal : Qt.Vertical
+            anchors.centerIn: parent
 
-            anchors.centerIn: flickable._hasMedias ? undefined : parent
-            anchors.top: flickable._hasMedias ? parent.top : undefined
-            anchors.left: flickable._hasMedias ? parent.left : undefined
-            anchors.leftMargin: flickable._hasMedias ? newVideoRow.contentLeftMargin : 0
-
-            Navigation.parentItem: root
-            Navigation.upItem: root.header
-            Navigation.downItem: mediaRows
-
-            onActiveFocusChanged: {
-                contentYBehavior.enabled = true
-                Helpers.positionFlickableToContainItem(flickable, this)
-                contentYBehavior.enabled = false
-            }
+            text: qsTr("Nothing here yet. Open a file from the ... menu or drop one here")
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: VLCStyle.fontSize_large
+            color: theme.fg.secondary
         }
 
         Widgets.NavigableCol {
             id: mediaRows
 
-            anchors.top: coneNButtons.bottom
+            focus: true
+
+            anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
 
             spacing: 0 // NOTE: We depend on the top padding of view header currently.
 
             Navigation.parentItem: root
-            Navigation.upItem: coneNButtons
+            Navigation.upItem: root.header
 
             Widgets.ViewHeader {
                 visible: continueWatchingRow.visible
