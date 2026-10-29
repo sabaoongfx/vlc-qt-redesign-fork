@@ -117,7 +117,7 @@ jobs:
       - name: Player screenshots, day and night (best effort)
         continue-on-error: true
         run: |
-          apt-get install -y -qq ffmpeg xdotool gdb
+          apt-get install -y -qq ffmpeg xdotool gdb python3 sqlite3
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=854x480:rate=30 -f lavfi -i sine=frequency=440 \
             -t 60 -pix_fmt yuv420p /tmp/test.mp4
           chmod a+r /tmp/test.mp4
@@ -230,18 +230,17 @@ jobs:
             import -window root "$1/shots/lib-video-$2.png" || true
             xdotool mousemove 400 200; sleep 0.3; xdotool mousemove 402 202; sleep 0.6
             import -window root "$1/shots/lib-video-$2-hover.png" || true
-            click 80 154; sleep 6 # Music (a single entry, opens on the artists)
+            click 80 154; sleep 6 # Music: the folders that hold music
             import -window root "$1/shots/lib-music-$2.png" || true
             click 80 108; sleep 4; click 1138 78; sleep 4 # Video again, switch to list view
             import -window root "$1/shots/lib-videolist-$2.png" || true
             xdotool mousemove 600 150; sleep 0.3; xdotool mousemove 602 152; sleep 0.6
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
-            # Music has no Albums/Tracks entries any more (the sidebar is Home, Videos, Music, Network, Playlists)
-            click 80 154; sleep 5 # Music: the artists
-            # first artist, full width: one click opens it (a second one landed on a track and
-            # played it, so the shot showed the player)
-            xdotool mousemove 297 190; sleep 0.3; xdotool click 1; sleep 5
-            import -window root "$1/shots/lib-artist-$2.png" || true
+            # Music is a folder tree like Videos: the first card is the Music folder, one click
+            # opens it on its songs
+            click 80 154; sleep 5
+            click 390 220; sleep 5
+            import -window root "$1/shots/lib-music-folder-$2.png" || true
             click 80 200; sleep 5 # Network
             import -window root "$1/shots/lib-browse-$2.png" || true
             click 80 246; sleep 5 # Playlists
@@ -279,10 +278,73 @@ jobs:
             xdotool key Escape; xdotool key Escape; sleep 1
             stop "$2" "$1"
           done
+          # Phase C: the Network page (night, once). A stream saved with the dialog (Ctrl+N, Save)
+          # must show in the list and play on a click; Play (Ctrl+Enter) must play at once. The
+          # step's web server logs every request VLC makes (shots/net-http.log); the "Network
+          # stream checks" step reads it and the library database.
+          printf '[MainWindow]\ncolor-scheme-index=2\n' > "$HOME/.config/vlc/vlc-qt-interface.conf"
+          "$1/install/bin/vlc" --verbose=1 -I qt --no-qt-privacy-ask --aout=dummy >"$1/shots/lib-network.log" 2>&1 &
+          PID=$!
+          sleep 12; resize; sleep 5
+          click 80 200; sleep 5 # Network
+          import -window root "$1/shots/net-empty.png" || true
+          WID=$(xdotool search --onlyvisible --class vlc | head -1)
+          xdotool windowfocus "$WID" || true; sleep 1
+          xdotool key --clearmodifiers ctrl+n; sleep 3
+          xdotool type --delay 30 "http://127.0.0.1:8765/saved.mp4"; sleep 0.5
+          import -window root "$1/shots/net-dialog.png" || true
+          xdotool key Tab; sleep 0.5; xdotool key Return; sleep 6 # Save: Enter in the empty name field
+          import -window root "$1/shots/net-saved.png" || true
+          grep -c 'GET /saved.mp4' "$1/shots/net-http.log" > "$1/shots/net-gets-after-save.txt" || true
+          # the first row of the list: header 110, button bar, column titles, then 40px rows
+          click 600 235; sleep 8
+          import -window root "$1/shots/net-clicked.png" || true
+          grep -c 'GET /saved.mp4' "$1/shots/net-http.log" > "$1/shots/net-gets-after-click.txt" || true
+          xdotool windowfocus "$WID" || true; sleep 1
+          xdotool key --clearmodifiers ctrl+n; sleep 3
+          xdotool type --delay 30 "http://127.0.0.1:8765/played.mp4"; sleep 0.5
+          xdotool key --clearmodifiers ctrl+Return; sleep 8 # Play
+          import -window root "$1/shots/net-played.png" || true
+          stop network "$1"
           SH
           chmod +x /tmp/shot-lib.sh
+          # the web server of Phase C (two copies of the test video)
+          mkdir -p /tmp/net; cp /tmp/test.mp4 /tmp/net/saved.mp4; cp /tmp/test.mp4 /tmp/net/played.mp4
+          : > shots/net-http.log; chmod a+r shots/net-http.log
+          (cd /tmp/net && exec python3 -u -m http.server 8765 --bind 127.0.0.1) >/dev/null 2>>shots/net-http.log &
+          HTTP_PID=$!
           runuser -u shotuser -- xvfb-run -a -s "-screen 0 1280x800x24" /tmp/shot-lib.sh "$PWD"
+          kill $HTTP_PID || true
           ls -la shots
+
+      # Phase C of the library screenshots, checked: a saved stream is in the library history (the
+      # list the Network page shows), a click on it opens it, Play in the dialog opens at once.
+      # Fails the job (unlike the screenshots).
+      - name: Network stream checks
+        run: |
+          DB=/home/shotuser/.local/share/vlc/ml/ml.db
+          fail=0
+          ok() { echo "PASS: $1"; }
+          ko() { echo "::error title=Network check::$1"; fail=1; }
+          echo "--- requests"; cat shots/net-http.log || true
+          if [ ! -f "$DB" ]; then
+            ko "no media library database at $DB"
+          else
+            rows=$(sqlite3 "$DB" "SELECT f.mrl, m.last_played_date FROM File f JOIN Media m ON m.id_media = f.media_id WHERE f.mrl LIKE 'http://127.0.0.1:8765/%'" 2>&1)
+            echo "--- library rows (mrl|last played)"; echo "$rows"
+            if echo "$rows" | grep -q '^http://127.0.0.1:8765/saved.mp4|[0-9]'; then ok "the saved stream is in the history"
+            else ko "the stream saved with the dialog is not in the library history: the Network list would not show it"; fi
+            if echo "$rows" | grep -q '^http://127.0.0.1:8765/played.mp4|[0-9]'; then ok "the played stream is in the history"
+            else ko "the stream played from the dialog is not in the library history"; fi
+          fi
+          a=$(cat shots/net-gets-after-save.txt 2>/dev/null || echo 0)
+          c=$(cat shots/net-gets-after-click.txt 2>/dev/null || echo 0)
+          echo "requests for saved.mp4: $a after Save, $c after the click"
+          if [ "${c:-0}" -gt "${a:-0}" ]; then ok "a click on the saved stream plays it"
+          else ko "a click on the first row did not open the saved stream (see net-saved.png, net-clicked.png)"; fi
+          if grep -q 'GET /played.mp4' shots/net-http.log; then ok "Play in the dialog plays at once"
+          else ko "Play in the dialog did not open the stream (see net-played.png)"; fi
+          exit $fail
 
       # QML errors do not fail the build: list the warnings the screenshot runs logged (VLC runs at
       # --verbose=1 above, QML warnings are not logged below that). Information only, never fails.
