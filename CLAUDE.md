@@ -7,6 +7,27 @@ Working notes for the VLC Qt redesign. This repo is a fork of `videolan/vlc`; th
 Port the HTML prototype (`sabaoongfx/vlc`, local `..\vlc`) into VLC's real Qt/QML interface (`modules/gui/qt`).
 The prototype is the visual reference only; do not copy its data layer. Back the new look with VLC's real models.
 
+## Backlog (user requests for later, 2026-10-29; nothing started)
+
+Bugs and changes the user asked to note for a later session, after v0.1.3:
+
+1. Music: song covers are 16:9 cards (the Video grid item); they should be square. The music folder tree
+   (`VideoFolderTreeDisplay` with `audio: true`) reuses `VideoGridItem`/`VideoGridDisplay`, whose picture
+   size is `gridCover_video_width/height`: give the audio tree the album cover size (`gridCover_music_*`)
+   in the grid, and square covers in the list and in the player's library card (`CompactLibrary` tiles
+   use 1:1 for music already, rows are 32px squares).
+2. Network page: remove "Browse devices" (`NetworkStreamsDisplay.qml` button and the `showBrowse` signal in
+   `MainDisplay`). Decide whether device browsing stays reachable anywhere (it is VLC's SMB/UPnP browser).
+3. Network page: no orange "Add stream" button; put "Add Stream" in the "..." menu on the right of the
+   search (`LibraryMenuButton.qml`: today it shows the folder menu everywhere; give it per-page entries,
+   Network = Add Stream). The empty page text then points at the "..." menu (or keeps a plain link).
+   The CI Phase C clicks Add stream at 676,488 and 286,150: switch it to the menu (1244,77) when this lands.
+4. Network list header (the icon, "Url"/Title and the clock icon row): it sits right under the button bar
+   with no gap (`net-saved.png`, CI run 40939738061: header at y~189, buttons end at y~167). Add spacing
+   above it; once the button bar is gone (item 3) re-check it against the page header line instead.
+5. Player library card (`CompactLibrary.qml`): its main purpose is dragging items into the play queue;
+   rows only play on click today. Reuse `MLDragItem` (as `VideoAll.qml`) and the queue's drop handling.
+
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
 `git log d3064c2..HEAD` (commits that say "untested"). It compiles in CI (step 0); only a few screens were seen in CI screenshots. Do this in order,
