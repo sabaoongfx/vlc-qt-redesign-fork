@@ -110,8 +110,14 @@ T.ToolBar {
 
                     focus: true
 
+                    // redesign: the sidebar expands and collapses by itself (MainDisplay
+                    // pannelVisiblity.stopped), so this button no longer does it: it shows the
+                    // library card beside the video, which lives in the player, so it opens the
+                    // player with the card shown. Hidden while nothing plays.
+                    visible: Player.isStarted && MainCtx.mediaLibraryAvailable
+
                     text: VLCIcons.panel_left
-                    description: qsTr("Show navigation menu")
+                    description: qsTr("Library beside the video")
 
                     AccessibleCompat.id: "sidebarToggleButton"
 
@@ -119,7 +125,10 @@ T.ToolBar {
                     height: VLCStyle.bannerButton_height
                     width: VLCStyle.bannerButton_width
 
-                    onClicked: root.toggleNavigationVisibility()
+                    onClicked: {
+                        MainCtx.libraryPanel.visible = true
+                        History.push(["player"])
+                    }
 
                     Navigation.parentItem: navigationButtons
                     Navigation.rightItem: historyBack

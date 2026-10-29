@@ -271,6 +271,30 @@ FocusScope{
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: VLCStyle.margin_xsmall
 
+                // redesign: the panel button at the top left shows and hides the library card
+                // beside the video (like the bar's library button); the sidebar itself expands and
+                // collapses by itself
+                Widgets.IconToolButton {
+                    id: libraryToggle
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: MainCtx.mediaLibraryAvailable
+
+                    font.pixelSize: VLCStyle.icon_banner
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+
+                    text: VLCIcons.panel_left
+                    description: qsTr("Library")
+
+                    checked: MainCtx.libraryPanel.visible
+                    color: checked ? colorContext.accent : colorContext.fg.primary
+
+                    onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
+
+                    onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
+                }
+
                 Widgets.BannerCone {
                     id: logo
 
