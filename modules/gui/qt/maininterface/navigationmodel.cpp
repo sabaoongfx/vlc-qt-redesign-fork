@@ -272,12 +272,9 @@ public:
             ModelEntry videoEntry{ qtr("Videos"), "video", VLCIcons::topbar_video, QStringLiteral(":/icons/ic_fluent_filmstrip.svg") };
             m_model.children.push_back(std::move(videoEntry));
 
+            // redesign: Music is a single entry like Videos, it opens on the artists; the
+            // playlists have their own entry
             ModelEntry musicEntry{ qtr("Music"), "music", VLCIcons::topbar_music, QStringLiteral(":/icons/ic_fluent_music_note_2.svg") };
-            musicEntry.children.emplace_back(qtr("Artists"), "artists");
-            musicEntry.children.emplace_back(qtr("Albums"), "albums");
-            musicEntry.children.emplace_back(qtr("Tracks"), "tracks");
-            musicEntry.children.emplace_back(qtr("Genres"), "genres");
-            musicEntry.children.emplace_back(qtr("Playlists"), "playlists");
             m_model.children.push_back(std::move(musicEntry));
         }
 
