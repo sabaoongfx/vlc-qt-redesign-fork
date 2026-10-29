@@ -1025,7 +1025,10 @@ FocusScope {
 
             Navigation.cancelAction: root._onNavigationCancel
 
-            onItemDoubleClicked: MediaLib.addAndPlay(model.id)
+            onItemDoubleClicked: (index, model) => {
+                MediaLib.addAndPlay(model.id)
+                MainCtx.playerView = true
+            }
             onRightClick: trackContextMenu.popup(tableView_id.selectionModel.selectedIndexes, globalMousePos)
 
             onDragItemChanged: console.assert(tableView_id.dragItem === tableDragItem)
