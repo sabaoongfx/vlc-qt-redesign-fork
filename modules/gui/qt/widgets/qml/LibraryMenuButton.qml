@@ -21,12 +21,28 @@ import QtQuick
 import VLC.MainInterface
 import VLC.Style
 import VLC.Menus
+import VLC.Dialogs
+import VLC.Playlist as Playlist
 
-// redesign: the "..." button on the right of the library search. It replaces the cone and menu
-// button that were on the left of the library top bar, so it opens the same VLC menu (Media with
-// Open File..., Playback, Audio, Video, Subtitle, Tools, View, Help).
+// redesign: the "..." button of the library headers opens the Figma "folder context menu":
+// Add File, Add Folder, Edit Subtitle Tracks, Edit Audio Tracks, Resync, Info. The VLC menu
+// (Media, Playback, ..., Help) is the "..." of the top bar.
 IconToolButton {
     id: root
+
+    // the tracks and Info act on the media in the play queue
+    readonly property bool _hasMedia: !Playlist.MainPlaylistController.empty
+
+    readonly property var _entries: [
+        { text: qsTr("Add File"),             icon_svg: ":/menu/add.svg",               action: () => DialogsProvider.openFileDialog() },
+        { text: qsTr("Add Folder"),           icon_svg: ":/menu/redesign-folder.svg",   action: () => DialogsProvider.addLibraryFolderDialog() },
+        { text: qsTr("Edit Subtitle Tracks"), icon_svg: ":/menu/redesign-subtitle.svg", action: () => DialogsProvider.loadSubtitlesFile(), media: true },
+        { text: qsTr("Edit Audio Tracks"),    icon_svg: ":/menu/redesign-audio.svg",    action: () => DialogsProvider.loadAudioFile(), media: true },
+        { text: qsTr("Resync"),               icon_svg: ":/menu/sync.svg",              action: () => MainCtx.mediaLibrary?.reload(), library: true },
+        { text: qsTr("Info"),                 icon_svg: ":/menu/info.svg",              action: () => DialogsProvider.mediaInfoDialog(), media: true }
+    ]
+
+    property var _shown: []
 
     text: VLCIcons.ellipsis
     description: qsTr("More")
@@ -35,13 +51,18 @@ IconToolButton {
     height: VLCStyle.bannerButton_height
     font.pixelSize: VLCStyle.icon_banner
 
-    checked: menu.shown
+    onClicked: {
+        _shown = _entries.filter((entry) => (!entry.media || root._hasMedia)
+                                            && (!entry.library || MainCtx.mediaLibraryAvailable))
+        menu.popup(root.mapToGlobal(0, root.height),
+                   _shown.map((entry) => ({ text: entry.text, icon_svg: entry.icon_svg })))
+    }
 
-    onClicked: menu.popup(root.mapToGlobal(0, root.height))
-
-    QmlGlobalMenu {
+    StringListMenu {
         id: menu
 
         ctx: MainCtx
+
+        onSelected: (index) => root._shown[index]?.action()
     }
 }

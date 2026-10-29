@@ -33,7 +33,9 @@ Widgets.PageExt {
 
     property var pagePrefix: [] // behave like a Page
 
-    property var sortModel: [
+    // NOTE: assigned, not redeclared: a redeclared "property var sortModel" is a new property
+    //       the PageExt header never reads (Home showed no sort button)
+    sortModel: [
         { text: qsTr("Unwatched First"), criteria: "playcount", order: Qt.AscendingOrder  },
         { text: qsTr("Watched First"),   criteria: "playcount", order: Qt.DescendingOrder },
         { text: qsTr("Newest First"),    criteria: "insertion", order: Qt.DescendingOrder },
