@@ -30,11 +30,11 @@ import VLC.Dialogs
 Item {
     id: root
 
-    // "home", "videos", "music", "network", "playlists" or "recent"
-    property string section: "videos"
+    // "home", "videos", "music", "network", "playlists" or "recent"; empty: none picked yet
+    property string section: ""
 
     // The card is shown
-    property bool open: true
+    property bool open: false
 
     // Asks to show the section, a click on the active one again hides the card
     signal selected(string section)

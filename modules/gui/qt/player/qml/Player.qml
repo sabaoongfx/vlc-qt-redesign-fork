@@ -52,8 +52,10 @@ FocusScope {
 
     // redesign: the navigation rail and the library card beside the video (Figma "Player -
     // customize-8"), only with the video on its stage. The video and the panels start after them.
-    // what the library card shows: home, videos, music, network, playlists or recent
-    property string librarySection: "videos"
+    // what the library card shows: home, videos, music, network, playlists or recent. Nothing is
+    // picked and the card is closed until the user clicks a rail icon; the panel buttons open
+    // Videos.
+    property string librarySection: ""
 
     readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable
     readonly property bool _libraryCardVisible: _libraryRail && MainCtx.libraryPanel.visible
@@ -1060,6 +1062,16 @@ FocusScope {
         source: "qrc:///qt/qml/VLC/MediaLibrary/CompactLibrary.qml"
 
         onLoaded: item.section = Qt.binding(() => rootPlayer.librarySection)
+    }
+
+    Connections {
+        target: MainCtx.libraryPanel
+
+        function onVisibleChanged() {
+            // opened by a panel button, not a rail icon
+            if (MainCtx.libraryPanel.visible && rootPlayer.librarySection === "")
+                rootPlayer.librarySection = "videos"
+        }
     }
 
     TopBar {

@@ -328,7 +328,7 @@ MainCtx::~MainCtx()
         settings->setValue( "navigation-panel-visible", m_navigationPanel->m_visible );
         settings->setValue( "navigation-panel-width", QString::number( m_navigationPanel->m_width ) );
 
-        settings->setValue( "library-panel-visible", m_libraryPanel->m_visible );
+        // redesign: the library card is not remembered, it starts closed (only its width is kept)
         settings->setValue( "library-panel-width", QString::number( m_libraryPanel->m_width ) );
 
         settings->setValue( "player-playlist-width", QString::number( m_playerPlaylistWidth ) );
@@ -485,7 +485,7 @@ void MainCtx::loadFromSettingsImpl(const bool callSignals)
     loadFromSettings(m_navigationPanel->m_visible, "MainWindow/navigation-panel-visible", true, m_navigationPanel, &SidePanelCtx::visibleChanged);
     loadFromSettings(m_navigationPanel->m_width, "MainWindow/navigation-panel-width", 120, m_navigationPanel, &SidePanelCtx::widthChanged);
 
-    loadFromSettings(m_libraryPanel->m_visible, "MainWindow/library-panel-visible", true, m_libraryPanel, &SidePanelCtx::visibleChanged);
+    m_libraryPanel->m_visible = false; // redesign: closed until a rail icon or the panel button opens it
     loadFromSettings(m_libraryPanel->m_width, "MainWindow/library-panel-width", 380, m_libraryPanel, &SidePanelCtx::widthChanged);
 
     loadFromSettings(m_playerPlaylistWidth, "MainWindow/player-playlist-width", 120, this, &MainCtx::playerPlaylistWidthChanged);
