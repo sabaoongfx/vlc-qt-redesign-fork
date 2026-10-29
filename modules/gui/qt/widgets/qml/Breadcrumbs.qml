@@ -110,4 +110,10 @@ RowLayout {
             }
         }
     }
+
+    // takes the rest of the row, so the names stay on the left and whatever follows the
+    // address line in the parent row is pushed to its right end
+    Item {
+        Layout.fillWidth: true
+    }
 }
