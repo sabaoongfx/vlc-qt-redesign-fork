@@ -218,23 +218,20 @@ jobs:
             import -window root "$1/shots/lib-video-$2.png" || true
             xdotool mousemove 400 200; sleep 0.3; xdotool mousemove 402 202; sleep 0.6
             import -window root "$1/shots/lib-video-$2-hover.png" || true
-            click 80 154; sleep 6 # Music (expands: Artists, Albums, Tracks, Genres, Playlists)
+            click 80 154; sleep 6 # Music (a single entry, opens on the artists)
             import -window root "$1/shots/lib-music-$2.png" || true
             click 80 108; sleep 4; click 1138 78; sleep 4 # Video again, switch to list view
             import -window root "$1/shots/lib-videolist-$2.png" || true
             xdotool mousemove 600 150; sleep 0.3; xdotool mousemove 602 152; sleep 0.6
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
-            click 80 154; sleep 4; click 80 246; sleep 5 # Music > Albums
-            import -window root "$1/shots/lib-albums-$2.png" || true
-            xdotool mousemove 330 178; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first album: double-click opens it
-            import -window root "$1/shots/lib-album-$2.png" || true
-            click 80 292; sleep 5 # Tracks
-            import -window root "$1/shots/lib-tracks-$2.png" || true
-            click 80 200; sleep 5 # Artists
-            xdotool mousemove 297 190; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first artist
+            # Music has no Albums/Tracks entries any more (the sidebar is Home, Videos, Music, Network, Playlists)
+            click 80 154; sleep 5 # Music: the artists
+            xdotool mousemove 297 190; sleep 0.3; xdotool click --repeat 2 --delay 120 1; sleep 5 # first artist, full width
             import -window root "$1/shots/lib-artist-$2.png" || true
-            click 80 430; sleep 5 # Network (Music is expanded)
+            click 80 200; sleep 5 # Network
             import -window root "$1/shots/lib-browse-$2.png" || true
+            click 80 246; sleep 5 # Playlists
+            import -window root "$1/shots/lib-playlists-$2.png" || true
             click 80 108; sleep 5; click 1182 78; sleep 2 # Video, sort menu
             import -window root "$1/shots/lib-sort-$2.png" || true
             xdotool key Escape; sleep 1; click 1226 78; sleep 2 # search field
