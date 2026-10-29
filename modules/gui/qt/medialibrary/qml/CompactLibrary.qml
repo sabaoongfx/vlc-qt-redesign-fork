@@ -472,6 +472,38 @@ Rectangle {
         }
     }
 
+    // Drag a row or a tile into the play queue: the card is above all for building the queue
+    // while watching (user request). The queue takes any DragItem (PlaylistPane.acceptDropFunc).
+    // Only library models can be dragged, not Home's pages of sections and frequent places.
+    readonly property bool _canDrag: !!root._model?.getDataFlat && !_homeListShown
+
+    property var _dragIndexes: []
+
+    function _drag(index, active) {
+        if (active) {
+            _dragIndexes = [index]
+            dragItem.Drag.active = true
+        } else {
+            dragItem.Drag.drop()
+        }
+    }
+
+    MLDragItem {
+        id: dragItem
+
+        view: root._grid ? grid : list
+
+        indexes: root._dragIndexes
+        indexesFlat: true
+
+        defaultCover: root.section === "music" ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover
+
+        coverProvider: (index, data) => ({
+            artwork: String(data.thumbnail ?? data.small_cover ?? data.cover ?? ""),
+            fallback: dragItem.defaultCover
+        })
+    }
+
     // Figma "Open network stream" and "New playlist", for the Add row of Network and Playlists
     NetworkStreamDialog {
         id: streamDialog
@@ -1006,6 +1038,11 @@ Rectangle {
                     kind: model.kind,
                     isVideo: model.isVideo
                 })
+
+                CardDragHandler {
+                    card: root
+                    index: parent.index
+                }
             }
         }
 
@@ -1056,6 +1093,11 @@ Rectangle {
                     kind: model.kind,
                     isVideo: model.isVideo
                 })
+
+                CardDragHandler {
+                    card: root
+                    index: tile.index
+                }
 
                 background: Rectangle {
                     radius: VLCStyle.dp(6, VLCStyle.scale)
@@ -1240,6 +1282,22 @@ Rectangle {
     }
 
     // A Home section: its name and a chevron that opens the whole list, then up to three rows
+    // starts the card's drag (its rows and tiles are buttons: the handler takes the press over)
+    component CardDragHandler: DragHandler {
+        required property Item card
+        required property int index
+
+        enabled: card._canDrag
+        target: null
+
+        acceptedDevices: PointerDevice.AllDevices & ~(PointerDevice.TouchScreen)
+        grabPermissions: PointerHandler.CanTakeOverFromItems
+                         | PointerHandler.CanTakeOverFromHandlersOfDifferentType
+                         | PointerHandler.ApprovesTakeOverByAnything
+
+        onActiveChanged: card._drag(index, active)
+    }
+
     component HomeSection: Column {
         id: homeSection
 
