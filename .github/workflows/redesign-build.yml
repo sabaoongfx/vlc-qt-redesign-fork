@@ -282,28 +282,29 @@ jobs:
           # Phase C: the Network page (night, once). Play in the Figma dialog must play at once; a
           # stream saved with it must show in the list and play on a click. The step's web server
           # logs every request VLC makes (shots/net-http.log); the "Network stream checks" step
-          # reads it and the library database. The dialog is opened with the page's Add stream
-          # button (Ctrl+N did not reach the window in CI, run 40928565745).
+          # reads it and the library database. The dialog is opened with Add Stream in the header's
+          # '...' menu (1244,77; Down, Enter picks the first entry). Ctrl+N did not reach the window
+          # in CI (run 40928565745).
           printf '[MainWindow]\ncolor-scheme-index=2\n' > "$HOME/.config/vlc/vlc-qt-interface.conf"
           "$1/install/bin/vlc" --verbose=1 -I qt --no-qt-privacy-ask --aout=dummy >"$1/shots/lib-network.log" 2>&1 &
           PID=$!
           sleep 12; resize; sleep 5
           click 80 200; sleep 5 # Network
           import -window root "$1/shots/net-empty.png" || true
-          click 676 488; sleep 3 # Add stream (centred while the list is empty)
+          click 1244 77; sleep 2; xdotool key Down Return; sleep 3 # '...' > Add Stream
           xdotool type --delay 30 "http://127.0.0.1:8765/played.mp4"; sleep 0.5
           import -window root "$1/shots/net-dialog.png" || true
           xdotool key --clearmodifiers ctrl+Return; sleep 8 # Play
           import -window root "$1/shots/net-played.png" || true
           xdotool key s; sleep 2 # stop, so the next requests come from the click below
-          # Add stream, now in the bar above the list (Space on it did nothing, run 40932298301)
-          click 286 150; sleep 3
+          click 1244 77; sleep 2; xdotool key Down Return; sleep 3 # '...' > Add Stream
           xdotool type --delay 30 "http://127.0.0.1:8765/saved.mp4"; sleep 0.5
           xdotool key Tab; sleep 0.5; xdotool key Return; sleep 6 # Save: Enter in the empty name field
           import -window root "$1/shots/net-saved.png" || true
           grep -c 'GET /' "$1/shots/net-http.log" > "$1/shots/net-gets-after-save.txt" || true
-          # the first row of the list: rows from y 205, 40px (run 40932298301)
-          click 600 224; sleep 8
+          # the first row of the list: the list starts 16px under the header line (y 119), its
+          # column titles take 22px, rows are 40px
+          click 600 177; sleep 8
           import -window root "$1/shots/net-clicked.png" || true
           grep -c 'GET /' "$1/shots/net-http.log" > "$1/shots/net-gets-after-click.txt" || true
           # Ctrl+N (the VLC menu's shortcut), information only
