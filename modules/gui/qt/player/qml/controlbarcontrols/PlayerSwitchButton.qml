@@ -26,7 +26,7 @@ import VLC.Util
 // redesign: picture in picture (Figma, the last icon of the bar): the player goes back to the
 // library and the video keeps playing in the mini player card
 Widgets.IconToolButton {
-    text: VLCIcons.window_restore
+    text: VLCIcons.pip // redesign: the Figma PiP icon
 
     onClicked: {
         MainCtx.playerView = !MainCtx.playerView

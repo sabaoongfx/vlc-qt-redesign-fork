@@ -123,6 +123,7 @@ class VLCIcons : public QObject {
     Q_PROPERTY(QChar topbar_network_filled MEMBER topbar_network_filled CONSTANT FINAL)
     Q_PROPERTY(QChar edit MEMBER edit CONSTANT FINAL)
     Q_PROPERTY(QChar playlists MEMBER playlists CONSTANT FINAL)
+    Q_PROPERTY(QChar pip MEMBER pip CONSTANT FINAL)
 
 
 public:
@@ -242,6 +243,7 @@ public:
     static constexpr inline QChar topbar_network_filled{ u'\ue06a' };
     static constexpr inline QChar edit{ u'\ue06b' };
     static constexpr inline QChar playlists{ u'\ue06c' };
+    static constexpr inline QChar pip{ u'\ue06d' };
 
 };
 

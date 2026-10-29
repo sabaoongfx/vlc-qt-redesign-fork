@@ -957,6 +957,7 @@ libqt_plugin_la_RES = \
 	pixmaps/icons/redesign/ok.svg \
 	pixmaps/icons/redesign/panel_left.svg \
 	pixmaps/icons/redesign/pause_filled.svg \
+	pixmaps/icons/redesign/pip.svg \
 	pixmaps/icons/redesign/play.svg \
 	pixmaps/icons/redesign/play_filled.svg \
 	pixmaps/icons/redesign/playlist.svg \

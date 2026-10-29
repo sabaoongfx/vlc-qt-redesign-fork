@@ -113,6 +113,7 @@
         {"key": "topbar_music_filled", "path": "./icons/redesign/topbar_music_filled.svg"},
         {"key": "topbar_network_filled", "path": "./icons/redesign/topbar_network_filled.svg"},
         {"key": "edit", "path": "./icons/redesign/edit.svg"},
-        {"key": "playlists", "path": "./icons/redesign/playlists.svg"}
+        {"key": "playlists", "path": "./icons/redesign/playlists.svg"},
+        {"key": "pip", "path": "./icons/redesign/pip.svg"}
     ]
 }
