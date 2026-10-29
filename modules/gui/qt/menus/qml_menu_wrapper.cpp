@@ -117,6 +117,9 @@ void StringListMenu::popup(const QPoint &point, const QVariantList &stringList)
         {
             assert(action);
             action->setIcon(ColorizedSvgIcon::colorizedIconForWidget(icon, m));
+            // redesign: the application hides menu icons (AA_DontShowIconsInMenus, qt.cpp), an
+            // entry given one shows it (the Figma folder menu had none)
+            action->setIconVisibleInMenu(true);
         }
     }
 
