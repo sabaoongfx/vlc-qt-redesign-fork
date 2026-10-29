@@ -59,9 +59,9 @@ FocusScope {
 
     readonly property bool _libraryRail: _videoStage && MainCtx.mediaLibraryAvailable
     readonly property bool _libraryCardVisible: _libraryRail && MainCtx.libraryPanel.visible
+    // Figma sidebar rail: 50px
     readonly property real _railWidth: _libraryRail
-                                       ? VLCStyle.margin_xsmall + VLCStyle.icon_banner + 2 * VLCStyle.margin_small
-                                         + VLCStyle.applicationHorizontalMargin
+                                       ? VLCStyle.dp(50, VLCStyle.scale) + VLCStyle.applicationHorizontalMargin
                                        : 0
     readonly property real _libraryCardWidth: Helpers.clamp(MainCtx.libraryPanel.width, VLCStyle.dp(240, VLCStyle.scale),
                                                             width / 2)
@@ -1494,14 +1494,26 @@ FocusScope {
                     return 0.6
                 } else if ((Window.visibility === Window.FullScreen) && MainCtx.hasEmbededVideo) {
                     return MainCtx.pinOpacity
-                } else if (AcrylicController.enabled || !MainCtx.hasEmbededVideo) {
+                } else if (!MainCtx.hasEmbededVideo) {
                     return 0.7
                 } else {
+                    // redesign: solid under a video (Figma #191919 at 95%); with Windows acrylic
+                    // it was 0.7 and the desktop showed through it (blue in a user screenshot)
                     return 1.0
                 }
             }
 
-            color: windowTheme.bg.secondary
+            // redesign: Figma player bar #191919 (dark) with a 1px #222222 line on top
+            color: windowTheme.palette.isDark ? VLCStyle.figmaColors(true).raised : windowTheme.bg.secondary
+
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+
+                height: VLCStyle.border
+                color: VLCStyle.figmaColors(windowTheme.palette.isDark).line
+            }
         }
 
         FadeControllerStateGroup {
