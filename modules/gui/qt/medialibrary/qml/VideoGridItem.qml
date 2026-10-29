@@ -47,7 +47,9 @@ Widgets.GridItem {
 
     image: isFolder ? "" : (model.thumbnail || "")
     fallbackImage: audio ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover
-    fillMode: audio ? Image.PreserveAspectCrop : Image.Stretch
+    // NOTE: the folder tile is the cover overlay, sized to the painted picture: a crop without a
+    //       picture paints nothing, the music folder tile had no size (CI run 40928565745)
+    fillMode: (audio && !isFolder) ? Image.PreserveAspectCrop : Image.Stretch
 
     title: model.title || qsTr("Unknown title")
     subtitle: {
