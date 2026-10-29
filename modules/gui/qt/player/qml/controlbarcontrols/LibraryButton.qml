@@ -26,8 +26,15 @@ import VLC.Style
 Widgets.IconToolButton {
     id: libraryBtn
 
-    text: VLCIcons.panel_left
+    text: ""
     description: qsTr("Library")
+
+    Widgets.SidebarGlyph {
+        anchors.centerIn: parent
+        open: libraryBtn.checked
+        color: libraryBtn.color
+        size: libraryBtn.font.pixelSize
+    }
 
     onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
 

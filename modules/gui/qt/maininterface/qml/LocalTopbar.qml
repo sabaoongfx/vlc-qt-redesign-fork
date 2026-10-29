@@ -116,8 +116,13 @@ T.ToolBar {
                     // player with the card shown. Hidden while nothing plays.
                     visible: Player.isStarted && MainCtx.mediaLibraryAvailable
 
-                    text: VLCIcons.panel_left
+                    text: ""
                     description: qsTr("Library beside the video")
+
+                    Widgets.SidebarGlyph {
+                        anchors.centerIn: parent
+                        color: navigationVisibilty.color
+                    }
 
                     AccessibleCompat.id: "sidebarToggleButton"
 

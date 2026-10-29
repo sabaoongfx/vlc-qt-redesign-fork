@@ -284,11 +284,17 @@ FocusScope{
                     width: VLCStyle.bannerButton_width
                     height: VLCStyle.bannerButton_height
 
-                    text: VLCIcons.panel_left
+                    text: ""
                     description: qsTr("Library")
 
                     checked: MainCtx.libraryPanel.visible
                     color: checked ? colorContext.accent : colorContext.fg.primary
+
+                    Widgets.SidebarGlyph {
+                        anchors.centerIn: parent
+                        open: libraryToggle.checked
+                        color: libraryToggle.color
+                    }
 
                     onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
 
@@ -449,8 +455,10 @@ FocusScope{
         anchors.horizontalCenter: parent.horizontalCenter
         y: (root.parent.positionSliderY ?? (root.parent.height - height)) - height - VLCStyle.margin_normal
 
-        width: resumeDialog.implicitWidth + VLCStyle.margin_normal * 2
-        height: resumeDialog.implicitHeight + VLCStyle.margin_xsmall + VLCStyle.margin_small
+        // Figma "continue watching": the same space above and below the row, a bit less on the
+        // right of the close button than on the left of the text
+        width: resumeDialog.implicitWidth + VLCStyle.margin_normal + VLCStyle.margin_xsmall
+        height: resumeDialog.implicitHeight + VLCStyle.margin_xsmall * 2
         radius: VLCStyle.dp(8, VLCStyle.scale)
         color: theme.bg.primary
         border.width: VLCStyle.border
@@ -459,8 +467,9 @@ FocusScope{
             ResumeDialog {
                 id: resumeDialog
 
-                x: VLCStyle.margin_normal
-                y: VLCStyle.margin_xxsmall
+                anchors.left: parent.left
+                anchors.leftMargin: VLCStyle.margin_normal
+                anchors.verticalCenter: parent.verticalCenter
 
                 maxWidth: Math.min(root.width - VLCStyle.margin_xxlarge * 2, VLCStyle.dp(620, VLCStyle.scale))
 

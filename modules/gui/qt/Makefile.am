@@ -1464,6 +1464,7 @@ libqml_module_widgets_a_QML = \
 	widgets/qml/GridItem.qml \
 	widgets/qml/GridSortFilterControls.qml \
 	widgets/qml/Breadcrumbs.qml \
+	widgets/qml/SidebarGlyph.qml \
 	widgets/qml/DialogButton.qml \
 	widgets/qml/DialogTitleBand.qml \
 	widgets/qml/LibraryMenuButton.qml \
