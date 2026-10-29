@@ -150,7 +150,7 @@ Widgets.PageLoader {
                 if (item.isVideo)
                     return videoAll.getLabel(item)
 
-                return [ qsTr("%1 Videos").arg(item.nb_videos) ]
+                return []
             }
 
             showGroupCountColumn: true

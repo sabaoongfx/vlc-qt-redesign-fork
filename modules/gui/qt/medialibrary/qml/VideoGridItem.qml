@@ -31,6 +31,10 @@ Widgets.GridItem {
     
     property var labels
 
+    // redesign: a folder of the Videos folder tree (a video group too) is drawn as a folder tile,
+    // not a picture, so folders and videos are told apart at a glance (user report)
+    readonly property bool isFolder: model.isVideo === false
+
     function play() {
         if ( model.id !== undefined ) {
             MediaLib.addAndPlay( model.id )
@@ -38,12 +42,19 @@ Widgets.GridItem {
         }
     }
 
-    image: model.thumbnail || ""
+    image: isFolder ? "" : (model.thumbnail || "")
     fallbackImage: VLCStyle.noArtVideoCover
     fillMode: Image.Stretch
 
     title: model.title || qsTr("Unknown title")
-    subtitle: (model?.duration && model.duration.valid()) ? model.duration.formatHMS() : ""
+    subtitle: {
+        if (isFolder) {
+            const count = model.nb_videos ?? 0
+            return count === 1 ? qsTr("1 video")
+                               : count > 1 ? qsTr("%1 videos").arg(count) : qsTr("Folder")
+        }
+        return (model?.duration && model.duration.valid()) ? model.duration.formatHMS() : ""
+    }
     pictureWidth: VLCStyle.gridCover_video_width
     pictureHeight: VLCStyle.gridCover_video_height
 
@@ -90,6 +101,22 @@ Widgets.GridItem {
     pictureOverlay: Item {
         implicitWidth: root.pictureWidth
         implicitHeight: root.pictureHeight
+
+        Rectangle {
+            anchors.fill: parent
+
+            visible: root.isFolder
+            radius: root.pictureRadius
+            color: VLCStyle.figmaColors(root.colorContext.palette?.isDark ?? true).previewCard
+
+            Widgets.IconLabel {
+                anchors.centerIn: parent
+
+                text: VLCIcons.ic_fluent_folder_open_24_regular
+                font.pixelSize: Math.round(parent.height * 0.4)
+                color: root.colorContext.fg.secondary
+            }
+        }
 
         Widgets.ScaledImage {
             id: image
