@@ -72,7 +72,62 @@ Rectangle {
         }
     }
 
-    readonly property var _model: modelLoader.item
+    // Home: the full lists behind a section's chevron that are not library models (frequent
+    // folders, playlists, artists) go through this ListModel; _homeList keeps their ids
+    readonly property bool _homeListShown: ["folders", "playlists", "artists"].includes(_current?.kind ?? "")
+    readonly property var _model: _homeListShown ? homeListModel : modelLoader.item
+
+    // Figma Home frame: the root of Home is a page of sections, not a list
+    readonly property bool _homeRoot: section === "home" && !_current
+
+    property var _homeList: []
+    property var _frequentFolders: []
+    property var _frequentPlaylists: []
+    property var _frequentArtists: []
+
+    // The library keeps no visit count for folders and playlists, MediaLib counts the visits;
+    // the artists are the ones of the songs in the history
+    function refreshHome() {
+        _frequentFolders = MediaLib.frequentVisits("folder", 3)
+        _frequentPlaylists = MediaLib.frequentVisits("playlist", 3)
+        MediaLib.frequentArtists(3, (list) => { root._frequentArtists = list })
+    }
+
+    function _fillHomeList(items, kind) {
+        _homeList = items
+        homeListModel.clear()
+        items.forEach((item, idx) => homeListModel.append({ title: item.title, kind: kind, idx: idx }))
+    }
+
+    // the pop-out button: the same place in the library window (it leaves the player)
+    function popOut() {
+        switch (section) {
+        case "videos": {
+            const folders = trail.filter(place => place.kind === "folder")
+            if (folders.length === 0) {
+                History.push(["video"], {}, Qt.MouseFocusReason)
+                return
+            }
+            const last = folders[folders.length - 1]
+            History.push(["video", "folders", "folder"],
+                         { parentId: last.id, title: last.title,
+                           trail: folders.map(place => ({ id: place.id, title: place.title })) },
+                         Qt.MouseFocusReason)
+            return
+        }
+        case "music":
+            History.push(["music"], {}, Qt.MouseFocusReason)
+            return
+        case "network":
+            History.push(["network"], {}, Qt.MouseFocusReason)
+            return
+        case "playlists":
+            History.push(["playlists"], {}, Qt.MouseFocusReason)
+            return
+        default:
+            History.push(["home"], {}, Qt.MouseFocusReason)
+        }
+    }
 
     // Figma card header: sort, list/grid and a magnifier that opens the search field
     property string _sortCriteria: ""
@@ -194,11 +249,16 @@ Rectangle {
 
     // A click on a row
     function activate(item) {
-        if (section === "videos" && item.isVideo === false) {
+        const inFolders = section === "videos" || _current?.kind === "folder"
+
+        if (item.kind === "homeFolder" || (inFolders && item.isVideo === false)) {
+            MediaLib.recordVisit("folder", item.id, item.title)
             open({ title: item.title, kind: "folder", id: item.id })
         } else if (section === "music" && !_current) {
             open({ title: item.title, kind: item.kind })
         } else {
+            if (item.kind === "homePlaylist" || (section === "playlists" && !_current))
+                MediaLib.recordVisit("playlist", item.id, item.title)
             MediaLib.addAndPlay(item.id)
         }
     }
@@ -215,7 +275,24 @@ Rectangle {
     onTrailChanged: {
         _sortCriteria = ""
         _sortOrder = Qt.AscendingOrder
+
+        switch (_current?.kind) {
+        case "folders":
+            _fillHomeList(MediaLib.frequentVisits("folder", 0), "homeFolder")
+            break
+        case "playlists":
+            _fillHomeList(MediaLib.frequentVisits("playlist", 0), "homePlaylist")
+            break
+        case "artists":
+            if (section === "home")
+                MediaLib.frequentArtists(50, (list) => root._fillHomeList(list, "homeArtist"))
+            break
+        }
     }
+
+    on_HomeRootChanged: if (_homeRoot) refreshHome()
+
+    Component.onCompleted: if (_homeRoot) refreshHome()
 
     color: _colors.section
     radius: VLCStyle.dp(8, VLCStyle.scale)
@@ -234,8 +311,17 @@ Rectangle {
         id: modelLoader
 
         sourceComponent: {
+            // any section can show a folder (Home's frequent folders)
+            if (root._current?.kind === "folder")
+                return folderModel
+
             switch (root.section) {
-            case "home": return continueModel
+            case "home":
+                switch (root._current?.kind) {
+                case "continue": return continueModel
+                case "listen": return listenModel
+                default: return null // the sections page, or homeListModel
+                }
             case "music":
                 switch (root._current?.kind) {
                 case "songs": return songsModel
@@ -284,6 +370,38 @@ Rectangle {
             sortCriteria: root._sortCriteria
             sortOrder: root._sortOrder
         }
+    }
+
+    Component {
+        id: listenModel
+
+        MLRecentAudioModel {
+            ml: MediaLib
+            searchPattern: searchField.text
+            sortCriteria: root._sortCriteria
+            sortOrder: root._sortOrder
+        }
+    }
+
+    ListModel {
+        id: homeListModel
+    }
+
+    // The two first rows of Home, three items each
+    MLRecentVideoModel {
+        id: homeContinue
+
+        ml: MediaLib
+        limit: 3
+        searchPattern: searchField.text
+    }
+
+    MLRecentAudioModel {
+        id: homeListen
+
+        ml: MediaLib
+        limit: 3
+        searchPattern: searchField.text
     }
 
     Component {
@@ -458,6 +576,18 @@ Rectangle {
                 Layout.preferredWidth: VLCStyle.bannerButton_width
                 Layout.preferredHeight: VLCStyle.bannerButton_height
             }
+
+            // Figma pop-out: this place in the library window
+            Widgets.IconToolButton {
+                Layout.preferredWidth: VLCStyle.bannerButton_width
+                Layout.preferredHeight: VLCStyle.bannerButton_height
+
+                font.pixelSize: VLCStyle.icon_banner
+                text: VLCIcons.fullscreen
+                description: qsTr("Open in the library")
+
+                onClicked: root.popOut()
+            }
         }
 
         // Item count, then sort, list/grid and search (Figma: three icons; the magnifier opens the
@@ -469,7 +599,8 @@ Rectangle {
             spacing: VLCStyle.margin_xxsmall
 
             Widgets.LabelExt {
-                visible: !root._searchOpen
+                // the Home sections page has no single count
+                visible: !root._searchOpen && !root._homeRoot
 
                 text: qsTr("%1 items").arg(root._model?.count ?? 0)
                 font.pixelSize: VLCStyle.fontSize_normal
@@ -498,6 +629,20 @@ Rectangle {
 
                 onSortSelected: (key) => root._sortCriteria = key
                 onSortOrderSelected: (type) => root._sortOrder = type
+
+                // Figma: a dot on the icon while the list is not in its own order
+                Rectangle {
+                    anchors.top: parent.top
+                    anchors.right: parent.right
+                    anchors.margins: VLCStyle.dp(4, VLCStyle.scale)
+
+                    visible: root._sortCriteria !== ""
+
+                    width: VLCStyle.dp(6, VLCStyle.scale)
+                    height: width
+                    radius: width / 2
+                    color: theme.accent
+                }
             }
 
             Widgets.IconToolButton {
@@ -668,10 +813,184 @@ Rectangle {
             }
         }
 
+        // Figma Network: the podcast and radio directories (VLC's services), opened in the library
+        Repeater {
+            model: (root.section === "network" && !root._current)
+                   ? [{ title: qsTr("Podcasts"), source: "podcast" }, { title: qsTr("Radio"), source: "radio" }]
+                   : []
+
+            delegate: PlaceRow {
+                required property var modelData
+
+                card: root
+                Layout.fillWidth: true
+
+                title: modelData.title
+                glyph: VLCIcons.topbar_network
+
+                onClicked: History.push(["discover", "services", "source_root"],
+                                        { source_name: modelData.source }, Qt.MouseFocusReason)
+            }
+        }
+
+        // Figma Home: sections of three items with a chevron that opens the whole list
+        Flickable {
+            id: homeView
+
+            visible: root._homeRoot
+
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            contentHeight: homeColumn.implicitHeight
+
+            T.ScrollBar.vertical: Widgets.ScrollBarExt { }
+
+            Column {
+                id: homeColumn
+
+                width: homeView.width
+                spacing: VLCStyle.margin_xsmall
+
+                HomeSection {
+                    card: root
+                    title: qsTr("Continue Watching")
+                    kind: "continue"
+                    shown: homeContinue.count > 0
+
+                    Repeater {
+                        model: homeContinue
+
+                        delegate: PlaceRow {
+                            required property var model
+
+                            card: root
+                            width: homeColumn.width
+
+                            title: model.title ?? ""
+                            cover: String(model.thumbnail ?? "")
+                            progress: model.progress ?? 0
+                            watched: (model.playcount ?? 0) > 0
+
+                            onClicked: MediaLib.addAndPlay(model.id)
+                        }
+                    }
+                }
+
+                HomeSection {
+                    card: root
+                    title: qsTr("Listen Again")
+                    kind: "listen"
+                    shown: homeListen.count > 0
+
+                    Repeater {
+                        model: homeListen
+
+                        delegate: PlaceRow {
+                            required property var model
+
+                            card: root
+                            width: homeColumn.width
+
+                            title: model.title ?? ""
+                            cover: String(model.cover ?? model.small_cover ?? "")
+                            glyph: VLCIcons.topbar_music
+
+                            onClicked: MediaLib.addAndPlay(model.id)
+                        }
+                    }
+                }
+
+                HomeSection {
+                    card: root
+                    title: qsTr("Frequently Visited Folders")
+                    kind: "folders"
+                    shown: root._frequentFolders.length > 0
+
+                    Repeater {
+                        model: root._frequentFolders
+
+                        delegate: PlaceRow {
+                            required property var modelData
+
+                            card: root
+                            width: homeColumn.width
+
+                            title: modelData.title
+                            folder: true
+
+                            onClicked: root.activate({ id: modelData.id, title: modelData.title, kind: "homeFolder" })
+                        }
+                    }
+                }
+
+                HomeSection {
+                    card: root
+                    title: qsTr("Frequently Visited Playlists")
+                    kind: "playlists"
+                    shown: root._frequentPlaylists.length > 0
+
+                    Repeater {
+                        model: root._frequentPlaylists
+
+                        delegate: PlaceRow {
+                            required property var modelData
+
+                            card: root
+                            width: homeColumn.width
+
+                            title: modelData.title
+                            glyph: VLCIcons.playlist
+
+                            onClicked: root.activate({ id: modelData.id, title: modelData.title, kind: "homePlaylist" })
+                        }
+                    }
+                }
+
+                HomeSection {
+                    card: root
+                    title: qsTr("Frequently Listened Artists")
+                    kind: "artists"
+                    shown: root._frequentArtists.length > 0
+
+                    Repeater {
+                        model: root._frequentArtists
+
+                        delegate: PlaceRow {
+                            required property var modelData
+
+                            card: root
+                            width: homeColumn.width
+
+                            title: modelData.title
+                            glyph: VLCIcons.profile_new
+
+                            onClicked: MediaLib.addAndPlay(modelData.id)
+                        }
+                    }
+                }
+
+                Widgets.LabelExt {
+                    width: homeColumn.width
+                    topPadding: VLCStyle.margin_large
+
+                    visible: homeContinue.count === 0 && homeListen.count === 0
+                             && root._frequentFolders.length === 0 && root._frequentPlaylists.length === 0
+                             && root._frequentArtists.length === 0
+
+                    text: qsTr("Nothing played yet")
+                    horizontalAlignment: Text.AlignHCenter
+                    color: theme.fg.secondary
+                }
+            }
+        }
+
         ListView {
             id: list
 
-            visible: !root._grid
+            visible: !root._grid && !root._homeRoot
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -683,81 +1002,30 @@ Rectangle {
 
             T.ScrollBar.vertical: Widgets.ScrollBarExt { }
 
-            delegate: T.ItemDelegate {
-                id: row
-
+            delegate: PlaceRow {
                 required property int index
                 required property var model
 
-                // only the folder tree has folders, everything else plays or opens
-                readonly property bool isFolder: root.section === "videos" && model.isVideo === false
-                readonly property string title: model.title ?? model.name ?? model.url ?? ""
-                readonly property string cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
-
+                card: root
                 width: ListView.view.width
-                height: VLCStyle.dp(42, VLCStyle.scale)
 
-                padding: 0
-
-                Accessible.role: Accessible.Button
-                Accessible.name: title
+                // the folder tree has folders (Videos, or a folder opened from Home)
+                folder: model.kind === "homeFolder"
+                        || ((root.section === "videos" || root._current?.kind === "folder") && model.isVideo === false)
+                title: model.title ?? model.name ?? model.url ?? ""
+                cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
+                glyph: model.kind === "homePlaylist" ? VLCIcons.playlist
+                     : model.kind === "homeArtist" ? VLCIcons.profile_new
+                     : root._rowIcon
+                progress: (model.isVideo !== false) ? (model.progress ?? 0) : 0
+                watched: (model.isVideo !== false) && (model.playcount ?? 0) > 0
 
                 onClicked: root.activate({
-                    id: model.id,
+                    id: model.id ?? root._homeList[model.idx]?.id,
                     title: title,
                     kind: model.kind,
                     isVideo: model.isVideo
                 })
-
-                background: Rectangle {
-                    radius: VLCStyle.dp(6, VLCStyle.scale)
-                    color: row.hovered ? root._colors.raised : "transparent"
-                }
-
-                contentItem: RowLayout {
-                    spacing: VLCStyle.margin_xsmall
-
-                    // the cover when there is one, else a glyph (a folder for a folder)
-                    Item {
-                        Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
-                        Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
-                        Layout.leftMargin: VLCStyle.margin_xxsmall
-
-                        Image {
-                            anchors.fill: parent
-
-                            visible: !row.isFolder && row.cover !== ""
-                            source: visible ? row.cover : ""
-                            fillMode: Image.PreserveAspectCrop
-                            asynchronous: true
-                            sourceSize.width: VLCStyle.dp(64, VLCStyle.scale)
-                            sourceSize.height: VLCStyle.dp(64, VLCStyle.scale)
-                        }
-
-                        Widgets.IconLabel {
-                            anchors.centerIn: parent
-
-                            visible: row.isFolder || row.cover === ""
-                            text: row.isFolder ? VLCIcons.ic_fluent_folder_open_24_regular : root._rowIcon
-                            font.pixelSize: VLCStyle.icon_banner
-                            color: theme.fg.secondary
-                        }
-                    }
-
-                    Widgets.LabelExt {
-                        Layout.fillWidth: true
-
-                        text: row.title
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        font.pixelSize: VLCStyle.fontSize_normal
-                        color: theme.fg.primary
-                    }
-                }
-
-                HoverHandler {
-                    cursorShape: Qt.PointingHandCursor
-                }
             }
         }
 
@@ -768,7 +1036,7 @@ Rectangle {
             readonly property bool _wide: root.section === "videos" || root.section === "home"
                                           || root.section === "recent"
 
-            visible: root._grid
+            visible: root._grid && !root._homeRoot
 
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -789,7 +1057,8 @@ Rectangle {
                 required property int index
                 required property var model
 
-                readonly property bool isFolder: root.section === "videos" && model.isVideo === false
+                readonly property bool isFolder: model.kind === "homeFolder"
+                    || ((root.section === "videos" || root._current?.kind === "folder") && model.isVideo === false)
                 readonly property string title: model.title ?? model.name ?? model.url ?? ""
                 readonly property string cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
 
@@ -802,7 +1071,7 @@ Rectangle {
                 Accessible.name: title
 
                 onClicked: root.activate({
-                    id: model.id,
+                    id: model.id ?? root._homeList[model.idx]?.id,
                     title: title,
                     kind: model.kind,
                     isVideo: model.isVideo
@@ -858,6 +1127,137 @@ Rectangle {
                 HoverHandler {
                     cursorShape: Qt.PointingHandCursor
                 }
+            }
+        }
+    }
+
+    // A row of the card: the cover (or a glyph, a folder for a folder) and the name. A video
+    // that was started has an orange line under its cover, a watched one a dimmer name (Figma).
+    // NOTE: an inline component does not see the ids of this file, so `card` is the card.
+    component PlaceRow: T.ItemDelegate {
+        id: placeRow
+
+        required property Item card
+
+        property string title
+        property string cover
+        property string glyph
+        property bool folder: false
+        property real progress: 0
+        property bool watched: false
+
+        height: VLCStyle.dp(42, VLCStyle.scale)
+        padding: 0
+
+        Accessible.role: Accessible.Button
+        Accessible.name: title
+
+        background: Rectangle {
+            radius: VLCStyle.dp(6, VLCStyle.scale)
+            color: placeRow.hovered ? placeRow.card._colors.raised : "transparent"
+        }
+
+        contentItem: RowLayout {
+            spacing: VLCStyle.margin_xsmall
+
+            Item {
+                Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
+                Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
+                Layout.leftMargin: VLCStyle.margin_xxsmall
+
+                Image {
+                    anchors.fill: parent
+
+                    visible: !placeRow.folder && placeRow.cover !== ""
+                    source: visible ? placeRow.cover : ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                    sourceSize.width: VLCStyle.dp(64, VLCStyle.scale)
+                    sourceSize.height: VLCStyle.dp(64, VLCStyle.scale)
+                }
+
+                Widgets.IconLabel {
+                    anchors.centerIn: parent
+
+                    visible: placeRow.folder || placeRow.cover === ""
+                    text: placeRow.folder ? VLCIcons.ic_fluent_folder_open_24_regular
+                                          : (placeRow.glyph !== "" ? placeRow.glyph : placeRow.card._rowIcon)
+                    font.pixelSize: VLCStyle.icon_banner
+                    color: placeRow.card.colorContext.fg.secondary
+                }
+
+                // how far it was watched (a watched one shows the whole line)
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.bottom: parent.bottom
+
+                    visible: placeRow.progress > 0 || placeRow.watched
+                    width: parent.width * (placeRow.watched && placeRow.progress <= 0 ? 1 : Math.min(1, placeRow.progress))
+                    height: VLCStyle.dp(2, VLCStyle.scale)
+                    color: placeRow.card.colorContext.accent
+                }
+            }
+
+            Widgets.LabelExt {
+                Layout.fillWidth: true
+
+                text: placeRow.title
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                font.pixelSize: VLCStyle.fontSize_normal
+                color: placeRow.card.colorContext.fg.primary
+                opacity: placeRow.watched ? 0.5 : 1
+            }
+        }
+
+        HoverHandler {
+            cursorShape: Qt.PointingHandCursor
+        }
+    }
+
+    // A Home section: its name and a chevron that opens the whole list, then up to three rows
+    component HomeSection: Column {
+        id: homeSection
+
+        required property Item card
+        required property string title
+        required property string kind
+        property bool shown: true
+
+        visible: shown
+        width: parent?.width ?? 0
+
+        T.ItemDelegate {
+            id: sectionHeader
+
+            width: parent.width
+            height: VLCStyle.dp(40, VLCStyle.scale)
+            padding: 0
+
+            Accessible.role: Accessible.Button
+            Accessible.name: homeSection.title
+
+            onClicked: homeSection.card.open({ title: homeSection.title, kind: homeSection.kind })
+
+            contentItem: RowLayout {
+                Widgets.LabelExt {
+                    Layout.fillWidth: true
+
+                    text: homeSection.title
+                    font.pixelSize: VLCStyle.fontSize_large
+                    color: homeSection.card.colorContext.fg.primary
+                }
+
+                Widgets.IconLabel {
+                    text: VLCIcons.ic_fluent_chevron_right_24
+                    font.pixelSize: VLCStyle.icon_normal
+                    color: sectionHeader.hovered ? homeSection.card.colorContext.fg.primary
+                                                 : homeSection.card.colorContext.fg.secondary
+                }
+            }
+
+            HoverHandler {
+                cursorShape: Qt.PointingHandCursor
             }
         }
     }
