@@ -160,7 +160,8 @@ Rectangle {
                 Layout.preferredWidth: VLCStyle.bannerButton_width
                 Layout.preferredHeight: VLCStyle.bannerButton_height
 
-                onClicked: DialogsProvider.openFileDialog()
+                // the system file picker; the files join the queue without interrupting playback
+                onClicked: DialogsProvider.simpleOpenDialog(false)
             }
         }
 

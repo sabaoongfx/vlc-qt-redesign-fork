@@ -33,8 +33,9 @@ IconToolButton {
     // the tracks and Info act on the media in the play queue
     readonly property bool _hasMedia: !Playlist.MainPlaylistController.empty
 
+    // Add File opens the system file picker (Ctrl+O), not VLC's Open Media window
     readonly property var _entries: [
-        { text: qsTr("Add File"),             icon_svg: ":/menu/add.svg",               action: () => DialogsProvider.openFileDialog() },
+        { text: qsTr("Add File"),             icon_svg: ":/menu/add.svg",               action: () => DialogsProvider.simpleOpenDialog() },
         { text: qsTr("Add Folder"),           icon_svg: ":/menu/redesign-folder.svg",   action: () => DialogsProvider.addLibraryFolderDialog() },
         { text: qsTr("Edit Subtitle Tracks"), icon_svg: ":/menu/redesign-subtitle.svg", action: () => DialogsProvider.loadSubtitlesFile(), media: true },
         { text: qsTr("Edit Audio Tracks"),    icon_svg: ":/menu/redesign-audio.svg",    action: () => DialogsProvider.loadAudioFile(), media: true },

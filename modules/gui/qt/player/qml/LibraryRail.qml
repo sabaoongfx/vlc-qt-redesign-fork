@@ -99,7 +99,7 @@ Item {
                 onSelected: (index) => {
                     switch (index) {
                     case 0:
-                        DialogsProvider.openFileDialog()
+                        DialogsProvider.simpleOpenDialog() // the system file picker
                         break
                     case 1:
                         DialogsProvider.addLibraryFolderDialog()
