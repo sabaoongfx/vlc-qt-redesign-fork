@@ -7,9 +7,11 @@ Working notes for the VLC Qt redesign. This repo is a fork of `videolan/vlc`; th
 Port the HTML prototype (`sabaoongfx/vlc`, local `..\vlc`) into VLC's real Qt/QML interface (`modules/gui/qt`).
 The prototype is the visual reference only; do not copy its data layer. Back the new look with VLC's real models.
 
-## Backlog (user requests for later, 2026-10-29; nothing started)
+## Backlog (user requests, 2026-10-29)
 
-Bugs and changes the user asked to note for a later session, after v0.1.3:
+Bugs and changes the user asked for after v0.1.3. All five were done the same day (after v0.1.3) and
+checked only by CI: items 1-4 by the screenshots and the Network checks, item 5 (drag) not at all, try
+it by hand (drag a row of the player's library card onto the open play queue). Notes kept for context:
 
 1. Music: song covers are 16:9 cards (the Video grid item); they should be square. The music folder tree
    (`VideoFolderTreeDisplay` with `audio: true`) reuses `VideoGridItem`/`VideoGridDisplay`, whose picture
