@@ -114,7 +114,8 @@ T.ToolBar {
                     // pannelVisiblity.stopped), so this button no longer does it: it shows the
                     // library card beside the video, which lives in the player, so it opens the
                     // player with the card shown. Hidden while nothing plays.
-                    visible: Player.isStarted && MainCtx.mediaLibraryAvailable
+                    // redesign: only the player has the switcher; the library sidebar is always shown
+                    visible: false
 
                     text: ""
                     description: qsTr("Library beside the video")

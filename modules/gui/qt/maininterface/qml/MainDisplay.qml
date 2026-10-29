@@ -912,16 +912,16 @@ FocusScope {
         property bool showNavigation: false
         property bool showPlayqueue: false
 
-        // redesign: the sidebar is expanded while nothing plays and collapses when playback
-        // starts. The toggle button still shows or hides it by hand; the next change between
-        // playing and stopped sets it again.
+        // redesign: the library sidebar is always expanded, with names, also while something plays
+        // in the mini player or picture in picture (the player itself has its own icon rail).
+        // There is no button to collapse it any more; a small screen still hides it.
         readonly property bool stopped: Player.playingState === Player.PLAYING_STATE_STOPPED
 
         onStoppedChanged: {
             if (VLCStyle.isScreenSmall)
                 return
-            showNavigation = stopped
-            MainCtx.navigationPanel.visible = stopped
+            showNavigation = true
+            MainCtx.navigationPanel.visible = true
         }
 
         Component.onCompleted: {
@@ -966,7 +966,8 @@ FocusScope {
                 pannelVisiblity.showPlayqueue = MainCtx.playqueuePanel.visible
             } else {
                 //reshow the navigation panels to original state
-                pannelVisiblity.showNavigation = MainCtx.navigationPanel.visible || stopped
+                pannelVisiblity.showNavigation = true
+                MainCtx.navigationPanel.visible = true
                 pannelVisiblity.showPlayqueue =  MainCtx.playqueuePanel.visible
             }
         }
