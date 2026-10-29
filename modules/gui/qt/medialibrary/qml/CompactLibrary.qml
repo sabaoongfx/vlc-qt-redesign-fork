@@ -85,9 +85,36 @@ Rectangle {
     property var _frequentPlaylists: []
     property var _frequentArtists: []
 
+    // Home: the history sections as plain lists, so the sort button can order every section
+    // (the history models keep their own order, last played first)
+    property var _continueItems: []
+    property var _listenItems: []
+
+    // Home in the grid view: two tiles a row
+    readonly property real _homeItemWidth: _grid ? Math.floor(homeColumn.width / 2) : homeColumn.width
+
+    function _readModel(model, assign) {
+        const count = model.count
+        if (count === 0) {
+            assign([])
+            return
+        }
+        model.getDataFlat([...Array(count).keys()], (list) => assign(Array.from(list)))
+    }
+
+    // Title A-Z / Z-A on Home; without a sort the sections keep their own order
+    function _homeSorted(items) {
+        if (_sortCriteria === "")
+            return items
+        const sorted = [...items].sort((a, b) => String(a.title ?? "").localeCompare(String(b.title ?? "")))
+        return (_sortOrder === Qt.DescendingOrder) ? sorted.reverse() : sorted
+    }
+
     // The library keeps no visit count for folders and playlists, MediaLib counts the visits;
     // the artists are the ones of the songs in the history
     function refreshHome() {
+        _readModel(homeContinue, (list) => root._continueItems = list)
+        _readModel(homeListen, (list) => root._listenItems = list)
         _frequentFolders = MediaLib.frequentVisits("folder", 3)
         _frequentPlaylists = MediaLib.frequentVisits("playlist", 3)
         MediaLib.frequentArtists(3, (list) => { root._frequentArtists = list })
@@ -185,6 +212,9 @@ Rectangle {
             return titles("url")
         case "playlists":
             return titles("name")
+        case "home":
+            // the sections page; a section opened from it keeps its order
+            return _current ? [] : titles("title")
         default:
             return []
         }
@@ -403,6 +433,22 @@ Rectangle {
         ml: MediaLib
         limit: 3
         searchPattern: searchField.text
+    }
+
+    Connections {
+        target: homeContinue
+
+        function onCountChanged() { root._readModel(homeContinue, (list) => root._continueItems = list) }
+        function onDataChanged() { root._readModel(homeContinue, (list) => root._continueItems = list) }
+        function onModelReset() { root._readModel(homeContinue, (list) => root._continueItems = list) }
+    }
+
+    Connections {
+        target: homeListen
+
+        function onCountChanged() { root._readModel(homeListen, (list) => root._listenItems = list) }
+        function onDataChanged() { root._readModel(homeListen, (list) => root._listenItems = list) }
+        function onModelReset() { root._readModel(homeListen, (list) => root._listenItems = list) }
     }
 
     Component {
@@ -877,20 +923,21 @@ Rectangle {
                     shown: homeContinue.count > 0
 
                     Repeater {
-                        model: homeContinue
+                        model: root._homeSorted(root._continueItems)
 
                         delegate: PlaceRow {
-                            required property var model
+                            required property var modelData
 
                             card: root
-                            width: homeColumn.width
+                            tile: root._grid
+                            width: root._homeItemWidth
 
-                            title: model.title ?? ""
-                            cover: String(model.thumbnail ?? "")
-                            progress: model.progress ?? 0
-                            watched: (model.playcount ?? 0) > 0
+                            title: modelData.title ?? ""
+                            cover: String(modelData.thumbnail ?? "")
+                            progress: modelData.progress ?? 0
+                            watched: (modelData.playcount ?? 0) > 0
 
-                            onClicked: MediaLib.addAndPlay(model.id)
+                            onClicked: MediaLib.addAndPlay(modelData.id)
                         }
                     }
                 }
@@ -902,19 +949,20 @@ Rectangle {
                     shown: homeListen.count > 0
 
                     Repeater {
-                        model: homeListen
+                        model: root._homeSorted(root._listenItems)
 
                         delegate: PlaceRow {
-                            required property var model
+                            required property var modelData
 
                             card: root
-                            width: homeColumn.width
+                            tile: root._grid
+                            width: root._homeItemWidth
 
-                            title: model.title ?? ""
-                            cover: String(model.cover ?? model.small_cover ?? "")
+                            title: modelData.title ?? ""
+                            cover: String(modelData.cover ?? modelData.small_cover ?? "")
                             glyph: VLCIcons.topbar_music
 
-                            onClicked: MediaLib.addAndPlay(model.id)
+                            onClicked: MediaLib.addAndPlay(modelData.id)
                         }
                     }
                 }
@@ -926,13 +974,14 @@ Rectangle {
                     shown: root._frequentFolders.length > 0
 
                     Repeater {
-                        model: root._frequentFolders
+                        model: root._homeSorted(root._frequentFolders)
 
                         delegate: PlaceRow {
                             required property var modelData
 
                             card: root
-                            width: homeColumn.width
+                            tile: root._grid
+                            width: root._homeItemWidth
 
                             title: modelData.title
                             folder: true
@@ -949,13 +998,14 @@ Rectangle {
                     shown: root._frequentPlaylists.length > 0
 
                     Repeater {
-                        model: root._frequentPlaylists
+                        model: root._homeSorted(root._frequentPlaylists)
 
                         delegate: PlaceRow {
                             required property var modelData
 
                             card: root
-                            width: homeColumn.width
+                            tile: root._grid
+                            width: root._homeItemWidth
 
                             title: modelData.title
                             glyph: VLCIcons.playlists
@@ -972,13 +1022,14 @@ Rectangle {
                     shown: root._frequentArtists.length > 0
 
                     Repeater {
-                        model: root._frequentArtists
+                        model: root._homeSorted(root._frequentArtists)
 
                         delegate: PlaceRow {
                             required property var modelData
 
                             card: root
-                            width: homeColumn.width
+                            tile: root._grid
+                            width: root._homeItemWidth
 
                             title: modelData.title
                             glyph: VLCIcons.profile_new
@@ -1108,15 +1159,31 @@ Rectangle {
                         radius: VLCStyle.dp(6, VLCStyle.scale)
                         color: root._colors.raised
 
-                        Widgets.ImageExt {
+                        Image {
+                            id: tileImage
+
                             anchors.fill: parent
 
                             visible: !tile.isFolder && tile.cover !== ""
-                            radius: parent.radius
-                            source: visible ? tile.cover : ""
+                            source: (!tile.isFolder && tile.cover !== "") ? tile.cover : ""
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
+                            clip: true
                             sourceSize.width: VLCStyle.dp(240, VLCStyle.scale)
+                            sourceSize.height: VLCStyle.dp(240, VLCStyle.scale)
+                        }
+
+                        // rounds the image corners with the colour around the tile
+                        Rectangle {
+                            readonly property real ring: Math.ceil(parent.radius / 2)
+
+                            visible: tileImage.visible
+                            anchors.fill: parent
+                            anchors.margins: -ring
+                            radius: parent.radius + ring
+                            color: "transparent"
+                            border.width: ring
+                            border.color: tile.hovered ? root._colors.raised : root.color
                         }
 
                         Widgets.IconLabel {
@@ -1162,8 +1229,12 @@ Rectangle {
         property real progress: 0
         property bool watched: false
 
-        height: VLCStyle.dp(42, VLCStyle.scale)
-        padding: 0
+        // the grid view on Home: the cover above the name
+        property bool tile: false
+
+        height: tile ? Math.round((width - padding * 2) * 9 / 16) + padding * 2 + VLCStyle.dp(36, VLCStyle.scale)
+                     : VLCStyle.dp(42, VLCStyle.scale)
+        padding: tile ? VLCStyle.margin_xxsmall : 0
 
         Accessible.role: Accessible.Button
         Accessible.name: title
@@ -1173,23 +1244,47 @@ Rectangle {
             color: placeRow.hovered ? placeRow.card._colors.raised : "transparent"
         }
 
-        contentItem: RowLayout {
-            spacing: VLCStyle.dp(10, VLCStyle.scale)
+        contentItem: GridLayout {
+            columns: placeRow.tile ? 1 : 2
+            columnSpacing: VLCStyle.dp(10, VLCStyle.scale)
+            rowSpacing: VLCStyle.margin_xxsmall
 
-            Item {
-                Layout.preferredWidth: VLCStyle.dp(32, VLCStyle.scale)
-                Layout.preferredHeight: VLCStyle.dp(32, VLCStyle.scale)
+            Rectangle {
+                Layout.fillWidth: placeRow.tile
+                Layout.fillHeight: placeRow.tile
+                Layout.preferredWidth: placeRow.tile ? -1 : VLCStyle.dp(32, VLCStyle.scale)
+                Layout.preferredHeight: placeRow.tile ? -1 : VLCStyle.dp(32, VLCStyle.scale)
 
-                Widgets.ImageExt {
+                radius: placeRow.tile ? VLCStyle.dp(6, VLCStyle.scale) : 0
+                color: placeRow.tile ? placeRow.card._colors.raised : "transparent"
+
+                // NOTE: a plain Image: in the card, ImageExt drew the music covers only once the
+                //       row was hovered (user report); its rounding is redone with a ring below
+                Image {
+                    id: coverImage
+
                     anchors.fill: parent
 
                     visible: !placeRow.folder && placeRow.cover !== ""
-                    radius: VLCStyle.dp(2, VLCStyle.scale)
-                    source: visible ? placeRow.cover : ""
+                    source: (!placeRow.folder && placeRow.cover !== "") ? placeRow.cover : ""
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
-                    sourceSize.width: VLCStyle.dp(64, VLCStyle.scale)
-                    sourceSize.height: VLCStyle.dp(64, VLCStyle.scale)
+                    clip: true
+                    sourceSize.width: VLCStyle.dp(placeRow.tile ? 240 : 64, VLCStyle.scale)
+                    sourceSize.height: VLCStyle.dp(placeRow.tile ? 240 : 64, VLCStyle.scale)
+                }
+
+                // rounds the tile's image corners with the colour around it
+                Rectangle {
+                    readonly property real ring: Math.ceil(parent.radius / 2)
+
+                    visible: placeRow.tile && coverImage.visible
+                    anchors.fill: parent
+                    anchors.margins: -ring
+                    radius: parent.radius + ring
+                    color: "transparent"
+                    border.width: ring
+                    border.color: placeRow.hovered ? placeRow.card._colors.raised : placeRow.card.color
                 }
 
                 Widgets.IconLabel {
@@ -1198,7 +1293,7 @@ Rectangle {
                     visible: placeRow.folder || placeRow.cover === ""
                     text: placeRow.folder ? VLCIcons.ic_fluent_folder_open_24_regular
                                           : (placeRow.glyph !== "" ? placeRow.glyph : placeRow.card._rowIcon)
-                    font.pixelSize: VLCStyle.icon_banner
+                    font.pixelSize: placeRow.tile ? VLCStyle.icon_large : VLCStyle.icon_banner
                     color: placeRow.card.colorContext.fg.secondary
                 }
 
@@ -1234,6 +1329,9 @@ Rectangle {
     // A Home section: its name and a chevron that opens the whole list, then up to three rows
     component HomeSection: Column {
         id: homeSection
+
+        // the section's items, one a row or two tiles a row (the grid view)
+        default property alias items: itemsFlow.data
 
         required property Item card
         required property string title
@@ -1275,6 +1373,12 @@ Rectangle {
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }
+        }
+
+        Flow {
+            id: itemsFlow
+
+            width: parent.width
         }
     }
 }
