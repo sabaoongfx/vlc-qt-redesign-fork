@@ -240,7 +240,7 @@ jobs:
             # Music is a folder tree like Videos: the first card is the Music folder, one click
             # opens it on its songs
             click 80 154; sleep 5
-            click 390 220; sleep 5
+            click 300 190; sleep 5 # the square card (237-365 x 129-257)
             import -window root "$1/shots/lib-music-folder-$2.png" || true
             click 80 200; sleep 5 # Network
             import -window root "$1/shots/lib-browse-$2.png" || true
@@ -297,6 +297,8 @@ jobs:
           xdotool key --clearmodifiers ctrl+Return; sleep 8 # Play
           import -window root "$1/shots/net-played.png" || true
           xdotool key s; sleep 2 # stop, so the next requests come from the click below
+          # playing resized the window to the video (854x480): the '...' at 1244 was outside it
+          resize; sleep 2
           click 1244 77; sleep 2; xdotool key Down Return; sleep 3 # '...' > Add Stream
           xdotool type --delay 30 "http://127.0.0.1:8765/saved.mp4"; sleep 0.5
           xdotool key Tab; sleep 0.5; xdotool key Return; sleep 6 # Save: Enter in the empty name field
