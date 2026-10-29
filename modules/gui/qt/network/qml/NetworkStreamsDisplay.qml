@@ -26,7 +26,7 @@ import VLC.Style
 import VLC.Playlist
 
 // The Network page (the video "I Redesigned VLC After 25 Years"): the network streams the user
-// saved, and a field to add more. A saved stream plays with a click.
+// saved. Add Stream is in the header's "..." menu; a saved stream plays with a click.
 Widgets.PageExt {
     id: root
 
@@ -43,11 +43,15 @@ Widgets.PageExt {
     readonly property real _leftMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_left_margin
     readonly property real _rightMargin: VLCStyle.dynamicAppMargins(width) + VLCStyle.layout_right_margin
 
-    // No saved stream: the text and the two buttons sit together in the middle of the page
+    // No saved stream: a line of text in the middle of the page
     readonly property bool _empty: !(urlListDisplay.item?.visible ?? false)
 
-    // Asks the parent to show the device browser (local network, UPnP, SMB...)
-    signal showBrowse(int reason)
+    // the header's "..." menu (user request: no orange button, no Browse devices)
+    menuEntries: [{
+        text: qsTr("Add Stream"),
+        icon_svg: ":/menu/redesign-network.svg",
+        action: () => dialogLoader.item?.open()
+    }]
 
     // the buttons take their colours from here: without a context at the root of the page they had no
     // palette and were not drawn at all (CI screenshot lib-browse, 2026-10-28)
@@ -57,7 +61,7 @@ Widgets.PageExt {
     }
 
     function setCurrentItemFocus(reason) {
-        addButton.forceActiveFocus(reason)
+        urlListDisplay.forceActiveFocus(reason)
     }
 
     // Saves the addresses the dialog returned
@@ -74,57 +78,18 @@ Widgets.PageExt {
         anchors.fill: parent
         focus: true
 
-        // With streams: a bar above the list, Add stream on the left and Browse devices on the
-        // right. Without: both side by side, centred under the empty text.
-        RowLayout {
-            id: buttonRow
-
-            x: root._empty ? Math.round((content.width - width) / 2) : root._leftMargin + root.leftPadding
-            y: root._empty ? emptyText.y + emptyText.height + VLCStyle.margin_large : VLCStyle.margin_normal
-            // NOTE: not from x, which follows the width while the page is empty (binding loop)
-            width: root._empty ? implicitWidth
-                               : content.width - root._leftMargin - root.leftPadding
-                                 - root._rightMargin - root.rightPadding
-
-            spacing: root._empty ? VLCStyle.margin_small : VLCStyle.margin_xsmall
-
-            Widgets.DialogButton {
-                id: addButton
-
-                focus: true
-                activeFocusOnTab: true
-
-                text: qsTr("Add stream")
-                primary: true
-
-                enabled: dialogLoader.status === Loader.Ready
-
-                onClicked: dialogLoader.item.open()
-            }
-
-            Item {
-                visible: !root._empty
-                Layout.fillWidth: true
-            }
-
-            Widgets.DialogButton {
-                text: qsTr("Browse devices")
-
-                activeFocusOnTab: true
-
-                onClicked: root.showBrowse(Qt.MouseFocusReason)
-            }
-        }
-
+        // the list starts a margin below the page header line: its column titles touched the
+        // button bar above them (user report)
         Item {
             anchors.fill: parent
-            anchors.topMargin: buttonRow.implicitHeight + VLCStyle.margin_normal * 2
+            anchors.topMargin: VLCStyle.margin_normal
 
             Loader {
                 id: urlListDisplay
 
                 anchors.fill: parent
 
+                focus: true
                 active: MainCtx.mediaLibraryAvailable
                 source: "qrc:///qt/qml/VLC/MediaLibrary/UrlListDisplay.qml"
 
@@ -137,7 +102,6 @@ Widgets.PageExt {
                     item.fadingEdge.enableBeginningFade = Qt.binding(() => root.enableBeginningFade)
                     item.fadingEdge.enableEndFade = Qt.binding(() => root.enableEndFade)
 
-                    item.Navigation.upItem = addButton
                     item.Navigation.parentItem = root
 
                     item.searchPattern = Qt.binding(() => root.search.pattern)
@@ -145,17 +109,15 @@ Widgets.PageExt {
             }
         }
 
-        // the list hides itself while it has no stream; the text and the buttons below it are
-        // centred together on the page
+        // the list hides itself while it has no stream
         Widgets.LabelExt {
             id: emptyText
 
             anchors.centerIn: parent
-            anchors.verticalCenterOffset: -(buttonRow.implicitHeight + VLCStyle.margin_large) / 2
 
             visible: root._empty
 
-            text: qsTr("No saved streams yet\nUse Add stream to save a network address")
+            text: qsTr("No saved streams yet\nAdd one with Add Stream in the \u22EF menu")
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: VLCStyle.fontSize_large
             color: VLCStyle.figmaColors(theme.palette?.isDark ?? true).hint

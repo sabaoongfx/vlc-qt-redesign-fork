@@ -47,6 +47,10 @@ T.Page {
 
     signal crumbClicked(int index)
 
+    // redesign: entries of the header's "..." menu for this page ({ text, icon_svg, action });
+    // unset, it is the folder menu
+    property var menuEntries: null
+
     //property is *not* readOnly, a PageLoader may define a localMenuDelegate common for its subviews (music, video)
     property SortMenu sortMenu: null
 
@@ -281,6 +285,7 @@ T.Page {
                 focus: true
                 sort: _sortCtx
                 search: _searchCtx
+                menuEntries: root.menuEntries
                 Navigation.parentItem: defaultPageHeader
             }
         }

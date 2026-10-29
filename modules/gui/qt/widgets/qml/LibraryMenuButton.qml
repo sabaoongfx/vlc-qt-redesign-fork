@@ -43,6 +43,10 @@ IconToolButton {
         { text: qsTr("Info"),                 icon_svg: ":/menu/info.svg",              action: () => DialogsProvider.mediaInfoDialog(), media: true }
     ]
 
+    // a page's own entries ({ text, icon_svg, action }), in place of the folder menu (Network:
+    // Add Stream)
+    property var entries: null
+
     property var _shown: []
 
     text: VLCIcons.ellipsis
@@ -53,7 +57,7 @@ IconToolButton {
     font.pixelSize: VLCStyle.icon_banner
 
     onClicked: {
-        _shown = _entries.filter((entry) => (!entry.media || root._hasMedia)
+        _shown = (root.entries ?? _entries).filter((entry) => (!entry.media || root._hasMedia)
                                             && (!entry.library || MainCtx.mediaLibraryAvailable))
         menu.popup(root.mapToGlobal(0, root.height),
                    _shown.map((entry) => ({ text: entry.text, icon_svg: entry.icon_svg })))

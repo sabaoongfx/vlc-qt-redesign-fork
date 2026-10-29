@@ -21,8 +21,8 @@ import QtQuick
 import VLC.MainInterface
 import VLC.Widgets as Widgets
 
-// The Network entry of the sidebar: the saved network streams, with the device browser
-// (the former Browse page) one button away.
+// The Network entry of the sidebar: the saved network streams. The device browser (the former
+// Browse page) is no longer linked from it (user request); its page is kept for now.
 Widgets.PageLoader {
     id: root
 
@@ -56,8 +56,6 @@ Widgets.PageLoader {
 
             enableBeginningFade: root.enableBeginningFade
             enableEndFade: root.enableEndFade
-
-            onShowBrowse: (reason) => History.push([...root.pagePrefix, "browse"], reason)
         }
     }
 

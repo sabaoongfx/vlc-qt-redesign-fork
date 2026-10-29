@@ -13,6 +13,8 @@ NavigableRow {
     enabled: gridListBtn.visible || sortControl.visible || searchBox.visible
 
     property SortMenu sortMenu: null
+    // the page's own "..." menu entries (LibraryMenuButton)
+    property var menuEntries: null
     required property SortCtx sort
     required property SearchCtx search
 
@@ -179,5 +181,7 @@ NavigableRow {
     // redesign: the folder context menu (Figma), on the right of the search
     LibraryMenuButton {
         anchors.verticalCenter: parent.verticalCenter
+
+        entries: root.menuEntries
     }
 }
