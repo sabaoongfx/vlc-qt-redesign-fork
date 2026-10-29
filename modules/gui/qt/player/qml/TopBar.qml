@@ -291,7 +291,7 @@ FocusScope{
                     width: VLCStyle.bannerButton_width
                     height: VLCStyle.bannerButton_height
 
-                    text: ""
+                    text: " " // the glyph is drawn below; IconToolButton wants some text
                     description: qsTr("Show or hide the library menu")
 
                     checked: MainCtx.libraryPanel.visible

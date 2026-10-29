@@ -68,7 +68,8 @@ T.ToolBar {
     }
 
     background:  Widgets.AcrylicBackground {
-        enabled: root.useAcrylic
+        // redesign: opaque, no Windows acrylic (the desktop showed through the top bar)
+        enabled: false
         tintColor: theme.bg.primary
     }
 
@@ -213,7 +214,7 @@ T.ToolBar {
                     // redesign: only the player has the switcher; the library sidebar is always shown
                     visible: false
 
-                    text: ""
+                    text: " " // the glyph is drawn below; IconToolButton wants some text
                     description: qsTr("Library beside the video")
 
                     Widgets.SidebarGlyph {

@@ -27,7 +27,7 @@ import VLC.Style
 Widgets.IconToolButton {
     id: libraryBtn
 
-    text: ""
+    text: " " // the glyph is drawn below; IconToolButton wants some text
     description: qsTr("Library")
 
     Widgets.SidebarGlyph {
