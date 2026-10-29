@@ -35,6 +35,9 @@ Widgets.GridItem {
     // not a picture, so folders and videos are told apart at a glance (user report)
     readonly property bool isFolder: model.isVideo === false
 
+    // the music folder tree: songs keep their square covers, folders count songs
+    property bool audio: false
+
     function play() {
         if ( model.id !== undefined ) {
             MediaLib.addAndPlay( model.id )
@@ -43,13 +46,16 @@ Widgets.GridItem {
     }
 
     image: isFolder ? "" : (model.thumbnail || "")
-    fallbackImage: VLCStyle.noArtVideoCover
-    fillMode: Image.Stretch
+    fallbackImage: audio ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover
+    fillMode: audio ? Image.PreserveAspectCrop : Image.Stretch
 
     title: model.title || qsTr("Unknown title")
     subtitle: {
         if (isFolder) {
             const count = model.nb_videos ?? 0
+            if (audio)
+                return count === 1 ? qsTr("1 song")
+                                   : count > 1 ? qsTr("%1 songs").arg(count) : qsTr("Folder")
             return count === 1 ? qsTr("1 video")
                                : count > 1 ? qsTr("%1 videos").arg(count) : qsTr("Folder")
         }

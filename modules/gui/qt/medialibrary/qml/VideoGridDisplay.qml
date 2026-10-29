@@ -36,6 +36,9 @@ Widgets.ExpandGridItemView {
     property MLContextMenu contextMenu
     property var labels
 
+    // the music folder tree (VideoGridItem)
+    property bool audio: false
+
     // Signals
 
     signal itemDoubleClicked(var model)
@@ -107,6 +110,8 @@ Widgets.ExpandGridItemView {
         dragItem: gridView.dragItem
 
         labels: gridView.labels(model)
+
+        audio: gridView.audio
 
         // Events
 

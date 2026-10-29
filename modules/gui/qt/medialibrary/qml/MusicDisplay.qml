@@ -38,29 +38,24 @@ Widgets.PageLoader {
     Accessible.name: qsTr("Music view")
     AccessibleCompat.id: "musicDisplay"
 
+    // redesign: Music is a folder tree like Videos (user request): the folders that hold music,
+    // a folder's subfolders and its songs. The artist, album, track and genre pages are no longer
+    // reached from here.
     pageModel: [{
-            displayText: qsTr("Artists"),
-            name: "artists",
+            displayText: qsTr("Music"),
+            name: "folders",
             default: true,
-            url: "qrc:///qt/qml/VLC/MediaLibrary/MusicArtistsDisplay.qml"
-        }, {
-            displayText: qsTr("Albums"),
-            name: "albums",
-            url: "qrc:///qt/qml/VLC/MediaLibrary/MusicAlbumsDisplay.qml"
-        }, {
-            displayText: qsTr("Tracks"),
-            name: "tracks" ,
-            url: "qrc:///qt/qml/VLC/MediaLibrary/MusicTracksDisplay.qml"
-        }, {
-            displayText: qsTr("Genres"),
-            name: "genres" ,
-            url: "qrc:///qt/qml/VLC/MediaLibrary/MusicGenresDisplay.qml"
-        }, {
-            displayText: qsTr("Playlists"),
-            name: "playlists" ,
-            url: "qrc:///qt/qml/VLC/MediaLibrary/MusicPlaylistsDisplay.qml"
+            component: musicFolders
         }
     ]
+
+    Component {
+        id: musicFolders
+
+        VideoFolderTreeDisplay {
+            audio: true
+        }
+    }
 
     property int displayMarginBeginning: 0
     property int displayMarginEnd: 0

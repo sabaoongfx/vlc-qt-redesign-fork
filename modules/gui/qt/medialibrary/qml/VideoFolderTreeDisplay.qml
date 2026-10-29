@@ -25,7 +25,8 @@ import VLC.Widgets as Widgets
 import VLC.Style
 
 // The Videos page as a folder tree. The first level lists the folders the user added,
-// a folder lists its subfolders and then its own videos. The address line in the header
+// a folder lists its subfolders and then its own videos. With audio set it is the Music page:
+// the folders that hold music, and the songs of a folder. The address line in the header
 // is the path from the first level, History (back / forward) walks the same steps.
 Widgets.PageLoader {
     id: root
@@ -40,6 +41,9 @@ Widgets.PageLoader {
 
     // History hands it to every page of the path (PageLoader); the folder page uses it
     property int initialIndex: 0
+
+    // the Music page (MusicDisplay)
+    property bool audio: false
 
     // Settings
 
@@ -73,6 +77,8 @@ Widgets.PageLoader {
         id: componentLevel
 
         VideoFolderLevel {
+            audio: root.audio
+
             displayMarginBeginning: root.displayMarginBeginning
             displayMarginEnd: root.displayMarginEnd
 
@@ -101,11 +107,16 @@ Widgets.PageLoader {
         // missing: "Cannot assign to non-existent property", CI run 6)
         property int initialIndex: 0
 
+        // the music tree: folders that hold songs, and their songs
+        property bool audio: false
+
+        readonly property string rootTitle: audio ? qsTr("Music") : qsTr("Videos")
+
         signal showFolder(var trail, int reason)
 
-        title: trail.length > 0 ? trail[trail.length - 1].title : qsTr("Videos")
+        title: trail.length > 0 ? trail[trail.length - 1].title : rootTitle
 
-        crumbs: [qsTr("Videos"), ...trail.map(folder => folder.title)]
+        crumbs: [rootTitle, ...trail.map(folder => folder.title)]
 
         // The first crumb is the first level, the others are the folders of the trail.
         onCrumbClicked: (index) => level.showFolder(level.trail.slice(0, index), Qt.MouseFocusReason)
@@ -117,6 +128,8 @@ Widgets.PageLoader {
 
             focus: true
 
+            audio: level.audio
+
             displayMarginBeginning: level.displayMarginBeginning
             displayMarginEnd: level.displayMarginEnd
             enableBeginningFade: level.enableBeginningFade
@@ -126,13 +139,14 @@ Widgets.PageLoader {
                 id: tree
 
                 ml: MediaLib
+                audio: level.audio
 
                 searchPattern: level.search.pattern
                 sortOrder: level.sort.order
                 sortCriteria: level.sort.criteria
             }
 
-            contextMenu: MLContextMenu { model: tree; showPlayAsAudioAction: true }
+            contextMenu: MLContextMenu { model: tree; showPlayAsAudioAction: !level.audio }
 
             sectionProperty: {
                 switch (tree.sortCriteria) {
@@ -203,10 +217,13 @@ Widgets.PageLoader {
 
                 focus: true
 
-                text: level.trail.length > 0 ? qsTr("This folder has no videos")
-                                             : qsTr("No video found\nPlease try adding sources")
+                text: level.audio
+                      ? (level.trail.length > 0 ? qsTr("This folder has no music")
+                                                : qsTr("No music found\nPlease try adding sources"))
+                      : (level.trail.length > 0 ? qsTr("This folder has no videos")
+                                                : qsTr("No video found\nPlease try adding sources"))
 
-                cover: VLCStyle.noArtVideoCover
+                cover: level.audio ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover
             }
         }
     }

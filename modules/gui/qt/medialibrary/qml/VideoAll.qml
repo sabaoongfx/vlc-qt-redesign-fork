@@ -69,6 +69,9 @@ MainViewLoader {
 
     property bool showGroupCountColumn: false
 
+    // the music folder tree shows songs (VideoGridItem)
+    property bool audio: false
+
     property real listCoverHeight: VLCStyle.listAlbumCover_height
     property real listCoverWidth: VLCStyle.listAlbumCover_width
     property real listCoverRadius: VLCStyle.listAlbumCover_radius
@@ -165,6 +168,8 @@ MainViewLoader {
             contextMenu: root.contextMenu
 
             labels: root.gridLabels
+
+            audio: root.audio
 
             displayMarginBeginning: root.displayMarginBeginning
             displayMarginEnd: root.displayMarginEnd

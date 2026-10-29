@@ -30,7 +30,7 @@ import VLC.Dialogs
 
 // The library as a card beside the video in the player (Figma "sidebar" frames): address line,
 // item count, search and a list. What the list shows follows the rail on its left: Home
-// (continue watching), Videos (the folder tree), Music (songs, albums, artists, genres), Network
+// (continue watching), Videos and Music (folder trees), Network
 // (saved streams), Playlists and Recent. It keeps its own path, so the library page behind the
 // player never moves. A media plays right away, a folder opens in place.
 Rectangle {
@@ -40,13 +40,16 @@ Rectangle {
     property string section: "videos"
 
     // The path below the first level of the section: [{ title, kind, id }, ...]. A folder
-    // has the kind "folder" and its id, the music kinds are "songs", "albums", "artists", "genres".
+    // has the kind "folder" and its id.
     property var trail: []
 
     // The places left by Back, in the order Forward goes through them
     property var _forward: []
 
     readonly property var _current: trail.length > 0 ? trail[trail.length - 1] : null
+
+    // Videos and Music are folder trees: folders, then the videos (songs) of a folder
+    readonly property bool _folderTree: section === "videos" || section === "music"
 
     // NOTE: the context finds the window palette only once the card is in the window; until then
     //       there is no palette (dark is assumed)
@@ -63,11 +66,11 @@ Rectangle {
         }
     }
 
-    // The row that starts the list ("Add"), none for Home, Recent and the music lists
+    // The row that starts the list ("Add"), none for Home and Recent
     readonly property string _addLabel: {
         switch (section) {
-        case "videos": return qsTr("Add")
-        case "music": return _current ? "" : qsTr("Add")
+        case "videos":
+        case "music": return qsTr("Add")
         case "network": return qsTr("Add Network Stream")
         case "playlists": return qsTr("Create playlist")
         default: return ""
@@ -144,9 +147,19 @@ Rectangle {
                          Qt.MouseFocusReason)
             return
         }
-        case "music":
-            History.reset(["music"], {}, Qt.MouseFocusReason)
+        case "music": {
+            const folders = trail.filter(place => place.kind === "folder")
+            if (folders.length === 0) {
+                History.reset(["music"], {}, Qt.MouseFocusReason)
+                return
+            }
+            const last = folders[folders.length - 1]
+            History.reset(["music", "folders", "folder"],
+                         { parentId: last.id, title: last.title,
+                           trail: folders.map(place => ({ id: place.id, title: place.title })) },
+                         Qt.MouseFocusReason)
             return
+        }
         case "network":
             History.reset(["network"], {}, Qt.MouseFocusReason)
             return
@@ -188,28 +201,7 @@ Rectangle {
                 ...dates, ...titles("title"), ...uris
             ]
         case "music":
-            switch (_current?.kind) {
-            case "songs":
-                return [
-                    ...dates, ...titles("title"),
-                    { text: qsTr("Artist A-Z"), criteria: "main_artist", order: Qt.AscendingOrder },
-                    { text: qsTr("Artist Z-A"), criteria: "main_artist", order: Qt.DescendingOrder },
-                    { text: qsTr("Album A-Z"),  criteria: "album_title", order: Qt.AscendingOrder },
-                    { text: qsTr("Album Z-A"),  criteria: "album_title", order: Qt.DescendingOrder },
-                    { text: qsTr("Track Number Ascending"),  criteria: "track_number", order: Qt.AscendingOrder },
-                    { text: qsTr("Track Number Descending"), criteria: "track_number", order: Qt.DescendingOrder },
-                    ...uris,
-                    { text: qsTr("Disc Number Ascending"),  criteria: "disc_number", order: Qt.AscendingOrder },
-                    { text: qsTr("Disc Number Descending"), criteria: "disc_number", order: Qt.DescendingOrder }
-                ]
-            case "albums":
-                return titles("title")
-            case "artists":
-            case "genres":
-                return titles("name")
-            default:
-                return []
-            }
+            return [...dates, ...titles("title"), ...uris]
         case "network":
             return titles("url")
         case "playlists":
@@ -281,13 +273,11 @@ Rectangle {
 
     // A click on a row
     function activate(item) {
-        const inFolders = section === "videos" || _current?.kind === "folder"
+        const inFolders = _folderTree || _current?.kind === "folder"
 
         if (item.kind === "homeFolder" || (inFolders && item.isVideo === false)) {
             MediaLib.recordVisit("folder", item.id, item.title)
             open({ title: item.title, kind: "folder", id: item.id })
-        } else if (section === "music" && !_current) {
-            open({ title: item.title, kind: item.kind })
         } else {
             if (item.kind === "homePlaylist" || (section === "playlists" && !_current))
                 MediaLib.recordVisit("playlist", item.id, item.title)
@@ -357,14 +347,6 @@ Rectangle {
                 case "listen": return listenModel
                 default: return null // the sections page, or homeListModel
                 }
-            case "music":
-                switch (root._current?.kind) {
-                case "songs": return songsModel
-                case "albums": return albumsModel
-                case "artists": return artistsModel
-                case "genres": return genresModel
-                default: return musicMenuModel
-                }
             case "network": return urlsModel
             case "playlists": return playlistsModel
             case "recent": return recentModel
@@ -378,6 +360,7 @@ Rectangle {
 
         MLVideoFolderTreeModel {
             ml: MediaLib
+            audio: root.section === "music"
             searchPattern: searchField.text
             sortCriteria: root._sortCriteria
             sortOrder: root._sortOrder
@@ -389,6 +372,7 @@ Rectangle {
 
         MLVideoFolderTreeModel {
             ml: MediaLib
+            audio: root.section === "music"
             searchPattern: searchField.text
             sortCriteria: root._sortCriteria
             sortOrder: root._sortOrder
@@ -456,50 +440,6 @@ Rectangle {
     }
 
     Component {
-        id: songsModel
-
-        MLAudioModel {
-            ml: MediaLib
-            searchPattern: searchField.text
-            sortCriteria: root._sortCriteria
-            sortOrder: root._sortOrder
-        }
-    }
-
-    Component {
-        id: albumsModel
-
-        MLAlbumModel {
-            ml: MediaLib
-            searchPattern: searchField.text
-            sortCriteria: root._sortCriteria
-            sortOrder: root._sortOrder
-        }
-    }
-
-    Component {
-        id: artistsModel
-
-        MLArtistModel {
-            ml: MediaLib
-            searchPattern: searchField.text
-            sortCriteria: root._sortCriteria
-            sortOrder: root._sortOrder
-        }
-    }
-
-    Component {
-        id: genresModel
-
-        MLGenreModel {
-            ml: MediaLib
-            searchPattern: searchField.text
-            sortCriteria: root._sortCriteria
-            sortOrder: root._sortOrder
-        }
-    }
-
-    Component {
         id: urlsModel
 
         MLUrlModel {
@@ -529,17 +469,6 @@ Rectangle {
             searchPattern: searchField.text
             sortCriteria: root._sortCriteria
             sortOrder: root._sortOrder
-        }
-    }
-
-    Component {
-        id: musicMenuModel
-
-        ListModel {
-            ListElement { title: qsTr("Songs"); kind: "songs" }
-            ListElement { title: qsTr("Albums"); kind: "albums" }
-            ListElement { title: qsTr("Artists"); kind: "artists" }
-            ListElement { title: qsTr("Genres"); kind: "genres" }
         }
     }
 
@@ -1060,9 +989,9 @@ Rectangle {
                 card: root
                 width: ListView.view.width
 
-                // the folder tree has folders (Videos, or a folder opened from Home)
+                // the folder trees have folders (Videos, Music, or a folder opened from Home)
                 folder: model.kind === "homeFolder"
-                        || ((root.section === "videos" || root._current?.kind === "folder") && model.isVideo === false)
+                        || ((root._folderTree || root._current?.kind === "folder") && model.isVideo === false)
                 title: model.title ?? model.name ?? model.url ?? ""
                 cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
                 glyph: model.kind === "homePlaylist" ? VLCIcons.playlists
@@ -1109,7 +1038,7 @@ Rectangle {
                 required property var model
 
                 readonly property bool isFolder: model.kind === "homeFolder"
-                    || ((root.section === "videos" || root._current?.kind === "folder") && model.isVideo === false)
+                    || ((root._folderTree || root._current?.kind === "folder") && model.isVideo === false)
                 readonly property string title: model.title ?? model.name ?? model.url ?? ""
                 readonly property string cover: String(model.thumbnail ?? model.small_cover ?? model.cover ?? "")
 

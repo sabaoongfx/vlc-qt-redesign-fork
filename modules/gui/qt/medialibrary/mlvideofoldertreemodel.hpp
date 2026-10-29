@@ -26,21 +26,30 @@
  * One level of the folder tree of the video library: the subfolders of the folder
  * given by parentId (the added folders when parentId is not set), then the videos
  * that sit directly in that folder. Folders and videos use the roles of
- * MLVideoGroupsModel (isVideo tells them apart).
+ * MLVideoGroupsModel (isVideo tells them apart). With audio set it is the music
+ * library instead: the folders that hold music, and a folder's songs.
  */
 class MLVideoFolderTreeModel : public MLVideoGroupsModel
 {
     Q_OBJECT
+
+    Q_PROPERTY(bool audio READ audio WRITE setAudio NOTIFY audioChanged FINAL)
 
 public:
     explicit MLVideoFolderTreeModel(QObject * parent = nullptr);
 
     virtual ~MLVideoFolderTreeModel() = default;
 
+    bool audio() const { return m_audio; }
+    void setAudio(bool audio);
+
     // An added folder (first level) leaves the library: the files stay on disk, its
     // videos leave the library. Subfolders and videos are left alone.
     Q_INVOKABLE bool canRemoveFolder(const QModelIndex & index) const;
     Q_INVOKABLE void removeFolder(const QModelIndex & index);
+
+signals:
+    void audioChanged();
 
 protected: // MLVideoGroupsModel reimplementation
     QVariant itemRoleData(const MLItem * item, int role = Qt::DisplayRole) const override;
@@ -52,9 +61,14 @@ protected: // MLVideoGroupsModel reimplementation
     void onVlcMlEvent(const MLEvent & event) override;
 
 private:
+    bool m_audio = false;
+
     struct Loader : public MLListCacheLoader::MLOp
     {
-        using MLListCacheLoader::MLOp::MLOp;
+        explicit Loader(const MLVideoFolderTreeModel & model)
+            : MLListCacheLoader::MLOp(model)
+            , m_audio(model.m_audio)
+        {}
 
         size_t count(vlc_medialibrary_t * ml, const vlc_ml_query_params_t * queryParams) const override;
 
@@ -67,6 +81,9 @@ private:
         // The folders of this level, filtered by the search pattern and sorted by name.
         std::vector<std::unique_ptr<MLItem>> folders(vlc_medialibrary_t * ml,
                                                      const vlc_ml_query_params_t * queryParams) const;
+
+        // music instead of videos
+        bool m_audio;
     };
 };
 

@@ -41,15 +41,15 @@
 static const int MLVIDEOFOLDERTREEMODEL_COVER_WIDTH  = 260 * 3; // 16 / 10 ratio
 static const int MLVIDEOFOLDERTREEMODEL_COVER_HEIGHT = 162 * 3;
 
-// NOTE: How deep hasVideos looks under a folder for a video.
+// NOTE: How deep hasMedia looks under a folder for a video (a song for the music tree).
 static const int MLVIDEOFOLDERTREEMODEL_SCAN_DEPTH = 16;
 
-// Whether the folder or one of its subfolders holds a video: the library counts only a folder's
-// own videos (i_nb_video), a folder of seasons would read zero. Runs on the ML thread, stops at
-// the first video.
-static bool hasVideos(vlc_medialibrary_t * ml, const vlc_ml_folder_t & folder, int depth)
+// Whether the folder or one of its subfolders holds a video (a song with audio): the library
+// counts only a folder's own media (i_nb_video), a folder of seasons would read zero. Runs on the
+// ML thread, stops at the first one.
+static bool hasMedia(vlc_medialibrary_t * ml, const vlc_ml_folder_t & folder, int depth, bool audio)
 {
-    if (folder.i_nb_video > 0)
+    if ((audio ? folder.i_nb_audio : folder.i_nb_video) > 0)
         return true;
 
     if (depth <= 0)
@@ -65,7 +65,7 @@ static bool hasVideos(vlc_medialibrary_t * ml, const vlc_ml_folder_t & folder, i
         if (subfolder.b_banned || subfolder.b_present == false)
             continue;
 
-        if (hasVideos(ml, subfolder, depth - 1))
+        if (hasMedia(ml, subfolder, depth - 1, audio))
             return true;
     }
 
@@ -75,6 +75,17 @@ static bool hasVideos(vlc_medialibrary_t * ml, const vlc_ml_folder_t & folder, i
 MLVideoFolderTreeModel::MLVideoFolderTreeModel(QObject * parent)
     : MLVideoGroupsModel(parent)
 {
+}
+
+void MLVideoFolderTreeModel::setAudio(bool audio)
+{
+    if (m_audio == audio)
+        return;
+
+    m_audio = audio;
+
+    emit audioChanged();
+    emit resetRequested();
 }
 
 bool MLVideoFolderTreeModel::canRemoveFolder(const QModelIndex & index) const
@@ -137,7 +148,7 @@ QVariant MLVideoFolderTreeModel::itemRoleData(const MLItem * item, const int rol
             return QVariant::fromValue(getFirstSymbol(folder->getTitle()));
         case GROUP_COUNT:
         case GROUP_NB_VIDEOS:
-            return QVariant::fromValue(folder->getVideoCount());
+            return QVariant::fromValue(m_audio ? folder->getAudioCount() : folder->getVideoCount());
         default:
             return QVariant();
     }
@@ -172,6 +183,16 @@ void MLVideoFolderTreeModel::onVlcMlEvent(const MLEvent & event) /* override */
         {
             emit resetRequested();
             return;
+        }
+        // the video tree reloads on a new video (MLVideoGroupsModel), the music tree on a song
+        case VLC_ML_EVENT_MEDIA_ADDED:
+        {
+            if (m_audio && event.creation.media.i_type == VLC_ML_MEDIA_TYPE_AUDIO)
+            {
+                emit resetRequested();
+                return;
+            }
+            break;
         }
         case VLC_ML_EVENT_FOLDER_UPDATED:
         {
@@ -219,9 +240,9 @@ MLVideoFolderTreeModel::Loader::folders(vlc_medialibrary_t * ml,
         if (folder.b_banned || folder.b_present == false)
             continue;
 
-        // NOTE: A folder without a video anywhere below it (a music folder the user opened)
-        //       is not shown. A video added later reloads the list (MLVideoGroupsModel).
-        if (hasVideos(ml, folder, MLVIDEOFOLDERTREEMODEL_SCAN_DEPTH) == false)
+        // NOTE: A folder without a video anywhere below it (a music folder in the video tree,
+        //       a video folder in the music tree) is not shown. Media added later reloads the list.
+        if (hasMedia(ml, folder, MLVIDEOFOLDERTREEMODEL_SCAN_DEPTH, m_audio) == false)
             continue;
 
         auto item = std::make_unique<MLFolder>(&folder);
@@ -259,7 +280,8 @@ size_t MLVideoFolderTreeModel::Loader::count(vlc_medialibrary_t * ml,
     size_t count = folders(ml, queryParams).size();
 
     if (m_parent.id > 0)
-        count += vlc_ml_count_video_of(ml, queryParams, VLC_ML_PARENT_FOLDER, m_parent.id);
+        count += m_audio ? vlc_ml_count_audio_of(ml, queryParams, VLC_ML_PARENT_FOLDER, m_parent.id)
+                         : vlc_ml_count_video_of(ml, queryParams, VLC_ML_PARENT_FOLDER, m_parent.id);
 
     return count;
 }
@@ -288,7 +310,7 @@ MLVideoFolderTreeModel::Loader::load(vlc_medialibrary_t * ml,
         result.emplace_back(std::move(subfolders[i]));
     }
 
-    // The videos fill the rest, after the folders.
+    // The videos (songs) fill the rest, after the folders.
     if (m_parent.id <= 0 || (limit && result.size() >= limit))
         return result;
 
@@ -299,8 +321,8 @@ MLVideoFolderTreeModel::Loader::load(vlc_medialibrary_t * ml,
     if (limit)
         query.i_nbResults = static_cast<uint32_t>(limit - result.size());
 
-    ml_unique_ptr<vlc_ml_media_list_t> list(vlc_ml_list_video_of(ml, &query,
-                                                                 VLC_ML_PARENT_FOLDER, m_parent.id));
+    ml_unique_ptr<vlc_ml_media_list_t> list(m_audio ? vlc_ml_list_audio_of(ml, &query, VLC_ML_PARENT_FOLDER, m_parent.id)
+                                                    : vlc_ml_list_video_of(ml, &query, VLC_ML_PARENT_FOLDER, m_parent.id));
 
     if (list == nullptr)
         return result;
