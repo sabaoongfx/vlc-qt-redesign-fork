@@ -59,14 +59,14 @@ RowLayout {
 
             readonly property bool isLast: index === root.names.length - 1
 
-            Layout.fillWidth: isLast
-            Layout.maximumWidth: implicitWidth
+            // each name takes its text width and shrinks (elides) only when the row is too narrow;
+            // a maximum bound to the row's own implicit width lagged and cut names short
+            // ("Mu... > Violet Ho..." in the CI artist page)
             Layout.minimumWidth: 0
 
             spacing: VLCStyle.margin_xxxsmall
 
             Rectangle {
-                Layout.fillWidth: true
                 Layout.minimumWidth: 0
                 Layout.preferredHeight: label.implicitHeight + VLCStyle.margin_xxsmall * 2
                 Layout.preferredWidth: label.implicitWidth + VLCStyle.margin_xsmall
