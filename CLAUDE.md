@@ -26,7 +26,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
    `shots/qml-warnings.txt`). It showed why the Network buttons were blank: `ButtonExt.qml:196/205 Unable to assign [undefined] to
    ButtonExt_QMLTYPE_n` (inline components typed `required property ButtonExt control`; CI's Qt resolves the file's own type to
    several type objects, so every stock button in that build lost icon and text), the same in `ListViewExt.qml:424`, and
-   `PageExt.qml:238/244` (crumbs briefly undefined). Fixed in the next commit (`var` properties, `?? []`). Also listed, older and
+   `PageExt.qml:238/244` (crumbs briefly undefined). Fixed in `7069aa2` (`var` properties, `?? []`). Run 5 on `a0d1a8b`
+   (40823748465 Linux, ...509 packages, ...497 Windows, 2026-10-29): all three PASSED; the warning list is down to the SVG lines
+   below, and the Network page buttons are drawn and sit on the header margins (`a0d1a8b`). Also listed, older and
    CI-only: `Unsupported image format` for every SVG (the CI Qt has no SVG image plugin; the cone and placeholders). Read the list
    after every run: it is the first real view of QML errors on screens the screenshots do not reach.
    Still unseen at runtime: compact library and rail in the player, both dialogs, resume card, mini player queue, menus, the
@@ -99,7 +101,7 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 - Figma export: `~/Downloads/VLC Redesign (Community)/` (per-screen folders with `figma.png`, `notes.md`; `COMPARISON.md`)
   and `~/Downloads/VLC Redesign (Community) (1)/` (Subtitles side-panel SVGs, render with `rsvg-convert -w 400`).
 - Plan and status: `redesign/PLAN.md` (phases 1-5); settings option map: `redesign/SETTINGS-MAP.md`.
-- Pushed 2026-10-28 (`b40a549`, code head `ce12e07`): `origin/redesign` matches local. Three workflows run on every push to `redesign`
+- Pushed 2026-10-29 (code head `a0d1a8b`, run 5 green; this CLAUDE.md commit sits on top): `origin/redesign` matches local. Three workflows run on every push to `redesign`
   (Linux build, Windows build, Linux packages); a push whose head commit says `[skip ci]` runs none, so push a code
   commit on its own first (`git push origin <sha>:redesign`) when a harness/docs commit sits on top. One run per
   workflow at a time; a newer push replaces a still-pending run (it shows as "cancelled"), it never stops a running one.
