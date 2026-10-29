@@ -296,14 +296,14 @@ jobs:
           xdotool key --clearmodifiers ctrl+Return; sleep 8 # Play
           import -window root "$1/shots/net-played.png" || true
           xdotool key s; sleep 2 # stop, so the next requests come from the click below
-          # the dialog gives the focus back to Add stream (now in the bar above the list)
-          xdotool key space; sleep 3
+          # Add stream, now in the bar above the list (Space on it did nothing, run 40932298301)
+          click 286 150; sleep 3
           xdotool type --delay 30 "http://127.0.0.1:8765/saved.mp4"; sleep 0.5
           xdotool key Tab; sleep 0.5; xdotool key Return; sleep 6 # Save: Enter in the empty name field
           import -window root "$1/shots/net-saved.png" || true
           grep -c 'GET /' "$1/shots/net-http.log" > "$1/shots/net-gets-after-save.txt" || true
-          # the first row of the list (the stream saved last): header 118, button bar, column titles
-          click 600 235; sleep 8
+          # the first row of the list: rows from y 205, 40px (run 40932298301)
+          click 600 224; sleep 8
           import -window root "$1/shots/net-clicked.png" || true
           grep -c 'GET /' "$1/shots/net-http.log" > "$1/shots/net-gets-after-click.txt" || true
           # Ctrl+N (the VLC menu's shortcut), information only
