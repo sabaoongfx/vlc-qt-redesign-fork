@@ -905,7 +905,18 @@ void QmlAudioMenu::beforePopup(QMenu * menu) /* override */
     };
     ListMenuHelper * tracks = fill(player->getAudioTracks(), devicesSection,
                                    QActionGroup::ExclusionPolicy::ExclusiveOptional);
-    fill(player->getAudioDevices(), separator, QActionGroup::ExclusionPolicy::Exclusive);
+    ListMenuHelper * devices = fill(player->getAudioDevices(), separator, QActionGroup::ExclusionPolicy::Exclusive);
+
+    // redesign: the output devices by name only, not the "Default" entry the audio output adds
+    {
+        AudioDeviceModel * deviceModel = player->getAudioDevices();
+        const QList<QAction *> deviceActions = devices->getActionGroup()->actions();
+        for (int row = 0; row < deviceModel->rowCount() && row < deviceActions.size(); row++)
+        {
+            if (deviceModel->data(deviceModel->index(row), AudioDeviceModel::IsDefaultRole).toBool())
+                deviceActions[row]->setVisible(false);
+        }
+    }
 
     if (tracks->count() == 0)
     {

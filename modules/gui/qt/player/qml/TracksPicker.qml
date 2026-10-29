@@ -227,6 +227,9 @@ T.Popup {
                     delegate: TrackRow {
                         required property var model
 
+                        // the devices by name only, not the output's "Default" entry
+                        visible: !model.isDefault
+
                         text: model.display
                         ticked: model.checked
                         onClicked: model.checked = true

@@ -53,6 +53,10 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    // redesign: the "Default" entry the audio outputs add (id "" or "default") is marked so the
+    // interface can list the real devices only
+    enum Roles { IsDefaultRole = Qt::UserRole + 1 };
+
 private:
     int m_inputs = 0;
     char **m_names = nullptr;
