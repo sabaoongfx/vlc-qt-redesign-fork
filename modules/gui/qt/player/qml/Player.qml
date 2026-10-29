@@ -65,8 +65,9 @@ FocusScope {
                                        : 0
     readonly property real _libraryCardWidth: Helpers.clamp(MainCtx.libraryPanel.width, VLCStyle.dp(240, VLCStyle.scale),
                                                             width / 2)
-    // Figma Player: the card touches the video, no gap
-    readonly property real _leftInset: _railWidth + (_libraryCardVisible ? _libraryCardWidth : 0)
+    // The video starts after the rail; the library card opens over the video's left part instead
+    // of making it smaller
+    readonly property real _leftInset: _railWidth
 
     readonly property string coverSource: {
         if (Player.artwork &&
