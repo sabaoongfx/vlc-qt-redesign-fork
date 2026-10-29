@@ -63,6 +63,9 @@ Widgets.PageLoader {
     property bool enableBeginningFade: true
     property bool enableEndFade: true
 
+    // redesign: History hands it to every page of the path (PageLoader)
+    property int initialIndex: 0
+
     onCurrentItemChanged: {
         if (currentItem) {
             if (currentItem.displayMarginBeginning !== undefined)

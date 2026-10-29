@@ -32,6 +32,9 @@ Widgets.PageExt {
 
     title: qsTr("Network")
 
+    // History hands it to every page of the path (PageLoader)
+    property int initialIndex: 0
+
     hasGridListMode: false
     isSearchable: urlListDisplay.active
 

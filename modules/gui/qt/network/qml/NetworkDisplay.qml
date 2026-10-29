@@ -32,6 +32,9 @@ Widgets.PageLoader {
     property bool enableBeginningFade: true
     property bool enableEndFade: true
 
+    // History hands it to every page of the path (PageLoader)
+    property int initialIndex: 0
+
     pageModel: [{
         name: "streams",
         default: true,
