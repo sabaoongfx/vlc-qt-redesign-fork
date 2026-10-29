@@ -189,7 +189,11 @@ NativeMenu {
     }
 
     function removeFromHistory(dataList, options, indexes) {
-        model.removeFromHistory(indexes[0])
+        // redesign: an added folder on the Videos page leaves the library the same way
+        if (model instanceof MLVideoFolderTreeModel)
+            model.removeFolder(indexes[0])
+        else
+            model.removeFromHistory(indexes[0])
     }
 
     function openContainingFolder(dataList, options, indexes) {
@@ -245,7 +249,13 @@ NativeMenu {
     }
 
     function _removeFromHistory(dataList, options, indexes) {
-        return (dataList.length === 1) && (model instanceof MLRecentVideoModel)
+        if (dataList.length !== 1)
+            return false
+
+        if (model instanceof MLVideoFolderTreeModel)
+            return model.canRemoveFolder(indexes[0])
+
+        return (model instanceof MLRecentVideoModel)
     }
 
     function _openContainingFolder(dataList, options, indexes) {

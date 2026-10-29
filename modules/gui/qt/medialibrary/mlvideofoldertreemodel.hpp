@@ -37,6 +37,11 @@ public:
 
     virtual ~MLVideoFolderTreeModel() = default;
 
+    // An added folder (first level) leaves the library: the files stay on disk, its
+    // videos leave the library. Subfolders and videos are left alone.
+    Q_INVOKABLE bool canRemoveFolder(const QModelIndex & index) const;
+    Q_INVOKABLE void removeFolder(const QModelIndex & index);
+
 protected: // MLVideoGroupsModel reimplementation
     QVariant itemRoleData(const MLItem * item, int role = Qt::DisplayRole) const override;
 

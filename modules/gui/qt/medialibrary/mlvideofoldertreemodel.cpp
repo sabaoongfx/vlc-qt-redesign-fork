@@ -23,6 +23,7 @@
 #include "mlvideofoldertreemodel.hpp"
 
 #include <algorithm>
+#include <cassert>
 
 // VLC includes
 #include <vlc_media_library.h>
@@ -43,6 +44,32 @@ static const int MLVIDEOFOLDERTREEMODEL_COVER_HEIGHT = 162 * 3;
 MLVideoFolderTreeModel::MLVideoFolderTreeModel(QObject * parent)
     : MLVideoGroupsModel(parent)
 {
+}
+
+bool MLVideoFolderTreeModel::canRemoveFolder(const QModelIndex & index) const
+{
+    if (m_parent.id > 0)
+        return false;
+
+    const MLItem * folder = item(index.row());
+
+    return folder && folder->getId().type == VLC_ML_PARENT_FOLDER;
+}
+
+void MLVideoFolderTreeModel::removeFolder(const QModelIndex & index)
+{
+    if (canRemoveFolder(index) == false)
+        return;
+
+    assert(m_mediaLib);
+
+    const QString mrl = static_cast<const MLFolder *>(item(index.row()))->getMRL();
+
+    // NOTE: The library reports the removed entry point, onVlcMlEvent reloads the list.
+    m_mediaLib->runOnMLThread(this, [mrl] (vlc_medialibrary_t * ml)
+    {
+        vlc_ml_remove_folder(ml, qtu(mrl));
+    });
 }
 
 // MLVideoGroupsModel reimplementation
