@@ -154,7 +154,7 @@ jobs:
       - name: Library screenshots, day and night (best effort)
         continue-on-error: true
         run: |
-          # Sample media in the XDG Videos/Music dirs; the first-run wizard adds those to the library.
+          # Sample media in the XDG Videos/Music dirs; Phase A opens both folders, which adds them to the library.
           H=/home/shotuser
           mkdir -p $H/Videos $H/Music $H/.config
           printf 'XDG_VIDEOS_DIR="$HOME/Videos"\nXDG_MUSIC_DIR="$HOME/Music"\n' > $H/.config/user-dirs.dirs
@@ -187,13 +187,22 @@ jobs:
             WID=$(xdotool search --onlyvisible --class vlc | head -1)
             xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
           }
-          # Phase A: first run. Click through the wizard (Next, Next, Next, Finish) so it adds the XDG folders, then let it scan.
+          # Phase A: first run. Click through the wizard (Next, Next, Next, Finish; it adds no folders), then open
+          # Videos and Music with Open Folder (Ctrl+F, path typed in Qt's own folder dialog): an opened folder joins
+          # the library. Then let it scan.
           rm -rf "$HOME/.config/vlc" "$HOME/.local/share/vlc"
           "$1/install/bin/vlc" -I qt --aout=dummy >"$1/shots/lib-setup.log" 2>&1 &
           PID=$!
           sleep 14
           import -window root "$1/shots/lib-wizard.png" || true
           for k in 1 2 3 4; do click 979 587; sleep 2; done
+          for d in Videos Music; do
+            WID=$(xdotool search --onlyvisible --class vlc | head -1)
+            xdotool windowfocus "$WID" || true; sleep 1
+            xdotool key --clearmodifiers ctrl+f; sleep 3
+            xdotool type --delay 30 "$HOME/$d"; sleep 0.5; xdotool key Return; sleep 4
+          done
+          import -window root "$1/shots/lib-opened-folders.png" || true
           sleep 45
           import -window root "$1/shots/lib-after-setup.png" || true
           kill $PID || true; sleep 4

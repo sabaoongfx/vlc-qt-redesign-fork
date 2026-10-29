@@ -24,6 +24,7 @@
 #include <utility>
 
 #include <QQmlEngine>
+#include <QFileInfo>
 
 MediaLib::MediaLib(qt_intf_t *_intf, vlc::playlist::PlaylistController* playlistController, QObject *_parent)
     : QObject( _parent )
@@ -259,6 +260,27 @@ void MediaLib::mediaProgress(const QUrl& url, QJSValue callback)
     //UI thread
     [callback](quint64, Ctx& ctx) mutable {
         callback.call({ctx.progress});
+    });
+}
+
+void MediaLib::addOpenedFolders(const QVariantList& urls)
+{
+    QVector<QByteArray> mrls;
+    for (const QVariant& value : urls)
+    {
+        const QUrl url = value.toUrl();
+        if (!url.isLocalFile() || !QFileInfo(url.toLocalFile()).isDir())
+            continue;
+        mrls.push_back(url.toString(QUrl::FullyEncoded).toUtf8());
+    }
+    if (mrls.isEmpty())
+        return;
+
+    runOnMLThread(this,
+    //ML thread
+    [mrls](vlc_medialibrary_t* ml){
+        for (const QByteArray& mrl : mrls)
+            vlc_ml_add_folder(ml, mrl.constData());
     });
 }
 

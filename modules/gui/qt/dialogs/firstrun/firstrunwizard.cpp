@@ -304,8 +304,8 @@ void FirstRunWizard::initializePage( int id )
             if( !i ) updateColorLabel( schemeButtons.at(i) );
         }
     }
-    else if ( id == FOLDER_PAGE )
-        addDefaults();
+    /* redesign: no default folders (Videos, Music) are added here: a folder joins the library
+     * when the user opens it (Open Folder, or dropped on the window) */
 }
 
 /**

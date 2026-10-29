@@ -65,6 +65,10 @@ public:
     // unknown), given to the callback
     Q_INVOKABLE void mediaProgress(const QUrl& url, QJSValue callback);
 
+    // redesign: the local folders among these urls join the library (the Videos page lists the
+    // folders the user opened); other urls are ignored
+    Q_INVOKABLE void addOpenedFolders(const QVariantList& urls);
+
     Q_INVOKABLE void mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callback);
 
     inline bool idle() const { return m_idle; }

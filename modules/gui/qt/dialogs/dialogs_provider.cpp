@@ -799,6 +799,12 @@ static void openDirectory( qt_intf_t *p_intf, bool go )
     {
         QVector<vlc::playlist::Media> medias = { {uri, QString {}} };
         THEMPL->append(medias, go);
+
+        /* redesign: an opened folder joins the library, so it shows on the Videos page
+         * (not a DVD or Blu-ray folder: those get the dvd:// or bluray:// scheme) */
+        MediaLib *mediaLib = p_intf->p_mi->getMediaLibrary();
+        if( mediaLib && uri.startsWith( QLatin1String( "directory://" ) ) )
+            mediaLib->addOpenedFolders( QVariantList{ QVariant( QUrl( QStringLiteral( "file" ) + uri.mid( 9 ) ) ) } );
     }
 }
 

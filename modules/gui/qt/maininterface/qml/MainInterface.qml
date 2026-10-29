@@ -298,6 +298,10 @@ Item {
                         }
                     }
 
+                    // redesign: a dropped folder joins the library, so it shows on the Videos page
+                    if (MainCtx.mediaLibraryAvailable)
+                        MainCtx.mediaLibrary.addOpenedFolders(urls)
+
                     MainPlaylistController.append(urls, true)
                     drop.accept()
                 }
