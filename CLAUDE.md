@@ -30,6 +30,34 @@ it by hand (drag a row of the player's library card onto the open play queue). N
 5. Player library card (`CompactLibrary.qml`): its main purpose is dragging items into the play queue;
    rows only play on click today. Reuse `MLDragItem` (as `VideoAll.qml`) and the queue's drop handling.
 
+## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
+
+- Sort: the Videos and Music folder trees list their media by title A to Z when no sort is chosen
+  (`MLVideoFolderTreeModel::Loader::load`: `VLC_ML_SORTING_DEFAULT` -> ALPHA ascending; the library's
+  default put Track 3 first). Seen in CI (`lib-music-folder-night`, run 41010529443). A sort saved by an
+  older build (`sortCriteria/...` in the Qt settings) still wins.
+- Back/Forward are up/down, not the visit history (user request: "parent to child, back = parent parent"):
+  `PageExt.treeNavigation` + `canGoUp`/`canGoDown` + `goUp`/`goDown` signals. Folder trees keep a `_branch`
+  (deepest trail of the current branch; another folder starts a new one); Playlists keeps `_lastList` and
+  the playlist page shows "Playlists > name"; Network (one level) has both off. Other pages, the mouse side
+  buttons and Alt+Left still use History. The player card already did up/down; its crumbs and reopening
+  the same child now keep the forward stack. Unchecked at runtime (CI does not click the arrows).
+- Lists: `TableViewExt.headerTopPadding` defaults to `margin_normal` (column titles sat on the header line on
+  every table; Network's own margin was removed so it does not double). Network list columns are text,
+  "Address" and "Last played" (the icons sat centred over nothing). The music tree list says "Songs" /
+  "N songs" and uses the album placeholder (`TableColumns.audio`, `VideoListDisplay.audio`). CI shoots
+  `lib-music-folderlist-*` now; the video-list hover moved to y 180.
+- Dialogs: Qt's stock boxes (QMessageBox questions such as Delete playlist, QInputDialog, QProgressDialog)
+  and plain QDialog/QWizard windows were white with light text and blank buttons on Windows (native style
+  under the dark palette). `QVLCDialog::styleStockDialogs()` (called in the `DialogsProvider` constructor)
+  installs an app event filter that gives every top-level QDialog without its own stylesheet the shared
+  window stylesheet on Polish, plus a palette background and label colour (`qvlcframe.cpp`). C++ written
+  blind: check it compiles in CI and look at a Delete playlist box on Windows.
+- Still open: drag from the player's library card into the queue (CI cannot test it, try by hand); Ctrl+N
+  on Windows; the v0.1.3-rc1 pre-release (keep or delete, not answered). CI run 41010529443 was cancelled
+  in its screenshot step at the moment of the next push (concurrency is `cancel-in-progress: false`; cause
+  not found).
+
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
 `git log d3064c2..HEAD` (commits that say "untested"). It compiles in CI (step 0); only a few screens were seen in CI screenshots. Do this in order,
