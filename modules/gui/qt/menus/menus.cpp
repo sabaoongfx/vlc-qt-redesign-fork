@@ -248,6 +248,15 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
     return QProxyStyle::sizeFromContents(type, option, size, widget);
 }
 
+void RedesignMenuStyle::polish(QWidget* widget)
+{
+    QProxyStyle::polish(widget);
+    // the base style may give a menu the system's colours (the Windows 11 style: a dark card with the
+    // Day text in the Windows CI shots); keep the Day/Night widgets palette
+    if (qobject_cast<QMenu*>(widget))
+        widget->setPalette(QApplication::palette());
+}
+
 void RedesignMenuStyle::drawPrimitive(PrimitiveElement element, const QStyleOption* option,
                                       QPainter* painter, const QWidget* widget) const
 {
