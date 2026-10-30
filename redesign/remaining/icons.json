@@ -1,0 +1,1447 @@
+{
+"settings": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+20.0,
+20.0,
+24.0,
+24.0
+],
+"id": "42:355",
+"default": true,
+"file": "settings.png"
+},
+"playback settings": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+108.0,
+20.0,
+24.0,
+24.0
+],
+"id": "2230:9222",
+"default": true,
+"file": "playback-settings.png"
+},
+"preferences": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+240.0,
+20.0,
+24.0,
+24.0
+],
+"id": "1803:2957",
+"default": true,
+"file": "preferences.png"
+},
+"playlist": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+328.0,
+20.0,
+24.0,
+24.0
+],
+"id": "42:357",
+"default": true,
+"file": "playlist.png"
+},
+"lists": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+460.0,
+20.0,
+24.0,
+24.0
+],
+"id": "217:191",
+"default": true,
+"file": "lists.png"
+},
+"hotkeys": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+20.0,
+64.0,
+24.0,
+24.0
+],
+"id": "1089:4450",
+"default": true,
+"file": "hotkeys.png"
+},
+"subtitles": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+152.0,
+64.0,
+24.0,
+24.0
+],
+"id": "42:398",
+"default": true,
+"file": "subtitles.png"
+},
+"audio": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+284.0,
+64.0,
+24.0,
+24.0
+],
+"id": "44:407",
+"default": true,
+"file": "audio.png"
+},
+"play": {
+"variants": [
+"default"
+],
+"pos": [
+416.0,
+64.0,
+24.0,
+24.0
+],
+"id": "44:419",
+"default": true,
+"file": "play.png"
+},
+"playback": {
+"variants": [
+"default",
+"selected/yes",
+"yes",
+"active"
+],
+"pos": [
+460.0,
+64.0,
+24.0,
+24.0
+],
+"id": "999:4802",
+"default": true,
+"file": "playback.png"
+},
+"pause": {
+"variants": [
+"default"
+],
+"pos": [
+108.0,
+108.0,
+24.0,
+24.0
+],
+"id": "44:427",
+"default": true,
+"file": "pause.png"
+},
+"next": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+152.0,
+108.0,
+24.0,
+24.0
+],
+"id": "45:12",
+"default": true,
+"file": "next.png"
+},
+"stop": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+240.0,
+108.0,
+24.0,
+24.0
+],
+"id": "187:322",
+"default": true,
+"file": "stop.png"
+},
+"previous": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+328.0,
+108.0,
+24.0,
+24.0
+],
+"id": "45:18",
+"default": true,
+"file": "previous.png"
+},
+"forward-10-sec": {
+"variants": [
+"default"
+],
+"pos": [
+416.0,
+108.0,
+24.0,
+24.0
+],
+"id": "45:22",
+"default": true,
+"file": "forward-10-sec.png"
+},
+"forward-15-sec": {
+"variants": [
+"default"
+],
+"pos": [
+460.0,
+108.0,
+24.0,
+24.0
+],
+"id": "45:32",
+"default": true,
+"file": "forward-15-sec.png"
+},
+"backward-10-sec": {
+"variants": [
+"default"
+],
+"pos": [
+504.0,
+108.0,
+24.0,
+24.0
+],
+"id": "45:28",
+"default": true,
+"file": "backward-10-sec.png"
+},
+"backward-15-sec": {
+"variants": [
+"default"
+],
+"pos": [
+20.0,
+152.0,
+24.0,
+24.0
+],
+"id": "45:36",
+"default": true,
+"file": "backward-15-sec.png"
+},
+"refresh": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+64.0,
+152.0,
+24.0,
+24.0
+],
+"id": "1622:3137",
+"default": true,
+"file": "refresh.png"
+},
+"replay": {
+"variants": [
+"default"
+],
+"pos": [
+152.0,
+152.0,
+24.0,
+24.0
+],
+"id": "1919:9572",
+"default": true,
+"file": "replay.png"
+},
+"recent": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+196.0,
+152.0,
+24.0,
+24.0
+],
+"id": "2154:9699",
+"default": true,
+"file": "recent.png"
+},
+"volume": {
+"variants": [
+"high"
+],
+"pos": [
+284.0,
+152.0,
+24.0,
+24.0
+],
+"id": "182:179",
+"file": "volume.png"
+},
+"close": {
+"variants": [
+"medium",
+"low",
+"none",
+"default"
+],
+"pos": [
+504.0,
+152.0,
+24.0,
+24.0
+],
+"id": "45:40",
+"default": true,
+"file": "close.png"
+},
+"move": {
+"variants": [
+"default"
+],
+"pos": [
+460.0,
+152.0,
+24.0,
+24.0
+],
+"id": "463:417",
+"default": true,
+"file": "move.png"
+},
+"minimize": {
+"variants": [
+"default"
+],
+"pos": [
+20.0,
+196.0,
+24.0,
+24.0
+],
+"id": "48:46",
+"default": true,
+"file": "minimize.png"
+},
+"maximize": {
+"variants": [
+"default"
+],
+"pos": [
+64.0,
+196.0,
+24.0,
+24.0
+],
+"id": "48:51",
+"default": true,
+"file": "maximize.png"
+},
+"fullscreen": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+108.0,
+196.0,
+24.0,
+24.0
+],
+"id": "48:54",
+"default": true,
+"file": "fullscreen.png"
+},
+"home": {
+"variants": [
+"default",
+"active",
+"selected"
+],
+"pos": [
+196.0,
+196.0,
+24.0,
+24.0
+],
+"id": "70:828",
+"default": true,
+"file": "home.png"
+},
+"folder": {
+"variants": [
+"default",
+"yes",
+"active",
+"selected"
+],
+"pos": [
+240.0,
+196.0,
+24.0,
+24.0
+],
+"id": "51:808",
+"default": true,
+"file": "folder.png"
+},
+"new folder": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+328.0,
+196.0,
+24.0,
+24.0
+],
+"id": "2139:9022",
+"default": true,
+"file": "new-folder.png"
+},
+"sidebar": {
+"variants": [
+"left",
+"right",
+"active"
+],
+"pos": [
+504.0,
+196.0,
+24.0,
+24.0
+],
+"id": "69:814",
+"file": "sidebar.png"
+},
+"album": {
+"variants": [
+"default",
+"default"
+],
+"pos": [
+108.0,
+240.0,
+24.0,
+24.0
+],
+"id": "6206:13653",
+"default": true,
+"file": "album.png"
+},
+"expand-sidebar": {
+"variants": [
+"default"
+],
+"pos": [
+152.0,
+240.0,
+24.0,
+24.0
+],
+"id": "858:5697",
+"default": true,
+"file": "expand-sidebar.png"
+},
+"collapse-sidebar": {
+"variants": [
+"default"
+],
+"pos": [
+196.0,
+240.0,
+24.0,
+24.0
+],
+"id": "858:5703",
+"default": true,
+"file": "collapse-sidebar.png"
+},
+"music": {
+"variants": [
+"default"
+],
+"pos": [
+284.0,
+240.0,
+24.0,
+24.0
+],
+"id": "999:4806",
+"default": true,
+"file": "music.png"
+},
+"video": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+328.0,
+240.0,
+24.0,
+24.0
+],
+"id": "999:4810",
+"default": true,
+"file": "video.png"
+},
+"songs": {
+"variants": [
+"default",
+"active",
+"selected"
+],
+"pos": [
+460.0,
+240.0,
+24.0,
+24.0
+],
+"id": "71:851",
+"default": true,
+"file": "songs.png"
+},
+"videos": {
+"variants": [
+"default",
+"active",
+"selected"
+],
+"pos": [
+64.0,
+284.0,
+24.0,
+24.0
+],
+"id": "71:857",
+"default": true,
+"file": "videos.png"
+},
+"streaming": {
+"variants": [
+"default",
+"yes",
+"active",
+"selected"
+],
+"pos": [
+196.0,
+284.0,
+24.0,
+24.0
+],
+"id": "70:833",
+"default": true,
+"file": "streaming.png"
+},
+"tv": {
+"variants": [
+"default",
+"active",
+"selected"
+],
+"pos": [
+372.0,
+284.0,
+24.0,
+24.0
+],
+"id": "477:1096",
+"default": true,
+"file": "tv.png"
+},
+"divider": {
+"variants": [
+"default"
+],
+"pos": [
+64.0,
+328.0,
+24.0,
+24.0
+],
+"id": "71:863",
+"default": true,
+"file": "divider.png"
+},
+"chevron": {
+"variants": [
+"down",
+"up",
+"right",
+"left"
+],
+"pos": [
+108.0,
+328.0,
+24.0,
+24.0
+],
+"id": "71:868",
+"file": "chevron.png"
+},
+"arrow": {
+"variants": [
+"down",
+"down/yes",
+"up",
+"up/yes",
+"right",
+"right/yes",
+"left",
+"left/yes"
+],
+"pos": [
+152.0,
+328.0,
+24.0,
+24.0
+],
+"id": "71:881",
+"file": "arrow.png"
+},
+"upload": {
+"variants": [
+"up/yes"
+],
+"pos": [
+328.0,
+328.0,
+24.0,
+24.0
+],
+"id": "6215:13606",
+"file": "upload.png"
+},
+"open": {
+"variants": [
+"default"
+],
+"pos": [
+20.0,
+372.0,
+24.0,
+24.0
+],
+"id": "330:267",
+"default": true,
+"file": "open.png"
+},
+"repeat": {
+"variants": [
+"right",
+"right/yes"
+],
+"pos": [
+64.0,
+372.0,
+24.0,
+24.0
+],
+"id": "187:470",
+"file": "repeat.png"
+},
+"shuffle": {
+"variants": [
+"right",
+"right/yes"
+],
+"pos": [
+152.0,
+372.0,
+24.0,
+24.0
+],
+"id": "187:474",
+"file": "shuffle.png"
+},
+"more": {
+"variants": [
+"default"
+],
+"pos": [
+372.0,
+372.0,
+24.0,
+24.0
+],
+"id": "247:418",
+"default": true,
+"file": "more.png"
+},
+"vlc": {
+"variants": [
+"default"
+],
+"pos": [
+416.0,
+372.0,
+24.0,
+24.0
+],
+"id": "48:57",
+"default": true,
+"file": "vlc.png"
+},
+"add": {
+"variants": [
+"default"
+],
+"pos": [
+460.0,
+372.0,
+24.0,
+24.0
+],
+"id": "463:550",
+"default": true,
+"file": "add.png"
+},
+"remove": {
+"variants": [
+"default"
+],
+"pos": [
+504.0,
+372.0,
+24.0,
+24.0
+],
+"id": "463:560",
+"default": true,
+"file": "remove.png"
+},
+"view": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+20.0,
+416.0,
+24.0,
+24.0
+],
+"id": "856:3212",
+"default": true,
+"file": "view.png"
+},
+"link": {
+"variants": [
+"default",
+"active",
+"yes"
+],
+"pos": [
+108.0,
+416.0,
+24.0,
+24.0
+],
+"id": "774:1038",
+"default": true,
+"file": "link.png"
+},
+"check": {
+"variants": [
+"active",
+"selected",
+"selected/yes",
+"default"
+],
+"pos": [
+372.0,
+416.0,
+24.0,
+24.0
+],
+"id": "494:2400",
+"default": true,
+"file": "check.png"
+},
+"sort": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+416.0,
+416.0,
+24.0,
+24.0
+],
+"id": "463:564",
+"default": true,
+"file": "sort.png"
+},
+"search": {
+"variants": [
+"default"
+],
+"pos": [
+504.0,
+416.0,
+24.0,
+24.0
+],
+"id": "856:2147",
+"default": true,
+"file": "search.png"
+},
+"zoom": {
+"variants": [
+"default"
+],
+"pos": [
+20.0,
+460.0,
+24.0,
+24.0
+],
+"id": "2154:9680",
+"default": true,
+"file": "zoom.png"
+},
+"artist": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+64.0,
+460.0,
+24.0,
+24.0
+],
+"id": "858:5155",
+"default": true,
+"file": "artist.png"
+},
+"profile": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+108.0,
+460.0,
+24.0,
+24.0
+],
+"id": "2437:14784",
+"default": true,
+"file": "profile.png"
+},
+"accessibility": {
+"variants": [
+"default"
+],
+"pos": [
+240.0,
+460.0,
+24.0,
+24.0
+],
+"id": "999:4914",
+"default": true,
+"file": "accessibility.png"
+},
+"info": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+284.0,
+460.0,
+24.0,
+24.0
+],
+"id": "2139:8985",
+"default": true,
+"file": "info.png"
+},
+"interface": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+372.0,
+460.0,
+24.0,
+24.0
+],
+"id": "999:4960",
+"default": true,
+"file": "interface.png"
+},
+"subtitle": {
+"variants": [
+"default",
+"default"
+],
+"pos": [
+504.0,
+460.0,
+24.0,
+24.0
+],
+"id": "2461:9663",
+"default": true,
+"file": "subtitle.png"
+},
+"file": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+20.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2107:6307",
+"default": true,
+"file": "file.png"
+},
+"swap": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+108.0,
+504.0,
+24.0,
+24.0
+],
+"id": "1915:8362",
+"default": true,
+"file": "swap.png"
+},
+"window": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+196.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2107:6312",
+"default": true,
+"file": "window.png"
+},
+"wrench": {
+"variants": [
+"default"
+],
+"pos": [
+284.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2107:6319",
+"default": true,
+"file": "wrench.png"
+},
+"paint": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+328.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2150:9212",
+"default": true,
+"file": "paint.png"
+},
+"grid": {
+"variants": [
+"default"
+],
+"pos": [
+460.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2107:6523",
+"default": true,
+"file": "grid.png"
+},
+"list": {
+"variants": [
+"default"
+],
+"pos": [
+504.0,
+504.0,
+24.0,
+24.0
+],
+"id": "2107:6531",
+"default": true,
+"file": "list.png"
+},
+"0": {
+"variants": [
+"default"
+],
+"pos": [
+20.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2107:6596",
+"default": true,
+"file": "blank.png"
+},
+"speed": {
+"variants": [
+"default",
+"active"
+],
+"pos": [
+64.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2115:7386",
+"default": true,
+"file": "speed.png"
+},
+"record": {
+"variants": [
+"default",
+"active",
+"yes"
+],
+"pos": [
+152.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2115:7482",
+"default": true,
+"file": "record.png"
+},
+"snapshot": {
+"variants": [
+"default"
+],
+"pos": [
+284.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2115:7492",
+"default": true,
+"file": "snapshot.png"
+},
+"queue": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+328.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2127:7523",
+"default": true,
+"file": "queue.png"
+},
+"chapters": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+416.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2127:7531",
+"default": true,
+"file": "chapters.png"
+},
+"bookmarks": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+504.0,
+548.0,
+24.0,
+24.0
+],
+"id": "2127:7548",
+"default": true,
+"file": "bookmarks.png"
+},
+"bookmark": {
+"variants": [
+"default"
+],
+"pos": [
+64.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2127:7779",
+"default": true,
+"file": "bookmark.png"
+},
+"spectometer": {
+"variants": [
+"yes"
+],
+"pos": [
+108.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2138:8026",
+"file": "spectometer.png"
+},
+"spectrum": {
+"variants": [
+"yes"
+],
+"pos": [
+152.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2139:8048",
+"file": "spectrum.png"
+},
+"scope": {
+"variants": [
+"yes"
+],
+"pos": [
+196.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2139:8064",
+"file": "scope.png"
+},
+"waveform": {
+"variants": [
+"yes"
+],
+"pos": [
+240.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2139:8078",
+"file": "waveform.png"
+},
+"PiP": {
+"variants": [
+"default"
+],
+"pos": [
+284.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2139:8439",
+"default": true,
+"file": "pip.png"
+},
+"HDR": {
+"variants": [
+"default"
+],
+"pos": [
+328.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2146:9032",
+"default": true,
+"file": "hdr.png"
+},
+"EQ": {
+"variants": [
+"default",
+"classical",
+"club",
+"dance",
+"full bass",
+"full bass and treble",
+"full treble",
+"headphones",
+"rock",
+"ska",
+"soft",
+"techno",
+"soft rock",
+"large hall",
+"reggae",
+"pop",
+"party",
+"live"
+],
+"pos": [
+372.0,
+592.0,
+24.0,
+24.0
+],
+"id": "2372:8559",
+"default": true,
+"file": "eq.png"
+},
+"thumbnail": {
+"variants": [
+"default",
+"high",
+"medium",
+"low"
+],
+"pos": [
+108.0,
+680.0,
+24.0,
+24.0
+],
+"id": "2404:9198",
+"default": true,
+"file": "thumbnail.png"
+},
+"favorite": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+284.0,
+680.0,
+24.0,
+24.0
+],
+"id": "2430:14629",
+"default": true,
+"file": "favorite.png"
+},
+"edit": {
+"variants": [
+"default"
+],
+"pos": [
+416.0,
+680.0,
+24.0,
+24.0
+],
+"id": "2437:14888",
+"default": true,
+"file": "edit.png"
+},
+"save": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+460.0,
+680.0,
+24.0,
+24.0
+],
+"id": "2459:9542",
+"default": true,
+"file": "save.png"
+},
+"disc": {
+"variants": [
+"yes",
+"default"
+],
+"pos": [
+64.0,
+724.0,
+24.0,
+24.0
+],
+"id": "5884:24330",
+"default": true,
+"file": "disc.png"
+},
+"capture-device": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+108.0,
+724.0,
+24.0,
+24.0
+],
+"id": "2493:9307",
+"default": true,
+"file": "capture-device.png"
+},
+"plugins": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+196.0,
+724.0,
+24.0,
+24.0
+],
+"id": "2516:9369",
+"default": true,
+"file": "plugins.png"
+},
+"privacy": {
+"variants": [
+"default",
+"yes",
+"active"
+],
+"pos": [
+328.0,
+724.0,
+24.0,
+24.0
+],
+"id": "3046:10386",
+"default": true,
+"file": "privacy.png"
+},
+"quit": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+460.0,
+724.0,
+24.0,
+24.0
+],
+"id": "6073:14046",
+"default": true,
+"file": "quit.png"
+},
+"ui": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+20.0,
+768.0,
+24.0,
+24.0
+],
+"id": "6075:14088",
+"default": true,
+"file": "ui.png"
+},
+"genre": {
+"variants": [
+"default",
+"yes"
+],
+"pos": [
+108.0,
+768.0,
+24.0,
+24.0
+],
+"id": "6191:13585",
+"default": true,
+"file": "genre.png"
+}
+}
