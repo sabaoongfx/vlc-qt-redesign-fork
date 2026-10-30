@@ -38,6 +38,14 @@ Widgets.PageLoader {
     property bool enableBeginningFade: true
     property bool enableEndFade: true
 
+    // redesign: Back and Forward go up to the list of playlists and back down into the playlist
+    // last opened (user request), not through the visit history
+    property var _lastList: null
+
+    function _showList(list, reason) {
+        History.push([...root.pagePrefix, "list"], { parentId: list.id, title: list.title }, reason)
+    }
+
     //---------------------------------------------------------------------------------------------
     // Settings
     //---------------------------------------------------------------------------------------------
@@ -66,6 +74,10 @@ Widgets.PageLoader {
 
             title: qsTr("Playlists")
 
+            treeNavigation: true
+            canGoDown: !!root._lastList
+            onGoDown: (reason) => root._showList(root._lastList, reason)
+
             PlaylistMediaList {
                 id: playlistView
 
@@ -87,9 +99,7 @@ Widgets.PageLoader {
 
                 onCurrentIndexChanged: History.viewProp.initialIndex = currentIndex
 
-                onShowList: (model, reason) => {
-                    History.push([...root.pagePrefix, "list"], { parentId: model.id, title: model.name }, reason)
-                }
+                onShowList: (model, reason) => root._showList({ id: model.id, title: model.name }, reason)
             }
         }
 
@@ -102,6 +112,21 @@ Widgets.PageLoader {
             id: playlist
 
             isMusic: false
+
+            // the address line "Playlists > name"; Back goes up to the list of playlists
+            crumbs: [qsTr("Playlists"), title]
+            onCrumbClicked: (index) => { if (index === 0) goUp(Qt.MouseFocusReason) }
+
+            treeNavigation: true
+            canGoUp: true
+            onGoUp: (reason) => History.push([...root.pagePrefix, "all"], {}, reason)
+
+            // also when the page is reused for another playlist (PageLoader sets parentId and
+            // title again, one after the other)
+            function _remember() { root._lastList = { id: parentId, title: title } }
+            Component.onCompleted: _remember()
+            onParentIdChanged: _remember()
+            onTitleChanged: _remember()
 
             searchPattern: playlist.search.pattern
             sortOrder: playlist.sort.order

@@ -46,6 +46,10 @@ Widgets.PageExt {
     // No saved stream: a line of text in the middle of the page
     readonly property bool _empty: !(urlListDisplay.item?.visible ?? false)
 
+    // a single level: Back and Forward go up and down folders elsewhere, here they have nowhere
+    // to go (user request: no jumps through the visit history)
+    treeNavigation: true
+
     // the header's "..." menu (user request: no orange button, no Browse devices)
     menuEntries: [{
         text: qsTr("Add Stream"),
