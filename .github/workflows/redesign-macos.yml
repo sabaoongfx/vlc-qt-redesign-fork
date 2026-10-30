@@ -55,6 +55,23 @@ jobs:
         timeout-minutes: 300
         run: extras/package/redesign/macos-build.sh contribs
 
+      # The native tools (luac, protoc) install to contrib/bin, which the v1 cache paths miss (adding it
+      # would change the cache version): rebuild them from the cached sources, a few minutes. In the
+      # workflow, not in macos-build.sh, since that file is part of the cache key.
+      - name: Contrib native tools
+        if: steps.contribcache.outputs.cache-hit == 'true'
+        timeout-minutes: 30
+        run: |
+          . extras/package/macosx/env.build.sh none
+          export VLC_FORCE_KERNELVERSION=19
+          vlcSetBaseEnvironment
+          vlcSetSymbolEnvironment
+          vlcSetContribEnvironment 13.0
+          cd contrib/contrib-$HOST_TRIPLET
+          rm -f .luac .protoc
+          make .luac .protoc
+          ls -la ../bin
+
       # right after the contribs, so a later VLC failure does not throw them away
       - name: Save contrib cache
         if: success() && steps.contribcache.outputs.cache-hit != 'true'
