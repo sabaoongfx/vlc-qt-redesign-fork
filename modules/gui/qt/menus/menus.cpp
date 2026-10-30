@@ -59,6 +59,7 @@
 #include <QMenuBar>
 #include <QAction>
 #include <QActionGroup>
+#include <functional>
 #include <QSignalMapper>
 #include <QKeySequence>
 #include <QPainterPath>
@@ -914,6 +915,43 @@ void VLCMenuBar::HelpMenu(qt_intf_t *p_intf, QMenu *menu )
     addDPStaticEntry( menu, qfut( I_MENU_ABOUT ), ":/menu/info.svg",
             &DialogsProvider::aboutDialog, "Shift+F1", QAction::AboutRole );
 }
+
+#ifdef __APPLE__
+/**
+ * redesign: the macOS menu bar. The library top bar has no menu button, and Mac users look for
+ * Media, Playback, View, Tools and Help up there. The same builders as the "..." menu; each menu
+ * is filled when it opens, so tracks, devices and titles follow the playing media.
+ **/
+QMenuBar* VLCMenuBar::createNativeMenuBar( qt_intf_t *p_intf )
+{
+    // parentless: Qt makes it the application's global menu bar
+    QMenuBar *bar = new QMenuBar( nullptr );
+    const auto add = [bar, p_intf]( const QString& title, std::function<void( qt_intf_t *, QMenu * )> fill ) {
+        QMenu *menu = bar->addMenu( title );
+        connect( menu, &QMenu::aboutToShow, menu, [menu, p_intf, fill]() {
+            menu->clear();
+            // the builders parent their submenus, actions and action groups to the menu; the
+            // menu's own action (its entry in the bar) is a child too and stays
+            const QObjectList children = menu->children();
+            for( QObject *child : children )
+                if( child != menu->menuAction()
+                    && ( qobject_cast<QMenu *>( child ) || qobject_cast<QAction *>( child )
+                         || qobject_cast<QActionGroup *>( child ) ) )
+                    delete child;
+            fill( p_intf, menu );
+        } );
+    };
+    add( qtr( "&Media" ), FileMenu );
+    add( qtr( "&Playback" ), NavigMenu );
+    add( qtr( "&Audio" ), AudioMenu );
+    add( qtr( "&Video" ), VideoMenu );
+    add( qtr( "&Subtitle" ), []( qt_intf_t *intf, QMenu *menu ) { SubtitleMenu( intf, menu ); } );
+    add( qtr( "&Tools" ), ToolsMenu );
+    add( qtr( "V&iew" ), ViewMenu );
+    add( qtr( "&Help" ), HelpMenu );
+    return bar;
+}
+#endif
 
 /*****************************************************************************
  * Popup menus - Right Click menus                                           *

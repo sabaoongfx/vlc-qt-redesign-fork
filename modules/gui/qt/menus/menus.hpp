@@ -32,6 +32,8 @@
 #include <QProxyStyle>
 #include <QObject>
 
+class QMenuBar;
+
 // redesign: the Figma menus, drawn by the style rather than a stylesheet (a stylesheet cannot give the
 // shortcut its own colour or align it right): a flat #181818 card, 48px rows with a 20px icon, dim labels,
 // right-aligned "Ctrl + O" shortcuts, a 4px-radius hover row and an accent tick for checked entries.
@@ -139,6 +141,11 @@ public:
     static void PopupMenuControlEntries( QMenu *menu, qt_intf_t *p_intf, bool b = true );
 
     static void VolumeEntries( qt_intf_t *p_intf, QMenu *current );
+
+#ifdef __APPLE__
+    /* redesign: the macOS menu bar (parentless, owned by the caller) */
+    static QMenuBar* createNativeMenuBar( qt_intf_t * );
+#endif
 
     static RendererMenu *rendererMenu;
 };

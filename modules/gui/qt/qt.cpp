@@ -62,6 +62,9 @@ extern "C" char **environ;
 #include <QTranslator>
 #include <QTimer>
 #include <QFileOpenEvent>
+#ifdef __APPLE__
+#include <QMenuBar>
+#endif
 
 #if __has_include(<rhi/qrhi.h>) // Qt 6.6
 #define RHI_HEADER_AVAILABLE
@@ -90,6 +93,9 @@ extern "C" char **environ;
 #include "player/player_controller.hpp"    /* THEMIM destruction */
 #include "playlist/playlist_controller.hpp" /* THEMPL creation */
 #include "dialogs/dialogs_provider.hpp" /* THEDP creation */
+#ifdef __APPLE__
+#include "menus/menus.hpp" /* the macOS menu bar */
+#endif
 #include "dialogs/dialogs/dialogmodel.hpp"
 #ifdef _WIN32
 # include "maininterface/mainctx_win32.hpp"
@@ -1352,6 +1358,11 @@ static void *Thread( void *obj )
     p_intf->p_mi = new MainCtxWin32(p_intf);
 #else
     p_intf->p_mi = new MainCtx(p_intf);
+#endif
+
+#ifdef __APPLE__
+    /* redesign: the native menu bar (Media, Playback, ..., Help) */
+    std::unique_ptr<QMenuBar> nativeMenuBar( VLCMenuBar::createNativeMenuBar( p_intf ) );
 #endif
 
     if( !p_intf->b_isDialogProvider )
