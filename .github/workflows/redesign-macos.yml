@@ -137,6 +137,45 @@ jobs:
           grep -E "^ +qt " applist.txt || { echo "::error::Qt interface missing in the app"; tail -80 applist.txt; exit 1; }
           if grep -q "stale plugins cache" applist.txt; then echo "::error::stale plugin cache"; exit 1; fi
 
+      # M3: the runner has a logged-in desktop; screencapture shoots the whole screen
+      - name: Screenshots
+        timeout-minutes: 15
+        # the dmg is uploaded even when the shots fail
+        continue-on-error: true
+        run: |
+          brew install ffmpeg > /dev/null
+          ffmpeg -loglevel error -f lavfi -i "testsrc2=size=854x480:rate=30" -f lavfi -i "sine=frequency=440" \
+            -t 60 -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest test.mp4
+          V="$PWD/out/VLC juxtopposed.app/Contents/MacOS/VLC"
+          mkdir -p shots
+          shot() { # shot <name> <seconds> [vlc args...]
+            local name=$1 wait=$2; shift 2
+            "$V" --no-qt-privacy-ask --verbose=1 "$@" > "shots/$name.log" 2>&1 &
+            local pid=$!
+            sleep "$wait"
+            screencapture -x "shots/$name.png" || echo "::warning::screencapture failed for $name"
+            kill "$pid" 2>/dev/null; sleep 2; kill -9 "$pid" 2>/dev/null || true
+          }
+          shot home 15 --no-media-library
+          shot player 15 --no-media-library "$PWD/test.mp4"
+          shot library 20
+          ls -la shots
+
+      - name: QML warnings
+        if: always()
+        run: |
+          # QML load errors do not fail the build: list them (the first view of screens the shots do not reach)
+          grep -hE "qml|QML" shots/*.log 2>/dev/null | grep -iE "warning|error|is not a type|ReferenceError|TypeError|Cannot assign|binding loop" \
+            | sort | uniq -c | sort -rn | tee shots/qml-warnings.txt | head -40 || true
+          while read -r n line; do echo "::warning::$line"; done < <(head -20 shots/qml-warnings.txt 2>/dev/null)
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-screenshots
+          path: shots/
+          retention-days: 14
+
       - name: Logs on failure
         if: failure()
         run: |
