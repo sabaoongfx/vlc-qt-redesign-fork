@@ -97,12 +97,14 @@ QTPLUGIN=$C/Frameworks/plugins/libqt_plugin.dylib
     -libpath="$QT_LIBS" \
     -libpath="$C/Frameworks" \
     -verbose=1
-# libqt_plugin finds Qt through the executable's rpath (@executable_path/../Frameworks)
+# macdeployqt links Qt into libqt_plugin through @loader_path/../ (Frameworks)
 otool -L "$QTPLUGIN" | head -20
+# Qt's SQL drivers (ODBC, PostgreSQL, Mimer) link libraries nobody has; VLC uses none of them
+rm -rf "$C/PlugIns/sqldrivers"
 
-# plugin cache for the bundle's plugins
+# plugin cache for the bundle's plugins; vlc-cache-gen has no rpath, so libvlc comes from DYLD_LIBRARY_PATH
 CACHEGEN=$(find "$PREFIX/libexec" "$PREFIX/lib" -name vlc-cache-gen -type f 2>/dev/null | head -1)
-VLC_LIB_PATH="$C/Frameworks" "$CACHEGEN" "$C/Frameworks/plugins"
+DYLD_LIBRARY_PATH="$C/Frameworks" VLC_LIB_PATH="$C/Frameworks" "$CACHEGEN" "$C/Frameworks/plugins"
 
 # ad-hoc signature, inside out: every Mach-O file, the frameworks, then the bundle
 find "$APP" -type f \( -name '*.dylib' -o -perm -u+x \) | while read -r f; do
