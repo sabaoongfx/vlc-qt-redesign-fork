@@ -111,17 +111,40 @@ jobs:
           $V --list > list.txt 2>&1 || true
           grep -E "^ +qt " list.txt || { echo "::error::Qt interface missing"; tail -50 list.txt; exit 1; }
 
-      - name: Logs on failure
-        if: failure()
-        run: |
-          tail -200 build/config.log 2>/dev/null || true
-
       - name: Pack the install tree
         run: tar -C build -czf vlc-macos-arm64-install.tar.gz install
 
-      - name: Upload
+      - name: Upload the install tree
         uses: actions/upload-artifact@v4
         with:
           name: vlc-macos-arm64-install
           path: vlc-macos-arm64-install.tar.gz
           retention-days: 14
+
+      # M2: extras/package/redesign/macapp.sh, the counterpart of appimage.sh
+      - name: App and dmg
+        run: |
+          Q="$QT_ROOT_DIR/bin/qmake6"
+          [ -x "$Q" ] || Q="$QT_ROOT_DIR/bin/qmake"
+          extras/package/redesign/macapp.sh build/install . "$Q" out
+
+      - name: App smoke test
+        run: |
+          # the bundle alone: no DYLD paths, everything from Contents/
+          V="out/VLC juxtopposed.app/Contents/MacOS/VLC"
+          "$V" --version | head -3
+          "$V" --list > applist.txt 2>&1 || true
+          grep -E "^ +qt " applist.txt || { echo "::error::Qt interface missing in the app"; tail -80 applist.txt; exit 1; }
+          if grep -q "stale plugins cache" applist.txt; then echo "::error::stale plugin cache"; exit 1; fi
+
+      - name: Logs on failure
+        if: failure()
+        run: |
+          tail -200 build/config.log 2>/dev/null || true
+
+      - name: Upload the dmg
+        uses: actions/upload-artifact@v4
+        with:
+          name: vlc-macos-arm64
+          path: out/VLC-juxtopposed-arm64.dmg
+          retention-days: 30
