@@ -1,4 +1,9 @@
-# macOS plan (written 2026-10-30, nothing started)
+# macOS plan (written 2026-10-30)
+
+Status: M1 started 2026-10-30 (`dcddb4f`): `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
+(steps tools / contribs / vlc; triplet `aarch64-apple-darwin19` like upstream's CI; minimum macOS 13; `--enable-qt`,
+because configure turns Qt off on darwin by default; no Rust contribs, rustc is not on the reset PATH). Decisions taken
+with the recommendations below (ad-hoc signing, arm64 only, native title bar, CI only, macOS 13).
 
 Goal: ship VLC (juxtopposed) for macOS with the same Qt/QML interface as Windows and Linux, next to the
 Windows installer and the AppImage. Not the Cocoa `VLC.app` (`modules/gui/macosx`), which stays out of scope.
