@@ -1,7 +1,7 @@
 # macOS plan (written 2026-10-30)
 
 Status: M1 and M2 pushed 2026-10-30 (`dcddb4f`, `c02d725`; M2 is `extras/package/redesign/macapp.sh`), first CI run
-pending; M4 window controls and shortcut hints written. M1 is: `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
+pending; M4 written blind: window controls, shortcut hints, Cmd+,, Finder/Dock files, the menu bar. M1 is: `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
 (steps tools / contribs / vlc; triplet `aarch64-apple-darwin19` like upstream's CI; minimum macOS 13; `--enable-qt`,
 because configure turns Qt off on darwin by default; no Rust contribs, rustc is not on the reset PATH). Decisions taken
 with the recommendations below (ad-hoc signing, arm64 only, native title bar, CI only, macOS 13).
@@ -74,11 +74,15 @@ New `extras/package/redesign/macapp.sh <prefix> <src> <qmake6> <out>`, the count
 - Shortcut hints: done. Nearly all "Ctrl+..." in the QML are key sequences (Qt maps Ctrl to Cmd itself); menu hints
   are real QAction shortcuts or `hotkeyHint()`, both shown with `QKeySequence::NativeText` (Cmd symbol). The one
   hard-coded text, the start screen "Ctrl + O" chip, shows the Cmd key on macOS (`NoMedialibHome.qml`).
-- Global menu bar: the library top bar has no menu button any more. A native `QMenuBar` on macOS (Media,
-  Playback, Audio, Video, View, Window, Help) brings View/Tools/Help back where Mac users look for them.
-- Cmd+Q, Cmd+W, Cmd+, (Settings), Cmd+M (minimise; VLC uses Ctrl+M for Messages: decide).
-- Files opened from Finder or dropped on the Dock icon (`QFileOpenEvent`; check what upstream already handles),
-  Dock menu.
+- Global menu bar: done (written blind): `VLCMenuBar::createNativeMenuBar` (`menus.cpp`, made in `qt.cpp` after
+  the MainCtx), Media, Playback, Audio, Video, Subtitle, Tools, View, Help, each refilled when it opens. To check on a
+  Mac: menus fill on open, Quit/Settings/About land in the app menu (QAction roles; they only exist once their menu
+  has been opened), a menu shortcut does not fire twice with the QML shortcut of the same key.
+- Cmd+, opens Settings (done: `StandardKey.Preferences` in `GlobalShortcuts.qml`). Cmd+Q is Ctrl+Q mapped by Qt.
+  Cmd+M stays Messages (VLC's Ctrl+M), no minimise shortcut; Cmd+W not bound.
+- Files opened from Finder or dropped on the Dock icon: done (written blind): upstream did not handle
+  `QFileOpenEvent`; `FileOpenSpy` in `qt.cpp` collects the files of one gesture (100 ms) and plays the first. Dock
+  menu not done.
 - Widgets dialogs (Settings, Open Media, message boxes) under the macOS style: check the redesign stylesheet and
   palette still apply (they were written against Fusion and the Windows style).
 - No Windows acrylic blur on macOS; the sidebar is a plain card already, check the top bar fallback.
