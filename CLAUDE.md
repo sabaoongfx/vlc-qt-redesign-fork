@@ -237,6 +237,13 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   the release workflow waits for runs of the tagged commit, and `[skip ci]` commits have none). Same code as v0.1.1; the
   first release with fixed names only and GitHub attestations (`gh attestation verify <file> -R <repo>` checked: exit 0).
   It was flipped from pre-release to a full release so `releases/latest/download/<name>` works (the website fallback links).
+- Released 2026-10-30: **v0.1.4** on `ccfb04a8d0` (full release, Latest; all three CI runs of that commit passed; the
+  release workflow run 41073547617 published the five fixed-name assets). It has everything since v0.1.3 (`f77757e895`):
+  the 2026-10-29 backlog (square music covers, Network page without Browse devices and with Add Stream in the "..."
+  menu, drag from the player's library card into the queue), the evening batch (A-Z default sort in the folder trees,
+  Back/Forward up and down, header gap over list column titles, themed stock dialogs), menus keeping the Day/Night
+  palette on Windows, and the global shortcuts with the X11 compositor (`006bec0`). The drag into the queue is still
+  untried by hand.
 - Not signed: the Windows installer and exe have no Authenticode signature (`Get-AuthenticodeSignature`: NotSigned), so
   SmartScreen warns; the attestation is provenance only, Windows ignores it. Options noted for later: Azure Trusted
   Signing (~$10/month), an OV/EV certificate (~$100-400/year, reputation still builds slowly), SignPath Foundation (free
