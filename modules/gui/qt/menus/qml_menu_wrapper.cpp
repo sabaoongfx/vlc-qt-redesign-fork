@@ -208,54 +208,6 @@ void SortMenu::close()
 
 /* virtual */ void SortMenu::onPopup(QMenu *) {}
 
-// SortMenuVideo
-
-// Protected SortMenu reimplementation
-
-void SortMenuVideo::onPopup(QMenu * menu) /* override */
-{
-    if (!m_ctx)
-        return;
-
-    menu->addSeparator();
-
-    struct
-    {
-        const char * title;
-
-        MainCtx::Grouping grouping;
-    }
-    entries[] =
-    {
-        { N_("Do not group videos"), MainCtx::GROUPING_NONE },
-        { N_("Group by name"), MainCtx::GROUPING_NAME },
-        { N_("Group by folder"), MainCtx::GROUPING_FOLDER },
-    };
-
-    QActionGroup * group = new QActionGroup(this);
-
-    int index = m_ctx->grouping();
-
-    for (size_t i = 0; i < ARRAY_SIZE(entries); i++)
-    {
-        QAction * action = menu->addAction(qtr(entries[i].title));
-
-        action->setCheckable(true);
-
-        MainCtx::Grouping grouping = entries[i].grouping;
-
-        connect(action, &QAction::triggered, this, [this, grouping]()
-        {
-            emit this->grouping(grouping);
-        });
-
-        group->addAction(action);
-
-        if (index == grouping)
-            action->setChecked(true);
-    }
-}
-
 void SortMenuAlbums::onPopup(QMenu *menu)
 {
     if (!m_sectionsVisible)

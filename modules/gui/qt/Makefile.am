@@ -238,8 +238,6 @@ libqt_plugin_la_SOURCES = \
 	medialibrary/mlurlmodel.hpp \
 	medialibrary/mlvideo.cpp \
 	medialibrary/mlvideo.hpp \
-	medialibrary/mlvideofoldersmodel.cpp \
-	medialibrary/mlvideofoldersmodel.hpp \
 	medialibrary/mlvideofoldertreemodel.cpp \
 	medialibrary/mlvideofoldertreemodel.hpp \
 	medialibrary/mlvideogroupsmodel.cpp \
@@ -481,7 +479,6 @@ nodist_libqt_plugin_la_SOURCES = \
 	medialibrary/mlvideomodel.moc.cpp \
 	medialibrary/mlplaylistlistmodel.moc.cpp \
 	medialibrary/mlplaylistmodel.moc.cpp \
-	medialibrary/mlvideofoldersmodel.moc.cpp \
 	medialibrary/mlvideofoldertreemodel.moc.cpp \
 	medialibrary/mlvideogroupsmodel.moc.cpp \
 	medialibrary/thumbnailcollector.moc.cpp \
@@ -1211,7 +1208,6 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/MediaView.qml \
 	medialibrary/qml/CompactLibrary.qml \
 	medialibrary/qml/VideoFolderTreeDisplay.qml \
-	medialibrary/qml/VideoGroupDisplay.qml \
 	medialibrary/qml/MusicAlbums.qml \
 	medialibrary/qml/MusicAlbumsDisplay.qml \
 	medialibrary/qml/MusicAlbumsGridExpandDelegate.qml \
@@ -1231,8 +1227,6 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/UrlListDisplay.qml \
 	medialibrary/qml/VideoDisplay.qml \
 	medialibrary/qml/VideoAll.qml \
-	medialibrary/qml/VideoAllDisplay.qml \
-	medialibrary/qml/VideoAllSubDisplay.qml \
 	medialibrary/qml/PlaylistMediaList.qml \
 	medialibrary/qml/PlaylistMedia.qml \
 	medialibrary/qml/PlaylistMediaDisplay.qml \
