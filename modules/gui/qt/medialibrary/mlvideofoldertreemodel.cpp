@@ -330,9 +330,9 @@ MLVideoFolderTreeModel::Loader::load(vlc_medialibrary_t * ml,
     if (limit)
         query.i_nbResults = static_cast<uint32_t>(limit - result.size());
 
-    // NOTE: Without a chosen sort, songs come by title A to Z (the library's default order put
-    //       Track 3 before Track 1, user request).
-    if (m_audio && query.i_sort == VLC_ML_SORTING_DEFAULT)
+    // NOTE: Without a chosen sort, songs and videos come by title A to Z (the library's default
+    //       order put Track 3 before Track 1, user request).
+    if (query.i_sort == VLC_ML_SORTING_DEFAULT)
     {
         query.i_sort = VLC_ML_SORTING_ALPHA;
         query.b_desc = false;
