@@ -129,7 +129,9 @@ ListViewExt {
     //       viewport, and qt quick event delivery agent. Having a control as header and blocking the events
     //       events reaching beneath is not a good behavior, as currently done here.
     property color headerColor: (interactive && (headerPositioning !== ListView.InlineHeader)) ? colorContext.bg.primary : "transparent"
-    property int headerTopPadding: 0
+    // redesign: a gap between the page header line and the column titles (they sat on the line,
+    // user report on the Network and Playlists lists)
+    property int headerTopPadding: VLCStyle.margin_normal
 
     property real rowHeight: VLCStyle.tableRow_height
 

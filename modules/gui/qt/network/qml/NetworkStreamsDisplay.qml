@@ -82,11 +82,9 @@ Widgets.PageExt {
         anchors.fill: parent
         focus: true
 
-        // the list starts a margin below the page header line: its column titles touched the
-        // button bar above them (user report)
+        // the gap above the column titles is the table's own (TableViewExt.headerTopPadding)
         Item {
             anchors.fill: parent
-            anchors.topMargin: VLCStyle.margin_normal
 
             Loader {
                 id: urlListDisplay

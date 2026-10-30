@@ -234,7 +234,7 @@ jobs:
             import -window root "$1/shots/lib-music-$2.png" || true
             click 80 108; sleep 4; click 863 77; sleep 4 # Video again, switch to list view
             import -window root "$1/shots/lib-videolist-$2.png" || true
-            xdotool mousemove 600 150; sleep 0.3; xdotool mousemove 602 152; sleep 0.6
+            xdotool mousemove 600 180; sleep 0.3; xdotool mousemove 602 182; sleep 0.6 # first row, under the 16px header gap
             import -window root "$1/shots/lib-videolist-$2-hover.png" || true
             click 863 77; sleep 3 # back to the grid (the view is shared by the pages)
             # Music is a folder tree like Videos: the first card is the Music folder, one click
