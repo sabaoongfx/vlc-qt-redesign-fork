@@ -1,6 +1,7 @@
 # macOS plan (written 2026-10-30)
 
-Status: M1 started 2026-10-30 (`dcddb4f`): `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
+Status: M1 and M2 pushed 2026-10-30 (`dcddb4f`, `c02d725`; M2 is `extras/package/redesign/macapp.sh`), first CI run
+pending; M4 window controls and shortcut hints written. M1 is: `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
 (steps tools / contribs / vlc; triplet `aarch64-apple-darwin19` like upstream's CI; minimum macOS 13; `--enable-qt`,
 because configure turns Qt off on darwin by default; no Rust contribs, rustc is not on the reset PATH). Decisions taken
 with the recommendations below (ad-hoc signing, arm64 only, native title bar, CI only, macOS 13).
@@ -67,12 +68,12 @@ New `extras/package/redesign/macapp.sh <prefix> <src> <qmake6> <out>`, the count
 
 ### M4. macOS polish
 
-- Window controls: `qt-titlebar` defaults to false (client-side decoration), so the redesign's window buttons sit on
-  the right; macOS users expect the traffic lights on the left. Options: the native title bar on macOS, or
-  our own buttons on the left.
-- Shortcut hints: about 56 QML strings say "Ctrl+...". Qt maps Ctrl to Cmd for the shortcut itself, the text does
-  not change: build hints with `QKeySequence::NativeText` (shows the Cmd symbol). Check the hotkey hints in menus
-  (`hotkeyHint()`) show Cmd too.
+- Window controls: done (written blind): `QT_TITLEBAR_DEFAULT` (`qt.hpp`) is true on macOS, so `qt-titlebar`
+  defaults to the native title bar there, also after the first-run wizard (both layouts). Check the top bar still
+  looks right under a native title bar.
+- Shortcut hints: done. Nearly all "Ctrl+..." in the QML are key sequences (Qt maps Ctrl to Cmd itself); menu hints
+  are real QAction shortcuts or `hotkeyHint()`, both shown with `QKeySequence::NativeText` (Cmd symbol). The one
+  hard-coded text, the start screen "Ctrl + O" chip, shows the Cmd key on macOS (`NoMedialibHome.qml`).
 - Global menu bar: the library top bar has no menu button any more. A native `QMenuBar` on macOS (Media,
   Playback, Audio, Video, View, Window, Help) brings View/Tools/Help back where Mac users look for them.
 - Cmd+Q, Cmd+W, Cmd+, (Settings), Cmd+M (minimise; VLC uses Ctrl+M for Messages: decide).
