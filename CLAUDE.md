@@ -210,10 +210,11 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   behaviour before then); the tour section "Every screen, redrawn" is an autoplay slideshow in `main.js` (STEP 1500 ms, kept in
   step with `.tour-progress.running` in `style.css`), with a fade, prev/next arrows, a pause button, a progress bar, off with
   reduced motion, stopped by any manual move. `style.css` and `main.js` are linked with `?v=N` in `index.html` because
-  `vercel.json` caches them for an hour: bump N when they change.
+  `_headers` caches them for an hour: bump N when they change.
 - Website: separate repo `sabaoongfx/vlc-web` (private, local `~/Documents/vlc-web`, push to `main`), plain HTML/CSS/JS
-  for https://vlc.sabaoon.dev on Vercel (static, no SSR/ISR; `vercel.json` has a CSP, security headers and asset
-  caching). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
+  for https://vlc.sabaoon.dev on Cloudflare Pages since 2026-10-30 (Git integration: a push to `main` deploys; no build
+  command, output `/`; `_headers` has the CSP, security headers and asset caching; `vercel.json` removed; the
+  `sabaoon.dev` zone is on Cloudflare, `vlc.sabaoon.dev` is the project's custom domain). Download buttons are filled by `main.js` from the GitHub API (newest release including pre-releases:
   `releases/latest/download` skips pre-releases, which is why releases are full ones); the no-JavaScript fallback links in `index.html` are
   `releases/latest/download/<fixed name>` (no version, never edited, like notz). Screenshots come from
   showcase.sh (WebP 1600 + 800). Audited clean: Lighthouse 100 (mobile perf 98 on the home page), pa11y WCAG2AA 0
