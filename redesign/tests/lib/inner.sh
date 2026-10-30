@@ -38,6 +38,7 @@ for a in $ACTIONS; do
     rclick:*) xy=${a#rclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click 3 ;;
     dclick:*) xy=${a#dclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click --repeat 2 --delay 60 1 ;;
     move:*) xy=${a#move:}; xdotool mousemove ${xy%,*} ${xy#*,} ;;
+    resize:*) wh=${a#resize:}; W=$(xdotool search --onlyvisible --class vlc | head -1); xdotool windowmove $W 0 0 windowsize $W ${wh%,*} ${wh#*,} ;;
     type:*) xdotool type --delay 20 "${a#type:}" ;;
     key:*) xdotool key ${a#key:} ;;
     press:*) "$LIB/at.py" press "${a#press:}" >> "$OUT/$NAME.at" 2>&1 ;;

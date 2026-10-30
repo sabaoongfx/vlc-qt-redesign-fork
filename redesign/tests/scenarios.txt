@@ -1,5 +1,5 @@
 # name | theme (0 system, 1 day, 2 night) | kind (ml = media library profile, none) | media (@ = fixtures dir) | actions
-# actions: sleep:S move:x,y click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag audit:tag (AT-SPI accessibility audit) tree
+# actions: sleep:S move:x,y resize:w,h (the VLC window, at 0,0) click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag audit:tag (AT-SPI accessibility audit) tree
 # 1920x1080. Sidebar rows: Home 75, Video 121, Music 167, Network 213, Playlists 259 (x 80; the clicks below land inside these 46px rows).
 # Settings: Ctrl+P. Videos opens on the library roots: click 390,220 opens the Videos folder (Shows, long_movie at 730,220, Sample Movie).
 
