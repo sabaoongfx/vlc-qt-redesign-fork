@@ -31,6 +31,9 @@ Item {
     property bool showTitleText: true
     property bool showCriterias: false
 
+    // redesign: the music folder tree counts songs in "nb_videos"
+    property bool audio: false
+
     // NOTE: That's useful when we want to enforce a cover criteria for the titleDelegate.
     property string criteriaCover: "cover"
 
@@ -74,7 +77,8 @@ Item {
             } else if (criteria === "nb_tracks") {
                 string += qsTr("%1 track", "%1 tracks", value).arg(value)
             } else if (criteria === "nb_videos") {
-                string += qsTr("%1 video", "%1 videos", value).arg(value)
+                string += root.audio ? qsTr("%1 song", "%1 songs", value).arg(value)
+                                     : qsTr("%1 video", "%1 videos", value).arg(value)
             } else {
                 string += value
             }

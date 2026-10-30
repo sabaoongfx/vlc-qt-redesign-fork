@@ -248,6 +248,8 @@ MainViewLoader {
 
             showGroupCountColumn: root.showGroupCountColumn
 
+            audio: root.audio
+
             coverWidth: root.listCoverWidth
             coverHeight: root.listCoverHeight
             coverRadius: root.listCoverRadius

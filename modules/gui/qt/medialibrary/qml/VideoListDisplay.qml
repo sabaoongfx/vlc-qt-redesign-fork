@@ -37,6 +37,9 @@ Widgets.TableViewExt {
 
     property bool showGroupCountColumn: false
 
+    // the music folder tree: song counts and album placeholders
+    property bool audio: false
+
     property real coverHeight: VLCStyle.listAlbumCover_height
     property real coverWidth: VLCStyle.listAlbumCover_width
     property real coverRadius: VLCStyle.listAlbumCover_radius
@@ -57,7 +60,7 @@ Widgets.TableViewExt {
 
             text: qsTr("Title"),
 
-            placeHolder: VLCStyle.noArtVideoCover,
+            placeHolder: audio ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover,
 
             headerDelegate: tableColumns.titleHeaderDelegate,
             colDelegate   : tableColumns.titleDelegate
@@ -78,7 +81,7 @@ Widgets.TableViewExt {
                 headerDelegate: tableColumns.titleHeaderDelegate,
                 colDelegate   : tableColumns.titleDelegate,
 
-                placeHolder: VLCStyle.noArtVideoCover
+                placeHolder: audio ? VLCStyle.noArtAlbumCover : VLCStyle.noArtVideoCover
             })
         }]
 
@@ -87,7 +90,7 @@ Widgets.TableViewExt {
                 size: 0.5,
                 model: ({
                     criteria: "nb_videos",
-                    text: qsTr("Videos"),
+                    text: audio ? qsTr("Songs") : qsTr("Videos"),
                     isSortable: false
                 })
             })
@@ -129,6 +132,8 @@ Widgets.TableViewExt {
         id: tableColumns
 
         showCriterias: (listView_id.sortModel === listView_id._modelSmall)
+
+        audio: listView_id.audio
 
         criteriaCover: "thumbnail"
 
