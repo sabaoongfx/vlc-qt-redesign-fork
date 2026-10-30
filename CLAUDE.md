@@ -64,7 +64,8 @@ Status 2026-10-30: steps 1-3 done on Manjaro. `550223c` builds clean; a full har
 (the blind fixes of the 2026-10-27 list hold) and passes 172/172 after the harness update (`60da4de`). Found and fixed:
 global shortcuts that are Qt.ApplicationShortcut (Ctrl+P, Ctrl+N, Ctrl+M...) never fired with the X11 compositor
 (offscreen interface window; Ctrl+O/F/Y are window shortcuts and worked): `ShortcutExt` defaults to
-Qt.WindowShortcut now (`006bec0`; likely also the open "Ctrl+N on Windows", check there). Harness: the fixture
+Qt.WindowShortcut now (`006bec0`). Only the X11 compositor is offscreen (Wayland, DirectComposition and Win7 use a
+QQuickView), so the open "Ctrl+N on Windows" is probably a different bug. Harness: the fixture
 library is made with Ctrl+F (Videos and Music roots, like a user's; the wizard adds none) and has no history,
 `fixture` scenes copy the profile, Settings opens with `key:ctrl+p`, video scenes open the Videos folder first.
 Not done: `test_navigation_model` (not built), step 4 (features on a real window).
