@@ -88,20 +88,23 @@ jobs:
           xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
           sleep 5
           import -window root "$1/shots/$2.png" || true
-          # dialogs: Open Media (Ctrl+O), then Preferences (Ctrl+P: the sidebar has no Preferences row)
-          xdotool mousemove 740 431; sleep 0.3; xdotool click 1; sleep 3 # "Open File" button
+          # dialogs: Open File(s) (Ctrl+O, the file picker), then Settings (Ctrl+P), centred on the window: its
+          # category sidebar has Controls at y 269, Video 406, Audio 454 (x ~180)
+          xdotool windowfocus "$WID" || true; xdotool key --clearmodifiers ctrl+o; sleep 3
           import -window root "$1/shots/$2-open.png" || true
           xdotool key Escape; sleep 1
           xdotool windowfocus "$WID" || true; xdotool key --clearmodifiers ctrl+p; sleep 4
           import -window root "$1/shots/$2-prefs.png" || true
-          xdotool mousemove 365 78; sleep 0.3; xdotool click 1; sleep 2 # Audio tab
+          xdotool mousemove 178 454; sleep 0.3; xdotool click 1; sleep 2 # Audio
           import -window root "$1/shots/$2-prefs-audio.png" || true
-          xdotool mousemove 813 78; sleep 0.3; xdotool click 1; sleep 2 # Hotkeys tab
+          xdotool mousemove 186 269; sleep 0.3; xdotool click 1; sleep 2 # Controls (the hotkeys)
           import -window root "$1/shots/$2-prefs-hotkeys.png" || true
-          xdotool mousemove 459 78; sleep 0.3; xdotool click 1; sleep 2 # Video tab
+          xdotool mousemove 178 406; sleep 0.3; xdotool click 1; sleep 2 # Video
           import -window root "$1/shots/$2-prefs-video.png" || true
-          xdotool mousemove 270 78; sleep 0.3; xdotool click 1; sleep 2 # back to Interface
-          xdotool mousemove 315 397; sleep 0.3; xdotool click 1; sleep 3 # Customize Toolbar
+          xdotool key Escape; sleep 1
+          # Customize Player from the '...' menu (20,20); from the bottom: More, About, Settings, Customize Player
+          xdotool mousemove 20 20; sleep 0.3; xdotool click 1; sleep 2
+          xdotool key Up Up Up Up Return; sleep 3
           import -window root "$1/shots/$2-toolbar.png" || true
           xdotool key Escape; sleep 1
           kill $VLC_PID || true
@@ -130,16 +133,21 @@ jobs:
           "$1/install/bin/vlc" --verbose=1 --no-media-library --no-qt-privacy-ask --aout=dummy /tmp/test.mp4 >"$1/shots/$2.log" 2>&1 &
           VLC_PID=$!
           sleep 12
-          xdotool mousemove 700 400; sleep 0.3; xdotool mousemove 760 440; sleep 0.3; xdotool mousemove 800 470; sleep 0.4
+          # 1280x800 at 0,0: the bar's right-hand buttons are then at y 773, Audio x 1108, Languages and tracks 1142
+          WID=$(xdotool search --onlyvisible --class vlc | head -1)
+          xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
+          sleep 3
+          xdotool mousemove 500 300; sleep 0.3; xdotool mousemove 560 340; sleep 0.3; xdotool mousemove 600 370; sleep 0.4
           import -window root "$1/shots/$2.png" || true
-          # hover an icon button (bottom-left controls) to capture its hover state
-          xdotool mousemove 736 770; sleep 0.2; xdotool mousemove 737 771; sleep 0.5
+          # hover an icon button (the 10 s back button, left of the play pill) to capture its hover state
+          xdotool mousemove 70 773; sleep 0.2; xdotool mousemove 71 774; sleep 0.5
           import -window root "$1/shots/$2-hover.png" || true
-          # open the subtitles/tracks menu (bottom-left first icon)
-          xdotool mousemove 696 770; sleep 0.3; xdotool click 1; sleep 1.5
+          # the tracks picker (Languages and tracks)
+          xdotool mousemove 1142 773; sleep 0.3; xdotool click 1; sleep 1.5
           import -window root "$1/shots/$2-tracks.png" || true
-          # switch to the Audio tab
-          xdotool mousemove 1275 369; sleep 0.3; xdotool click 1; sleep 1
+          xdotool key Escape; sleep 1
+          # the audio button's popup (audio tracks and output devices)
+          xdotool mousemove 1108 773; sleep 0.3; xdotool click 1; sleep 1.5
           import -window root "$1/shots/$2-tracks-audio.png" || true
           kill $VLC_PID || true
           sleep 2
@@ -246,7 +254,7 @@ jobs:
             import -window root "$1/shots/lib-music-folderlist-$2.png" || true
             click 863 77; sleep 3 # back to the grid
             click 80 200; sleep 5 # Network
-            import -window root "$1/shots/lib-browse-$2.png" || true
+            import -window root "$1/shots/lib-network-$2.png" || true
             click 80 246; sleep 5 # Playlists
             import -window root "$1/shots/lib-playlists-$2.png" || true
             # the header: count, sort 824, view 863, search 900-1215, '...' 1244
@@ -258,26 +266,28 @@ jobs:
             click 1244 77; sleep 2 # '...': the folder context menu
             import -window root "$1/shots/lib-foldermenu-$2.png" || true
             xdotool key Escape; sleep 1
-            click 1094 20; sleep 3 # playlist pane
-            import -window root "$1/shots/lib-playlist-$2.png" || true
-            click 1094 20; sleep 2
-            click 1138 20; sleep 2 # overflow menu
+            # the '...' menu (20,20). From its bottom: More (the classic menus), About, Settings, Customize
+            # Player. In More, Right opens it on Media; Up wraps to Help, the Tool&s mnemonic opens Tools, whose
+            # &Effects and Plu&gins mnemonics open those windows. The windows stack (Escape does not close them).
+            WID=$(xdotool search --onlyvisible --class vlc | head -1)
+            click 20 20; sleep 2
             import -window root "$1/shots/lib-menu-$2.png" || true
-            xdotool key Escape; sleep 1
-            click 1138 20; sleep 2; click 1155 233; sleep 2 # overflow menu > Help
+            xdotool key Up Right; sleep 1; xdotool key Up Right; sleep 1.5 # More > Help
             import -window root "$1/shots/lib-help-$2.png" || true
-            click 1021 277; sleep 4 # About
+            xdotool key Escape Escape Escape; sleep 1
+            click 20 20; sleep 2; xdotool key Up Up Return; sleep 4 # About
             import -window root "$1/shots/dlg-about-$2.png" || true
             xdotool key Escape; sleep 1
-            click 1138 20; sleep 2; click 1155 187; sleep 2 # overflow menu > Tools
+            click 20 20; sleep 2; xdotool key Up Right; sleep 1; xdotool key s; sleep 1.5 # More > Tools
             import -window root "$1/shots/lib-tools-$2.png" || true
-            click 942 187; sleep 4 # Effects and Filters
+            xdotool key e; sleep 4 # Effects and Filters
             import -window root "$1/shots/dlg-effects-$2.png" || true
             xdotool key Escape; sleep 1
-            click 1138 20; sleep 2; click 1155 187; sleep 2; click 920 349; sleep 4 # Messages
+            xdotool windowactivate "$WID" || true; sleep 1; xdotool key --clearmodifiers ctrl+m; sleep 4 # Messages
             import -window root "$1/shots/dlg-messages-$2.png" || true
             xdotool key Escape; sleep 1
-            click 1138 20; sleep 2; click 1155 187; sleep 2; click 957 377; sleep 4 # Plugins and extensions
+            xdotool windowactivate "$WID" || true; sleep 1
+            click 20 20; sleep 2; xdotool key Up Right; sleep 1; xdotool key s; sleep 1; xdotool key g; sleep 4 # Plugins
             import -window root "$1/shots/dlg-plugins-$2.png" || true
             xdotool key Escape; xdotool key Escape; sleep 1
             stop "$2" "$1"

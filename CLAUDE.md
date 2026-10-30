@@ -403,7 +403,7 @@ Local edits are text only (QML/C++/YAML/Markdown).
 - Dialog shots: `{day,night}-open.png` (clicks the home Open File button) and `{day,night}-prefs.png` (clicks Preferences in the sidebar).
 - Tracks panel shots: `player-*-tracks.png` (clicks the first bottom-left icon).
 - Hover shots: `player-*-hover.png` (bottom-left control icon) and `lib-video-*-hover.png` (first video card).
-- Extra state shots in the library loop: `lib-browse-*`, `lib-discover-*` (the Discover click can land on Browse), `lib-sort-*`, `lib-search-*`, `lib-playlist-*` (Play Queue pane), `lib-albums/album/tracks/artist-*`, `lib-menu/help/tools-*`, `dlg-about/effects/messages/plugins-*`.
+- Extra state shots in the library loop: `lib-network-*`, `lib-sort-*`, `lib-search-*`, `lib-foldermenu-*`, `lib-music-folder(list)-*`, `lib-menu/help/tools-*`, `dlg-about/effects/messages/plugins-*`. Since 2026-10-30 the dialogs are reached with the keyboard: the '...' menu at 20,20 then Up (More, About, Settings, Customize Player from the bottom), Right into More, the Tool&s / &Effects / Plu&gins mnemonics, Ctrl+M, Ctrl+P (Settings sidebar: Controls y 269, Video 406, Audio 454 at 1280x800). Player shots resize to 1280x800: Languages and tracks at 1142,773, audio button 1108,773 (`player-*-tracks-audio` is the audio popup).
 - Workflow decided with the user: work in batches. Make several independent changes as separate local commits, push them together once the previous CI run is done, then review all the screenshots from that one run. Build changes to shared pieces (palette, fonts, `ListLabel`) on their own.
 
 ## Where the Qt UI lives
