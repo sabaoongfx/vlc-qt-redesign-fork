@@ -106,10 +106,14 @@ rm -rf "$C/PlugIns/sqldrivers"
 CACHEGEN=$(find "$PREFIX/libexec" "$PREFIX/lib" -name vlc-cache-gen -type f 2>/dev/null | head -1)
 DYLD_LIBRARY_PATH="$C/Frameworks" VLC_LIB_PATH="$C/Frameworks" "$CACHEGEN" "$C/Frameworks/plugins"
 
-# ad-hoc signature, inside out: every Mach-O file, the frameworks, then the bundle
-find "$APP" -type f \( -name '*.dylib' -o -perm -u+x \) | while read -r f; do
-    file -b "$f" | grep -q Mach-O && codesign --force -s - "$f"
-done
+# ad-hoc signature, inside out like extras/package/macosx/codesign.sh. Contents/Frameworks counts as
+# code, so every file there outside a .framework is signed, data too (plugins.dat, the lua scripts);
+# elsewhere the Mach-O files (Qt plugins, QML module libraries). The main executable comes with the bundle.
+find "$C/Frameworks" -type f -not -path '*.framework/*' -print0 | xargs -0 -n 50 codesign --force -s -
+find "$C" -type f \( -name '*.dylib' -o -perm -u+x \) -not -path "$C/Frameworks/*" -not -path "$C/MacOS/VLC" -print0 |
+    while IFS= read -r -d '' f; do
+        if file -b "$f" | grep -q Mach-O; then codesign --force -s - "$f"; fi
+    done
 find "$C/Frameworks" -maxdepth 1 -name '*.framework' -exec codesign --force -s - {} \;
 codesign --force -s - "$APP"
 codesign --verify --deep --strict "$APP"
