@@ -60,6 +60,8 @@ extern "C" char **environ;
 #include <QQmlError>
 #include <QList>
 #include <QTranslator>
+#include <QTimer>
+#include <QFileOpenEvent>
 
 #if __has_include(<rhi/qrhi.h>) // Qt 6.6
 #define RHI_HEADER_AVAILABLE
@@ -1291,6 +1293,46 @@ static void *Thread( void *obj )
     DialogsProvider::getInstance( p_intf );
     p_intf->p_mainPlayerController = new PlayerController(p_intf);
     p_intf->p_mainPlaylistController = new vlc::playlist::PlaylistController(p_intf->p_playlist);
+
+#ifdef __APPLE__
+    /* redesign: files opened from Finder (Open With, double click) or dropped on the Dock icon
+     * reach Qt as QFileOpenEvent; the Cocoa interface handled them itself, the Qt one did not.
+     * The files of one gesture come as separate events: collect them and play the first.
+     * Events are only delivered from app.exec(), so the files the app was started with arrive
+     * here too. */
+    class FileOpenSpy : public QObject
+    {
+        qt_intf_t *m_intf;
+        QVector<vlc::playlist::Media> m_pending;
+        QTimer m_flush;
+    public:
+        FileOpenSpy(QObject *parent, qt_intf_t *intf)
+             : QObject(parent), m_intf(intf)
+        {
+            m_flush.setSingleShot(true);
+            m_flush.setInterval(100);
+            connect(&m_flush, &QTimer::timeout, this, [this]() {
+                if (m_intf->p_mainPlaylistController && !m_pending.isEmpty())
+                    m_intf->p_mainPlaylistController->append(m_pending, true);
+                m_pending.clear();
+            });
+            qGuiApp->installEventFilter(this);
+        }
+        bool eventFilter(QObject *o, QEvent *e) override
+        {
+            (void)o;
+            if (e->type() != QEvent::FileOpen)
+                return false;
+            const QUrl url = static_cast<QFileOpenEvent *>(e)->url();
+            if (url.isEmpty())
+                return false;
+            m_pending.push_back(vlc::playlist::Media{url.toString(QUrl::FullyEncoded), QString{}});
+            m_flush.start();
+            return true;
+        }
+    };
+    FileOpenSpy fileOpenSpy(&app, p_intf);
+#endif
 
     std::optional playlistModelRecoveryAgent = std::unique_ptr<ModelRecoveryAgent>();
     QMetaObject::invokeMethod(&app, [&playlistModelRecoveryAgent, settings = QPointer(p_intf->mainSettings), mpc = QPointer(p_intf->p_mainPlaylistController)]() {
