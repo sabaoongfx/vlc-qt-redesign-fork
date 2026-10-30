@@ -23,16 +23,26 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build dependencies
-        timeout-minutes: 20
+        timeout-minutes: 30
         run: |
           # no debconf questions (jackd2 asks about realtime priority and the job waited for an answer);
           # sudo drops the environment, so pass it through
-          A="sudo DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
+          A="env DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold"
+          # build-dep now and then hangs on a download until the step timeout: give each try 8 minutes and
+          # retry (apt resumes, finished downloads stay in the cache)
+          retry() {
+            for i in 1 2 3; do
+              sudo timeout 480 "$@" && return 0
+              echo "::warning::try $i failed: $*"
+              sudo dpkg --configure -a || true
+            done
+            return 1
+          }
           # Ubuntu's own VLC 3 build dependencies cover nearly all of VLC 4's
           sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
-          $A update -qq
-          $A build-dep -y -qq vlc
-          $A install -y -qq ccache meson ninja-build nasm flex bison gettext autopoint \
+          retry $A update -qq
+          retry $A build-dep -y -qq vlc
+          retry $A install -y -qq ccache meson ninja-build nasm flex bison gettext autopoint \
             libtool-bin pkg-config libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor0 libxcb-cursor-dev \
             libwayland-dev wayland-protocols libegl-dev libgl-dev libvulkan-dev libsqlite3-dev \
             libjpeg-dev libplacebo-dev libdav1d-dev libpipewire-0.3-dev libsoxr-dev libtag1-dev \
