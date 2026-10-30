@@ -52,9 +52,15 @@ if [ ! -d "$P/home" ]; then
                -metadata track=$n -metadata title="Song $n" "$P/home/Music/$artist - $album - $n.mp3"
         done
     done
-    # first run: the wizard adds the XDG Videos/Music folders and the library scans them
+    # first run: the wizard adds no folders (the library lists only what the user opened)
     WIZ=" " PROFILE=$P NAME=fixture-wizard THEME=2 MEDIA="" OUT=$FIX TIMEOUT=90 \
-    ACTIONS="sleep:3 press:Allow_metadata_network_access sleep:0.3 press:Next_> sleep:1 press:Next_> sleep:1 press:Next_> sleep:1 press:Finish sleep:40" \
+    ACTIONS="sleep:3 press:Allow_metadata_network_access sleep:0.3 press:Next_> sleep:1 press:Next_> sleep:1 press:Next_> sleep:1 press:Finish sleep:3" \
         "$T/lib/scene.sh"
+    # Open Folder (Ctrl+F) adds Videos and Music to the library, which scans them
+    PROFILE=$P NAME=fixture-folders THEME=2 MEDIA="" OUT=$FIX TIMEOUT=90 \
+    ACTIONS="sleep:2 key:ctrl+f sleep:3 click:1050,680 key:ctrl+a type:$P/home/Videos sleep:0.5 shot:videos key:Return sleep:1 key:s sleep:3 key:ctrl+f sleep:3 click:1050,680 key:ctrl+a type:$P/home/Music sleep:0.5 key:Return sleep:1 key:s sleep:40" \
+        "$T/lib/scene.sh"
+    # Open Folder also played the folders for a moment: the library starts with no history
+    python3 -c 'import sqlite3, sys; db = sqlite3.connect(sys.argv[1]); db.execute("UPDATE Media SET play_count = 0, last_played_date = NULL, last_position = -1, last_time = -1"); db.commit()' "$P/data/vlc/ml/ml.db"
 fi
 echo "fixtures in $FIX"

@@ -66,13 +66,15 @@ for log in sorted(glob.glob(f'{OUT}/*.log')):
     else:
         ok(scene, 'no QML warnings')
 
-# 2. player bar: play pill colour and size, seek handle colour, seek fill colour
+# 2. player bar: play pill colour and size (Figma "play": orange for play, grey #6B6B6B while it shows pause),
+#    seek handle colour, seek fill colour
 for scene in ('player-playing', 'player-paused', 'player-day', 'player-system'):
     im = img(scene)
     if not im:
         continue
     c = dominant(im, (70, 1042, 112, 1062))
-    (ok if near(c, ACCENT, 2) else fail)(scene, f'play pill colour {hexc(c)} (want #D37918)')
+    want = ACCENT if scene == 'player-paused' else (0x6B, 0x6B, 0x6B)
+    (ok if near(c, want, 2) else fail)(scene, f'play pill colour {hexc(c)} (want {hexc(want)})')
     g = geom(scene).get('Play/Pause')
     if g:
         x, y, w, h = g[0]
@@ -112,8 +114,9 @@ for scene, tag, inside in (('queue-open', 'a', (0x0E, 0x0E, 0x0E)), ('panel-tabs
         W = t.size[0]
         c = t.getpixel((W - 200, 44))
         (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} right under the top bar (want a gap)')
-        c = t.getpixel((W - 14, 500))
-        (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} at the stage edge (want a gap)')
+        # the stage is flush with the window: the card keeps an 8px gap to the window edge
+        c = t.getpixel((W - 4, 500))
+        (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} at the window edge (want a gap)')
         c = t.getpixel((W - 200, 60))
         (ok if near(c, inside, 3) else fail)(scene, f'panel {hexc(c)} (want solid {hexc(inside)})')
 
@@ -166,7 +169,7 @@ g = geom('resume-prompt', 'b')
 if g:
     crumb = [k for k in g if k.startswith('Back to ')]
     (ok if crumb else fail)('resume-prompt', 'folder crumb visible while the resume prompt is shown')
-    (ok if 'Continue' in g else fail)('resume-prompt', 'resume prompt shown')
+    (ok if 'Continue Watching' in g else fail)('resume-prompt', 'resume prompt shown')
 
 # 7. mini player card (Figma "Miniplayer"): the video corners are rounded into its 2px dark frame,
 #    the card is 391x338 in the secondary window colour
@@ -189,14 +192,6 @@ if im:
     (ok if near(c, (0x09, 0x09, 0x09), 3) else fail)('customize', f'header {hexc(c)} (want #090909)')
     c = dominant(im, (300, 580, 700, 600))
     (ok if near(c, (0x0E, 0x0E, 0x0E), 3) else fail)('customize', f'body {hexc(c)} (want #0F0F0F)')
-
-# 9. browse folder header like the library header: back/forward, path crumbs, item count, + button
-g = geom('browse-folder', 'deep')
-if g:
-    for name in ('Back', 'Forward', 'The Wand', 'S01', '12 items'):
-        (ok if name in g else fail)('browse-folder', f'header shows "{name}"')
-    b = g.get('Add to medialibrary') or g.get('Remove from medialibrary')
-    (ok if b and b[0][2] <= 40 else fail)('browse-folder', f'media library button is an icon ({b[0][2] if b else "missing"} px wide)')
 
 # 9b. Videos is a folder tree: the first level lists the added folders, every level has the address
 #     line (Videos > Shows > The Wand > S01) with back / forward, the season holds its 12 episodes
