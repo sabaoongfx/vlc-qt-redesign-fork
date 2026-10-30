@@ -60,6 +60,15 @@ it by hand (drag a row of the player's library card onto the open play queue). N
 
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
+Status 2026-10-30: steps 1-3 done on Manjaro. `550223c` builds clean; a full harness run has no QML warnings at all
+(the blind fixes of the 2026-10-27 list hold) and passes 172/172 after the harness update (`60da4de`). Found and fixed:
+global shortcuts that are Qt.ApplicationShortcut (Ctrl+P, Ctrl+N, Ctrl+M...) never fired with the X11 compositor
+(offscreen interface window; Ctrl+O/F/Y are window shortcuts and worked): `ShortcutExt` defaults to
+Qt.WindowShortcut now (`006bec0`; likely also the open "Ctrl+N on Windows", check there). Harness: the fixture
+library is made with Ctrl+F (Videos and Music roots, like a user's; the wizard adds none) and has no history,
+`fixture` scenes copy the profile, Settings opens with `key:ctrl+p`, video scenes open the Videos folder first.
+Not done: `test_navigation_model` (not built), step 4 (features on a real window).
+
 `git log d3064c2..HEAD` (commits that say "untested"). It compiles in CI (step 0); only a few screens were seen in CI screenshots. Do this in order,
 commit each fix on its own, push a code commit before any docs-only one (see the CI note below).
 
