@@ -35,17 +35,6 @@ Widgets.TableViewExt {
     property alias sortOrder: urlModel.sortOrder
     property alias sortCriteria: urlModel.sortCriteria
 
-    property Component urlHeaderDelegate: Widgets.TableHeaderDelegate {
-        Widgets.IconLabel {
-            anchors.fill: parent
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
-            font.pixelSize: VLCStyle.icon_tableHeader
-            text: VLCIcons.history
-            color: parent.colorContext.fg.secondary
-        }
-    }
-
     visible: urlModel.count > 0
     model: urlModel
 
@@ -55,13 +44,13 @@ Widgets.TableViewExt {
         model: {
             criteria: "url",
 
-            text: qsTr("Url"),
+            // redesign: text column titles that line up with the address and the date (the
+            // icons sat centred over nothing, user report)
+            text: qsTr("Address"),
 
             isSortable: false,
 
-            showSection: "url",
-
-            headerDelegate: urlHeaderDelegate
+            showSection: "url"
         }
     }, {
         size: 1,
@@ -69,14 +58,12 @@ Widgets.TableViewExt {
         model: {
             criteria: "last_played_date",
 
-            text: qsTr("Last played date"),
+            text: qsTr("Last played"),
 
             isSortable: false,
 
             showSection: "",
-            showContextButton: true,
-
-            headerDelegate: tableColumns.timeHeaderDelegate
+            showContextButton: true
         }
     }]
 
@@ -100,10 +87,5 @@ Widgets.TableViewExt {
         id: contextMenu
 
         model: urlModel
-    }
-
-
-    MLTableColumns {
-        id: tableColumns
     }
 }
