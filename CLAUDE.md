@@ -58,6 +58,20 @@ it by hand (drag a row of the player's library card onto the open play queue). N
   in its screenshot step at the moment of the next push (concurrency is `cancel-in-progress: false`; cause
   not found).
 
+## Done 2026-10-30 afternoon (Windows machine, nothing run by hand)
+
+- macOS (see `redesign/MACOS-PLAN.md`, its status line): M1 `redesign-macos.yml` + `extras/package/redesign/macos-build.sh`,
+  M2 `macapp.sh` (`VLC juxtopposed.app`, `VLC-juxtopposed-arm64.dmg`), M3 screenshots (`macos-screenshots`), M4 written blind:
+  native title bar by default on macOS (`QT_TITLEBAR_DEFAULT` in `qt.hpp`), the start screen chip shows the Cmd key,
+  Cmd+, opens Settings, files from Finder/Dock play (`FileOpenSpy`, `qt.cpp`), a native menu bar
+  (`VLCMenuBar::createNativeMenuBar`). The first macOS run builds the contribs from source (hours), then they are cached.
+- Linux packages: apt update/build-dep/install retried 3 times with an 8 minute timeout each (the hang that hit the
+  20 min step timeout).
+- Dead code removed (item 6 of the list below): `VideoAllDisplay`, `VideoAllSubDisplay`, `VideoGroupDisplay`,
+  `MLVideoFoldersModel`, `SortMenuVideo`. Still there: `DiscoverDisplay` pages (unreachable). The `useGlobalShortcuts`
+  smell is down to four redesign lines (CompactLibrary, NetworkStreamDialog x2, NewPlaylistDialog); left as is.
+- Commit identity: the Windows shell has no git user; commit with `git -c user.name=sabaoongfx -c user.email=sabaoongfx@gmail.com`.
+
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
 Status 2026-10-30: steps 1-3 done on Manjaro. `550223c` builds clean; a full harness run has no QML warnings at all
