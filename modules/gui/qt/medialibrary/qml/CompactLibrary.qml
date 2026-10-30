@@ -230,13 +230,25 @@ Rectangle {
         }
     }
 
+    // MLItemId is a gadget: compare its text form
+    function _sameId(a, b) {
+        return String(a?.toString?.() ?? a) === String(b?.toString?.() ?? b)
+    }
+
+    // Back goes up to the parent and Forward back down the same branch (user request); opening
+    // the child Forward would give keeps the rest of that branch
     function open(place) {
-        _forward = []
+        if (_forward.length > 0 && _forward[0].kind === place.kind && _sameId(_forward[0].id, place.id))
+            _forward = _forward.slice(1)
+        else
+            _forward = []
         trail = [...trail, place]
     }
 
     function goTo(depth) {
-        _forward = []
+        if (depth >= trail.length)
+            return
+        _forward = [...trail.slice(depth), ..._forward]
         trail = trail.slice(0, depth)
     }
 

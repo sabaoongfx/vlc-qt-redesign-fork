@@ -47,6 +47,16 @@ T.Page {
 
     signal crumbClicked(int index)
 
+    // redesign: a tree page (the Videos and Music folders) sets this: Back goes up to the parent
+    // folder and Forward back down to the child it came from, not through the visit history
+    // (user request). canGoUp/canGoDown enable the buttons.
+    property bool treeNavigation: false
+    property bool canGoUp: false
+    property bool canGoDown: false
+
+    signal goUp(int reason)
+    signal goDown(int reason)
+
     // redesign: entries of the header's "..." menu for this page ({ text, icon_svg, action });
     // unset, it is the folder menu
     property var menuEntries: null
@@ -222,8 +232,13 @@ T.Page {
                 Layout.preferredWidth: VLCStyle.bannerButton_width
                 Layout.preferredHeight: VLCStyle.bannerButton_height
 
-                enabled: !History.previousEmpty
-                onClicked: History.previous(Qt.MouseFocusReason)
+                enabled: root.treeNavigation ? root.canGoUp : !History.previousEmpty
+                onClicked: {
+                    if (root.treeNavigation)
+                        root.goUp(Qt.MouseFocusReason)
+                    else
+                        History.previous(Qt.MouseFocusReason)
+                }
             }
 
             IconToolButton {
@@ -236,8 +251,13 @@ T.Page {
                 Layout.preferredWidth: VLCStyle.bannerButton_width
                 Layout.preferredHeight: VLCStyle.bannerButton_height
 
-                enabled: !History.nextEmpty
-                onClicked: History.next(Qt.MouseFocusReason)
+                enabled: root.treeNavigation ? root.canGoDown : !History.nextEmpty
+                onClicked: {
+                    if (root.treeNavigation)
+                        root.goDown(Qt.MouseFocusReason)
+                    else
+                        History.next(Qt.MouseFocusReason)
+                }
             }
 
             // redesign: Figma address line, "Videos > Shows > The Wand", every part but the

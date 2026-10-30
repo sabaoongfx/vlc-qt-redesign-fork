@@ -58,8 +58,25 @@ Widgets.PageLoader {
 
     // Functions
 
+    // The deepest folder path of the branch the user is on: going up keeps it, so Forward can
+    // walk back down it; opening another folder starts a new branch.
+    property var _branch: []
+
+    // MLItemId is a gadget: compare its text form
+    function _sameId(a, b) {
+        return String(a?.toString?.() ?? a) === String(b?.toString?.() ?? b)
+    }
+
+    function _onBranch(trail) {
+        return trail.length <= _branch.length
+               && trail.every((folder, i) => _sameId(folder.id, _branch[i].id))
+    }
+
     // trail: [{ id, title }, ...], the folders from the first level down to the one shown
     function showFolder(trail, reason) {
+        if (!_onBranch(trail))
+            _branch = trail
+
         if (trail.length === 0) {
             History.push([...root.pagePrefix, "base"], {}, reason)
             return
@@ -88,6 +105,14 @@ Widgets.PageLoader {
             onCurrentIndexChanged: History.viewProp.initialIndex = currentIndex
 
             onShowFolder: (trail, reason) => root.showFolder(trail, reason)
+
+            // Back = the parent folder, Forward = the child of the branch it came up from
+            treeNavigation: true
+            canGoUp: trail.length > 0
+            canGoDown: root._onBranch(trail) && root._branch.length > trail.length
+
+            onGoUp: (reason) => root.showFolder(trail.slice(0, trail.length - 1), reason)
+            onGoDown: (reason) => root.showFolder(root._branch.slice(0, trail.length + 1), reason)
         }
     }
 
