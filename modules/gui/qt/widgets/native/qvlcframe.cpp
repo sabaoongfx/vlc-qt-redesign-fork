@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <QStyle>
+#include <QWizard>
 
 #include "qvlcframe.hpp"
 #include "maininterface/compositor.hpp"
@@ -263,6 +264,60 @@ static QString redesignWidgetsStyleSheet()
         "QSlider::add-page:vertical { border-radius: 2px; background: palette(highlight); }"
         "QSlider::handle:vertical { height: 14px; margin: 0 -5px; border-radius: 7px; background: palette(highlight); }"
         "QSlider::handle:horizontal { width: 14px; margin: -5px 0; border-radius: 7px; background: palette(highlight); }" );
+}
+
+/* redesign: Qt's stock boxes (QMessageBox, QInputDialog, QProgressDialog) and the dialogs built on a
+   plain QDialog or QWizard (first-run wizard, Stream wizard, hotkey capture, extensions...) are not
+   QVLCDialogs. On Windows the native style drew them white under the palette's light text, with blank
+   buttons (user report: Delete playlist). Every top-level dialog without a stylesheet of its own gets
+   the shared one when it is polished, before it is sized and shown, plus a background and label colour. */
+namespace {
+
+QString stockDialogStyleSheet()
+{
+    return redesignWidgetsStyleSheet() + QStringLiteral(
+        "QDialog { background: palette(window); }"
+        "QLabel { color: palette(window-text); background: transparent; }"
+        "QDialogButtonBox { background: transparent; }" );
+}
+
+class StockDialogStyler : public QObject
+{
+public:
+    using QObject::QObject;
+
+    bool eventFilter( QObject *object, QEvent *event ) override
+    {
+        if( event->type() != QEvent::Polish || !object->isWidgetType() )
+            return false;
+
+        QWidget *widget = static_cast<QWidget *>( object );
+        if( !widget->isWindow() || !widget->inherits( "QDialog" ) || !widget->styleSheet().isEmpty()
+            || widget->property( "redesignStockDialog" ).toBool() )
+            return false;
+
+        widget->setProperty( "redesignStockDialog", true );
+
+        // the Aero wizard (Windows) draws its pages natively, whatever the palette says
+        if( QWizard *wizard = qobject_cast<QWizard *>( widget ) )
+            if( wizard->wizardStyle() == QWizard::AeroStyle )
+                wizard->setWizardStyle( QWizard::ModernStyle );
+
+        Redesign::liveStyleSheet( widget, stockDialogStyleSheet );
+        return false;
+    }
+};
+
+}
+
+void QVLCDialog::styleStockDialogs()
+{
+    static bool installed = false;
+    if( installed )
+        return;
+    installed = true;
+
+    qApp->installEventFilter( new StockDialogStyler( qApp ) );
 }
 
 QVLCFrame::QVLCFrame(qt_intf_t *_p_intf) : QWidget( NULL ), p_intf( _p_intf )

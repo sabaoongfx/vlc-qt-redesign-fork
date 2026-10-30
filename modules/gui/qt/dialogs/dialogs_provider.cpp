@@ -104,6 +104,9 @@ DialogsProvider::DialogsProvider( qt_intf_t *_p_intf )
 
 {
     b_isDying = false;
+
+    /* redesign: question, warning and text boxes follow the theme too */
+    QVLCDialog::styleStockDialogs();
 }
 
 DialogsProvider::~DialogsProvider()

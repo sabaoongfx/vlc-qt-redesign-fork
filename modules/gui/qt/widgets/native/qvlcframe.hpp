@@ -121,6 +121,10 @@ public:
 
     static void setWindowTransientParent(QWidget* widget, QWindow* parent, qt_intf_t* p_intf);
 
+    /* redesign: gives Qt's stock boxes (message, input, progress) the shared window stylesheet;
+     * installs an application event filter once */
+    static void styleStockDialogs();
+
 protected:
     qt_intf_t *p_intf;
 
