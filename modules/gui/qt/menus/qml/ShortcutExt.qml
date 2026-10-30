@@ -20,6 +20,8 @@ import QtQuick
 import VLC.MainInterface
 
 Shortcut {
-    context: Qt.ApplicationShortcut
+    // redesign: not Qt.ApplicationShortcut: the X11 compositor renders the interface in an offscreen
+    // window and application shortcuts never fired there (Ctrl+P, Ctrl+N, Ctrl+M...), window shortcuts do
+    context: Qt.WindowShortcut
     enabled: MainCtx.useGlobalShortcuts
 }
