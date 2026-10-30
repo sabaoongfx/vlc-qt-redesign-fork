@@ -143,7 +143,7 @@ void FirstRunWizard::finish()
 
     /* Layout Page settings */
     config_PutInt( "qt-menubar", ui.layoutGroup->checkedId() );
-    config_PutInt( "qt-titlebar", ui.layoutGroup->checkedId() );
+    config_PutInt( "qt-titlebar", QT_TITLEBAR_DEFAULT || ui.layoutGroup->checkedId() );
 
     /* redesign: both layouts keep the solid bars above and below the video */
     config_PutInt( "qt-pin-controls", 1 );
@@ -327,7 +327,7 @@ void FirstRunWizard::reject()
 
     /* Layout Page settings */
     config_PutInt( "qt-menubar", 0 );
-    config_PutInt( "qt-titlebar", 0 );
+    config_PutInt( "qt-titlebar", QT_TITLEBAR_DEFAULT );
     p_intf->p_mi->setPinVideoControls( 1 ); /* redesign: solid bars */
 
     if( p_intf->p_mi->getMediaLibrary() )

@@ -415,10 +415,11 @@ vlc_module_begin ()
               QT_DISABLE_VOLUME_KEYS_LONGTEXT      /* longtext */)
 #endif
 
-    /* redesign: client side decorations everywhere by default, so the window buttons
-       sit in VLC's own top bar like the prototype (one bar instead of two) */
+    /* redesign: client side decorations by default, so the window buttons sit in VLC's own
+       top bar like the prototype (one bar instead of two); macOS keeps the native title bar,
+       its window buttons belong on the left */
     add_bool( "qt-titlebar",
-              false                              /* use CSD by default */,
+              QT_TITLEBAR_DEFAULT,
               QT_CLIENT_SIDE_DECORATION_TEXT, QT_CLIENT_SIDE_DECORATION_LONGTEXT )
 
     add_bool( "qt-menubar", false, QT_MENUBAR_TEXT, QT_MENUBAR_LONGTEXT )
