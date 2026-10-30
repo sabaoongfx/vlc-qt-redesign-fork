@@ -188,8 +188,10 @@ FocusScope {
             font.family: VLCStyle.fontFamily
             font.pixelSize: VLCStyle.fontSize_normal
         }
-        KeyChip { text: "Ctrl"; anchors.verticalCenter: parent.verticalCenter }
+        // Qt maps Ctrl to Cmd on macOS: show it the Mac way there (⌘O, no plus)
+        KeyChip { text: Qt.platform.os === "osx" ? "⌘" : "Ctrl"; anchors.verticalCenter: parent.verticalCenter }
         Text {
+            visible: Qt.platform.os !== "osx"
             anchors.verticalCenter: parent.verticalCenter
             text: "+"
             color: theme.fg.secondary
