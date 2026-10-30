@@ -130,10 +130,12 @@ jobs:
           printf '[MainWindow]\ncolor-scheme-index=%s\n' "$3" > "$HOME/.config/vlc/vlc-qt-interface.conf"
           export VLC_PLUGIN_PATH="$1/install/lib/vlc/plugins"
           export QT_QPA_PLATFORM=xcb
-          "$1/install/bin/vlc" --verbose=1 --no-media-library --no-qt-privacy-ask --aout=dummy /tmp/test.mp4 >"$1/shots/$2.log" 2>&1 &
+          "$1/install/bin/vlc" --verbose=1 --no-media-library --no-qt-privacy-ask --aout=dummy --no-qt-video-autoresize /tmp/test.mp4 >"$1/shots/$2.log" 2>&1 &
           VLC_PID=$!
           sleep 12
-          # 1280x800 at 0,0: the bar's right-hand buttons are then at y 773, Audio x 1108, Languages and tracks 1142
+          # 1280x800 at 0,0: the bar's right-hand buttons are then at y 773, Audio x 1108, Languages and tracks 1142.
+          # No auto-resize: it snapped the window back to the video size, and with no window manager the player
+          # area was briefly larger than the window (VideoWindowHandler::setVideoSize assert, run 41041235583)
           WID=$(xdotool search --onlyvisible --class vlc | head -1)
           xdotool windowmove "$WID" 0 0 windowsize "$WID" 1280 800 || true
           sleep 3
