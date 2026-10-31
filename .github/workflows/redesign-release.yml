@@ -3,11 +3,11 @@ name: Redesign release
 # Publishes a GitHub release for a v* tag from the builds every push to redesign already makes
 # (a tag run cannot read the redesign branch's caches, so building here would rebuild the Windows
 # contribs from scratch). Push the commit, then the tag: this waits for the Windows and Linux
-# package runs of the tagged commit, takes their artifacts and attaches them under fixed names
+# (and macOS) package runs of the tagged commit, takes their artifacts and attaches them under fixed names
 # (no version: the tag has it), so https://github.com/<repo>/releases/latest/download/<name> always
 # gives the newest one (the website links those):
 #   VLC-juxtopposed-x64-setup.exe, VLC-juxtopposed-x64-portable.zip,
-#   VLC-juxtopposed-x86_64.AppImage, VLC-juxtopposed-x86_64.tar.gz
+#   VLC-juxtopposed-x86_64.AppImage, VLC-juxtopposed-x86_64.tar.gz, VLC-juxtopposed-arm64.dmg
 # A v*-something tag (v0.1.3-rc1) is published as a pre-release; every other tag, v0.x included, is a full
 # release, because releases/latest/download (the website links it) skips pre-releases.
 on:
@@ -50,8 +50,10 @@ jobs:
           }
           WIN=$(wait_run redesign-windows.yml | tail -1)
           LIN=$(wait_run redesign-linux-packages.yml | tail -1)
+          MAC=$(wait_run redesign-macos.yml | tail -1)
           gh run download "$WIN" -n vlc-win64-portable -D dl/win
           gh run download "$LIN" -n vlc-linux-packages -D dl/linux
+          gh run download "$MAC" -n vlc-macos-arm64 -D dl/mac
           ls -laR dl
 
       - name: Name the assets
@@ -67,11 +69,12 @@ jobs:
           copy "$(ls dl/win/*.zip | head -1)" x64-portable.zip
           copy dl/linux/VLC-juxtopposed-x86_64.AppImage x86_64.AppImage
           copy dl/linux/VLC-juxtopposed-x86_64.tar.gz x86_64.tar.gz
+          copy dl/mac/VLC-juxtopposed-arm64.dmg arm64.dmg
           (cd out && sha256sum * > SHA256SUMS)
           ls -la out
 
       # GitHub artifact attestation: `gh attestation verify <file> -R <repo>` proves the file is the one this
-      # workflow published for the tag (the files themselves are built by the Windows and Linux-packages runs)
+      # workflow published for the tag (the files themselves are built by the Windows, Linux-packages and macOS runs)
       - name: Attest the assets
         uses: actions/attest-build-provenance@v2
         with:
@@ -91,10 +94,12 @@ jobs:
           |---|---|
           | Windows 10/11 x64 | \`VLC-juxtopposed-x64-setup.exe\` (installer) or \`-x64-portable.zip\` |
           | Linux x86_64 (glibc 2.39+: Ubuntu 24.04, Debian 13, Fedora 40, Arch) | \`VLC-juxtopposed-x86_64.AppImage\` or \`.tar.gz\` |
-          | macOS | coming later |
+          | macOS 13+ on Apple silicon | \`VLC-juxtopposed-arm64.dmg\` |
 
           The Windows builds are not code-signed: SmartScreen asks for confirmation (More info, Run anyway).
           It installs next to VideoLAN's VLC and shares its settings folder.
+          The Mac app is not notarized: the first time, macOS blocks it; open System Settings, Privacy & Security,
+          and choose Open Anyway.
 
           Check a download: \`sha256sum -c SHA256SUMS --ignore-missing\`, or with the GitHub CLI
           \`gh attestation verify <file> -R $GITHUB_REPOSITORY\` (build provenance, from this release workflow).
