@@ -178,6 +178,8 @@ jobs:
           shot home 15 --no-media-library
           shot player 15 --no-media-library "$PWD/test.mp4"
           shot library 20
+          # with the media library on: the player's left menu (rail) and the bar's library button need it
+          shot player-library 20 "$PWD/test.mp4"
           ls -la shots
           # the shots must show the Qt interface, not the skins2 fallback
           if grep -l "skins2 interface" shots/*.log; then echo "::error::the Qt interface did not open (skins2 ran)"; exit 1; fi
