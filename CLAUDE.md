@@ -110,9 +110,8 @@ it by hand (drag a row of the player's library card onto the open play queue). N
   commented out). Not seen running yet on any desktop with a window manager: CI shots have no decorations.
 - v0.1.5: the user asked for a release once CI passes on `4bc9f18` (Windows build, Linux packages, macOS; the
   Redesign build run was cancelled as not needed for the release). Tag `v0.1.5` on `4bc9f18`; the release workflow
-  attaches the dmg too (first release with it from the workflow, so with attestation). macOS passed; a background
-  watcher tags `4bc9f18` as v0.1.5 only if Windows and Linux packages pass too. If the session ended first, check
-  `git ls-remote fork refs/tags/v0.1.5` and the runs before tagging by hand.
+  attaches the dmg too. RELEASED 2026-10-31 (run 41164371298): v0.1.5 is Latest with the exe, zip, AppImage,
+  tar.gz, the dmg (from the workflow, with attestation) and SHA256SUMS.
 - Runs needed for a release: Windows build, Linux packages, macOS. "Redesign build" (Linux dev check, shots, tests)
   is not; the user counts it as extra when only a release is wanted.
 - `qt.hpp`'s comment no longer names snap layouts as a reason (`1b32ef8`): upstream's drawn buttons support them
