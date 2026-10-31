@@ -39,7 +39,10 @@ Thumbnailer::Thumbnailer( vlc_medialibrary_module_t* ml )
         .types = VLC_PREPARSER_TYPE_THUMBNAIL_TO_FILES,
         .max_parser_threads = 0,
         .max_thumbnailer_threads = 1,
-        .timeout = VLC_TICK_FROM_SEC( 3 ),
+        // redesign: 15 s, not 3: the precise seek below decodes from the previous key frame in
+        // software, which took longer than 3 s on long HEVC episodes, so they kept the
+        // placeholder (user screenshot)
+        .timeout = VLC_TICK_FROM_SEC( 15 ),
 #if !defined(HAVE_VLC_EXTERNAL_PREPARSER)
         .external_process = false,
 #else

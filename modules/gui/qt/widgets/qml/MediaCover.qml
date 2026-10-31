@@ -65,6 +65,9 @@ Item {
 
     readonly property bool playCoverVisible: (_playCoverItem && _playCoverItem.visible)
 
+    // redesign: true while the fallback picture is shown (no thumbnail, or it failed or is late)
+    readonly property bool showingFallback: fallbackImage.visible
+
     required property int pictureWidth
     required property int pictureHeight
 

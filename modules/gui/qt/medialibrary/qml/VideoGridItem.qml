@@ -126,6 +126,35 @@ Widgets.GridItem {
             }
         }
 
+        // redesign: a video without a thumbnail is a dark tinted tile with a video icon, as in the
+        // prototype (.thumb.is-gen), not the light grey upstream placeholder that glared in the
+        // dark theme (user screenshot); the tint comes from the title so tiles in a row differ
+        Rectangle {
+            anchors.fill: parent
+
+            visible: !root.isFolder && !root.audio && root.mediaCover.showingFallback
+            radius: root.pictureRadius
+
+            readonly property bool dark: root.colorContext.palette?.isDark ?? true
+            readonly property real hue: {
+                const s = root.title
+                let h = 0
+                for (let i = 0; i < s.length; ++i)
+                    h = (h * 31 + s.charCodeAt(i)) % 360
+                return h / 360
+            }
+
+            color: dark ? Qt.hsla(hue, 0.22, 0.16, 1) : Qt.hsla(hue, 0.22, 0.88, 1)
+
+            Widgets.IconLabel {
+                anchors.centerIn: parent
+
+                text: VLCIcons.topbar_video
+                font.pixelSize: Math.round(parent.height * 0.3)
+                color: parent.dark ? Qt.hsla(parent.hue, 0.30, 0.55, 1) : Qt.hsla(parent.hue, 0.30, 0.45, 1)
+            }
+        }
+
         Widgets.ScaledImage {
             id: image
 

@@ -105,8 +105,10 @@ Widgets.ExpandGridItemView {
                   &&
                   gridView.expandIndex !== gridItem.index) ? 0.7 : 1
 
-        // FIXME: Sometimes MLBaseModel::getDataAt returns {} so we use 'isNew === true'.
-        showNewIndicator: (model.isNew === true)
+        // redesign: no orange "new" corner: the design has none, and the square mark poked out of
+        // the rounded corner under the HD label (user screenshot). Progress and the "Unwatched
+        // First" sort carry that information.
+        showNewIndicator: false
 
         dragItem: gridView.dragItem
 
