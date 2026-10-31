@@ -27,7 +27,9 @@ mkdir -p "$C/MacOS" "$C/Frameworks/plugins" "$C/Resources/share"
 # binaries, looking for their libraries in Contents/Frameworks
 cp "$PREFIX/bin/vlc" "$C/MacOS/VLC"
 install_name_tool -rpath "$PREFIX/lib" "@executable_path/../Frameworks/" "$C/MacOS/VLC"
-for x in vlc-preparser; do
+# helpers live next to the executable in a bundle (VLC_PKG_LIBEXEC_DIR, src/darwin/dirs.m); without
+# vlc-qt-check the Qt interface declines to open and VLC falls back to skins2
+for x in vlc-preparser vlc-qt-check; do
     f=$(find "$PREFIX/libexec" "$PREFIX/lib" -name "$x" -type f 2>/dev/null | head -1)
     [ -n "$f" ] || continue
     cp "$f" "$C/MacOS/"
@@ -91,9 +93,10 @@ plutil -lint "$C/Info.plist"
 # named with -executable for macdeployqt to see what it links.
 QTPLUGIN=$C/Frameworks/plugins/libqt_plugin.dylib
 [ -f "$QTPLUGIN" ] || { echo "libqt_plugin.dylib missing"; exit 1; }
+[ -f "$C/MacOS/vlc-qt-check" ] || { echo "vlc-qt-check missing"; exit 1; }
 "$QT_BINS/macdeployqt" "$APP" \
     -qmldir="$SRC/modules/gui/qt" \
-    -executable="$QTPLUGIN" \
+    -executable="$QTPLUGIN"     -executable="$C/MacOS/vlc-qt-check" \
     -libpath="$QT_LIBS" \
     -libpath="$C/Frameworks" \
     -verbose=1

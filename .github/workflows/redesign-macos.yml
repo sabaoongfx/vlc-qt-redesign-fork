@@ -153,6 +153,8 @@ jobs:
           "$V" --list > applist.txt 2>&1 || true
           grep -E "^ +qt " applist.txt || { echo "::error::Qt interface missing in the app"; tail -80 applist.txt; exit 1; }
           if grep -q "stale plugins cache" applist.txt; then echo "::error::stale plugin cache"; exit 1; fi
+          # the Qt interface runs this first and silently gives way to skins2 if it fails (the runner has a desktop)
+          "out/VLC juxtopposed.app/Contents/MacOS/vlc-qt-check" || { echo "::error::vlc-qt-check failed ($?)"; exit 1; }
 
       # M3: the runner has a logged-in desktop; screencapture shoots the whole screen
       - name: Screenshots
@@ -177,6 +179,8 @@ jobs:
           shot player 15 --no-media-library "$PWD/test.mp4"
           shot library 20
           ls -la shots
+          # the shots must show the Qt interface, not the skins2 fallback
+          if grep -l "skins2 interface" shots/*.log; then echo "::error::the Qt interface did not open (skins2 ran)"; exit 1; fi
 
       - name: QML warnings
         if: always()
