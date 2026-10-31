@@ -117,6 +117,25 @@ it by hand (drag a row of the player's library card onto the open play queue). N
 - `qt.hpp`'s comment no longer names snap layouts as a reason (`1b32ef8`): upstream's drawn buttons support them
   (`mainctx_win32.cpp`, `HTMAXBUTTON`).
 
+## Library thumbnails (2026-10-30 late, `4b03aef`, CI running, not seen on a real library)
+
+From a user screenshot of Home (`~/Downloads/Screenshot 2026-10-30 223916.png`):
+- Videos without a thumbnail showed upstream's light grey `noart_videoCover.svg` in the dark theme. Now
+  `VideoGridItem.qml` draws the prototype's `.thumb.is-gen` tile over it: hsl(hue, 22%, 16%) with a hsl(hue, 30%, 55%)
+  `VLCIcons.topbar_video` icon (light theme 88% / 45%), hue hashed from the title; shown while
+  `MediaCover.showingFallback` (new property). List rows, CompactLibrary and the ML models' cpp placeholders
+  (`mlvideofoldertreemodel.cpp`, `mlvideogroupsmodel.cpp`) still use the light SVG.
+- The orange "new" corner (`new_indicator.svg`, model `isNew`) is off in `VideoGridDisplay.qml`: not in the design,
+  and it poked out of the rounded corner under the HD label.
+- Thumbnailer timeout 3 s -> 15 s (`modules/misc/medialibrary/Thumbnailer.cpp`): the precise seek (v0.1.3, `80400fc`,
+  against grey frames) decodes from the previous key frame in software; long HD/HEVC episodes likely ran past 3 s and
+  kept the placeholder. Unproven without the user's files. The media library stops retrying after repeated failures
+  (`VLC_ML_THUMBNAIL_STATUS_PERSISTENT_FAILURE`), so such files may need a rescan.
+- Open: a flat grey thumbnail made before v0.1.3 stays (thumbnails are never regenerated); a "Refresh thumbnail"
+  context menu action was offered, not built. Continue Watching showed no progress bars in the screenshot: asked the
+  user whether those videos were stopped partway.
+- Thumbnails are taken at 15% of the video (`vlc_ml_media_generate_thumbnail(..., 512, 320, .15)` in the Qt models).
+
 ## Website and blog (`../vlc-web`, 2026-10-30 night)
 
 - Download section: label + size per file from the release API, a "Your device" badge, a macOS card (Apple
