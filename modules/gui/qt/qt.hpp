@@ -165,7 +165,7 @@ static inline QString QVLCUserDir( vlc_userdir_t type )
 #define QT_XMAS_JOKE_DAY 354
 
 /* redesign: default of "qt-titlebar": the system's own title bar on every platform (users asked for it:
- * the desktop's buttons, snap layouts and themes; on macOS the traffic lights). VLC's drawn window buttons
+ * the desktop's own buttons, look and theme; on macOS the traffic lights). VLC's drawn window buttons
  * in the top bar stay one switch away: Settings > Show window decorations. */
 #define QT_TITLEBAR_DEFAULT true
 
