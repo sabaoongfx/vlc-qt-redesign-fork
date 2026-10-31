@@ -100,6 +100,10 @@ by the user on 2026-10-31 (works). Notes kept for context:
   release (SHA256SUMS updated, notes say added later, no attestation), and the site (`8029b10`) says Windows, macOS
   and Linux. The white video area is still unchecked on a real Mac: watch for reports.
 - Pushing a code change starts all four workflows; when only macOS files change, cancel the other three.
+- The `player` macOS shot runs with `--no-media-library`, which hides the player's left menu (rail, `Player.qml`
+  `_libraryRail`) and the bar's library button (`control_list_filter.cpp`): by design, not a macOS bug (user asked
+  2026-10-31). `7d815fe` adds `player-library` (same video, library on); macOS run 41237600798, not looked at yet.
+  The local network prompt may cover it.
 
 ## Title bar and v0.1.5 (2026-10-30 night)
 
