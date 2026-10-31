@@ -72,6 +72,33 @@ it by hand (drag a row of the player's library card onto the open play queue). N
   smell is down to four redesign lines (CompactLibrary, NetworkStreamDialog x2, NewPlaylistDialog); left as is.
 - Commit identity: the Windows shell has no git user; commit with `git -c user.name=sabaoongfx -c user.email=sabaoongfx@gmail.com`.
 
+## macOS state (2026-10-30 evening, CI only, no Mac)
+
+- Green end to end since `c86538d`: build, `.app`, dmg, app smoke test, screenshots. The Qt redesign opens (start
+  screen, library sidebar, player bars, native menu bar). M4 code compiles; the menu bar shows "VLC juxtopposed".
+- OPEN, the release blocker: the player's video area is blank white in the screenshots while playback runs
+  (VideoToolbox decodes, seek bar moves). Qt logs `OpenGL (ES) 3.0 context creation failed`. The runner is a VM with
+  a paravirtual GPU, so it may be the runner, not the app; skins2 did show video there. `CompositorPlatform` (cocoa)
+  puts a child video QWindow under a transparent QQuickView; the redesign's Player.qml keeps the stage transparent like
+  upstream. Needs someone to run the dmg on a real Mac before the dmg is released.
+- Lessons from the fixes (do not undo):
+  - `contrib/bin` (luac, protoc) is not in the v1 contrib cache paths; the "Contrib native tools" step rebuilds them on
+    a cache hit. Do not edit `macos-build.sh` lightly: it is part of the contrib cache key (a change = ~45 min rebuild).
+  - `macapp.sh`: `vlc-qt-check` must be in `Contents/MacOS` (bundle libexec dir, `src/darwin/dirs.m`), or Qt quietly
+    declines and VLC falls back to skins2. CI now runs it and fails the shots if skins2 ran.
+  - Signing order as upstream `codesign.sh`: every file in `Contents/Frameworks` outside a .framework (data too), then
+    `vlc-cache-gen` (with `DYLD_LIBRARY_PATH`, it has no rpath), then sign `plugins.dat`; otherwise "stale plugins cache".
+  - Qt's sqldrivers are deleted (they link ODBC/Postgres/Mimer libs nobody has).
+  - macOS arm64 runners sometimes are not acquired ("capacity constraints"): just re-run.
+- Small leftovers: font "Inter" missing (Qt substitutes), `Command+0` bound to two actions, the local network prompt
+  (`NSLocalNetworkUsageDescription` added in `5b76e90`).
+- Release: `redesign-release.yml` now waits for the macOS run and attaches `VLC-juxtopposed-arm64.dmg` (M5). Tag a
+  commit that has CI runs (not a `[skip ci]` one). Ask before any tag.
+- Website (`../vlc-web`, `afbe935`): download rows show label + size from the release, a "Your device" badge, and a
+  macOS card that switches itself on once the newest release has `VLC-juxtopposed-arm64.dmg`. So releasing turns the
+  Mac download on for everyone: fix the video first.
+- Pushing a code change starts all four workflows; when only macOS files change, cancel the other three.
+
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
 Status 2026-10-30: steps 1-3 done on Manjaro. `550223c` builds clean; a full harness run has no QML warnings at all

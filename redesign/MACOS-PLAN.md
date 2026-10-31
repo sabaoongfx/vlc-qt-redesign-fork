@@ -1,7 +1,8 @@
 # macOS plan (written 2026-10-30)
 
-Status: M1 and M2 pushed 2026-10-30 (`dcddb4f`, `c02d725`; M2 is `extras/package/redesign/macapp.sh`), first CI run
-pending; M4 written blind: window controls, shortcut hints, Cmd+,, Finder/Dock files, the menu bar. M1 is: `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
+Status (2026-10-30 evening): M1-M3 green in CI since `c86538d` (build, app, dmg, screenshots of the Qt redesign);
+M5 done (`redesign-release.yml` attaches the dmg, the website's Mac card turns on with it). Open: the player's video
+area is white in the CI VM, unchecked on a real Mac (see CLAUDE.md, "macOS state"). M4 written blind: window controls, shortcut hints, Cmd+,, Finder/Dock files, the menu bar. M1 is: `.github/workflows/redesign-macos.yml` + `extras/package/redesign/macos-build.sh`
 (steps tools / contribs / vlc; triplet `aarch64-apple-darwin19` like upstream's CI; minimum macOS 13; `--enable-qt`,
 because configure turns Qt off on darwin by default; no Rust contribs, rustc is not on the reset PATH). Decisions taken
 with the recommendations below (ad-hoc signing, arm64 only, native title bar, CI only, macOS 13).
