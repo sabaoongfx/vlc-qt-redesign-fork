@@ -95,8 +95,10 @@ it by hand (drag a row of the player's library card onto the open play queue). N
 - Release: `redesign-release.yml` now waits for the macOS run and attaches `VLC-juxtopposed-arm64.dmg` (M5). Tag a
   commit that has CI runs (not a `[skip ci]` one). Ask before any tag.
 - Website (`../vlc-web`, `afbe935`): download rows show label + size from the release, a "Your device" badge, and a
-  macOS card that switches itself on once the newest release has `VLC-juxtopposed-arm64.dmg`. So releasing turns the
-  Mac download on for everyone: fix the video first.
+  macOS card that switches itself on once the newest release has `VLC-juxtopposed-arm64.dmg`.
+- PUBLISHED (user's choice, 2026-10-30): the dmg from run 41158407145 (`5b76e90`) was attached by hand to the v0.1.4
+  release (SHA256SUMS updated, notes say added later, no attestation), and the site (`8029b10`) says Windows, macOS
+  and Linux. The white video area is still unchecked on a real Mac: watch for reports.
 - Pushing a code change starts all four workflows; when only macOS files change, cancel the other three.
 
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
