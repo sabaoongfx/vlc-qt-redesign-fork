@@ -101,6 +101,19 @@ it by hand (drag a row of the player's library card onto the open play queue). N
   and Linux. The white video area is still unchecked on a real Mac: watch for reports.
 - Pushing a code change starts all four workflows; when only macOS files change, cancel the other three.
 
+## Title bar and v0.1.5 (2026-10-30 night)
+
+- The system title bar is now the default on every platform (`QT_TITLEBAR_DEFAULT` is plain `true` in `qt.hpp`;
+  `3b557c5` Windows, `4bc9f18` Linux): users said the drawn buttons ignored Windows' decorations. VLC's drawn window
+  buttons in the top bar are the opt-in, Settings > Show window decorations (`qt-titlebar`). Existing installs follow
+  the new default unless the option was changed by hand (the wizard only ever saved the old default, which VLC writes
+  commented out). Not seen running yet on any desktop with a window manager: CI shots have no decorations.
+- v0.1.5: the user asked for a release once CI passes on `4bc9f18` (Windows build, Linux packages, macOS; the
+  Redesign build run was cancelled as not needed for the release). Tag `v0.1.5` on `4bc9f18`; the release workflow
+  attaches the dmg too (first release with it from the workflow, so with attestation).
+- Runs needed for a release: Windows build, Linux packages, macOS. "Redesign build" (Linux dev check, shots, tests)
+  is not; the user counts it as extra when only a release is wanted.
+
 ## FIRST on Manjaro: work written on Windows, compiled in CI but not run by hand (2026-10-28)
 
 Status 2026-10-30: steps 1-3 done on Manjaro. `550223c` builds clean; a full harness run has no QML warnings at all
