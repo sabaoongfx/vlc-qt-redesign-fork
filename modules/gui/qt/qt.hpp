@@ -164,9 +164,10 @@ static inline QString QVLCUserDir( vlc_userdir_t type )
  */
 #define QT_XMAS_JOKE_DAY 354
 
-/* redesign: default of "qt-titlebar" (native window title bar). Off everywhere (VLC draws
- * its own window buttons in the top bar) but on macOS, where the traffic lights belong on the left. */
-#ifdef __APPLE__
+/* redesign: default of "qt-titlebar" (native window title bar). On for macOS (the traffic lights belong
+ * on the left) and Windows (users asked for the system's own title bar: snap layouts, the theme's buttons);
+ * off on Linux, where VLC draws its window buttons in its top bar. Settings > Show window decorations. */
+#if defined(__APPLE__) || defined(_WIN32)
 # define QT_TITLEBAR_DEFAULT true
 #else
 # define QT_TITLEBAR_DEFAULT false
