@@ -68,6 +68,7 @@ cat > "$C/Info.plist" <<EOF
 	<key>LSApplicationCategoryType</key><string>public.app-category.entertainment</string>
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<key>NSLocalNetworkUsageDescription</key><string>VLC looks for media servers and shared folders on your network (Network in the sidebar).</string>
 	<key>NSHumanReadableCopyright</key><string>Unofficial build of VLC (GPL), not affiliated with VideoLAN</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
