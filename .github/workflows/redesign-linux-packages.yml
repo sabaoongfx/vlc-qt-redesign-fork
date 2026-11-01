@@ -44,7 +44,7 @@ jobs:
           retry $A build-dep -y -qq vlc
           retry $A install -y -qq ccache meson ninja-build nasm flex bison gettext autopoint \
             libtool-bin pkg-config libxkbcommon-dev libxkbcommon-x11-dev libxcb-cursor0 libxcb-cursor-dev \
-            libwayland-dev wayland-protocols libegl-dev libgl-dev libvulkan-dev libsqlite3-dev \
+            libwayland-dev wayland-protocols libexpat1-dev libegl-dev libgl-dev libvulkan-dev libsqlite3-dev \
             libjpeg-dev libplacebo-dev libdav1d-dev libpipewire-0.3-dev libsoxr-dev libtag1-dev \
             libfuse2t64 desktop-file-utils
 
@@ -91,11 +91,26 @@ jobs:
           ../bootstrap
           make -j"$(nproc)" .medialibrary
 
+      - name: wayland-scanner 1.23
+        run: |
+          # VLC's Wayland video outputs (egl_wl, wl_shm, xdg-shell) need wayland-scanner >= 1.23 and
+          # Ubuntu 24.04 has 1.22: configure dropped Wayland without a word, and on a Wayland session
+          # the AppImage put the video in an X11 window that the Wayland interface lost (v0.1.5)
+          cd "$RUNNER_TEMP"
+          curl -sSL https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.23.1/downloads/wayland-1.23.1.tar.xz -o wl.tar.xz
+          echo "864fb2a8399e2d0ec39d56e9d9b753c093775beadc6022ce81f441929a81e5ed  wl.tar.xz" | sha256sum -c
+          tar xJf wl.tar.xz
+          meson setup wl-build wayland-1.23.1 -Dlibraries=false -Ddocumentation=false -Dtests=false \
+            -Ddtd_validation=false --prefix="$RUNNER_TEMP/wl"
+          ninja -C wl-build install
+          echo "WAYLAND_SCANNER=$RUNNER_TEMP/wl/bin/wayland-scanner" >> "$GITHUB_ENV"
+
       - name: Configure
         run: |
           ./bootstrap
-          CC="ccache gcc" CXX="ccache g++" ./configure --prefix=/usr --disable-nls \
-            QMAKE6="$QT_ROOT_DIR/bin/qmake6"
+          # --enable-wayland: fail here instead of shipping an AppImage without Wayland video
+          CC="ccache gcc" CXX="ccache g++" ./configure --prefix=/usr --disable-nls --enable-wayland \
+            WAYLAND_SCANNER="$WAYLAND_SCANNER" QMAKE6="$QT_ROOT_DIR/bin/qmake6"
           grep -E "^(QT_|HAVE_QT|ENABLE_QT)" config.log | head || true
 
       - name: Build

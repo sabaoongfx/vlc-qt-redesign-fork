@@ -13,6 +13,12 @@ NAME=VLC-juxtopposed-x86_64
 
 mkdir -p "$A/usr" "$OUT"
 cp -a "$PREFIX/." "$A/usr/"
+# without VLC's own Wayland video outputs the video goes to an X11 window that a Wayland session's
+# interface cannot keep embedded (configure drops them quietly when wayland-scanner is too old)
+for p in libegl_wl_plugin.so libxdg_shell_plugin.so; do
+    [ -f "$A/usr/lib/vlc/plugins/video_output/$p" ] ||
+        { echo "no $p in $PREFIX: VLC was built without Wayland" >&2; exit 1; }
+done
 # development files are not needed to run it
 rm -rf "$A/usr/include" "$A/usr/lib/pkgconfig"
 find "$A/usr" \( -name '*.la' -o -name '*.a' \) -delete
