@@ -212,3 +212,24 @@ jobs:
           [ -z "$missing" ] || { printf "::error::missing libraries:%b\n" "$missing"; exit 1; }
           test -f /usr/share/applications/vlc-juxtopposed.desktop
           echo "installed and runs on ${{ matrix.image }}"
+
+  # GitHub keeps 10 GB of caches per repository and evicts the least recently used: one ccache per
+  # commit per workflow (300-900 MB each) pushed out the Windows contrib cache (a 2-hour rebuild,
+  # 2026-11-01). After a successful build (its new ccache is saved at the end of that job), drop this
+  # workflow's older ones on the branch.
+  prune-ccache:
+    needs: appimage
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PREFIX: appimage-ccache-${{ github.ref_name }}-
+      KEEP: appimage-ccache-${{ github.ref_name }}-${{ github.sha }}
+    steps:
+      - name: Delete older ccaches
+        run: |
+          gh cache list --key "$PREFIX" --limit 100 --json id,key --jq '.[] | select(.key != env.KEEP) | .id' |
+            while read -r id; do gh cache delete "$id" && echo "deleted cache $id"; done
+
