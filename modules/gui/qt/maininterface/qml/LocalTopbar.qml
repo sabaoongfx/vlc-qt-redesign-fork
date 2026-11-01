@@ -321,6 +321,10 @@ T.ToolBar {
             anchors.centerIn: parent
             width: Math.min(Math.ceil(titleMetrics.advanceWidth) + 1, parent.width / 2)
 
+            // redesign: the system title bar already shows the window title (it said VLC twice)
+            visible: MainCtx.clientSideDecoration
+                     || MainCtx.intfMainWindow.visibility === Window.FullScreen
+
             text: Player.isStarted ? (Player.title !== "" ? Player.title : Player.name)
                                    : qsTr("VLC Media Player")
             color: theme.fg.secondary

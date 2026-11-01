@@ -48,6 +48,9 @@ FocusScope{
 
     property string title
 
+    readonly property bool _showTitle: MainCtx.clientSideDecoration
+                                       || MainCtx.intfMainWindow.visibility === Window.FullScreen
+
     property bool showCSD: false
     property bool showToolbar: false
     property bool pinControls: false
@@ -61,7 +64,10 @@ FocusScope{
 
     property bool _showTopBar: (pinControls === false || showToolbar === false)
 
-    property bool _showCenterText: (pinControls && showToolbar === false && showCSD)
+    // redesign: the one-line 40px bar also under the system title bar (the default since v0.1.5;
+    // it fell back to the 32px two-line layout and the video started 8px higher)
+    property bool _showCenterText: (pinControls && showToolbar === false
+                                    && (showCSD || !MainCtx.clientSideDecoration))
 
     readonly property int _sideMargin: VLCStyle.margin_small + sideMargin
 
@@ -504,7 +510,8 @@ FocusScope{
         // in every layout, instead of the large title below the logo
         anchors.verticalCenter: _showCenterText ? undefined : logoOrResume.verticalCenter
 
-        visible: (_showCenterText || root._showTopBar)
+        // redesign: no title under the system title bar, which already shows it (it was there twice)
+        visible: (_showCenterText || root._showTopBar) && root._showTitle
 
         enabled: visible
 
@@ -545,7 +552,7 @@ FocusScope{
 
         width: root.textWidth - VLCStyle.margin_normal
 
-        visible: !root.pinControls && !centerTitleText.visible
+        visible: !root.pinControls && !centerTitleText.visible && root._showTitle
 
         enabled: visible
 
