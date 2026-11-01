@@ -170,15 +170,15 @@ jobs:
       matrix:
         include:
           - image: ubuntu:24.04
-            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb
+            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb util-linux
           - image: debian:trixie
-            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb
+            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb util-linux
           - image: fedora:latest
-            install: dnf install -y -q ./VLC-juxtopposed-x86_64.rpm
+            install: dnf install -y -q ./VLC-juxtopposed-x86_64.rpm util-linux
           - image: opensuse/tumbleweed
-            install: zypper --non-interactive install --allow-unsigned-rpm ./VLC-juxtopposed-x86_64.rpm
+            install: zypper --non-interactive install --allow-unsigned-rpm ./VLC-juxtopposed-x86_64.rpm util-linux
           - image: archlinux:latest
-            install: pacman -Syu --noconfirm --needed && pacman -U --noconfirm ./vlc-juxtopposed-*.pkg.tar.zst
+            install: pacman -Syu --noconfirm --needed util-linux && pacman -U --noconfirm ./vlc-juxtopposed-*.pkg.tar.zst
     container: ${{ matrix.image }}
     steps:
       - uses: actions/download-artifact@v4
@@ -191,9 +191,13 @@ jobs:
       - name: Run
         run: |
           set -eu
-          vlc-juxtopposed --version | head -1
-          vlc-juxtopposed --list 2>/dev/null | grep -E "^ +qt " || { echo "::error::Qt interface missing"; exit 1; }
-          if vlc-juxtopposed --list 2>&1 | grep -q "stale plugins cache"; then echo "::error::stale plugin cache"; exit 1; fi
+          # VLC refuses to run as root (the container's user): run it as nobody
+          mkdir -p /tmp/u && chmod 777 /tmp/u
+          run() { setpriv --reuid=65534 --regid=65534 --clear-groups env HOME=/tmp/u vlc-juxtopposed "$@"; }
+          run --version | head -1
+          run --list > /tmp/list.txt 2>&1 || { cat /tmp/list.txt; echo "::error::vlc-juxtopposed --list failed"; exit 1; }
+          grep -E "^ +qt " /tmp/list.txt || { head -20 /tmp/list.txt; echo "::error::Qt interface missing"; exit 1; }
+          if grep -q "stale plugins cache" /tmp/list.txt; then echo "::error::stale plugin cache"; exit 1; fi
           # the interface, the core and the Wayland/X11 video outputs must resolve every library
           missing=""
           for f in /opt/vlc-juxtopposed/usr/bin/vlc /opt/vlc-juxtopposed/usr/lib/libvlccore.so.9 \

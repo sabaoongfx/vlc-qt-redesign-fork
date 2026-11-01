@@ -92,6 +92,14 @@ overrides:
       - libwayland-client0
       - libasound2t64 | libasound2
       - zlib1g
+      # the tree leaves these to the system (linuxdeploy's exclude list); minimal installs lack some
+      - libgpg-error0
+      - libgmp10
+      - libcom-err2
+      - libusb-1.0-0
+      - libxcb-dri3-0
+    recommends:
+      - libpipewire-0.3-0t64 | libpipewire-0.3-0
   rpm:
     # sonames, so the same rpm resolves on Fedora and openSUSE (their package names differ)
     depends:
@@ -109,6 +117,13 @@ overrides:
       - libwayland-client.so.0()(64bit)
       - libasound.so.2()(64bit)
       - libz.so.1()(64bit)
+      - libgpg-error.so.0()(64bit)
+      - libgmp.so.10()(64bit)
+      - libcom_err.so.2()(64bit)
+      - libusb-1.0.so.0()(64bit)
+      - libxcb-dri3.so.0()(64bit)
+    recommends:
+      - libpipewire-0.3.so.0()(64bit)
   archlinux:
     depends:
       - glibc
@@ -125,6 +140,10 @@ overrides:
       - wayland
       - alsa-lib
       - zlib
+      - libgpg-error
+      - gmp
+      - e2fsprogs
+      - libusb
 $SIGN
 EOF
 
