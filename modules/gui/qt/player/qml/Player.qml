@@ -97,24 +97,53 @@ FocusScope {
 
     property bool _keyPressed: false
 
-    // redesign: in fullscreen only the bar the pointer is near shows (the video): the top one when
-    // the pointer is in the upper part of the screen, the bottom one in the lower part; in between
-    // the last one stays. "" (windowed, or before the pointer moved) shows both as before.
-    readonly property bool _fullscreen: MainCtx.intfMainWindow.visibility === Window.FullScreen
-    property string _activeBar: ""
+    // redesign: while a video plays with the bars over it (fullscreen, or controls not pinned) a bar
+    // shows only while the pointer is near its edge: the top bar near the top, the control bar near
+    // the bottom, none in between. A key press shows both (keyboard navigation). While auto-hide is
+    // locked (a panel or menu is open, the pointer is on a bar) the shown bar stays.
+    readonly property bool _edgeBars: MainCtx.hasEmbededVideo && !_controlsUnderVideo
+    property string _activeBar: "none" // "top", "bottom", "none" or "both"
 
-    on_FullscreenChanged: _activeBar = _fullscreen ? "bottom" : ""
+    on_EdgeBarsChanged: {
+        _activeBar = "none"
+        _setEdgeLock(false)
+    }
+
+    function _barShown(bar) {
+        return !_edgeBars || _activeBar === "both" || _activeBar === bar
+    }
 
     HoverHandler {
-        enabled: rootPlayer._fullscreen
+        enabled: rootPlayer._edgeBars
 
-        onPointChanged: {
-            const y = point.position.y
-            if (y < Math.max(rootPlayer.height * 0.2, topBar.implicitHeight * 2))
-                rootPlayer._activeBar = "top"
-            else if (y > rootPlayer.height - Math.max(rootPlayer.height * 0.25, controlBar.implicitHeight * 1.5))
-                rootPlayer._activeBar = "bottom"
-        }
+        onPointChanged: rootPlayer._pointerAt(point.position.y)
+    }
+
+    // y in the player's coordinates; the video surface reports its own moves (it takes the hover
+    // events, so the HoverHandler above only sees the pointer over the other items)
+    // the pointer near an edge also holds auto-hide (_edgeLock) so the bar stays while it is there
+    property bool _edgeLock: false
+
+    function _setEdgeLock(lock) {
+        if (_edgeLock === lock)
+            return
+        _edgeLock = lock
+        lockUnlockAutoHide(lock)
+    }
+
+    function _pointerAt(y) {
+        if (!_edgeBars)
+            return
+        // another lock (panel, menu, pointer on a bar) keeps the shown bar
+        if (playerToolbarVisibilityFSM.lockCount - (_edgeLock ? 1 : 0) > 0)
+            return
+        if (y < topBar.implicitHeight * 2)
+            _activeBar = "top"
+        else if (y > height - controlBar.implicitHeight * 2)
+            _activeBar = "bottom"
+        else
+            _activeBar = "none"
+        _setEdgeLock(_activeBar !== "none")
     }
 
     // Settings
@@ -344,6 +373,8 @@ FocusScope {
 
                     Component.onCompleted: {
                         mouseMoved.connect(videoSurface.onMouseEvent)
+                        mouseMoved.connect((x, y) => rootPlayer._pointerAt(
+                            videoSurface.mapToItem(rootPlayer, 0, y / Screen.devicePixelRatio).y))
                         mousePressed.connect(videoSurface.onMouseEvent)
                         mouseReleased.connect(videoSurface.onMouseEvent)
                         mouseDblClicked.connect(videoSurface.onMouseEvent)
@@ -1132,7 +1163,7 @@ FocusScope {
         //initial state value is "", using a binding avoid animation on startup
         Binding on state {
             when: playerToolbarVisibilityFSM.started
-            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._activeBar !== "bottom")
+            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._barShown("top"))
                     || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
         }
 
@@ -1473,7 +1504,7 @@ FocusScope {
         //initial state value is "", using a binding avoid animation on startup
         Binding on state {
             when: playerToolbarVisibilityFSM.started
-            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._activeBar !== "top")
+            value: ((playerToolbarVisibilityFSM.isVisible && rootPlayer._barShown("bottom"))
                     || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
         }
 
@@ -1555,8 +1586,11 @@ FocusScope {
         Keys.onPressed: (event) => {
             if (Player.isInteractive)
                 interactiveAutoHideTimer.restart()
-            else
+            else {
+                if (rootPlayer._edgeBars)
+                    rootPlayer._activeBar = "both"
                 playerToolbarVisibilityFSM.keyboardMove()
+            }
         }
     }
 }
