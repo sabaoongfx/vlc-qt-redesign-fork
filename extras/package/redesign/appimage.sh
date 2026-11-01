@@ -42,8 +42,24 @@ setrpath '$ORIGIN/../../..:$ORIGIN/../..' "$A"/usr/lib/vlc/plugins/*/*.so
 # a few plugins sit one directory deeper (access/rtp/librtp_pcm_plugin.so)
 setrpath '$ORIGIN/../../../..:$ORIGIN/../../..' "$A"/usr/lib/vlc/plugins/*/*/*.so
 
+# Qt plugins linuxdeploy-plugin-qt leaves out (it reads module names, not EXTRA_QT_PLUGINS): without
+# the Wayland EGL client plugin a Wayland session gets no OpenGL context and the window never shows
+# ("Failed to load client buffer integration: wayland-egl", v0.1.5); iconengines is the SVG icon engine.
+# Copied by hand; their own dependencies are deployed with the VLC plugins' below.
+QTPLUGINS=$("$QMAKE6" -query QT_INSTALL_PLUGINS)
+for dir in wayland-graphics-integration-client iconengines; do
+    mkdir -p "$A/usr/plugins/$dir"
+    for f in "$QTPLUGINS/$dir"/*.so; do
+        case $f in *-server.so) continue;; esac  # compositor side, not for a client
+        cp "$f" "$A/usr/plugins/$dir/"
+    done
+    setrpath '$ORIGIN/../../lib' "$A/usr/plugins/$dir"/*.so
+done
+[ -f "$A/usr/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.so" ] ||
+    { echo "no Wayland EGL client plugin in $QTPLUGINS" >&2; exit 1; }
+
 # the VLC plugins and their helper libraries are loaded at run time: deploy their dependencies too
-DEPS=()
+DEPS=(--deploy-deps-only "$A/usr/plugins/wayland-graphics-integration-client" --deploy-deps-only "$A/usr/plugins/iconengines")
 for d in "$A"/usr/lib/vlc "$A"/usr/lib/vlc/plugins/*/; do DEPS+=(--deploy-deps-only "$d"); done
 
 export QMAKE=$QMAKE6
