@@ -143,3 +143,68 @@ jobs:
           name: vlc-linux-packages
           path: out/
           retention-days: 30
+
+      - name: deb, rpm and Arch packages
+        run: |
+          # the release workflow makes the published ones from the tarball with the tag's version (and
+          # signs them); these are for the install test below
+          extras/package/redesign/get-nfpm.sh "$RUNNER_TEMP/nfpm"
+          NFPM="$RUNNER_TEMP/nfpm/nfpm" extras/package/redesign/linux-packages.sh \
+            out/VLC-juxtopposed-x86_64.tar.gz "0.0.${{ github.run_number }}" distro
+
+      - name: Upload the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: vlc-linux-distro-packages
+          path: distro/
+          retention-days: 7
+
+  # each package installs on a clean distribution with its own package manager pulling the
+  # dependencies, and runs: the command works, the Qt interface loads, no library is missing
+  install-test:
+    needs: appimage
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:24.04
+            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb
+          - image: debian:trixie
+            install: apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ./VLC-juxtopposed-amd64.deb
+          - image: fedora:latest
+            install: dnf install -y -q ./VLC-juxtopposed-x86_64.rpm
+          - image: opensuse/tumbleweed
+            install: zypper --non-interactive install --allow-unsigned-rpm ./VLC-juxtopposed-x86_64.rpm
+          - image: archlinux:latest
+            install: pacman -Syu --noconfirm --needed && pacman -U --noconfirm ./vlc-juxtopposed-*.pkg.tar.zst
+    container: ${{ matrix.image }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: vlc-linux-distro-packages
+
+      - name: Install
+        run: ${{ matrix.install }}
+
+      - name: Run
+        run: |
+          set -eu
+          vlc-juxtopposed --version | head -1
+          vlc-juxtopposed --list 2>/dev/null | grep -E "^ +qt " || { echo "::error::Qt interface missing"; exit 1; }
+          if vlc-juxtopposed --list 2>&1 | grep -q "stale plugins cache"; then echo "::error::stale plugin cache"; exit 1; fi
+          # the interface, the core and the Wayland/X11 video outputs must resolve every library
+          missing=""
+          for f in /opt/vlc-juxtopposed/usr/bin/vlc /opt/vlc-juxtopposed/usr/lib/libvlccore.so.9 \
+                   /opt/vlc-juxtopposed/usr/lib/vlc/plugins/gui/libqt_plugin.so \
+                   /opt/vlc-juxtopposed/usr/lib/vlc/plugins/video_output/libegl_wl_plugin.so \
+                   /opt/vlc-juxtopposed/usr/lib/vlc/plugins/video_output/libxcb_window_plugin.so \
+                   /opt/vlc-juxtopposed/usr/plugins/platforms/libqwayland.so \
+                   /opt/vlc-juxtopposed/usr/plugins/platforms/libqxcb.so; do
+            m=$(ldd "$f" | grep "not found" || true)
+            [ -z "$m" ] || missing="$missing\n$f:\n$m"
+          done
+          [ -z "$missing" ] || { printf "::error::missing libraries:%b\n" "$missing"; exit 1; }
+          test -f /usr/share/applications/vlc-juxtopposed.desktop
+          echo "installed and runs on ${{ matrix.image }}"

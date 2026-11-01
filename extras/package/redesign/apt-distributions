@@ -1,0 +1,8 @@
+# reprepro config of the apt repository on the repo's GitHub Pages (redesign-release.yml, job pages)
+Origin: VLC juxtopposed
+Label: VLC juxtopposed
+Codename: stable
+Architectures: amd64
+Components: main
+Description: VLC media player with Juxtopposed's redesigned interface (unofficial, not VideoLAN)
+SignWith: yes

@@ -7,7 +7,10 @@ name: Redesign release
 # (no version: the tag has it), so https://github.com/<repo>/releases/latest/download/<name> always
 # gives the newest one (the website links those):
 #   VLC-juxtopposed-x64-setup.exe, VLC-juxtopposed-x64-portable.zip,
-#   VLC-juxtopposed-x86_64.AppImage, VLC-juxtopposed-x86_64.tar.gz, VLC-juxtopposed-arm64.dmg
+#   VLC-juxtopposed-x86_64.AppImage, VLC-juxtopposed-x86_64.tar.gz, VLC-juxtopposed-arm64.dmg,
+#   VLC-juxtopposed-amd64.deb, VLC-juxtopposed-x86_64.rpm (made here from the tarball with the tag's version)
+# A full release also updates the signed apt and pacman repositories on the repo's GitHub Pages
+# (jobs arch-repo and pages; key: secret PACKAGES_GPG_PRIVATE_KEY, "VLC juxtopposed packages").
 # A v*-something tag (v0.1.3-rc1) is published as a pre-release; every other tag, v0.x included, is a full
 # release, because releases/latest/download (the website links it) skips pre-releases.
 on:
@@ -57,6 +60,8 @@ jobs:
           ls -laR dl
 
       - name: Name the assets
+        env:
+          PACKAGES_GPG_PRIVATE_KEY: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           V=${TAG#v}
@@ -70,6 +75,14 @@ jobs:
           copy dl/linux/VLC-juxtopposed-x86_64.AppImage x86_64.AppImage
           copy dl/linux/VLC-juxtopposed-x86_64.tar.gz x86_64.tar.gz
           copy dl/mac/VLC-juxtopposed-arm64.dmg arm64.dmg
+          # deb, rpm (signed) and Arch package from the tarball, with the tag's version
+          extras/package/redesign/get-nfpm.sh "$RUNNER_TEMP/nfpm"
+          KEY="$RUNNER_TEMP/packages-key.asc"
+          ( umask 077; printf '%s\n' "$PACKAGES_GPG_PRIVATE_KEY" > "$KEY" )
+          NFPM="$RUNNER_TEMP/nfpm/nfpm" RPM_SIGNING_KEY_FILE="$KEY" \
+            extras/package/redesign/linux-packages.sh dl/linux/VLC-juxtopposed-x86_64.tar.gz "${V%%-*}" distro
+          rm -f "$KEY"
+          cp distro/VLC-juxtopposed-amd64.deb distro/VLC-juxtopposed-x86_64.rpm out/
           (cd out && sha256sum * > SHA256SUMS)
           ls -la out
 
@@ -93,7 +106,9 @@ jobs:
           | Platform | Download |
           |---|---|
           | Windows 10/11 x64 | \`VLC-juxtopposed-x64-setup.exe\` (installer) or \`-x64-portable.zip\` |
-          | Linux x86_64 (glibc 2.39+: Ubuntu 24.04, Debian 13, Fedora 40, Arch) | \`VLC-juxtopposed-x86_64.AppImage\` or \`.tar.gz\` |
+          | Linux x86_64, any distribution (glibc 2.39+) | \`VLC-juxtopposed-x86_64.AppImage\` or \`.tar.gz\` |
+          | Debian 13, Ubuntu 24.04 and newer | \`VLC-juxtopposed-amd64.deb\` |
+          | Fedora 40+, openSUSE Tumbleweed | \`VLC-juxtopposed-x86_64.rpm\` |
           | macOS 13+ on Apple silicon | \`VLC-juxtopposed-arm64.dmg\` |
 
           The Windows builds are not code-signed: SmartScreen asks for confirmation (More info, Run anyway).
@@ -104,7 +119,97 @@ jobs:
           Check a download: \`sha256sum -c SHA256SUMS --ignore-missing\`, or with the GitHub CLI
           \`gh attestation verify <file> -R $GITHUB_REPOSITORY\` (build provenance, from this release workflow).
 
+          The deb, rpm and Arch packages install into \`/opt/vlc-juxtopposed\` (command \`vlc-juxtopposed\`),
+          next to your distribution's VLC. For updates through apt or pacman, add the repository:
+          https://vlc.sabaoon.dev/#linux-repos
+
           Website: https://vlc.sabaoon.dev
           EOF
           gh release create "$TAG" out/* --verify-tag $PRE \
             --title "VLC (juxtopposed) $TAG" --notes-file notes.md
+
+      - name: Keep the Arch package for the repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: arch-package
+          path: distro/*.pkg.tar.zst
+          retention-days: 7
+
+  # Signed pacman repository, made with Arch's own repo-add. Full releases only: pacman's pkgver
+  # cannot hold the '-' of an rc tag, and the repositories should not get release candidates.
+  arch-repo:
+    needs: release
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Tools
+        run: pacman -Syu --noconfirm --needed git
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: arch-package
+          path: pkg
+
+      - name: Sign and make the repository
+        env:
+          PACKAGES_GPG_PRIVATE_KEY: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
+        run: extras/package/redesign/make-arch-repo.sh pkg arch-repo/x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arch-repo
+          path: arch-repo
+
+  # The whole GitHub Pages site, rebuilt each full release (package managers only need the newest
+  # version): / = signed apt repository (dists/, pool/), /arch/x86_64/ = signed pacman repository,
+  # /KEY.gpg = the public key. Waits for arch-repo, so a failed Arch step leaves the old site whole.
+  pages:
+    needs: arch-repo
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: reprepro
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq reprepro
+
+      - name: Signing key
+        env:
+          PACKAGES_GPG_PRIVATE_KEY: ${{ secrets.PACKAGES_GPG_PRIVATE_KEY }}
+        run: printf '%s\n' "$PACKAGES_GPG_PRIVATE_KEY" | gpg --batch --import
+
+      - name: apt repository
+        run: |
+          set -euo pipefail
+          gh release download "$TAG" --pattern 'VLC-juxtopposed-amd64.deb' --dir debs
+          mkdir -p reprepro/conf public
+          cp extras/package/redesign/apt-distributions reprepro/conf/distributions
+          reprepro --basedir reprepro --outdir "$PWD/public" includedeb stable debs/*.deb
+          gpg --armor --export "VLC juxtopposed packages" > public/KEY.gpg
+          touch public/.nojekyll
+          printf 'VLC (juxtopposed) package repositories: https://vlc.sabaoon.dev/#linux-repos\n' > public/index.html
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: arch-repo
+          path: public/arch
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
