@@ -47,6 +47,8 @@ MediaLib::~MediaLib()
     m_runner->destroy();
 }
 
+static void convertMLFolderToPlaylistMedias(vlc_medialibrary_t* ml, int64_t folderId, const QStringList &options, QVector<vlc::playlist::Media>& medias, int depth = 0);
+
 static void convertMLItemToPlaylistMedias(vlc_medialibrary_t* ml, const MLItemId & itemId, const QStringList &options, QVector<vlc::playlist::Media>& medias)
 {
     //invalid item
@@ -58,6 +60,10 @@ static void convertMLItemToPlaylistMedias(vlc_medialibrary_t* ml, const MLItemId
         SharedInputItem item( vlc_ml_get_input_item( ml, itemId.id ), false );
         if (item)
             medias.push_back(vlc::playlist::Media(item.get(), options));
+    }
+    else if (itemId.type == VLC_ML_PARENT_FOLDER)
+    {
+        convertMLFolderToPlaylistMedias(ml, itemId.id, options, medias);
     }
     else
     {
@@ -72,6 +78,45 @@ static void convertMLItemToPlaylistMedias(vlc_medialibrary_t* ml, const MLItemId
             return vlc::playlist::Media(item.get(), options);
         });
     }
+}
+
+// redesign: Play on a folder of the Videos/Music folder tree plays its own media (A to Z, as the page
+// lists them), then each subfolder's the same way, subfolders by name; a folder of only subfolders
+// (a series of season folders) played nothing and left an empty player
+static void convertMLFolderToPlaylistMedias(vlc_medialibrary_t* ml, int64_t folderId, const QStringList &options, QVector<vlc::playlist::Media>& medias, int depth)
+{
+    if (depth > 32)
+        return;
+
+    vlc_ml_query_params_t query = vlc_ml_query_params_create();
+    query.i_sort = VLC_ML_SORTING_ALPHA;
+    ml_unique_ptr<vlc_ml_media_list_t> media_list(vlc_ml_list_media_of( ml, &query, VLC_ML_PARENT_FOLDER, folderId));
+    if (media_list)
+    {
+        for (vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>( media_list ))
+        {
+            SharedInputItem item(vlc_ml_get_input_item( ml, m.i_id ), false);
+            if (item)
+                medias.push_back(vlc::playlist::Media(item.get(), options));
+        }
+    }
+
+    ml_unique_ptr<vlc_ml_folder_list_t> folders(vlc_ml_list_subfolders( ml, folderId ));
+    if (!folders)
+        return;
+
+    std::vector<std::pair<QString, int64_t>> subfolders;
+    for (const vlc_ml_folder_t& f : ml_range_iterate<vlc_ml_folder_t>( folders ))
+    {
+        if (f.b_banned || !f.b_present)
+            continue;
+        subfolders.emplace_back(QString::fromUtf8(f.psz_name), f.i_id);
+    }
+    std::stable_sort(subfolders.begin(), subfolders.end(), [](const auto& a, const auto& b) {
+        return a.first.compare(b.first, Qt::CaseInsensitive) < 0;
+    });
+    for (const auto& f : subfolders)
+        convertMLFolderToPlaylistMedias(ml, f.second, options, medias, depth + 1);
 }
 
 static void convertQUrlToPlaylistMedias(QUrl mrl, const QStringList& options, QVector<vlc::playlist::Media>& medias)
