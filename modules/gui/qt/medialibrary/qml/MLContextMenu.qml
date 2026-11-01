@@ -37,6 +37,10 @@ NativeMenu {
 
     property bool showPlayAsAudioAction: false
 
+    // redesign: Play opens the video player, like a click on a video (menus of video pages offer
+    // "Play as audio", so they are the video ones); it stayed on the library with the mini player
+    property bool openPlayerOnPlay: showPlayAsAudioAction
+
     // This is only applicable when the model is `MLAudioModel`:
     property bool showPlayAsAlbumAction: implicitShowPlayAsAlbumAction
     property bool implicitShowPlayAsAlbumAction: !showPlayAsAudioAction
@@ -139,6 +143,8 @@ NativeMenu {
 
     function addAndPlay(dataList, options, indexes) {
         model.ml.addAndPlay(_mlIDList(dataList), _playerOptions(options))
+        if (root.openPlayerOnPlay)
+            MainCtx.playerView = true
     }
 
     function playAsAudio(dataList, options, indexes) {
