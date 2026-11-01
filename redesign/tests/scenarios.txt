@@ -14,6 +14,7 @@ search           | 2 | ml   |                       | sleep:2 click:80,125 sleep
 sort             | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 press:Sort sleep:1.2 shot:a
 video-ctx        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 shot:a
 folder-ctx-play  | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:390,220 sleep:1.2 shot:menu key:Down key:Return sleep:4 shot:after
+edge-bars        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:730,220 sleep:3 key:f sleep:2 move:960,500 sleep:0.3 move:960,540 sleep:3 shot:mid move:960,30 sleep:0.3 move:961,20 sleep:3 shot:top move:960,600 sleep:0.3 move:960,560 sleep:3 shot:mid2 move:960,1050 sleep:0.3 move:961,1060 sleep:3 shot:bottom
 lib-mini-video   | 2 | ml   | @sample.mp4           | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 move:960,700 shot:a geom:a
 lib-mini-audio   | 1 | ml   | @neon.mp3             | sleep:3 press:Back_to_* sleep:1.5 click:80,171 sleep:3 move:960,700 shot:a
 lib-after-end    | 2 | ml   | @short.mp4            | sleep:10 move:960,600 sleep:1 shot:a
