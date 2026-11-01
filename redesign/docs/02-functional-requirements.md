@@ -275,4 +275,4 @@ Test: AppImage smoke test (X11); *manual* Wayland. Status: Verified 2026-11-01.
 
 **FR-PKG-004** Releases shall publish fixed-name assets, SHA256SUMS and build-provenance attestations;
 full releases shall update the signed apt and pacman repositories.
-Test: release workflow. Status: Implemented (first run with repos: v0.1.6).
+Test: release workflow. Status: Verified (v0.1.6: release run 41344525346; InRelease and the pacman db verified against KEY.gpg).

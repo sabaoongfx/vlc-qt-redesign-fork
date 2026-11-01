@@ -2,7 +2,7 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
-## v0.1.6 (pending, 2026-11-02)
+## v0.1.6 (2026-11-02)
 - **Linux packages:** `.deb` (Debian 13, Ubuntu 24.04+), `.rpm` (Fedora, openSUSE Tumbleweed) and an
   Arch package, installed in `/opt/vlc-juxtopposed` with the command `vlc-juxtopposed`, next to the
   distribution's VLC. Signed apt and pacman repositories for updates.

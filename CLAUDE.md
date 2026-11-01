@@ -353,6 +353,23 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   Back/Forward up and down, header gap over list column titles, themed stock dialogs), menus keeping the Day/Night
   palette on Windows, and the global shortcuts with the X11 compositor (`006bec0`). The drag into the queue was tested
   by hand by the user on 2026-10-31: it works.
+- Released 2026-11-02: **v0.1.6** on `3b94336e64` (full release, Latest; four CI runs green; release run 41344525346).
+  New: deb/rpm/Arch packages (`extras/package/redesign/linux-packages.sh`, nfpm; `/opt/vlc-juxtopposed`, command
+  `vlc-juxtopposed`; job `install-test` installs them on Ubuntu 24.04, Debian 13, Fedora, openSUSE Tumbleweed, Arch) and
+  signed apt (`stable main`) and pacman (`[vlc-juxtopposed]`, `/arch/x86_64`) repositories on the fork's GitHub Pages
+  (https://sabaoongfx.github.io/vlc-qt-redesign-fork/, build type workflow, `github-pages` environment allows `v*` tags),
+  key "VLC juxtopposed packages" F092723FE6C0D16999EB7F6019D03339EB84F8FB in secret `PACKAGES_GPG_PRIVATE_KEY` (backup:
+  the user's keyring). AppImage fixes found on the user's Wayland session: Qt's wayland-egl client plugin and the SVG
+  icon engine were never bundled (linuxdeploy-plugin-qt ignores EXTRA_QT_PLUGINS; the window never opened), and every
+  Linux package was built WITHOUT VLC's Wayland video outputs (Ubuntu 24.04's wayland-scanner 1.22 < 1.23, configure
+  only warned): the video went into an X11 window and vanished after a while. CI now builds wayland-scanner 1.23.1 and
+  configures `--enable-wayland`; `appimage.sh` refuses a tree without `libegl_wl_plugin.so`. Also: right-click Play on a
+  video folder opens the player and recurses into subfolders (`convertMLFolderToPlaylistMedias`), bars over the video
+  show by edge proximity (`Player.qml` `_edgeBars`), no repeated title under the system title bar, player top bar 40px
+  again with the system title bar (broken since `4bc9f18`). Project documents: `redesign/docs/` (FRS, runbook, ...).
+- CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
+  contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
+  current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.
 - Not signed: the Windows installer and exe have no Authenticode signature (`Get-AuthenticodeSignature`: NotSigned), so
   SmartScreen warns; the attestation is provenance only, Windows ignores it. Options noted for later: Azure Trusted
   Signing (~$10/month), an OV/EV certificate (~$100-400/year, reputation still builds slowly), SignPath Foundation (free
