@@ -74,3 +74,6 @@ qtdlg-folder-night | 2 | ml | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT
 qtdlg-folder-day | 1 | ml | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+f sleep:3 shot:dlg key:Escape sleep:1
 qtdlg-open-night | 2 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+o sleep:3 shot:dlg key:Escape sleep:1
 qtdlg-open-day | 1 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+o sleep:3 shot:dlg key:Escape sleep:1
+
+# Enter toggles fullscreen like F (player key filter; a disc menu, a text field or a keyboard-focused control keeps Enter)
+enter-fullscreen | 2 | none | @sample.mp4 | sleep:3 key:Return sleep:1.5 shot:on key:KP_Enter sleep:1.5 shot:off

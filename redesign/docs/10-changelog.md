@@ -7,6 +7,9 @@ User-facing changes per release. Tags on `redesign`; the release pages on GitHub
   first saw them); before, they never entered the library.
 - **Qt's own file dialog** (AppImage and packages on KDE): the toolbar buttons (back, forward, up, new
   folder, list and detail view) are visible in the dark theme and 28 px targets.
+- **Enter toggles fullscreen** in the player, like F (keypad Enter too). On a DVD/Blu-ray menu Enter
+  still selects; in a text field, the side panels and the library card it keeps its usual meaning.
+- **Volume control** drawn as the smooth Figma wedge (it had stair-stepped sides and was ~20% small).
 - **Contrast:** every control stands out at least 3:1 (WCAG 1.4.11) and text 4.5:1: darker accent text
   on the selected pills in Day, lighter Off-switch knobs and inactive slider handles, an outline on the
   volume cone, a darker "Advanced Options" in Day.
