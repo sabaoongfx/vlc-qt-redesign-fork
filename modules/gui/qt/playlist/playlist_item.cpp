@@ -90,8 +90,9 @@ void PlaylistItem::sync() {
         d->artwork = vlc_meta_Get(media->p_meta, vlc_meta_ArtworkURL);
     }
 
-    if (d->title.isNull())
-        /* If there is no title, use the item name */
+    /* If there is no title, use the item name. redesign: an empty or blank title tag counts as none
+     * (some releases carry "title=": the queue showed "Unknown Title"), as input_item_GetTitleFbName() */
+    if (d->title.trimmed().isEmpty())
         d->title = media->psz_name;
 }
 
