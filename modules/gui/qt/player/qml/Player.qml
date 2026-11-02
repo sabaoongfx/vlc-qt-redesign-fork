@@ -99,7 +99,7 @@ FocusScope {
 
     // redesign: while a video plays with the bars over it (fullscreen, or controls not pinned) a bar
     // shows only while the pointer is near its edge: the top bar near the top, the control bar near
-    // the bottom, none in between. A key press shows both (keyboard navigation). While auto-hide is
+    // the bottom, none in between. Tab shows both (keyboard navigation), hotkeys none. While auto-hide is
     // locked (a panel or menu is open, the pointer is on a bar) the shown bar stays.
     readonly property bool _edgeBars: MainCtx.hasEmbededVideo && !_controlsUnderVideo
     property string _activeBar: "none" // "top", "bottom", "none" or "both"
@@ -1616,8 +1616,16 @@ FocusScope {
             if (Player.isInteractive)
                 interactiveAutoHideTimer.restart()
             else {
-                if (rootPlayer._edgeBars)
-                    rootPlayer._activeBar = "both"
+                // with the bars over the video only Tab / Shift+Tab (moving into the controls) shows
+                // them; seek, volume and the other hotkeys act with the bars hidden (user request).
+                // A bar the pointer showed stays as it is, the other one does not appear.
+                if (rootPlayer._edgeBars) {
+                    if (rootPlayer._activeBar === "none") {
+                        if (event.key !== Qt.Key_Tab && event.key !== Qt.Key_Backtab)
+                            return
+                        rootPlayer._activeBar = "both"
+                    }
+                }
                 playerToolbarVisibilityFSM.keyboardMove()
             }
         }
