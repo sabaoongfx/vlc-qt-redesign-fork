@@ -26,6 +26,7 @@ import VLC.MainInterface
 import VLC.Widgets as Widgets
 import VLC.Util
 import VLC.Playlist
+import VLC.Dialogs
 import VLC.Style
 
 T.Pane {
@@ -214,6 +215,7 @@ T.Pane {
 
                     Navigation.parentItem: root
                     Navigation.leftItem: sort
+                    Navigation.rightItem: addButton
                     Navigation.downItem: listView
 
                     Connections {
@@ -223,6 +225,24 @@ T.Pane {
                             searchBox.retract()
                         }
                     }
+                }
+
+                // redesign: add files to the queue, like the mini player's Queue card (user request); the
+                // system file picker, the files join the queue without interrupting playback
+                Widgets.IconToolButton {
+                    id: addButton
+
+                    text: VLCIcons.add
+                    description: qsTr("Add to the queue")
+                    font.pixelSize: VLCStyle.icon_banner
+
+                    AccessibleCompat.id: "playqueueAdd"
+
+                    onClicked: DialogsProvider.simpleOpenDialog(false)
+
+                    Navigation.parentItem: root
+                    Navigation.leftItem: searchBox
+                    Navigation.downItem: listView
                 }
             }
 
