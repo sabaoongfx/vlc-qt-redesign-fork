@@ -374,6 +374,10 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   video folder opens the player and recurses into subfolders (`convertMLFolderToPlaylistMedias`), bars over the video
   show by edge proximity (`Player.qml` `_edgeBars`), no repeated title under the system title bar, player top bar 40px
   again with the system title bar (broken since `4bc9f18`). Project documents: `redesign/docs/` (FRS, runbook, ...).
+- Released 2026-11-02: **v0.1.7** on `ded202e807` (Latest; four CI runs green; release run 41425836503; pacman repo
+  serves 0.1.7-1). Resync retries failed files (medialibrary patch in `extras/package/redesign/`), Qt file dialog
+  buttons, 3:1 contrast fixes, smooth volume wedge, Enter = fullscreen, queue titles + the queue panel + button.
+  The workflow notes are generic: the changelog section was prepended with `gh release edit`.
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.
