@@ -171,6 +171,29 @@ FocusScope {
             MainCtx.sendHotkey(event.key, event.modifiers);
     }
 
+    // redesign: Enter toggles fullscreen like F (user request), checked in the window's key filter
+    // below, before the focused item: the play button holds focus even with the bars hidden and took
+    // Enter. Enter keeps its own meaning on a control reached with the keyboard (visualFocus), in a
+    // text field, in the side panels and the library card, and on a DVD/Blu-ray menu (VLC binds
+    // Enter to nav-activate, which only acts there).
+    function _enterTogglesFullscreen(event) {
+        if (event.key !== Qt.Key_Return && event.key !== Qt.Key_Enter)
+            return false
+        if ((event.modifiers & ~Qt.KeypadModifier) !== Qt.NoModifier || Player.isMenu)
+            return false
+        const item = MainCtx.intfMainWindow.activeFocusItem
+        if (item && (item.visualFocus === true || item.cursorVisible !== undefined))
+            return false
+        // only on the video and the bars: walk up from the focused item
+        for (let p = item; p; p = p.parent) {
+            if (p === playlistpopup || p === libraryCard || p === libraryRail)
+                return false
+            if (p === rootPlayer)
+                return true
+        }
+        return !item
+    }
+
     Keys.onReleased: (event) => {
         if (event.accepted || _keyPressed === false)
             return
@@ -1584,6 +1607,12 @@ FocusScope {
     target: MainCtx.intfMainWindow
 
         Keys.onPressed: (event) => {
+            if (rootPlayer._enterTogglesFullscreen(event)) {
+                if (!event.isAutoRepeat)
+                    Player.toggleFullscreen()
+                event.accepted = true
+                return
+            }
             if (Player.isInteractive)
                 interactiveAutoHideTimer.restart()
             else {
