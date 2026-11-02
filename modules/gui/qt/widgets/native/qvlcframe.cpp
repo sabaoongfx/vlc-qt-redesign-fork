@@ -287,7 +287,7 @@ QString stockDialogStyleSheet()
 /* Qt's own file dialog (used where Qt has no native one, e.g. the AppImage and packages on KDE) draws
    its toolbar (back, forward, parent folder, new folder, list and detail view) with the style's
    standard icons: dark grey line art that nearly disappears on the dark theme. Give those buttons
-   VLC's glyphs in the text colour, faded when the button is disabled. */
+   VLC's glyphs in the text colour, faded when the button is disabled, and a 28px target. */
 void styleFileDialogButtons( QFileDialog *dialog )
 {
     static const struct { const char *name; QChar glyph; } buttons[] = {
@@ -312,6 +312,8 @@ void styleFileDialogButtons( QFileDialog *dialog )
         icon.addPixmap( Redesign::glyphPixmap( b.glyph, 16, disabled, dpr ), QIcon::Disabled );
         button->setIcon( icon );
         button->setIconSize( QSize( 16, 16 ) );
+        // Qt sizes them 23x23: under the 24x24 minimum target (WCAG 2.5.8)
+        button->setMinimumSize( QSize( 28, 28 ) );
     }
 }
 
