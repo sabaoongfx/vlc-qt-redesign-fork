@@ -36,6 +36,16 @@ jobs:
             ccache-${{ github.ref_name }}-
             ccache-
 
+      - name: Lint (project rules)
+        run: |
+          # redesign/tests/lint.py: Canvas/Shapes (no Windows Qt support), colour literals in QML, QML files
+          # missing from Makefile.am/meson.build, broken shell scripts; warnings are information
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          command -v python3 >/dev/null || { apt-get update -qq && apt-get install -y -qq python3; }
+          # the diff base (upstream commit the redesign started from); the checkout is shallow
+          git fetch -q --depth=1 origin dd056f2640fc8505993260441a6d185dcd616155
+          python3 redesign/tests/lint.py
+
       - name: Restore medialibrary contrib cache
         uses: actions/cache@v4
         with:
