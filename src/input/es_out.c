@@ -2238,10 +2238,13 @@ static void EsOutMeta(es_out_sys_t *p_sys, const vlc_meta_t *p_meta, const vlc_m
         vlc_meta_Merge( p_item->p_meta, p_meta );
     vlc_mutex_unlock( &p_item->lock );
 
-    /* Check program meta to not override GROUP_META values */
+    /* Check program meta to not override GROUP_META values.
+     * redesign: an empty title tag (some releases carry "title=") does not blank the item name,
+     * which the play queue and the window title fall back to */
+    const char *psz_meta_title = p_meta ? vlc_meta_Get( p_meta, vlc_meta_Title ) : NULL;
     if( p_meta && (!p_program_meta || vlc_meta_Get( p_program_meta, vlc_meta_Title ) == NULL) &&
-         vlc_meta_Get( p_meta, vlc_meta_Title ) != NULL )
-        input_item_SetName( p_item, vlc_meta_Get( p_meta, vlc_meta_Title ) );
+         psz_meta_title != NULL && psz_meta_title[strspn( psz_meta_title, " \t\r\n" )] != '\0' )
+        input_item_SetName( p_item, psz_meta_title );
 
     const char *psz_arturl = NULL;
     char *psz_alloc = NULL;

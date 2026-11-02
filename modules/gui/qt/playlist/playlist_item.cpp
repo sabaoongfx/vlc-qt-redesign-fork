@@ -94,6 +94,9 @@ void PlaylistItem::sync() {
      * (some releases carry "title=": the queue showed "Unknown Title"), as input_item_GetTitleFbName() */
     if (d->title.trimmed().isEmpty())
         d->title = media->psz_name;
+    /* and a blank name too (an empty title tag copied into it): the file name of the URL */
+    if (d->title.trimmed().isEmpty() && media->psz_uri)
+        d->title = QUrl(QString::fromUtf8(media->psz_uri)).fileName();
 }
 
 PlaylistItem::operator bool() const
