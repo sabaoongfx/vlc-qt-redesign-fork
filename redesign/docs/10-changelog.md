@@ -2,6 +2,12 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## Unreleased
+- **Play queue:** the file opened from the file manager no longer shows "Unknown Title" (an empty
+  title tag blanked its name once it played).
+- **Open Recent** opens beside the menu instead of over it: at most 480 px wide, long paths are
+  shortened in the middle, the full path is the tooltip.
+
 ## v0.1.7 (2026-11-02)
 - **Resync** picks up files that failed to be read before (e.g. still downloading when the library
   first saw them); before, they never entered the library.
