@@ -59,6 +59,8 @@ FocusScope {
     property real cornerRadius: 0
     readonly property color headingColor: _figma.title
     readonly property color iconColor: _figma.tabIcon
+    // the Off switch knob and the handle of a slider whose filter is off: the tab icon grey was 1.9:1
+    readonly property color knobColor: _figma.knob
 
     implicitWidth: preferredWidth
     focus: true
@@ -804,7 +806,7 @@ FocusScope {
                 width: VLCStyle.dp(7, VLCStyle.scale)
                 height: VLCStyle.dp(22, VLCStyle.scale)
                 radius: VLCStyle.dp(3, VLCStyle.scale)
-                color: range.active ? theme.accent : root.iconColor
+                color: range.active ? theme.accent : root.knobColor
             }
         }
 
@@ -1088,7 +1090,8 @@ FocusScope {
                 Text {
                     anchors.centerIn: parent
                     text: toggle.checked ? qsTr("ON") : qsTr("OFF")
-                    color: toggle.checked ? theme.accent : root.iconColor
+                    // dim, but readable (the tab icon grey was 1.7:1 here)
+                    color: toggle.checked ? theme.accent : VLCStyle.readableOn(root.iconColor, root.gapColor)
                     font.family: VLCStyle.fontFamily
                     font.pixelSize: VLCStyle.fontSize_small
                 }
@@ -1100,7 +1103,7 @@ FocusScope {
                 width: parent.width / 2 - VLCStyle.dp(2, VLCStyle.scale)
                 height: parent.height - VLCStyle.dp(4, VLCStyle.scale)
                 radius: VLCStyle.dp(3, VLCStyle.scale)
-                color: toggle.checked ? theme.accent : root.iconColor
+                color: toggle.checked ? theme.accent : root.knobColor
             }
         }
     }
@@ -1279,7 +1282,7 @@ FocusScope {
 
             Text {
                 text: qsTr("px")
-                color: root.iconColor
+                color: VLCStyle.readableOn(root.iconColor, root.fieldColor)
                 font.family: VLCStyle.fontFamily
                 font.pixelSize: VLCStyle.fontSize_normal
             }

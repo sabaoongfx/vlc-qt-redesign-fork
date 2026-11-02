@@ -33,6 +33,7 @@
 #include <QWidget>
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <vector>
 
@@ -146,6 +147,38 @@ inline QColor accentDim( const QPalette &palette )
 {
     const QColor accent = palette.color( QPalette::Highlight );
     return isDark( palette ) ? mix( Qt::black, accent, 0.26 ) : mix( palette.color( QPalette::Base ), accent, 0.2 );
+}
+
+/* WCAG relative luminance and contrast ratio */
+inline qreal luminance( const QColor &c )
+{
+    const auto lin = []( qreal v ) { return v <= 0.03928 ? v / 12.92 : std::pow( ( v + 0.055 ) / 1.055, 2.4 ); };
+    return 0.2126 * lin( c.redF() ) + 0.7152 * lin( c.greenF() ) + 0.0722 * lin( c.blueF() );
+}
+
+inline qreal contrast( const QColor &a, const QColor &b )
+{
+    const qreal x = luminance( a ), y = luminance( b );
+    return ( std::max( x, y ) + 0.05 ) / ( std::min( x, y ) + 0.05 );
+}
+
+/* `color` moved towards black (on a light background) or white (on a dark one) in small steps until it
+ * reads `ratio`:1 on `background`; unchanged when it already does */
+inline QColor readableOn( const QColor &color, const QColor &background, qreal ratio = 4.5 )
+{
+    const QColor towards = luminance( background ) > 0.18 ? QColor( Qt::black ) : QColor( Qt::white );
+    QColor c = color;
+    for( int i = 1; i <= 20 && contrast( c, background ) < ratio; ++i )
+        c = mix( color, towards, i * 0.05 );
+    return c;
+}
+
+/* accent text on the accent-dim (a selected segment, a Save pill): the accent itself in the dark theme
+ * (5:1 there), a darker accent in Day, where the plain accent on its light tint was ~2:1. Same as
+ * VLCStyle.accentText() in QML. */
+inline QColor accentText( const QPalette &palette )
+{
+    return readableOn( palette.color( QPalette::Highlight ), accentDim( palette ) );
 }
 
 /* a glyph of the VLCIcons font; a `width` larger than `size` leaves room after it */

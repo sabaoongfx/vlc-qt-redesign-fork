@@ -99,6 +99,7 @@ QtObject {
         label: "#8F8F8F",        // values, active tab
         title: "#969696",        // section titles
         tabIcon: "#404040",      // inactive tab icons
+        knob: "#6B6B6B",         // switch knob when off, handle of a slider whose filter is off (3.6:1 on field)
         iconHover: "#0FFFFFFF",  // Figma Icon Wrapper: white at 6% behind a hovered icon
         previewCard: "#1B1B1B",  // seek bar preview card (prototype --bar) and its edge (--line-2)
         previewEdge: "#262626",
@@ -119,6 +120,7 @@ QtObject {
         label: "#2A2A2A",
         title: "#151515",
         tabIcon: "#8A8A8A",
+        knob: "#6E6E6E",
         iconHover: "#0F000000",
         previewCard: "#ABAAAA",
         previewEdge: "#B0B0AF",
@@ -135,6 +137,38 @@ QtObject {
     function accentDim(accent, isDark) {
         return isDark ? Qt.rgba(accent.r * 0.26, accent.g * 0.26, accent.b * 0.26, 1.0)
                       : Qt.alpha(accent, 0.2)
+    }
+
+    // WCAG relative luminance and contrast ratio (same as Redesign::luminance/contrast in C++)
+    function luminance(c) {
+        const lin = (v) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+        return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b)
+    }
+    function contrast(a, b) {
+        const x = luminance(a), y = luminance(b)
+        return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05)
+    }
+    // `color` moved towards black (light background) or white (dark one) until it reads `ratio`:1
+    function readableOn(color, background, ratio) {
+        const need = ratio ?? 4.5
+        const towards = luminance(background) > 0.18 ? 0 : 1
+        let c = color
+        for (let i = 1; i <= 20 && contrast(c, background) < need; ++i) {
+            const k = i * 0.05
+            c = Qt.rgba(color.r + (towards - color.r) * k, color.g + (towards - color.g) * k,
+                        color.b + (towards - color.b) * k, 1) // lint: allow qml-colour (computed, not a literal)
+        }
+        return c
+    }
+    // accent text on accentDim(): the accent in the dark theme, a darker accent in Day (the plain one
+    // was ~2:1 on its light tint). `base` is what the translucent Day tint lies on.
+    function accentText(accent, isDark, base) {
+        if (isDark)
+            return readableOn(accent, accentDim(accent, true))
+        const b = base ?? Qt.color("white") // lint: allow qml-colour (default base when none is given)
+        const tint = Qt.rgba(b.r + (accent.r - b.r) * 0.2, b.g + (accent.g - b.g) * 0.2,
+                             b.b + (accent.b - b.b) * 0.2, 1) // lint: allow qml-colour (computed)
+        return readableOn(accent, tint)
     }
 
     readonly property int fontHeight_xsmall: Math.ceil(fontMetrics_xsmall.lineSpacing)

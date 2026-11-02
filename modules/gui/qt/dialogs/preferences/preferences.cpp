@@ -187,9 +187,10 @@ PrefsDialog::PrefsDialog( QWindow *parent, qt_intf_t *_p_intf )
         " background: palette(base); }"
         "QGroupBox#settingsViews QRadioButton { padding: 6px 14px; border-radius: 4px; color: palette(placeholder-text); }"
         "QGroupBox#settingsViews QRadioButton::indicator { width: 0px; height: 0px; image: none; border: none; background: transparent; margin: 0px; }"
-        "QGroupBox#settingsViews QRadioButton:checked { background: %2; color: palette(highlight); }" )
+        "QGroupBox#settingsViews QRadioButton:checked { background: %2; color: %3; }" )
         .arg( Redesign::isDark( QApplication::palette() ) ? QString() : QStringLiteral( "-light" ) )
-        .arg( Redesign::accentDim( QApplication::palette() ).name() ); } );
+        .arg( Redesign::accentDim( QApplication::palette() ).name() )
+        .arg( Redesign::accentText( QApplication::palette() ).name() ); } );
     main_layout->addWidget( types, 4, 0, 1, 1, Qt::AlignLeft | Qt::AlignVCenter );
     main_layout->addWidget( buttonsBox, 4, 2, 1 ,1 );
     main_layout->setRowStretch( 2, 4 );

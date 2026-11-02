@@ -114,6 +114,9 @@ T.Pane {
                 readonly property int columns: 64
                 readonly property real unit: Math.min(height, VLCStyle.dp(30, VLCStyle.scale)) / 30
                 readonly property color trackColor: VLCStyle.figmaColors(dark).track
+                // the wedge's outline: the dark track alone was 1.1:1 on the bar, the control vanished at
+                // low volume (the hint grey is 3.2:1 on the #1B1B1B bar)
+                readonly property color edgeColor: VLCStyle.figmaColors(dark).hint
                 readonly property var stops: [[0, "#95D318"], [0.5788, "#B2A918"], [0.7924, "#D37918"], [1, "#FF3737"]] // lint: allow qml-colour (the Figma volume gradient, same in both themes)
 
                 function gradientAt(t) {
@@ -159,6 +162,45 @@ T.Pane {
                                      && column.t < (2.5 + 86 * Math.min(Math.max(cone.level, 0), 1)) / 91
                         }
                     }
+                }
+
+                // the outline over the columns: the two slanted edges and the two ends of the wedge
+                readonly property real edge: Math.max(1, cone.unit)
+
+                Repeater {
+                    model: 2
+
+                    delegate: Rectangle {
+                        required property int index
+
+                        readonly property real y0: cone.height / 2 + (index ? 1 : -1) * (10.7 * cone.unit - cone.edge) / 2
+                        readonly property real y1: cone.height / 2 + (index ? 1 : -1) * (27.4 * cone.unit - cone.edge) / 2
+
+                        x: 0
+                        y: y0 - height / 2
+                        width: Math.hypot(cone.width, y1 - y0)
+                        height: cone.edge
+                        transformOrigin: Item.Left
+                        rotation: Math.atan2(y1 - y0, cone.width) * 180 / Math.PI
+                        antialiasing: true
+                        color: cone.edgeColor
+                    }
+                }
+
+                Rectangle {
+                    x: 0
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: cone.edge
+                    height: 10.7 * cone.unit
+                    color: cone.edgeColor
+                }
+
+                Rectangle {
+                    x: cone.width - width
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: cone.edge
+                    height: 27.4 * cone.unit
+                    color: cone.edgeColor
                 }
             }
 

@@ -507,7 +507,7 @@ public:
         m_layout->setSpacing( 0 );
 
         /* Figma: grey 14px labels, 17px section titles, the selected segment on the accent-dim
-         * colour with accent text (#371F06 over the dark base) */
+         * colour with accent text (#371F06 over the dark base; a darker accent in Day, accentText) */
         Redesign::liveStyleSheet( page, []() {
         const QPalette palette = QApplication::palette();
         return QStringLiteral(
@@ -519,9 +519,11 @@ public:
             "QWidget#settingsSegments QPushButton:checked { background: %1; color: %2; }"
             "QWidget#settingsSegments QPushButton#settingsSwatch { padding: 0; border-radius: 4px; border: 2px solid transparent; }"
             "QWidget#settingsSegments QPushButton#settingsSwatch:checked { border: 2px solid palette(text); }"
-            "QPushButton#settingsAdvanced { color: palette(placeholder-text); padding: 10px; }" )
-            .arg( Redesign::accentDim( palette ).name(), palette.color( QPalette::Highlight ).name(),
-                  SettingsChrome::section( palette ).name() );
+            "QPushButton#settingsAdvanced { color: %4; padding: 10px; }" )
+            .arg( Redesign::accentDim( palette ).name(), Redesign::accentText( palette ).name(),
+                  SettingsChrome::section( palette ).name(),
+                  // the placeholder grey was 2.7:1 on the Day button face
+                  Redesign::readableOn( palette.color( QPalette::PlaceholderText ), palette.color( QPalette::Button ) ).name() );
         } );
     }
 

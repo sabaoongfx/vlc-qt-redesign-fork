@@ -293,7 +293,7 @@ WindowDialog {
                     text: qsTr("Save")
                     // the Figma accent-dim, like the seek bar fill
                     backgroundColor: VLCStyle.accentDim(root.viewTheme.accent, root.viewTheme.palette.isDark)
-                    textColor: root.viewTheme.accent
+                    textColor: VLCStyle.accentText(root.viewTheme.accent, root.viewTheme.palette.isDark, root.color)
 
                     onClicked: root.accepted()
                 }
