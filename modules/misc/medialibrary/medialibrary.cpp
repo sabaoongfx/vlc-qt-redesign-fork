@@ -591,6 +591,10 @@ int MediaLibrary::Control( int query, va_list args )
         case VLC_ML_RELOAD_FOLDER:
         {
             auto mrl = va_arg( args, const char* );
+            /* Resync: files that failed to parse 3 times (e.g. still being
+             * downloaded when found) get new attempts, otherwise they never
+             * enter the library */
+            m_ml->forceParserRetry();
             if ( mrl == nullptr )
                 m_ml->reload();
             else

@@ -1,0 +1,20 @@
+forceParserRetry also queues the tasks it resets on a running parser; before,
+they waited for the next start. VLC calls it on Resync so that files which failed
+to parse 3 times (e.g. still downloading when found) are tried again.
+
+--- medialibrary/src/MediaLibrary.cpp
++++ medialibrary.new/src/MediaLibrary.cpp
+@@ -2214,7 +2214,12 @@
+ 
+ bool MediaLibrary::forceParserRetry()
+ {
+-    return parser::Task::resetRetryCount( this );
++    if ( parser::Task::resetRetryCount( this ) == false )
++        return false;
++    /* A running parser only fetches its task list when it starts: queue the
++     * tasks that just got new attempts now (no-op if it is not started yet) */
++    m_parser.refreshTaskList();
++    return true;
+ }
+ 
+ bool MediaLibrary::clearDatabase( bool restorePlaylists )

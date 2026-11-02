@@ -43,7 +43,7 @@ jobs:
             contrib/native
             contrib/x86_64-linux-gnu
             contrib/tarballs
-          key: contrib-medialibrary-${{ hashFiles('contrib/src/medialibrary/**', 'contrib/src/sqlite/**') }}
+          key: contrib-medialibrary-${{ hashFiles('contrib/src/medialibrary/**', 'contrib/src/sqlite/**', 'extras/package/redesign/medialibrary-*.patch') }}
 
       - name: Build medialibrary contrib
         run: |
@@ -52,6 +52,12 @@ jobs:
           cd contrib
           mkdir -p native && cd native
           ../bootstrap
+          # our medialibrary patch (Resync retries files that failed to parse); kept out of contrib/src so the
+          # Windows and macOS contrib caches (keyed on contrib/src) are not rebuilt for it
+          if [ ! -e .medialibrary ]; then
+            make -j"$(getconf _NPROCESSORS_ONLN)" medialibrary
+            patch -p1 -d medialibrary < "$GITHUB_WORKSPACE"/extras/package/redesign/medialibrary-retry-queues-tasks.patch
+          fi
           make -j"$(getconf _NPROCESSORS_ONLN)" .medialibrary
 
       - name: Configure
