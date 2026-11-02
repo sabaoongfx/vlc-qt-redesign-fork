@@ -378,9 +378,14 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     painter->setFont(item->font);
     const QRect textRect(cardLeft + labelX, row.top(), right - cardLeft - labelX, row.height());
     painter->setPen(enabled ? c.label : c.disabled);
-    // a label too long for a width-capped menu (device names) is elided
+    // a label too long for a width-capped menu (device names) is elided; a menu can ask for the
+    // middle with its "elideMode" property (Open Recent: paths keep their file name)
+    const QVariant elideMode = widget->property("elideMode");
     painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine | Qt::TextHideMnemonic,
-                      QFontMetrics(item->font).elidedText(label, Qt::ElideRight, textRect.width(),
+                      QFontMetrics(item->font).elidedText(label,
+                                                         elideMode.isValid() ? Qt::TextElideMode(elideMode.toInt())
+                                                                             : Qt::ElideRight,
+                                                         textRect.width(),
                                                          Qt::TextHideMnemonic));
 
     if (item->menuItemType == QStyleOptionMenuItem::SubMenu)

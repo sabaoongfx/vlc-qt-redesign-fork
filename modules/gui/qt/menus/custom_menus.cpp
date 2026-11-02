@@ -419,6 +419,21 @@ RecentMenu::RecentMenu(MLRecentMediaModel* model, MediaLib* ml,  QWidget* parent
     });
 
     addAction( qtr("&Clear"), model, &MLRecentMediaModel::clearHistory );
+
+    /* redesign: the entries are full paths; uncapped, the submenu grew as wide as the longest one
+     * and, with no room on the right of the main menu, was pushed back over it. Cap it, elide the
+     * middle (the file name stays readable) and show the whole path as a tooltip. */
+    setMaximumWidth(480);
+    setProperty("elideMode", int(Qt::ElideMiddle));
+    setToolTipsVisible(true);
+    connect(this, &QMenu::aboutToShow, this, [this, separator]() {
+        for (QAction *action : actions())
+        {
+            if (action == separator)
+                break;
+            action->setToolTip(action->text());
+        }
+    });
 }
 
 // BookmarkMenu
