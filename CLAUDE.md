@@ -89,7 +89,12 @@ by the user on 2026-10-31 (works). Notes kept for context:
   - Signing order as upstream `codesign.sh`: every file in `Contents/Frameworks` outside a .framework (data too), then
     `vlc-cache-gen` (with `DYLD_LIBRARY_PATH`, it has no rpath), then sign `plugins.dat`; otherwise "stale plugins cache".
   - Qt's sqldrivers are deleted (they link ODBC/Postgres/Mimer libs nobody has).
-  - macOS arm64 runners sometimes are not acquired ("capacity constraints"): just re-run.
+  - macOS arm64 runners sometimes are not acquired ("capacity constraints"): just re-run. A long shortage happened on
+    2026-11-02: six tries in a row (5 re-runs of 41463216512 on `9fe22a14dc`, then run 41490660300 on the empty commit
+    `857cb1d3b6`) were all dropped after ~15 min with no runner, while GitHub's status said Actions was fine. Re-running and
+    empty commits do not help then; wait hours. Options offered, not decided: a `runner` input on workflow_dispatch to try
+    `macos-14` (would reuse the macos-15 contrib cache, untested), or let the release publish without the dmg when the macOS
+    job got no runner (today `redesign-release.yml` fails if the macOS run failed).
 - Small leftovers: font "Inter" missing (Qt substitutes), `Command+0` bound to two actions, the local network prompt
   (`NSLocalNetworkUsageDescription` added in `5b76e90`).
 - Release: `redesign-release.yml` now waits for the macOS run and attaches `VLC-juxtopposed-arm64.dmg` (M5). Tag a
@@ -378,6 +383,14 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   serves 0.1.7-1). Resync retries failed files (medialibrary patch in `extras/package/redesign/`), Qt file dialog
   buttons, 3:1 contrast fixes, smooth volume wedge, Enter = fullscreen, queue titles + the queue panel + button.
   The workflow notes are generic: the changelog section was prepended with `gh release edit`.
+- After v0.1.7 (2026-11-02, all pushed, not released): queue rows no longer blank when a file has an empty title tag
+  (`src/input/es_out.c` EsOutUpdateMeta skips a blank title, `playlist_item.cpp` falls back to the file name; keep the
+  core change when rebasing), Open Recent submenu capped at 480 px with middle-elided paths and tooltips
+  (`custom_menus.cpp` RecentMenu; `menus.cpp` reads the `elideMode` property), seek/volume hotkeys keep the bars over
+  the video hidden, Tab still shows them (`Player.qml` Keys.onPressed), `redesign/docs/13-feature-inventory.md`.
+  Code head `857cb1d3b6` (empty commit on `9fe22a14dc`): Windows, Linux packages and Linux build green; macOS never got a
+  runner (see the macOS state section). v0.1.8 was asked about, no answer yet: do not tag without the user's yes, and only
+  once a macOS run of the tagged commit is green.
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.
