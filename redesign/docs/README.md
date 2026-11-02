@@ -22,6 +22,7 @@ upstream `dd056f2640`, 2026-10-20). Where a statement is unverified it says so.
 | 10 | [Changelog](10-changelog.md) | You want what changed per version |
 | 11 | [User guide and FAQ](11-user-guide.md) | You support users, or write the website/help text |
 | 12 | [Known issues and roadmap](12-known-issues-and-roadmap.md) | You plan the next work |
+| 13 | [Feature inventory](13-feature-inventory.md) | You need the full list of what the app can do: interface, formats, codecs, filters, network, streaming |
 
 Other documents already in the repository (not repeated here):
 
