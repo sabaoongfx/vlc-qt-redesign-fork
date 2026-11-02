@@ -7,6 +7,8 @@ User-facing changes per release. Tags on `redesign`; the release pages on GitHub
   first saw them); before, they never entered the library.
 - **Qt's own file dialog** (AppImage and packages on KDE): the toolbar buttons (back, forward, up, new
   folder, list and detail view) are visible in the dark theme and 28 px targets.
+- **Play queue:** files with an empty title tag show their file name instead of "Unknown Title";
+  the player's Play Queue panel has a + button to add files (as the mini player's Queue card).
 - **Enter toggles fullscreen** in the player, like F (keypad Enter too). On a DVD/Blu-ray menu Enter
   still selects; in a text field, the side panels and the library card it keeps its usual meaning.
 - **Volume control** drawn as the smooth Figma wedge (it had stair-stepped sides and was ~20% small).
