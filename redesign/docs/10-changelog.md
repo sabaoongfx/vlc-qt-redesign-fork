@@ -2,7 +2,7 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
-## Unreleased
+## v0.1.7 (2026-11-02)
 - **Resync** picks up files that failed to be read before (e.g. still downloading when the library
   first saw them); before, they never entered the library.
 - **Qt's own file dialog** (AppImage and packages on KDE): the toolbar buttons (back, forward, up, new
