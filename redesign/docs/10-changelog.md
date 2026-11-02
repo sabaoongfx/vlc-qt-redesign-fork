@@ -7,6 +7,8 @@ User-facing changes per release. Tags on `redesign`; the release pages on GitHub
   title tag blanked its name once it played).
 - **Open Recent** opens beside the menu instead of over it: at most 480 px wide, long paths are
   shortened in the middle, the full path is the tooltip.
+- **Bars over the video** stay hidden when you seek or change the volume with the keyboard (also in
+  fullscreen); Tab still shows them for keyboard navigation.
 
 ## v0.1.7 (2026-11-02)
 - **Resync** picks up files that failed to be read before (e.g. still downloading when the library
