@@ -1,5 +1,5 @@
 # name | theme (0 system, 1 day, 2 night) | kind (ml = media library profile, none) | media (@ = fixtures dir) | actions
-# actions: sleep:S move:x,y resize:w,h (the VLC window, at 0,0) click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag audit:tag (AT-SPI accessibility audit) tree
+# actions: env:NAME=value (for VLC only, set before it starts) sleep:S move:x,y resize:w,h (the VLC window, at 0,0) click:x,y rclick:x,y dclick:x,y key:k type:t press:AccessibleName[#n] shot:tag shotwin:tag geom:tag audit:tag (AT-SPI accessibility audit) tree
 # 1920x1080. Sidebar rows: Home 75, Video 121, Music 167, Network 213, Playlists 259 (x 80; the clicks below land inside these 46px rows).
 # Settings: Ctrl+P. Videos opens on the library roots: click 390,220 opens the Videos folder (Shows, long_movie at 730,220, Sample Movie).
 
@@ -67,3 +67,10 @@ effects-video    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep
 effects-audio    | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 press:Expand_Equalizer sleep:0.8 shot:eq press:Collapse_Equalizer press:Expand_Compressor sleep:0.8 shot:compressor audit:a
 effects-gear     | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Extended_settings sleep:1.5 shot:a
 tracks-picker    | 2 | none | @multi.mkv --sub-file=@fr.srt | sleep:3 move:900,500 sleep:0.3 press:Languages_and_tracks sleep:1.2 shot:subs geom:p audit:a click:1702,518 sleep:0.8 shot:audio click:1572,518 sleep:0.8 shot:video
+
+# Qt's own file dialogs (the AppImage and the packages have no desktop file dialog): every toolbar
+# button must stand out (contrast.py; the v0.1.6 icons were 1.1:1 on Night)
+qtdlg-folder-night | 2 | ml | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+f sleep:3 shot:dlg audit:dlg key:Escape sleep:1
+qtdlg-folder-day | 1 | ml | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+f sleep:3 shot:dlg key:Escape sleep:1
+qtdlg-open-night | 2 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+o sleep:3 shot:dlg key:Escape sleep:1
+qtdlg-open-day | 1 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+o sleep:3 shot:dlg key:Escape sleep:1

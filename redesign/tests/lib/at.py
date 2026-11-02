@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# AT-SPI helper: at.py tree | geom | audit | press NAME [nth] | dump-file PATH
+# AT-SPI helper: at.py tree | geom | audit | controls | press NAME [nth] | dump-file PATH
 import sys, gi, time
 gi.require_version('Atspi', '2.0')
 from gi.repository import Atspi
@@ -89,6 +89,28 @@ elif cmd == 'audit':
                 if role in ('push button', 'button', 'toggle button', 'check box', 'radio button', 'combo box', 'slider', 'page tab') \
                         and st.contains(S.ENABLED) and not st.contains(S.FOCUSABLE):
                     print(f'focus\t{role}\t{nm}\t{where}')
+        except Exception:
+            pass
+elif cmd == 'controls':
+    # every enabled, on-screen control for the contrast check (contrast.py):
+    # role<TAB>name<TAB>flags<TAB>x<TAB>y<TAB>w<TAB>h (screen coordinates; flags: c = checked, f = focused)
+    roles = {'push button', 'button', 'toggle button', 'check box', 'radio button', 'combo box', 'slider',
+             'spin button', 'page tab', 'link', 'menu item', 'check menu item', 'radio menu item'}
+    S = Atspi.StateType
+    for d, n in nodes():
+        try:
+            role = n.get_role_name()
+            if role not in roles:
+                continue
+            st = n.get_state_set()
+            if not (st.contains(S.ENABLED) and st.contains(S.SENSITIVE)):
+                continue
+            e = n.get_extents(Atspi.CoordType.SCREEN)
+            if e.width <= 0 or e.height <= 0:
+                continue
+            flags = ('c' if st.contains(S.CHECKED) or st.contains(S.PRESSED) else '') + ('f' if st.contains(S.FOCUSED) else '')
+            nm = (n.get_name() or n.get_description() or '').strip().replace('\t', ' ').replace('\n', ' ')
+            print(f"{role}\t{nm}\t{flags}\t{e.x}\t{e.y}\t{e.width}\t{e.height}")
         except Exception:
             pass
 elif cmd == 'apps':

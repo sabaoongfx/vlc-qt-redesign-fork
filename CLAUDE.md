@@ -277,6 +277,13 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   commit on its own first (`git push origin <sha>:redesign`) when a harness/docs commit sits on top. One run per
   workflow at a time; a newer push replaces a still-pending run (it shows as "cancelled"), it never stops a running one.
 - Commit per fix, `Co-Authored-By` trailer, `[skip ci]` for docs/harness-only commits.
+- Contrast and lint (2026-11-02): every harness shot also dumps the enabled controls (`at.py controls`) and
+  `contrast.py` (run by check.py) fails any whose icon/text/face is under 3:1 (WCAG 1.4.11); report
+  `out/run/contrast.html`, exceptions with a reason in `contrast-allow.txt`, re-score old shots with
+  `python3 redesign/tests/contrast.py <out>`. Findings are K14-K17 in `redesign/docs/12` (Figma colours: ask
+  before changing them). `redesign/tests/lint.py` (CI step) checks the redesign's added code: no Canvas/Shapes,
+  no colour literals in QML (`VLCStyle`; `// lint: allow <rule> (reason)` for deliberate ones), QML files in
+  both build files. `qtdlg-*` scenes use `env:` to get Qt's own file dialog (what the packages show on KDE).
 - Harness extras: `SCEN=<file>` runs another scene list, `SKIP_FIXTURES=1` skips the test fixtures and check.py,
   `KWINRULES=<file>` replaces the KWin rules (an empty rules file leaves VLC's own window size and placement; the
   default rules maximise the main window, so window-size tests need it). `redesign/tests/showcase.sh` makes the website

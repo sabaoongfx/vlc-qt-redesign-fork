@@ -6,7 +6,9 @@
 |---|---|---|---|
 | Compile | every workflow | C++ errors, QML syntax (qmlcachegen) | every push |
 | QML warnings | harness `check.py`, CI "QML warnings" step | load errors, binding loops, undefined references (they never fail a build by themselves) | every scene / every push |
-| Harness scenes | `redesign/tests/` (62 scenes) | behaviour and look in a real VLC, measured against Figma | locally, before pushing UI work |
+| Lint | `redesign/tests/lint.py`, CI step in `redesign-build.yml` | project rules on the redesign's own code: Canvas/Shapes, colour literals in QML, QML files missing from the build files, shell syntax; smells as warnings | every push (under a second) |
+| Control contrast | `redesign/tests/contrast.py` (from `check.py`) | an enabled control whose icon, text or face does not stand out 3:1 (WCAG 1.4.11), on every screenshot | every scene |
+| Harness scenes | `redesign/tests/` (66 scenes) | behaviour and look in a real VLC, measured against Figma | locally, before pushing UI work |
 | CI screenshots | Linux, Windows, macOS workflows | platform-specific breakage (Windows Qt without Canvas, Day/Night palettes) | every push |
 | Package install tests | `redesign-linux-packages.yml` `install-test` | missing dependencies, broken relocation, stale plugin cache | every push |
 | Manual checklist | 06 | drag and drop, Wayland, Windows installer | each release |
@@ -19,11 +21,33 @@
 `out/run/report.html`. A full run takes ~25 min (run it in the background; do not rebuild meanwhile).
 
 - Scene line: `name | theme (0 system, 1 day, 2 night) | kind (ml, none) | media | actions`.
-- Actions: `sleep: move: resize: click: rclick: dclick: key: type: press:Name shot: shotwin: geom: audit: tree`.
+- Actions: `env:NAME=value sleep: move: resize: click: rclick: dclick: key: type: press:Name shot: shotwin: geom: audit: tree`
+  (`env:` is set for VLC only, before it starts; the `qtdlg-*` scenes use it to get Qt's own file dialog,
+  the one the AppImage and the packages show, instead of KDE's).
 - `OUT=<dir>` keeps the main output; `SCEN=<file>` uses another scene list; `QPA=wayland` runs VLC as a
   native Wayland client; `KWINRULES=<file>` replaces the window rules (default: maximised).
 - `check.py` checks: QML warnings in every log; colours, positions and sizes against the Figma frames;
-  hover growth; vlcrc unchanged after Settings Save; accessibility audits.
+  hover growth; vlcrc unchanged after Settings Save; accessibility audits; control contrast.
+
+### Control contrast (`contrast.py`)
+
+Every `shot:`/`shotwin:` also writes `<shot>.ctl`: the enabled controls on screen with their boxes
+(`lib/at.py controls`; `CONTRAST=0` skips it). For each control the screenshot is measured two ways and the
+better one counts: its marks (icon strokes, text, a slider handle; the top 0.1% of its pixels, at least 6)
+against its own face, and its face against a ring around the box (swatches, pills, tracks). Below 3:1 fails,
+3 to 4.5:1 is listed as information. Disabled controls are exempt, as in WCAG. Output:
+`out/run/contrast.html` with zoomed crops of each failure. `python3 contrast.py <out>` re-scores existing
+screenshots without running scenes. Exceptions the measurement cannot judge (a control under a modal
+dimming layer, a swatch that shows the colour it offers) go in `contrast-allow.txt` with a reason; a real
+low-contrast design colour is not an exception. Validation: on v0.1.6 it fails exactly the five file-dialog
+toolbar buttons of the user's report (1.13-1.45:1); the fixed build passes them.
+
+### Lint (`lint.py`)
+
+Applies only to what the redesign added since upstream `dd056f2640`, so upstream code is not reported.
+Errors fail CI; warnings (sizes as bare numbers, colours in C++, long functions, TODOs, clicks without any
+`Accessible.*`) are information. A deliberate exception carries `// lint: allow <rule> (reason)` on its line.
+`qmllint` is not used: without qmltypes for VLC's C++ types it reports hundreds of false warnings per file.
 
 Totals at v0.1.6: 62 scenes, about 59 measured checks plus the per-scene warning check (50/50 passing
 in the player subset on 2026-11-01).

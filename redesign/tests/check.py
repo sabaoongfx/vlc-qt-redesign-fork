@@ -379,6 +379,15 @@ for a in sorted(glob.glob(f'{OUT}/*.a11y')):
     if not issues:
         ok(scene, 'a11y audit: every control is named, has a role, is focusable and at least 24x24')
 
+# 16. contrast of every enabled control on every screenshot (contrast.py, WCAG 1.4.11: 3:1)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import contrast as _contrast
+_cfails, _cinfos, _cn = _contrast.check(OUT)
+for scene, msg in _cfails:
+    fail(scene, msg)
+for scene in sorted({os.path.basename(p)[:-4].rsplit('-', 1)[0] for p in glob.glob(f'{OUT}/*.ctl')} - {s for s, _ in _cfails}):
+    ok(scene, 'contrast: every enabled control stands out at least 3:1 (contrast.html)')
+
 # WCAG contrast of the Figma colour pairs, for information (the Figma greys are kept on purpose)
 def luminance(hexc_):
     r, g, b = (int(hexc_[i:i + 2], 16) / 255 for i in (1, 3, 5))
