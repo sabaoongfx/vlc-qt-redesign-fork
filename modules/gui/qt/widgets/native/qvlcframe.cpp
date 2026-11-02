@@ -26,10 +26,13 @@
 #include <QKeyEvent>
 #include <QStyle>
 #include <QWizard>
+#include <QFileDialog>
+#include <QToolButton>
 
 #include "qvlcframe.hpp"
 #include "maininterface/compositor.hpp"
 #include "style/redesign.hpp"
+#include "style/vlcicons.hpp"
 
 void QVLCTools::saveWidgetPosition(QSettings *settings, QWidget *widget)
 {
@@ -281,6 +284,37 @@ QString stockDialogStyleSheet()
         "QDialogButtonBox { background: transparent; }" );
 }
 
+/* Qt's own file dialog (used where Qt has no native one, e.g. the AppImage and packages on KDE) draws
+   its toolbar (back, forward, parent folder, new folder, list and detail view) with the style's
+   standard icons: dark grey line art that nearly disappears on the dark theme. Give those buttons
+   VLC's glyphs in the text colour, faded when the button is disabled. */
+void styleFileDialogButtons( QFileDialog *dialog )
+{
+    static const struct { const char *name; QChar glyph; } buttons[] = {
+        { "backButton", VLCIcons::ic_fluent_chevron_left_24 },
+        { "forwardButton", VLCIcons::ic_fluent_chevron_right_24 },
+        { "toParentButton", VLCIcons::ic_fluent_chevron_up_24 },
+        { "newFolderButton", VLCIcons::medialibrary_add },
+        { "listModeButton", VLCIcons::grid },
+        { "detailModeButton", VLCIcons::list },
+    };
+    const QPalette pal = dialog->palette();
+    const QColor normal = pal.color( QPalette::WindowText );
+    const QColor disabled = Redesign::mix( pal.color( QPalette::Window ), normal, 0.35 );
+    const qreal dpr = dialog->devicePixelRatioF();
+    for( const auto &b : buttons )
+    {
+        QToolButton *button = dialog->findChild<QToolButton *>( QLatin1String( b.name ) );
+        if( !button )
+            continue;
+        QIcon icon;
+        icon.addPixmap( Redesign::glyphPixmap( b.glyph, 16, normal, dpr ), QIcon::Normal );
+        icon.addPixmap( Redesign::glyphPixmap( b.glyph, 16, disabled, dpr ), QIcon::Disabled );
+        button->setIcon( icon );
+        button->setIconSize( QSize( 16, 16 ) );
+    }
+}
+
 class StockDialogStyler : public QObject
 {
 public:
@@ -304,6 +338,12 @@ public:
                 wizard->setWizardStyle( QWizard::ModernStyle );
 
         Redesign::liveStyleSheet( widget, stockDialogStyleSheet );
+
+        if( QFileDialog *fileDialog = qobject_cast<QFileDialog *>( widget ) )
+        {
+            styleFileDialogButtons( fileDialog );
+            Redesign::onPaletteChange( fileDialog, [fileDialog]() { styleFileDialogButtons( fileDialog ); } );
+        }
         return false;
     }
 };
