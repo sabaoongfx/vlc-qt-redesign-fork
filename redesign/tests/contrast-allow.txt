@@ -1,5 +1,5 @@
 # Exceptions for contrast.py: scene regex | control name regex | reason (the reason is shown in the report)
 # Only for controls the measurement cannot judge; a real low-contrast design colour stays a failure.
 ^open-network | ^(Sort|More|See All|List/Grid|Menu)$ | behind the open dialog's dimming layer (modal, not operable)
-^prefs-cats | ^#[0-9A-Fa-f]{6}$ | accent swatch: it shows the colour it offers
-^prefs-cats | ^(Outline color|Background color|Text color|Font color)$ | colour button: shows the colour chosen by the user
+^prefs | ^#[0-9A-Fa-f]{6}$ | accent swatch: it shows the colour it offers
+^prefs | ^(Outline color|Background color|Text color|Font color)$ | colour button: shows the colour chosen by the user

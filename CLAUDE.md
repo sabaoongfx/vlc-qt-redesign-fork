@@ -280,8 +280,8 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 - Contrast and lint (2026-11-02): every harness shot also dumps the enabled controls (`at.py controls`) and
   `contrast.py` (run by check.py) fails any whose icon/text/face is under 3:1 (WCAG 1.4.11); report
   `out/run/contrast.html`, exceptions with a reason in `contrast-allow.txt`, re-score old shots with
-  `python3 redesign/tests/contrast.py <out>`. Findings are K14-K17 in `redesign/docs/12` (Figma colours: ask
-  before changing them). `redesign/tests/lint.py` (CI step) checks the redesign's added code: no Canvas/Shapes,
+  `python3 redesign/tests/contrast.py <out>`. The first run's findings (Day accent text, grey knobs and handles, volume
+  track, Advanced Options) were fixed on 2026-11-02 at the user's request (`accentText`, `readableOn`, token `knob`). `redesign/tests/lint.py` (CI step) checks the redesign's added code: no Canvas/Shapes,
   no colour literals in QML (`VLCStyle`; `// lint: allow <rule> (reason)` for deliberate ones), QML files in
   both build files. `qtdlg-*` scenes use `env:` to get Qt's own file dialog (what the packages show on KDE).
 - Harness extras: `SCEN=<file>` runs another scene list, `SKIP_FIXTURES=1` skips the test fixtures and check.py,

@@ -19,10 +19,6 @@ Status 2026-11-02. Move an item to 10 (changelog) when it ships, to 08 when a de
 | K11 | `test_navigation_model` is not built or run | tests | 07 |
 | K12 | Discover pages (Services, URL) are unreachable code | Qt module | Dead code kept for rebase-ability (04) |
 | K13 | Local AppImage packaging on Manjaro crashes `vlc-cache-gen` in the AppDir | dev machine | CI (Ubuntu) is the reference build |
-| K14 | Day theme: accent text on the accent-dim pill (selected Settings choices such as Day and Simple, the Save button of Customize Player) is 1.8-2.2:1 | Day | `contrast.py`; WCAG 1.4.11/1.4.3 need 3/4.5:1. Owner to decide (darker accent for text in Day) |
-| K15 | Grey slider handles and the Off switch knob on the dark panels (equalizer, compressor, video colours) are #404040 on #090909-#1A1A1A, 1.7-1.9:1 | Night | `contrast.py`; Figma greys |
-| K16 | The volume slider's track is #191919 on #090909 (1.13:1): at low volume the control is barely visible | Night | `contrast.py`; Figma track colour |
-| K17 | "Advanced Options" in Settings (Day) is 2.7:1 | Day | `contrast.py` |
 
 ## Open questions for the owner
 
