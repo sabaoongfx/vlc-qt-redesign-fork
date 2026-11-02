@@ -51,6 +51,104 @@ T.Pane {
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
 
+    // redesign: a smooth, anti-aliased wedge (the volume cone) without Canvas or QtQuick.Shapes, which the
+    // Windows Qt lacks. Rounded ends; between them each half (above and below the middle line) is one
+    // rotated rectangle whose outer edge is the slanted side, clipped at the middle line. (It used to be 64
+    // pixel-snapped columns: the sides were stairs.)
+    component Wedge: Item {
+        id: wedge
+
+        property real a: 0              // height at the left end
+        property real b: 0              // height at the right end
+        property real inset: 0          // from the slanted sides
+        property real endInset: inset   // from the ends
+        property real radius: 0
+        property real leftRadius: radius  // Figma: the narrow end is rounded almost to a half circle
+        property color color
+        property color endColor: color  // the right end (a gradient's last stop)
+        property Gradient fill: null
+
+        readonly property real cy: Math.round(height / 2)
+        readonly property real x0: endInset
+        readonly property real x1: width - endInset
+        // half the height at x
+        function half(x) { return Math.max(0, (a + (b - a) * x / Math.max(width, 1)) / 2 - inset) }
+        readonly property real h0: half(x0)
+        readonly property real h1: half(x1)
+        readonly property real rL: Math.min(leftRadius, h0)
+        readonly property real rR: Math.min(radius, h1)
+        readonly property real span: Math.hypot(x1 - x0, h1 - h0)
+        readonly property real angle: Math.atan2(h1 - h0, x1 - x0) * 180 / Math.PI
+
+        Rectangle {
+            x: wedge.x0
+            y: wedge.cy - wedge.h0
+            width: 2 * wedge.rL + 1
+            height: 2 * wedge.h0
+            radius: wedge.rL
+            color: wedge.color
+            antialiasing: true
+        }
+
+        // the right cap takes the height at its own left edge, so its flat top never pokes out of the
+        // slanted side (it made small ears at the corners)
+        readonly property real hCap: half(x1 - 2 * rR - 1)
+
+        Rectangle {
+            x: wedge.x1 - width
+            y: wedge.cy - wedge.hCap
+            width: 2 * wedge.rR + 1
+            height: 2 * wedge.hCap
+            radius: wedge.rR
+            color: wedge.endColor
+            antialiasing: true
+        }
+
+        Item {
+            x: wedge.x0 + wedge.rL
+            width: Math.max(0, wedge.x1 - wedge.rR - x)
+            height: wedge.height
+            clip: true
+
+            Item {
+                width: parent.width
+                height: wedge.cy
+                clip: true
+
+                Rectangle {
+                    x: -wedge.rL
+                    y: wedge.cy - wedge.h0
+                    width: wedge.span
+                    height: wedge.h1 + 2
+                    transformOrigin: Item.TopLeft
+                    rotation: -wedge.angle
+                    antialiasing: true
+                    color: wedge.color
+                    gradient: wedge.fill
+                }
+            }
+
+            Item {
+                y: wedge.cy
+                width: parent.width
+                height: wedge.height - wedge.cy
+                clip: true
+
+                Rectangle {
+                    x: -wedge.rL
+                    y: wedge.h0 - height
+                    width: wedge.span
+                    height: wedge.h1 + 2
+                    transformOrigin: Item.BottomLeft
+                    rotation: wedge.angle
+                    antialiasing: true
+                    color: wedge.color
+                    gradient: wedge.fill
+                }
+            }
+        }
+    }
+
     RowLayout {
         id: volumeWidget
 
@@ -106,101 +204,65 @@ T.Pane {
             background: Item {
                 id: cone
 
-                readonly property real level: volControl.visualPosition
+                readonly property real level: Math.min(Math.max(volControl.visualPosition, 0), 1)
                 readonly property bool dark: volControl.colorContext.palette?.isDark ?? true
 
-                // prototype cone (js/chrome-icons.js, viewBox 91x30): a wedge 10.7 to 27.4 units high with the
-                // gradient fill inset by 1.5, drawn as thin columns (no Canvas: the Windows Qt build lacks it)
-                readonly property int columns: 64
-                readonly property real unit: Math.min(height, VLCStyle.dp(30, VLCStyle.scale)) / 30
+                // prototype cone (js/chrome-icons.js, viewBox 91x30): a wedge 10.7 to 27.4 units high, the
+                // gradient fill inset by 1.5 and starting 2.5 units in, up to 2.5 + 86 * level units
+                // Figma size (89x30) whatever the row height: the slider is shorter than 30 and the cone was
+                // drawn ~20% small; it may reach a few pixels past the slider, inside the 55px bar
+                readonly property real unit: VLCStyle.dp(1, VLCStyle.scale)
                 readonly property color trackColor: VLCStyle.figmaColors(dark).track
                 // the wedge's outline: the dark track alone was 1.1:1 on the bar, the control vanished at
                 // low volume (the hint grey is 3.2:1 on the #1B1B1B bar)
                 readonly property color edgeColor: VLCStyle.figmaColors(dark).hint
-                readonly property var stops: [[0, "#95D318"], [0.5788, "#B2A918"], [0.7924, "#D37918"], [1, "#FF3737"]] // lint: allow qml-colour (the Figma volume gradient, same in both themes)
 
-                function gradientAt(t) {
-                    for (let i = 1; i < stops.length; ++i) {
-                        if (t <= stops[i][0]) {
-                            const a = Qt.color(stops[i - 1][1])
-                            const b = Qt.color(stops[i][1])
-                            const k = (t - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0])
-                            return Qt.rgba(a.r + (b.r - a.r) * k, a.g + (b.g - a.g) * k, a.b + (b.b - a.b) * k, 1) // lint: allow qml-colour (mixes the stops)
-                        }
-                    }
-                    return Qt.color(stops[stops.length - 1][1])
+                Wedge {
+                    anchors.fill: parent
+                    a: 10.7 * cone.unit
+                    b: 27.4 * cone.unit
+                    radius: 2 * cone.unit
+                    leftRadius: 4.5 * cone.unit
+                    color: cone.edgeColor
                 }
 
-                Repeater {
-                    model: cone.columns
+                Wedge {
+                    anchors.fill: parent
+                    a: 10.7 * cone.unit
+                    b: 27.4 * cone.unit
+                    inset: cone.unit
+                    radius: 1.5 * cone.unit
+                    leftRadius: 3.5 * cone.unit
+                    color: cone.trackColor
+                }
 
-                    delegate: Item {
-                        id: column
+                // the fill, cut straight at the level
+                Item {
+                    width: cone.width * (2.5 + 86 * cone.level) / 91
+                    height: cone.height
+                    clip: true
+                    visible: cone.level > 0
 
-                        required property int index
-
-                        readonly property real t: (index + 0.5) / cone.columns
-                        readonly property real wedge: (10.7 + 16.7 * t) * cone.unit
-
-                        x: index * cone.width / cone.columns
-                        width: cone.width / cone.columns + 0.5
+                    Wedge {
+                        width: cone.width
                         height: cone.height
-
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width
-                            height: column.wedge
-                            color: cone.trackColor
-                        }
-
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: parent.width
-                            height: column.wedge - 3 * cone.unit
-                            color: cone.gradientAt(column.t)
-                            visible: column.t > 2.5 / 91 && column.t < 88.5 / 91
-                                     && column.t < (2.5 + 86 * Math.min(Math.max(cone.level, 0), 1)) / 91
+                        a: 10.7 * cone.unit
+                        b: 27.4 * cone.unit
+                        inset: 1.5 * cone.unit
+                        endInset: 2.5 * cone.width / 91
+                        radius: 1.5 * cone.unit
+                        leftRadius: 3 * cone.unit
+                        color: "#95D318" // lint: allow qml-colour (the Figma volume gradient's first stop, for the rounded end)
+                        endColor: "#FF3737" // lint: allow qml-colour (its last stop)
+                        fill: Gradient {
+                            orientation: Gradient.Horizontal
+                            // the Figma volume gradient, same in both themes
+                            GradientStop { position: 0; color: "#95D318" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 0.5788; color: "#B2A918" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 0.7924; color: "#D37918" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 1; color: "#FF3737" } // lint: allow qml-colour (Figma volume gradient)
                         }
                     }
-                }
-
-                // the outline over the columns: the two slanted edges and the two ends of the wedge
-                readonly property real edge: Math.max(1, cone.unit)
-
-                Repeater {
-                    model: 2
-
-                    delegate: Rectangle {
-                        required property int index
-
-                        readonly property real y0: cone.height / 2 + (index ? 1 : -1) * (10.7 * cone.unit - cone.edge) / 2
-                        readonly property real y1: cone.height / 2 + (index ? 1 : -1) * (27.4 * cone.unit - cone.edge) / 2
-
-                        x: 0
-                        y: y0 - height / 2
-                        width: Math.hypot(cone.width, y1 - y0)
-                        height: cone.edge
-                        transformOrigin: Item.Left
-                        rotation: Math.atan2(y1 - y0, cone.width) * 180 / Math.PI
-                        antialiasing: true
-                        color: cone.edgeColor
-                    }
-                }
-
-                Rectangle {
-                    x: 0
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: cone.edge
-                    height: 10.7 * cone.unit
-                    color: cone.edgeColor
-                }
-
-                Rectangle {
-                    x: cone.width - width
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: cone.edge
-                    height: 27.4 * cone.unit
-                    color: cone.edgeColor
                 }
             }
 
