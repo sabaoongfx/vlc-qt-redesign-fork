@@ -105,7 +105,7 @@ T.Control {
                 anchors.fill: parent
                 visible: !root.hasVideo && previewHover.hovered
                 radius: parent.radius
-                color: Qt.rgba(0, 0, 0, 0.5)
+                color: VLCStyle.scrim
             }
 
             HoverHandler {

@@ -79,6 +79,9 @@ QtObject {
     // QApplication::setFont(), so base components set the bundled family explicitly
     readonly property string fontFamily: "Inter"
 
+    // redesign: the dimming layer under modal dialogs and over hovered previews (both themes)
+    readonly property color scrim: Qt.rgba(0, 0, 0, 0.5)
+
     // redesign: the greys of the Figma frames (dark) and their Day counterparts, by role.
     // Components pick a set with figmaColors(theme.palette.isDark).
     readonly property var figmaDark: ({

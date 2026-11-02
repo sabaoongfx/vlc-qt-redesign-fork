@@ -85,7 +85,7 @@ T.Popup {
     }
 
     T.Overlay.modal: Rectangle {
-        color: Qt.rgba(0, 0, 0, 0.5)
+        color: VLCStyle.scrim
     }
 
     background: Rectangle {

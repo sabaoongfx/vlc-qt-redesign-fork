@@ -144,14 +144,14 @@ Widgets.GridItem {
                 return h / 360
             }
 
-            color: dark ? Qt.hsla(hue, 0.22, 0.16, 1) : Qt.hsla(hue, 0.22, 0.88, 1)
+            color: dark ? Qt.hsla(hue, 0.22, 0.16, 1) : Qt.hsla(hue, 0.22, 0.88, 1) // lint: allow qml-colour (hue hashed from the title, the prototype's generated tile)
 
             Widgets.IconLabel {
                 anchors.centerIn: parent
 
                 text: VLCIcons.topbar_video
                 font.pixelSize: Math.round(parent.height * 0.3)
-                color: parent.dark ? Qt.hsla(parent.hue, 0.30, 0.55, 1) : Qt.hsla(parent.hue, 0.30, 0.45, 1)
+                color: parent.dark ? Qt.hsla(parent.hue, 0.30, 0.55, 1) : Qt.hsla(parent.hue, 0.30, 0.45, 1) // lint: allow qml-colour (same tile)
             }
         }
 

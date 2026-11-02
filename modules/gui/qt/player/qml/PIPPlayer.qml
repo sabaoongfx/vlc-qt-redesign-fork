@@ -128,7 +128,7 @@ T.Control {
                 (hoverHandler.hovered ||
                  playButton?.hovered ||
                  closeButton?.hovered ||
-                 fullscreenButton?.hovered)) ? Qt.rgba(0, 0, 0, 0.5) : "transparent"
+                 fullscreenButton?.hovered)) ? VLCStyle.scrim : "transparent"
 
         // It is acceptable for effects to exceed the boundaries of the
         // parent. They are an exception to the "hypothetical clip test".

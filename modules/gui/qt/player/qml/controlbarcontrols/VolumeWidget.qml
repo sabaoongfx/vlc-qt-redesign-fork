@@ -114,7 +114,7 @@ T.Pane {
                 readonly property int columns: 64
                 readonly property real unit: Math.min(height, VLCStyle.dp(30, VLCStyle.scale)) / 30
                 readonly property color trackColor: VLCStyle.figmaColors(dark).track
-                readonly property var stops: [[0, "#95D318"], [0.5788, "#B2A918"], [0.7924, "#D37918"], [1, "#FF3737"]]
+                readonly property var stops: [[0, "#95D318"], [0.5788, "#B2A918"], [0.7924, "#D37918"], [1, "#FF3737"]] // lint: allow qml-colour (the Figma volume gradient, same in both themes)
 
                 function gradientAt(t) {
                     for (let i = 1; i < stops.length; ++i) {
@@ -122,7 +122,7 @@ T.Pane {
                             const a = Qt.color(stops[i - 1][1])
                             const b = Qt.color(stops[i][1])
                             const k = (t - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0])
-                            return Qt.rgba(a.r + (b.r - a.r) * k, a.g + (b.g - a.g) * k, a.b + (b.b - a.b) * k, 1)
+                            return Qt.rgba(a.r + (b.r - a.r) * k, a.g + (b.g - a.g) * k, a.b + (b.b - a.b) * k, 1) // lint: allow qml-colour (mixes the stops)
                         }
                     }
                     return Qt.color(stops[stops.length - 1][1])
