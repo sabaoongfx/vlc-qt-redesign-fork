@@ -389,8 +389,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   (`custom_menus.cpp` RecentMenu; `menus.cpp` reads the `elideMode` property), seek/volume hotkeys keep the bars over
   the video hidden, Tab still shows them (`Player.qml` Keys.onPressed), `redesign/docs/13-feature-inventory.md`.
   Code head `857cb1d3b6` (empty commit on `9fe22a14dc`): Windows, Linux packages and Linux build green; macOS never got a
-  runner (see the macOS state section). v0.1.8 was asked about, no answer yet: do not tag without the user's yes, and only
-  once a macOS run of the tagged commit is green.
+  runner (see the macOS state section).
+- Released 2026-11-03: **v0.1.8** on `857cb1d3b6` (Latest; four CI runs green, the macOS run 41490660300 got a runner on
+  its re-run the next morning; release run 41620701150; apt and pacman serve 0.1.8-1). The post-v0.1.7 fixes above.
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.

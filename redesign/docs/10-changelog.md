@@ -2,7 +2,7 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
-## Unreleased
+## v0.1.8 (2026-11-03)
 - **Play queue:** the file opened from the file manager no longer shows "Unknown Title" (an empty
   title tag blanked its name once it played).
 - **Open Recent** opens beside the menu instead of over it: at most 480 px wide, long paths are
