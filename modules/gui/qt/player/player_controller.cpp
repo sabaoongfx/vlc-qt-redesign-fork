@@ -184,6 +184,68 @@ void PlayerControllerPrivate::UpdateTrackSelection(vlc_es_id_t *trackid, bool se
     tracklist->updateTrackSelection(trackid, selected);
 }
 
+namespace {
+
+bool isEnglish(const char *lang)
+{
+    if (!lang || !*lang)
+        return false;
+    const QString l = QString::fromUtf8(lang).trimmed().toLower();
+    return l == QLatin1String("en") || l == QLatin1String("eng")
+        || l == QLatin1String("english")
+        || l.startsWith(QLatin1String("en-")) || l.startsWith(QLatin1String("en_"));
+}
+
+}
+
+/* The tracks of a media arrive one by one, the core picks its own default
+ * subtitle (sub-language, default flags) and external subtitle files are
+ * added a little later: wait until the track events stop for a moment, then
+ * decide once. rearm = a new media or another audio track was selected. */
+void PlayerControllerPrivate::scheduleAutoSubtitle(bool rearm)
+{
+    if (rearm)
+        m_autoSubtitlePending = true;
+    if (m_autoSubtitlePending)
+        m_autoSubtitleTimer.start();
+}
+
+void PlayerControllerPrivate::applyAutoSubtitle()
+{
+    if (!m_autoSubtitlePending)
+        return;
+    if (!var_InheritBool(p_intf, "qt-auto-subtitles"))
+    {
+        m_autoSubtitlePending = false;
+        return;
+    }
+
+    vlc_player_locker lock{ m_player };
+    const vlc_player_track *audio = vlc_player_GetSelectedTrack(m_player, AUDIO_ES);
+    if (!audio)
+        return; // no audio chosen yet, wait for the next event
+    const char *lang = audio->fmt.psz_language;
+    if (!lang || !*lang || isEnglish(lang))
+    {
+        // English, or untagged (nothing to go by): leave subtitles alone
+        m_autoSubtitlePending = false;
+        return;
+    }
+    if (vlc_player_GetSelectedTrack(m_player, SPU_ES))
+    {
+        m_autoSubtitlePending = false; // a subtitle is already on
+        return;
+    }
+    if (vlc_player_GetTrackCount(m_player, SPU_ES) == 0)
+        return; // stay pending: an external subtitle file may still come
+    const vlc_player_track *first = vlc_player_GetTrackAt(m_player, SPU_ES, 0);
+    if (!first)
+        return;
+    msg_Dbg(p_intf, "audio language '%s' is not English: turning on the first subtitle", lang);
+    vlc_player_SelectTrack(m_player, first, VLC_PLAYER_SELECT_EXCLUSIVE);
+    m_autoSubtitlePending = false;
+}
+
 void PlayerControllerPrivate::UpdateMeta( input_item_t *p_item )
 {
     Q_Q(PlayerController);
@@ -384,6 +446,8 @@ static  void on_player_current_media_changed(vlc_player_t *, input_item_t *new_m
         that->m_canRestorePlayback = false;
         emit q->playbackRestoreQueried();
 
+        that->scheduleAutoSubtitle(true);
+
         emit q->inputChanged(true);
     });
 }
@@ -570,6 +634,7 @@ static void on_player_track_list_changed(vlc_player_t *, enum vlc_player_list_ac
             msg_Dbg( that->p_intf, "on_player_track_list_changed (other)");
             break;
         }
+        that->scheduleAutoSubtitle(false);
     });
 }
 
@@ -586,6 +651,8 @@ static void on_player_track_selection_changed(vlc_player_t *, vlc_es_id_t * unse
             that->UpdateTrackSelection( unselectedPtr.get(), false );
         if (selectedPtr)
             that->UpdateTrackSelection( selectedPtr.get(), true );
+        that->scheduleAutoSubtitle(selectedPtr
+                                   && vlc_es_id_GetCat(selectedPtr.get()) == AUDIO_ES);
     });
 }
 
@@ -1255,6 +1322,9 @@ PlayerController::PlayerController( qt_intf_t *_p_intf )
     , d_ptr( new PlayerControllerPrivate(this, _p_intf) )
 {
     connect( &d_ptr->m_position_timer, &QTimer::timeout, this, &PlayerController::updatePositionFromTimer );
+    d_ptr->m_autoSubtitleTimer.setSingleShot(true);
+    d_ptr->m_autoSubtitleTimer.setInterval(600);
+    connect( &d_ptr->m_autoSubtitleTimer, &QTimer::timeout, this, [this]() { d_ptr->applyAutoSubtitle(); } );
     connect( &d_ptr->m_time_timer, &QTimer::timeout, this, &PlayerController::updateTimeFromTimer );
 }
 

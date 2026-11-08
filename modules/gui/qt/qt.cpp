@@ -252,6 +252,11 @@ static void ShowDialog   ( intf_thread_t *, int, int, intf_dialog_args_t * );
 #define QT_PAUSE_MINIMIZED_LONGTEXT N_( \
     "With this option enabled, the playback will be automatically paused when minimizing the window." )
 
+#define QT_AUTO_SUBTITLES_TEXT N_( "Subtitles on for non-English audio" )
+#define QT_AUTO_SUBTITLES_LONGTEXT N_( \
+    "When the audio track of a media is in a language other than English and no " \
+    "subtitle is shown, the first subtitle track is turned on." )
+
 #define ICONCHANGE_TEXT N_( "Allow automatic icon changes")
 #define ICONCHANGE_LONGTEXT N_( \
     "This option allows the interface to change its icon on various occasions.")
@@ -378,6 +383,8 @@ vlc_module_begin ()
               MINIMIZED_LONGTEXT)
     add_bool( "qt-pause-minimized", false, QT_PAUSE_MINIMIZED_TEXT,
               QT_PAUSE_MINIMIZED_LONGTEXT )
+    add_bool( "qt-auto-subtitles", true, QT_AUTO_SUBTITLES_TEXT,
+              QT_AUTO_SUBTITLES_LONGTEXT )
 
     add_float_with_range( "qt-opacity", 1., 0.1, 1., OPACITY_TEXT,
                           OPACITY_LONGTEXT )

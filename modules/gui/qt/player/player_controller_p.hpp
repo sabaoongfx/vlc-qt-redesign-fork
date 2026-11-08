@@ -60,6 +60,10 @@ public:
     void UpdateVouts(vout_thread_t **vouts, size_t i_vouts, vlc_player_vout_action action);
     void UpdateTrackSelection(vlc_es_id_t *trackid, bool selected);
     void UpdateSpuOrder(vlc_es_id_t *es_id, enum vlc_vout_order spu_order);
+    // Turns on the first subtitle when the audio is not in English
+    // (qt-auto-subtitles); see scheduleAutoSubtitle in player_controller.cpp.
+    void scheduleAutoSubtitle(bool rearm);
+    void applyAutoSubtitle();
     int interpolateTime(vlc_tick_t system_now);
     bool isCurrentItemSynced();
 
@@ -143,6 +147,8 @@ public:
     bool seeking = false;
     QTimer m_position_timer;
     QTimer m_time_timer;
+    QTimer m_autoSubtitleTimer;
+    bool m_autoSubtitlePending = false;
 
     //title/chapters/menu
     TitleListModel m_titleList;
