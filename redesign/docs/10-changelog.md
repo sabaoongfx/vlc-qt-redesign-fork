@@ -5,8 +5,8 @@ User-facing changes per release. Tags on `redesign`; the release pages on GitHub
 ## v0.1.9 (2026-11-09)
 - **Subtitles for foreign-language audio:** when the audio track is tagged with a language other than
   English and no subtitle is on, the first subtitle track turns on by itself (also when you switch to
-  another non-English audio track). Untagged audio is left alone. Off switch: Advanced Options >
-  Interface > Qt, "Subtitles on for non-English audio" (`qt-auto-subtitles`).
+  another non-English audio track). Untagged audio is left alone. Off switch: Settings, All (bottom
+  left) > Interface > Main interfaces > Qt, "Subtitles on for non-English audio" (`qt-auto-subtitles`).
 
 ## v0.1.8 (2026-11-03)
 - **Play queue:** the file opened from the file manager no longer shows "Unknown Title" (an empty
