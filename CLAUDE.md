@@ -392,6 +392,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   runner (see the macOS state section).
 - Released 2026-11-03: **v0.1.8** on `857cb1d3b6` (Latest; four CI runs green, the macOS run 41490660300 got a runner on
   its re-run the next morning; release run 41620701150; apt and pacman serve 0.1.8-1). The post-v0.1.7 fixes above.
+- Released 2026-11-09: **v0.1.9** on `d20c028a3b` (four CI runs green; release run 42521771567). The first subtitle
+  turns on when the selected audio track is tagged non-English and no subtitle is on (`PlayerControllerPrivate::
+  applyAutoSubtitle`, 600 ms after the track events settle; untagged audio = no change; option `qt-auto-subtitles`).
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.
