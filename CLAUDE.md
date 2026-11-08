@@ -150,7 +150,7 @@ From a user screenshot of Home (`~/Downloads/Screenshot 2026-10-30 223916.png`):
 - Download section: label + size per file from the release API, a "Your device" badge, a macOS card (Apple
   Silicon .dmg, on by default since the dmg is on v0.1.4). The site says Windows, macOS and Linux everywhere
   except the social image `og.png` (needs a headless Chromium render, not done).
-- Blog: 10 posts, all pushed (`vlc-web` `6d549a7`). Rules come from `../sabaoondev-main/sabaoondev-main/CLAUDE.md`
+- Blog: 11 posts, all pushed (`vlc-web` `22e0071`; `whats-new-in-0-1-9` 2026-11-09 also covers 0.1.6-0.1.8). Rules come from `../sabaoondev-main/sabaoondev-main/CLAUDE.md`
   (Content Strategy) and are copied into `vlc-web/CLAUDE.md`, with the rules for each kind of post.
   - Engineering (quote real code from this repo, end with what is open): porting the redesign, the folder tree
     design note and its follow-up, two bugs that lived elsewhere, building the Mac version without a Mac,
