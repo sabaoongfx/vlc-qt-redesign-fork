@@ -280,9 +280,9 @@ FocusScope{
                 Widgets.BannerCone {
                     id: logo
 
-                    // redesign: the system title bar shows the VLC icon already (user request: no second cone);
-                    // macOS title bars have no application icon, the cone stays there
-                    visible: MainCtx.clientSideDecoration || Qt.platform.os === "osx"
+                    // redesign: only with VLC's own window buttons; the system title bar shows the VLC icon
+                    // already (user request: no second cone, none on macOS either)
+                    visible: MainCtx.clientSideDecoration
 
                     anchors.verticalCenter: parent.verticalCenter
 
