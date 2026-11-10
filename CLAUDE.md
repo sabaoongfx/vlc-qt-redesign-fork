@@ -56,6 +56,42 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
+## After v0.1.10 (2026-11-11 night) — state when the session stopped
+
+CI: the user stopped all runs (2026-11-11 ~01:50) and has not asked for new ones. Nothing after v0.1.10 has a CI
+build. Pushed to `origin/redesign` (head `cc471c6e8a`, a `[skip ci]` commit, so no runs) and harness-checked only:
+- `13cc07bfb5` player top bar: "..." first, then the library switcher (user request).
+- `6e5acad5f9` Next/Previous tooltips "Next (N)" / "Previous (P)": `MainCtx::hotkeyText(option)` (reads the
+  configured key like the menus' `hotkeyHint`), `IconToolButton.shortcut` (tooltip only, accessible name unchanged).
+- `ff52bc82ac` grid badges (playlist counts, quality tags) are a dark pill + white text in both themes (Night was 80%
+  white + black text, plus an extra 0.5 opacity); playlist counts fold the library's "unknown" media (files added from
+  outside the library folders, not parsed yet) into Videos when there are no songs, Tracks when no videos.
+- `77daaecaad` a video clicked inside a playlist queues the whole playlist in the shown order and starts at it
+  (`MediaLib::addAndPlayFrom`).
+Local commits, NOT pushed (pushing starts CI; ask first):
+- `2c7b882be9` list views: `VideoProgressBar` under the thumbnail of a started video (`TableColumns.titleDelegate`).
+- `0fdecb5730` + `65799a8e8e` right-click menu = the Figma frame: Previous Item, Next Item, More Settings (was
+  Tools), Playlist (was View), Quit VLC; submenus Playback, Video, Audio, Subtitle; no Fullscreen entry; three 1px
+  #1D1D1D group lines (menu property `redesignHairlineSeparators`) after Record, Hide UI, Subtitle: 292x683 like the
+  frame; check.py measures the height and the lines.
+UNCOMMITTED in the working tree (built, not verified; the user interrupted the verification run):
+- `menus.hpp`/`menus.cpp`: menus are 265px wide by default (the Figma file, folder, playlist, sort and View Options
+  frames, measured on the user's exports `VLC Redesign (Community) (4).zip`: cards 265 wide, 48px rows, 4px padding),
+  `rightClickWidth` 292 set in `PopupMenu`; the 40px label-to-shortcut gap only on rows with a shortcut or a submenu.
+  This part WAS checked: widths measured 292 / 265 / 265 / 265 / 265 / 375 (main menu), check.py 31/31.
+- Icons 1:1 with Figma: every `pixmaps/menu/redesign-*.svg` re-framed to a 24-unit viewBox around its old centre
+  (they were 21, 22.5 or 23 units drawn into 20px, so 0.87-0.95 scale; the file menu's were ~10% small), and
+  `RedesignMenuStyle` iconX 18 / iconSize 24 (same centre). Re-measure icon sizes against the zip exports before
+  committing (VLCIcons glyph pixmaps such as Rename/Delete should stay 20px, centred), and run check.py's menu checks
+  (`main-menu` checks the icon x 19-22).
+Also seen, not fixed: `PageLoader.qml:99` "Cannot assign to non-existent property parentId/title/trail" when the
+player returns to a Videos folder page (folder tree, since 2026-10-28; harmless); "0 ms" under a playlist card
+subtitle when empty; "1 items" in the player card header; the light playlist placeholder in Night.
+The user's daily VLC is an older package (still shows the second cone and no Hide UI): their screenshots of "current"
+behaviour may predate v0.1.10.
+Measuring a Figma menu: the exports carry a 15px shadow margin (card at 15,7 in a 295-wide PNG); compare at native
+size (player frames are 1920x1080).
+
 ## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
 
 - Sort: the Videos and Music folder trees list their media by title A to Z when no sort is chosen
