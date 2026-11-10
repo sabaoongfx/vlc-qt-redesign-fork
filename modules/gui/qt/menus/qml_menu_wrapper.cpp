@@ -183,6 +183,13 @@ void SortMenu::popup(const QPoint &point, const bool popupAbovePoint, const QVar
 
         // redesign: the Figma sort menu marks the current sort with the accent tick only (an
         // icon, even a hidden one, made QMenu keep an icon column and pushed the labels right)
+        // an entry may carry an icon (the Figma View Options: Grid View, List View)
+        const QString icon = obj.value("icon_svg").toString();
+        if (!icon.isEmpty())
+        {
+            action->setIcon(QIcon(icon));
+            action->setIconVisibleInMenu(true);
+        }
 
         connect(action, &QAction::triggered, this, [this, i]()
         {

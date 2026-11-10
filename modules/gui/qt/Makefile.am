@@ -1024,6 +1024,11 @@ libqt_plugin_la_RES = \
 	pixmaps/menu/redesign-info.svg \
 	pixmaps/menu/redesign-stream.svg \
 	pixmaps/menu/redesign-watched.svg \
+	pixmaps/menu/redesign-addfile.svg \
+	pixmaps/menu/redesign-addfolder.svg \
+	pixmaps/menu/redesign-resync.svg \
+	pixmaps/menu/redesign-gridview.svg \
+	pixmaps/menu/redesign-listview.svg \
 	pixmaps/menu/redesign-quit.svg \
 	pixmaps/menu/redesign-recent.svg \
 	pixmaps/menu/redesign-record.svg \

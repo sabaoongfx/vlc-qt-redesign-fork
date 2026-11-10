@@ -35,12 +35,12 @@ IconToolButton {
 
     // Add File opens the system file picker (Ctrl+O), not VLC's Open Media window
     readonly property var _entries: [
-        { text: qsTr("Add File"),             icon_svg: ":/menu/add.svg",               action: () => DialogsProvider.simpleOpenDialog() },
-        { text: qsTr("Add Folder"),           icon_svg: ":/menu/redesign-folder.svg",   action: () => DialogsProvider.addLibraryFolderDialog() },
+        { text: qsTr("Add File"),             icon_svg: ":/menu/redesign-addfile.svg",   action: () => DialogsProvider.simpleOpenDialog() },
+        { text: qsTr("Add Folder"),           icon_svg: ":/menu/redesign-addfolder.svg", action: () => DialogsProvider.addLibraryFolderDialog() },
         { text: qsTr("Edit Subtitle Tracks"), icon_svg: ":/menu/redesign-subtitle.svg", action: () => DialogsProvider.loadSubtitlesFile(), media: true },
         { text: qsTr("Edit Audio Tracks"),    icon_svg: ":/menu/redesign-audio.svg",    action: () => DialogsProvider.loadAudioFile(), media: true },
-        { text: qsTr("Resync"),               icon_svg: ":/menu/sync.svg",              action: () => MainCtx.mediaLibrary?.reload(), library: true },
-        { text: qsTr("Info"),                 icon_svg: ":/menu/info.svg",              action: () => DialogsProvider.mediaInfoDialog(), media: true }
+        { text: qsTr("Resync"),               icon_svg: ":/menu/redesign-resync.svg",    action: () => MainCtx.mediaLibrary?.reload(), library: true },
+        { text: qsTr("Info"),                 icon_svg: ":/menu/redesign-info.svg",      action: () => DialogsProvider.mediaInfoDialog(), media: true }
     ]
 
     // a page's own entries ({ text, icon_svg, action }), in place of the folder menu (Network:

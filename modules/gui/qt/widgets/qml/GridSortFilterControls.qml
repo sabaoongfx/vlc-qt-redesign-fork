@@ -60,9 +60,23 @@ NavigableRow {
         width: VLCStyle.bannerButton_width
         height: VLCStyle.bannerButton_height
         font.pixelSize: VLCStyle.icon_banner
-        text: MainCtx.gridView ? VLCIcons.list : VLCIcons.grid
-        description: qsTr("List/Grid")
-        onClicked: MainCtx.gridView = !MainCtx.gridView
+        // redesign: the Figma View Options popup (Grid View, List View, the current one ticked)
+        // instead of a toggle; the button shows the current view
+        text: MainCtx.gridView ? VLCIcons.grid : VLCIcons.list
+        description: qsTr("View")
+        checked: viewMenu.shown
+        onClicked: viewMenu.popup(gridListBtn.mapToGlobal(0, gridListBtn.height + VLCStyle.margin_xxsmall), false, [
+            { text: qsTr("Grid View"), checked: MainCtx.gridView, icon_svg: ":/menu/redesign-gridview.svg" },
+            { text: qsTr("List View"), checked: !MainCtx.gridView, icon_svg: ":/menu/redesign-listview.svg" }
+        ])
+
+        SortMenu {
+            id: viewMenu
+
+            ctx: MainCtx
+
+            onSelected: (index) => { MainCtx.gridView = (index === 0) }
+        }
     }
 
     // redesign: always-visible search field (Figma library header) instead of the
