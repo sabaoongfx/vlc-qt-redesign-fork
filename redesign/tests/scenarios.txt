@@ -49,9 +49,9 @@ menu-shortcuts   | 2 | ml   |                       | sleep:2 press:Menu sleep:1
 # resume prompt: play past 10 s once, then reopen the same file
 resume-first     | 2 | fixture | ~/Videos/long_movie.mp4         | sleep:16 term
 resume-prompt    | 2 | same | ~/Videos/long_movie.mp4         | shot:a sleep:2 shot:b geom:b sleep:2 shot:c
-dots-hover       | 2 | ml   |                       | sleep:2 move:66,20 sleep:0.8 shot:a
-dots-hover-day   | 1 | ml   |                       | sleep:2 move:66,20 sleep:0.8 shot:a
-dots-hover-player | 2 | none | @sample.mp4          | sleep:3 move:900,500 sleep:0.3 move:66,20 sleep:0.8 shot:a
+dots-hover       | 2 | ml   |                       | sleep:2 move:19,20 sleep:0.8 shot:a
+dots-hover-day   | 1 | ml   |                       | sleep:2 move:19,20 sleep:0.8 shot:a
+dots-hover-player | 2 | none | @sample.mp4          | sleep:3 move:900,500 sleep:0.3 move:19,20 sleep:0.8 shot:a
 audio-menu       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 audio-menu-day   | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 video-hover      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 move:730,220 sleep:1 shot:a
