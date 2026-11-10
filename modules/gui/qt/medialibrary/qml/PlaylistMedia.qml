@@ -119,7 +119,14 @@ Widgets.TableViewExt {
     //---------------------------------------------------------------------------------------------
 
     onActionForSelection: (selection) => model.addAndPlay( selection )
-    onItemDoubleClicked: (index, model) => MediaLib.addAndPlay(model.id)
+    // redesign: a video clicked in a playlist plays from there with the whole playlist in the queue
+    // (user request), in the order shown
+    onItemDoubleClicked: (index, model) => {
+        const count = root.model.count
+        root.model.getDataFlat([...Array(count).keys()], (list) => {
+            MediaLib.addAndPlayFrom(Array.from(list).map((item) => item.id), index)
+        })
+    }
 
     //---------------------------------------------------------------------------------------------
     // Functions

@@ -57,6 +57,8 @@ public:
     Q_INVOKABLE void addAndPlay(const QString& mrl, const QStringList &options = {});
     Q_INVOKABLE void addAndPlay(const QUrl& mrl, const QStringList &options = {});
     Q_INVOKABLE void addAndPlay(const QVariantList&itemIdList, const QStringList &options = {});
+    // redesign: queue all of them and play the one at startIndex (a video clicked inside a playlist)
+    Q_INVOKABLE void addAndPlayFrom(const QVariantList& itemIdList, int startIndex, const QStringList &options = {});
     Q_INVOKABLE void insertIntoPlaylist(size_t index, const QVariantList &itemIds /*QList<MLParentId>*/, const QStringList &options = {});
 
     Q_INVOKABLE void reload();

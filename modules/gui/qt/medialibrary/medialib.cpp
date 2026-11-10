@@ -267,6 +267,29 @@ void MediaLib::addAndPlay(const QVariantList& itemIdList, const QStringList &opt
     });
 }
 
+void MediaLib::addAndPlayFrom(const QVariantList& itemIdList, int startIndex, const QStringList &options)
+{
+    struct Context {
+        QVector<vlc::playlist::Media> medias;
+    };
+    runOnMLThread<Context>(this,
+    //ML thread
+    [itemIdList, options]
+    (vlc_medialibrary_t* ml, Context& ctx)
+    {
+        convertQVariantListToPlaylistMedias(ml, itemIdList, options, ctx.medias);
+    },
+    //UI thread
+    [this, startIndex](quint64, Context& ctx){
+        if (ctx.medias.empty())
+            return;
+        const int first = m_playlistController->count();
+        m_playlistController->append(ctx.medias, false);
+        const int index = std::clamp(startIndex, 0, int(ctx.medias.size()) - 1);
+        m_playlistController->goTo(first + index, true);
+    });
+}
+
 void MediaLib::insertIntoPlaylist(const size_t index, const QVariantList &itemIdList, const QStringList &options)
 {
     struct Context {
