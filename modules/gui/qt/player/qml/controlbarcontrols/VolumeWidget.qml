@@ -252,15 +252,15 @@ T.Pane {
                         endInset: 2.5 * cone.width / 91
                         radius: 1.5 * cone.unit
                         leftRadius: 3 * cone.unit
-                        color: "#95D318" // lint: allow qml-colour (the Figma volume gradient's first stop, for the rounded end)
-                        endColor: "#FF3737" // lint: allow qml-colour (its last stop)
+                        color: "#77A913" // lint: allow qml-colour (the Figma volume gradient's first stop, for the rounded end)
+                        endColor: "#CC2C2C" // lint: allow qml-colour (its last stop)
                         fill: Gradient {
                             orientation: Gradient.Horizontal
-                            // the Figma volume gradient, same in both themes
-                            GradientStop { position: 0; color: "#95D318" } // lint: allow qml-colour (Figma volume gradient)
-                            GradientStop { position: 0.5788; color: "#B2A918" } // lint: allow qml-colour (Figma volume gradient)
-                            GradientStop { position: 0.7924; color: "#D37918" } // lint: allow qml-colour (Figma volume gradient)
-                            GradientStop { position: 1; color: "#FF3737" } // lint: allow qml-colour (Figma volume gradient)
+                            // the Figma volume gradient, same in both themes, under its 20% black layer (each stop x 0.8)
+                            GradientStop { position: 0; color: "#77A913" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 0.5788; color: "#8E8713" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 0.7924; color: "#A96113" } // lint: allow qml-colour (Figma volume gradient)
+                            GradientStop { position: 1; color: "#CC2C2C" } // lint: allow qml-colour (Figma volume gradient)
                         }
                     }
                 }
