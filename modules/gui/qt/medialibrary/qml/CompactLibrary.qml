@@ -82,6 +82,18 @@ Rectangle {
     readonly property bool _homeListShown: ["folders", "playlists", "artists"].includes(_current?.kind ?? "")
     readonly property var _model: _homeListShown ? homeListModel : modelLoader.item
 
+    // the playlist list of the card offers the library page's playlist menu on a right-click
+    // (Play, Shuffle, Export Playlist, Add to Queue, Rename, Delete; user request)
+    readonly property bool _playlistMenu: section === "playlists" && !_current && !!modelLoader.item
+    property int _menuIndex: -1
+
+    function openPlaylistMenu(index, globalPos) {
+        if (!_playlistMenu)
+            return
+        _menuIndex = index
+        playlistMenu.popup([modelLoader.item.index(index, 0)], globalPos)
+    }
+
     // Figma Home frame: the root of Home is a page of sections, not a list
     readonly property bool _homeRoot: section === "home" && !_current
 
@@ -530,6 +542,23 @@ Rectangle {
         id: urlAdder
 
         ml: MediaLib
+    }
+
+    PlaylistListContextMenu {
+        id: playlistMenu
+
+        model: root._playlistMenu ? modelLoader.item : null
+        ctx: MainCtx
+
+        onRequestDeleteSelectedPlaylists: {
+            const model = modelLoader.item
+            if (!root._playlistMenu || root._menuIndex < 0)
+                return
+            const id = model.data(model.index(root._menuIndex, 0), MLPlaylistListModel.PLAYLIST_ID)
+            if (DialogsProvider.questionDialog(qsTr("Do you really want to delete the selected playlist?"),
+                                               qsTr("Delete playlist")))
+                model.deletePlaylists([id])
+        }
     }
 
     NewPlaylistDialog {
@@ -1055,6 +1084,13 @@ Rectangle {
                     card: root
                     index: parent.index
                 }
+
+                TapHandler {
+                    acceptedButtons: Qt.RightButton
+                    enabled: root._playlistMenu
+                    onTapped: (eventPoint) => root.openPlaylistMenu(parent.index,
+                        parent.mapToGlobal(eventPoint.position.x, eventPoint.position.y))
+                }
             }
         }
 
@@ -1109,6 +1145,13 @@ Rectangle {
                 CardDragHandler {
                     card: root
                     index: tile.index
+                }
+
+                TapHandler {
+                    acceptedButtons: Qt.RightButton
+                    enabled: root._playlistMenu
+                    onTapped: (eventPoint) => root.openPlaylistMenu(tile.index,
+                        tile.mapToGlobal(eventPoint.position.x, eventPoint.position.y))
                 }
 
                 background: Rectangle {
