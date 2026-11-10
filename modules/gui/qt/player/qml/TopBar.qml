@@ -289,36 +289,6 @@ FocusScope{
                     color: theme.accent
                 }
 
-                // redesign: the switcher, after the cone: shows and hides the left menu (the icon
-                // rail and its card) beside the video, like the bar's library button
-                Widgets.IconToolButton {
-                    id: libraryToggle
-
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: MainCtx.mediaLibraryAvailable
-
-                    font.pixelSize: VLCStyle.icon_banner
-                    width: VLCStyle.bannerButton_width
-                    height: VLCStyle.bannerButton_height
-
-                    text: " " // the glyph is drawn below; IconToolButton wants some text
-                    description: qsTr("Show or hide the library menu")
-
-                    checked: MainCtx.libraryPanel.visible
-                    // grey like the Figma icons; the glyph shows the state (wide bar: shown)
-                    color: colorContext.fg.primary
-
-                    Widgets.SidebarGlyph {
-                        anchors.centerIn: parent
-                        open: libraryToggle.checked
-                        color: libraryToggle.color
-                    }
-
-                    onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
-
-                    onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
-                }
-
                 Widgets.IconToolButton {
                     id: menuSelector
 
@@ -373,6 +343,36 @@ FocusScope{
                             contextMenu.close()
                         }
                     }
+                }
+
+                // redesign: the switcher, after the menu (user request: the menu first): shows and hides the
+                // left menu (the icon rail and its card) beside the video, like the bar's library button
+                Widgets.IconToolButton {
+                    id: libraryToggle
+
+                    anchors.verticalCenter: parent.verticalCenter
+                    visible: MainCtx.mediaLibraryAvailable
+
+                    font.pixelSize: VLCStyle.icon_banner
+                    width: VLCStyle.bannerButton_width
+                    height: VLCStyle.bannerButton_height
+
+                    text: " " // the glyph is drawn below; IconToolButton wants some text
+                    description: qsTr("Show or hide the library menu")
+
+                    checked: MainCtx.libraryPanel.visible
+                    // grey like the Figma icons; the glyph shows the state (wide bar: shown)
+                    color: colorContext.fg.primary
+
+                    Widgets.SidebarGlyph {
+                        anchors.centerIn: parent
+                        open: libraryToggle.checked
+                        color: libraryToggle.color
+                    }
+
+                    onClicked: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible
+
+                    onHoveredChanged: root.requestLockUnlockAutoHide(hovered)
                 }
 
                 Rectangle {
