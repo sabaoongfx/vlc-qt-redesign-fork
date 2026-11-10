@@ -35,6 +35,8 @@ QtObject {
 
         "action" - (function(dataList, options, indexes)) a function that will be called when action is selected
 
+        "icon" - (string) (optional) an SVG url shown before the text
+
         "visible" - (Boolean or function(dataList,options, indexes) -> Boolean) (optional) a boolean value or function which
                     controls whether the action is shown in the menu following 'popup' call
 
@@ -91,7 +93,8 @@ QtObject {
                     || (typeof action.visible === "boolean" && action.visible)
                     || (typeof action.visible === "function" && action.visible(_dataList, _options, _indexes))) {
                 _effectiveActions.push(action)
-                textStrings.push(action.text)
+                // redesign: an action may carry an "icon" (an SVG resource path, ":/menu/...", drawn as is)
+                textStrings.push(action.icon ? { "text": action.text, "icon_svg": action.icon } : action.text)
             }
         }
 

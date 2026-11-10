@@ -1018,6 +1018,12 @@ libqt_plugin_la_RES = \
 	pixmaps/menu/redesign-export.svg \
 	pixmaps/menu/redesign-queue.svg \
 	pixmaps/menu/redesign-shuffle.svg \
+	pixmaps/menu/redesign-addplaylist.svg \
+	pixmaps/menu/redesign-explorer.svg \
+	pixmaps/menu/redesign-favorite.svg \
+	pixmaps/menu/redesign-info.svg \
+	pixmaps/menu/redesign-stream.svg \
+	pixmaps/menu/redesign-watched.svg \
 	pixmaps/menu/redesign-quit.svg \
 	pixmaps/menu/redesign-recent.svg \
 	pixmaps/menu/redesign-record.svg \

@@ -21,6 +21,7 @@
 #include "playlist/playlist_controller.hpp"
 #include "util/shared_input_item.hpp"
 #include "maininterface/mainctx.hpp"
+#include "dialogs/dialogs_provider.hpp"
 
 #include <utility>
 #include <algorithm>
@@ -307,6 +308,42 @@ void MediaLib::mediaProgress(const QUrl& url, QJSValue callback)
     //UI thread
     [callback](quint64, Ctx& ctx) mutable {
         callback.call({ctx.progress});
+    });
+}
+
+void MediaLib::streamMedia(const QVariantList& itemIdList, bool stream)
+{
+    std::vector<int64_t> ids;
+    for (const QVariant& value : itemIdList)
+    {
+        if (!value.canConvert<MLItemId>())
+            continue;
+        const MLItemId id = value.value<MLItemId>();
+        if (id.type == VLC_ML_PARENT_UNKNOWN) // a media, not a folder or a group
+            ids.push_back(id.id);
+    }
+    if (ids.empty())
+        return;
+
+    struct Ctx {
+        QStringList mrls;
+    };
+
+    runOnMLThread<Ctx>(this,
+    //ML thread
+    [ids](vlc_medialibrary_t* ml, Ctx& ctx){
+        for (const int64_t id : ids)
+        {
+            ml_unique_ptr<vlc_ml_media_t> media{vlc_ml_get_media(ml, id)};
+            if (media && media->p_files && media->p_files->i_nb_items > 0)
+                ctx.mrls.push_back(QString::fromUtf8(media->p_files->p_items[0].psz_mrl));
+        }
+    },
+    //UI thread
+    [stream](quint64, Ctx& ctx){
+        if (!ctx.mrls.isEmpty())
+            // the flag is "transcode only" in the definition (the header calls it b_stream)
+            THEDP->streamingDialog(nullptr, ctx.mrls, !stream);
     });
 }
 

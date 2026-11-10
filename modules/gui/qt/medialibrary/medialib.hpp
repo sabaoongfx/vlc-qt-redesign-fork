@@ -79,6 +79,8 @@ public:
     // one with the most songs first; the callback gets [{ id (MLItemId), title, count }, ...]
     Q_INVOKABLE void frequentArtists(int limit, QJSValue callback);
 
+    // redesign: VLC's Stream (stream = true) or Convert dialog for library media (the Figma file menu)
+    Q_INVOKABLE void streamMedia(const QVariantList& itemIdList, bool stream);
     Q_INVOKABLE void mlInputItem(const QVector<MLItemId>& itemIdVector, QJSValue callback);
 
     inline bool idle() const { return m_idle; }

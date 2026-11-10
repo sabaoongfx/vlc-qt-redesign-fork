@@ -48,6 +48,12 @@
         <file alias="redesign-export.svg">pixmaps/menu/redesign-export.svg</file>
         <file alias="redesign-queue.svg">pixmaps/menu/redesign-queue.svg</file>
         <file alias="redesign-shuffle.svg">pixmaps/menu/redesign-shuffle.svg</file>
+        <file alias="redesign-addplaylist.svg">pixmaps/menu/redesign-addplaylist.svg</file>
+        <file alias="redesign-explorer.svg">pixmaps/menu/redesign-explorer.svg</file>
+        <file alias="redesign-favorite.svg">pixmaps/menu/redesign-favorite.svg</file>
+        <file alias="redesign-info.svg">pixmaps/menu/redesign-info.svg</file>
+        <file alias="redesign-stream.svg">pixmaps/menu/redesign-stream.svg</file>
+        <file alias="redesign-watched.svg">pixmaps/menu/redesign-watched.svg</file>
         <file alias="redesign-quit.svg">pixmaps/menu/redesign-quit.svg</file>
         <file alias="redesign-recent.svg">pixmaps/menu/redesign-recent.svg</file>
         <file alias="redesign-record.svg">pixmaps/menu/redesign-record.svg</file>

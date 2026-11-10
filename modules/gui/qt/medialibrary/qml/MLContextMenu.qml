@@ -57,8 +57,13 @@ NativeMenu {
 
     // Settings
 
+    // redesign: the Figma "file context menu" (names, order and duotone icons). Kept from VLC:
+    // Play as audio/album, Enqueue as album, the audio/video-only playlist, Remove from list,
+    // Delete, Information and Delete File From System. Not built: Go to Source, Add Subtitle
+    // Tracks and Add Audio Tracks (no library backend).
     actions: [{
             "text": qsTr("Play"),
+            "icon": ":/menu/redesign-play.svg",
             "action": addAndPlay
         }, {
             "text": qsTr("Play as audio"),
@@ -70,7 +75,38 @@ NativeMenu {
             "visible": root.showPlayAsAlbumAction &&
                        (root.model instanceof MLAudioModel)
         }, {
-            "text": qsTr("Enqueue"),
+            "text": qsTr("Mark as Watched"),
+            "icon": ":/menu/redesign-watched.svg",
+            "action": markSeen,
+            "visible": _showSeen
+        }, {
+            "text": qsTr("Mark as Unwatched"),
+            "icon": ":/menu/redesign-watched.svg",
+            "action": markUnseen,
+            "visible": _showUnseen
+        }, {
+            "text": qsTr("Favorite"),
+            "icon": ":/menu/redesign-favorite.svg",
+            "action": addFavorite,
+            "visible": _showAddFavorite
+        }, {
+            "text": qsTr("Remove from Favorites"),
+            "icon": ":/menu/redesign-favorite.svg",
+            "action": removeFavorite,
+            "visible": _showRemoveFavorite
+        }, {
+            "text": qsTr("Stream"),
+            "icon": ":/menu/redesign-stream.svg",
+            "action": function(dataList) { MediaLib.streamMedia(_mlIDList(dataList), true) },
+            "visible": _singleMedia
+        }, {
+            "text": qsTr("Convert"),
+            "icon": ":/menu/redesign-convert.svg",
+            "action": function(dataList) { MediaLib.streamMedia(_mlIDList(dataList), false) },
+            "visible": _singleMedia
+        }, {
+            "text": qsTr("Add to Queue"),
+            "icon": ":/menu/redesign-queue.svg",
             "action": enqueue
         }, {
             "text": qsTr("Enqueue as album"),
@@ -78,35 +114,23 @@ NativeMenu {
             "visible": root.showPlayAsAlbumAction &&
                        (root.model instanceof MLAudioModel)
         }, {
-            "text": qsTr("Add to favorites"),
-            "action": addFavorite,
-            "visible": _showAddFavorite
-        }, {
-            "text": qsTr("Remove from favorites"),
-            "action": removeFavorite,
-            "visible": _showRemoveFavorite
+            "text": qsTr("Add to Playlist"),
+            "icon": ":/menu/redesign-addplaylist.svg",
+            "action": addToAPlaylist
         }, {
             "text": (root.showPlayAsAudioAction ? qsTr("Add to a video-only playlist") : qsTr("Add to an audio-only playlist")),
             "action": (root.showPlayAsAudioAction ? root.addToVideoOnlyPlaylist : root.addToAudioOnlyPlaylist)
         }, {
-            "text": qsTr("Add to a playlist"),
-            "action": addToAPlaylist
-        }, {
-            "text": qsTr("Mark as seen"),
-            "action": markSeen,
-            "visible": _showSeen
-        }, {
-            "text": qsTr("Mark as unseen"),
-            "action": markUnseen,
-            "visible": _showUnseen
+            "text": Qt.platform.os === "windows" ? qsTr("Show in File Explorer")
+                  : Qt.platform.os === "osx" ? qsTr("Show in Finder")
+                  : qsTr("Show in File Manager"),
+            "icon": ":/menu/redesign-explorer.svg",
+            "action": openContainingFolder,
+            "visible": _openContainingFolder
         }, {
             "text": qsTr("Remove from list"),
             "action": removeFromHistory,
             "visible": _removeFromHistory
-        }, {
-            "text": qsTr("Open Containing Folder"),
-            "action": openContainingFolder,
-            "visible": _openContainingFolder
         }, {
             "text": qsTr("Delete"),
             "action": deleteStream,
@@ -120,14 +144,13 @@ NativeMenu {
             "action": deleteFileFromSource,
             "visible": _deleteFileFromSource
         },{
-            "text": qsTr("Media Information"),
+            // "&&": a single "&" marks a mnemonic in a QMenu
+            "text": qsTr("Properties && Metadata"),
+            "icon": ":/menu/redesign-info.svg",
             "action": function(dataList, options, indexes) {
                 DialogsProvider.mediaInfoDialog(dataList[0][idDataRole])
             },
-            "visible": function(dataList, options, indexes) {
-                return (dataList.length === 1)
-                        && !(dataList[0][idDataRole].hasParent())
-            }
+            "visible": _singleMedia
         }
     ]
 
@@ -262,6 +285,12 @@ NativeMenu {
             return model.canRemoveFolder(indexes[0])
 
         return (model instanceof MLRecentVideoModel)
+    }
+
+    // one media (not a folder or a group, whose ids have a parent type)
+    function _singleMedia(dataList, options, indexes) {
+        return (dataList.length === 1)
+                && !(dataList[0][idDataRole].hasParent())
     }
 
     function _openContainingFolder(dataList, options, indexes) {
