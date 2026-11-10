@@ -109,6 +109,10 @@ T.ToolBar {
                 Widgets.BannerCone {
                     id: logo
 
+                    // redesign: the system title bar shows the VLC icon already (user request: no second cone);
+                    // macOS title bars have no application icon, the cone stays there
+                    visible: MainCtx.clientSideDecoration || Qt.platform.os === "osx"
+
                     anchors.verticalCenter: parent.verticalCenter
                     color: theme.accent
                 }
