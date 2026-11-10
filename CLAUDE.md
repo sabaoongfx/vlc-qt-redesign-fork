@@ -30,6 +30,32 @@ by the user on 2026-10-31 (works). Notes kept for context:
 5. Player library card (`CompactLibrary.qml`): its main purpose is dragging items into the play queue;
    rows only play on click today. Reuse `MLDragItem` (as `VideoAll.qml`) and the queue's drop handling.
 
+## Done 2026-11-10/11 (Linux, harness-checked, pushed as `a67f9c82f9`)
+
+The Figma "07 Menus" frames are all built now:
+- Volume cone fill under Figma's 20% black layer (stops x 0.8); the grey outline stays (contrast, 2026-11-02).
+- Playlists page lists every playlist (`PLAYLIST_TYPE_ALL`; name-only and music-only ones were hidden); Music >
+  Playlists keeps the audio filter. Playlist menu: Figma duotone icons (Rename/Delete take VLCIcons glyphs).
+- The player's library card (rail > Playlists) opens the same playlist menu on a right-click (rows and tiles).
+- Right-click menu: Hide UI (= `MainCtx.minimalView`, Ctrl+H) after Fullscreen; the Figma shows Ctrl+\ but VLC's
+  key is Ctrl+H. Fullscreen kept (not in the frame), with a plain glyph.
+- Sort menu: accent tick on the hover band for the current choice (any exclusive QMenu list); menus without icons
+  put labels at x 18 (`plainLabelX`, by `maxIconWidth`); folder trees tick Title A-Z when no sort is saved
+  (`isDefault` in a SortControl entry); the music tree adds Artist/Album/Track Number (Disc Number: no criterion).
+- File menu (`MLContextMenu`): Figma names/order/icons (NativeMenu actions take `icon`, a `:/menu/...` path; a
+  `qrc:///` url does not load), Stream and Convert (`MediaLib::streamMedia`; `streamingDialog`'s flag is
+  transcode-only despite the header's `b_stream` name). Not built: Go to Source, Add Subtitle/Audio Tracks.
+  A QMenu label needs `&&` for a literal `&`.
+- Folder "..." menu: Figma icons. View Options: the grid/list button opens a Grid View / List View popup
+  (SortMenu with `icon_svg`); harness scenes click it at 1503,77 then List View at 1560,168 (`press:View` misses).
+- No cone in the top bars unless VLC draws its own window buttons (`MainCtx.clientSideDecoration`), macOS too
+  (user request); the "..." button is now at x 19 (CI's 20,20 click lands on it).
+- Seen but not fixed: "0 ms" under a playlist card, "1 items" in the card header, the light playlist placeholder
+  in the dark theme.
+- Build tree: pacman moved automake to 1.19 and the tree was made with 1.18, so a `Makefile.am` edit broke `make`
+  (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
+  Shell note: zsh does not split `$VAR` into words in `for n in $N`.
+
 ## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
 
 - Sort: the Videos and Music folder trees list their media by title A to Z when no sort is chosen
