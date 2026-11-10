@@ -50,6 +50,7 @@
 #include "util/color_scheme_model.hpp"
 #include "util/colorizedsvgicon.hpp"
 #include "style/redesign.hpp"
+#include "style/vlcicons.hpp"
 #include "medialibrary/medialib.hpp"
 #include "medialibrary/mlrecentmediamodel.hpp"
 #include "medialibrary/mlbookmarkmodel.hpp"
@@ -1142,7 +1143,7 @@ static void applyRedesignPopupIcons( QMenu *menu )
         { qtr( "Previous" ), ":/menu/redesign-previous.svg" },
         { qtr( "Next" ), ":/menu/redesign-next.svg" },
         { qtr( "Record" ), ":/menu/redesign-record.svg" },
-        { qtr( "Fullscreen" ), ":/menu/redesign-hideui.svg" },
+        { qtr( "Hide UI" ), ":/menu/redesign-hideui.svg" },
         { qtr( "Playback" ), ":/menu/redesign-playback.svg" },
         { qtr( "Video" ), ":/menu/redesign-video.svg" },
         { qtr( "Audio" ), ":/menu/redesign-audio.svg" },
@@ -1156,6 +1157,15 @@ static void applyRedesignPopupIcons( QMenu *menu )
     {
         // without the mnemonic and the hotkey hint
         const QString label = action->text().section( QLatin1Char( '\t' ), 0, 0 ).remove( QLatin1Char( '&' ) );
+        // Fullscreen is not in the Figma menu (its Hide UI icon went to Hide UI): a plain glyph
+        if( label == qtr( "Fullscreen" ) )
+        {
+            action->setIcon( QIcon( Redesign::glyphPixmap( VLCIcons::fullscreen, 20,
+                                                           RedesignMenuStyle::labelColor( menu->palette() ),
+                                                           menu->devicePixelRatioF() ) ) );
+            action->setIconVisibleInMenu( true );
+            continue;
+        }
         for( const auto& icon : icons )
         {
             if( label == icon.first )
@@ -1189,8 +1199,14 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         {
             menu->addAction(new BooleanPropertyAction(qtr( "&Fullscreen" ) + hotkeyHint( p_intf, "key-toggle-fullscreen" ),
                                                       THEMIM, "fullscreen", menu) );
-            menu->addSeparator();
         }
+
+        /* redesign: the Figma menu's "Hide UI" is VLC's minimal view (the bars and the sidebar
+         * hidden; Ctrl+H, the GlobalShortcuts key, brings them back) */
+        if( p_intf->p_mi )
+            menu->addAction( new BooleanPropertyAction( qtr( "Hide UI" ) + QStringLiteral( "\tCtrl+H" ),
+                                                        p_intf->p_mi, "minimalView", menu ) );
+        menu->addSeparator();
 
         /* Input menu */
 
