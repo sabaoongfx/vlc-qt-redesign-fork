@@ -28,6 +28,8 @@
 
 #include "qt.hpp"
 
+#include <QKeySequence>
+
 #include <QQmlEngine>
 #include <QJSEngine>
 
@@ -1056,6 +1058,18 @@ QWindow *MainCtx::intfMainWindow() const
         return p_intf->p_compositor->interfaceMainWindow();
     else
         return nullptr;
+}
+
+QString MainCtx::hotkeyText(const QString &option) const
+{
+    char *keys = var_InheritString(p_intf, qtu(option));
+    if (!keys)
+        return {};
+    // several keys are separated by tabs ("n\tMedia Next Track"): the first
+    const QKeySequence sequence = QKeySequence::fromString(qfu(keys).section(QLatin1Char('\t'), 0, 0),
+                                                           QKeySequence::PortableText);
+    free(keys);
+    return sequence.toString(QKeySequence::NativeText);
 }
 
 QVariant MainCtx::settingValue(const QString &key, const QVariant &defaultValue) const

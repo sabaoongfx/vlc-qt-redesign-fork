@@ -391,6 +391,8 @@ public:
     QWindow *intfMainWindow() const;
 
     Q_INVOKABLE QVariant settingValue(const QString &key, const QVariant &defaultValue) const;
+    // redesign: the configured hotkey of a VLC option ("key-next") as text ("N"), empty if none
+    Q_INVOKABLE QString hotkeyText(const QString &option) const;
     Q_INVOKABLE void setSettingValue(const QString &key, const QVariant &value);
 
     Q_INVOKABLE static void setAttachedToolTip(QObject* toolTip);

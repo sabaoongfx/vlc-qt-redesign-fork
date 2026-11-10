@@ -18,6 +18,7 @@
 import QtQuick
 
 
+import VLC.MainInterface
 import VLC.Widgets as Widgets
 import VLC.Style
 import VLC.Playlist
@@ -30,6 +31,7 @@ Widgets.IconToolButton {
     enabled: MainPlaylistController.hasNext
     onClicked: MainPlaylistController.next()
     description: qsTr("Next")
+    shortcut: MainCtx.hotkeyText("key-next")
 
     AccessibleCompat.id: "nextButton"
 }

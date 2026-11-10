@@ -76,7 +76,10 @@ T.ToolButton {
 
     T.ToolTip.delay: VLCStyle.delayToolTipAppear
 
-    T.ToolTip.text: description
+    // redesign: a hotkey shown after the name in the tooltip ("Next (N)"); the accessible name stays the name
+    property string shortcut: ""
+
+    T.ToolTip.text: shortcut ? qsTr("%1 (%2)").arg(description).arg(shortcut) : description
 
     // Events
 
