@@ -96,8 +96,10 @@ constexpr int separatorInset = 12;  // line ends, from the row edges
 constexpr int sectionHeight = 28;   // a section title (QMenu::addSection): 11px caps, 10px above, 4px below
 constexpr int sectionBottom = 4;
 constexpr int sectionFontSize = 11;
-constexpr int iconX = 20;
-constexpr int iconSize = 20;
+// the Figma icons are 24px frames drawn 1:1 (the redesign-*.svg menu icons have a 24-unit viewBox);
+// smaller pixmap icons (VLCIcons glyphs) are centred in the box, not enlarged
+constexpr int iconX = 18;
+constexpr int iconSize = 24;
 constexpr int labelX = 52;
 constexpr int plainLabelX = 18;     // a menu without icons (the Figma sort and option menus)
 constexpr int labelGap = 40;        // least space between a label and its shortcut
@@ -251,7 +253,11 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
             }
             // QMenu adds the widest shortcut (unspaced) to this; the gap covers the spaces and the chevron
             const int x = item->maxIconWidth > 0 ? labelX : plainLabelX;
-            int width = x - menuPadding + size.width() + labelGap + shortcutInset - menuPadding;
+            // the gap before a shortcut or a chevron only where there is one: a long label alone
+            // (VLC's own extra entries) would widen the 265px Figma menus otherwise
+            const bool trailing = item->text.contains(QLatin1Char('\t'))
+                                  || item->menuItemType == QStyleOptionMenuItem::SubMenu;
+            int width = x - menuPadding + size.width() + (trailing ? labelGap : 0) + shortcutInset - menuPadding;
             // QMenu ignores its maximum width when it lays out the rows: cap them, the label is elided
             if (widget && widget->maximumWidth() < QWIDGETSIZE_MAX)
                 width = std::min(width, widget->maximumWidth() - 2 * menuPadding);
@@ -1181,7 +1187,7 @@ static void applyRedesignPopupIcons( QMenu *menu )
         // Fullscreen is not in the Figma menu (its Hide UI icon went to Hide UI): a plain glyph
         if( label == qtr( "Fullscreen" ) )
         {
-            action->setIcon( QIcon( Redesign::glyphPixmap( VLCIcons::fullscreen, 20,
+            action->setIcon( QIcon( Redesign::glyphPixmap( VLCIcons::fullscreen, 24,
                                                            RedesignMenuStyle::labelColor( menu->palette() ),
                                                            menu->devicePixelRatioF() ) ) );
             action->setIconVisibleInMenu( true );
@@ -1334,6 +1340,7 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
     // redesign: the Figma right-click menu's groups (transport, Hide UI, the media submenus, the
     // rest) are split by 1px lines (292 x 683 for its 14 rows), drawn by RedesignMenuStyle
     menu->setProperty( hairlineProperty, true );
+    menu->setMinimumWidth( RedesignMenuStyle::rightClickWidth );
     // the Figma menu has three, after Record, Hide UI and Subtitle; none before Open Media or Quit
     // (a separator right after another one is dropped first: they draw as one but would count twice)
     int separators = 0;

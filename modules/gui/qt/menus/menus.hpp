@@ -41,7 +41,8 @@ class QMenuBar;
 class RedesignMenuStyle : public QProxyStyle
 {
 public:
-    static constexpr int minimumWidth = 292;   // the Figma right-click menu
+    static constexpr int minimumWidth = 265;   // the Figma file, folder, playlist, sort menus
+    static constexpr int rightClickWidth = 292; // the Figma right-click menu (on the video)
     static constexpr int mainMenuWidth = 375;  // the Figma main menu
 
     static RedesignMenuStyle* instance();

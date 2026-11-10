@@ -242,7 +242,7 @@ QmlGlobalMenu::QmlGlobalMenu(QObject *parent)
 /* redesign: a plain menu icon drawn from the VLCIcons font, in the menu's label colour */
 static QIcon redesignGlyphIcon(QChar glyph, const QWidget* widget)
 {
-    return QIcon(Redesign::glyphPixmap(glyph, 20, RedesignMenuStyle::labelColor(widget->palette()),
+    return QIcon(Redesign::glyphPixmap(glyph, 24, RedesignMenuStyle::labelColor(widget->palette()),
                                        widget->devicePixelRatioF()));
 }
 
