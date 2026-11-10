@@ -176,7 +176,7 @@ From a user screenshot of Home (`~/Downloads/Screenshot 2026-10-30 223916.png`):
 - Download section: label + size per file from the release API, a "Your device" badge, a macOS card (Apple
   Silicon .dmg, on by default since the dmg is on v0.1.4). The site says Windows, macOS and Linux everywhere
   except the social image `og.png` (needs a headless Chromium render, not done).
-- Blog: 11 posts, all pushed (`vlc-web` `22e0071`; `whats-new-in-0-1-9` 2026-11-09 also covers 0.1.6-0.1.8). Rules come from `../sabaoondev-main/sabaoondev-main/CLAUDE.md`
+- Blog: 12 posts (`whats-new-in-0-1-10` 2026-11-11; earlier: `vlc-web` `22e0071`, `whats-new-in-0-1-9` 2026-11-09 also covers 0.1.6-0.1.8). Rules come from `../sabaoondev-main/sabaoondev-main/CLAUDE.md`
   (Content Strategy) and are copied into `vlc-web/CLAUDE.md`, with the rules for each kind of post.
   - Engineering (quote real code from this repo, end with what is open): porting the redesign, the folder tree
     design note and its follow-up, two bugs that lived elsewhere, building the Mac version without a Mac,
@@ -432,6 +432,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   bottom left, next to Save) under Interface > Main interfaces > Qt. The blog post offers a Subtitles row if asked.
   Release notes, changelog and post were written with the wrong path at first ("Advanced Options" is the fold-out
   bar on each Settings page, not the All view); check UI paths in the code before writing them for users.
+- Released 2026-11-11: **v0.1.10** on `a67f9c82f9` (four CI runs green; release run 42894038211). The Figma menus
+  (file, playlist, right-click Hide UI, sort tick, View Options, folder menu icons), the Playlists page listing
+  every playlist, the darker volume fill, no second cone. Blog `whats-new-in-0-1-10` (vlc-web).
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.

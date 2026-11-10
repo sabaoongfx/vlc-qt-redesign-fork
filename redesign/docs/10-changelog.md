@@ -2,6 +2,27 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.10 (2026-11-11)
+- **Menus drawn from the design:** every menu now follows the redesign's menu frames, with their
+  orange-and-grey icons.
+  - **Right-click on a video or song in the library:** Play, Mark as Watched, Favorite, Stream,
+    Convert, Add to Queue, Add to Playlist, Show in File Manager (File Explorer on Windows, Finder on
+    macOS), Properties & Metadata. Stream and Convert are new here: they open VLC's Stream and Convert
+    windows with the file filled in.
+  - **Right-click on a playlist:** Play, Shuffle, Export Playlist, Add to Queue, Rename, Delete, now
+    also from the library beside the video while something plays (Playlists in the left rail).
+  - **Right-click on the video:** a new **Hide UI** entry (Ctrl+H) hides the bars and the side menu;
+    Ctrl+H brings them back.
+  - **Sort:** the current order has an orange tick; Videos and Music folders tick Title A-Z when you
+    never chose one. Music folders can also sort by Artist, Album and Track Number.
+  - **Grid or list:** the view button opens a small menu (Grid View, List View) instead of switching
+    at once.
+- **Playlists page:** a playlist saved with only a name (and a playlist of only songs) now shows up;
+  before, it was saved but never listed.
+- **Volume control:** the fill colours are a little darker, as in the design.
+- **One VLC logo:** the cone in VLC's top bar is gone when the window has the system title bar, which
+  shows the VLC icon already.
+
 ## v0.1.9 (2026-11-09)
 - **Subtitles for foreign-language audio:** when the audio track is tagged with a language other than
   English and no subtitle is on, the first subtitle track turns on by itself (also when you switch to
