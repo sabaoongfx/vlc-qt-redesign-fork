@@ -132,6 +132,20 @@ Item {
 
                 }
 
+                // redesign: the watched part of a started video along the bottom of its thumbnail,
+                // as on the grid cards (user report: none in the list view)
+                Widgets.VideoProgressBar {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+
+                    implicitHeight: VLCStyle.dp(3, VLCStyle.scale)
+                    radius: root.titleCover_radius
+
+                    visible: (titleDel.rowModel?.progress ?? 0) > 0
+                    value: Math.min(Math.max(titleDel.rowModel?.progress ?? 0, 0), 1)
+                }
+
                 onPlayIconClicked: root.playClicked(titleDel.rowModel)
             }
 
