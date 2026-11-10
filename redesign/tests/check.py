@@ -336,6 +336,13 @@ if im:
     # the configured hotkey shown on the first row (Pause: Space), in the shortcut colour
     c = brightest(im, (R - 80, 14, R - 4, 42))
     (ok if near(c, (0x6B, 0x6B, 0x6B), 6) else fail)('rclick-menu', f'Pause hotkey hint {hexc(c)} (want #6B6B6B)')
+    # 683 tall (14 rows of 48, 4px padding, three 1px group lines #1D1D1D after Record, Hide UI and Subtitle)
+    x = L + 150
+    col = [y for y in range(0, im.height) if im.getpixel((x, y))[:3] in ((0x18, 0x18, 0x18), (0x1D, 0x1D, 0x1D))]
+    top = min(col) if col else None
+    lines = [y - top for y in col if im.getpixel((x, y))[:3] == (0x1D, 0x1D, 0x1D)] if col else []
+    (ok if col and max(col) - top + 1 == 683 else fail)('rclick-menu', f'right-click card height {col and max(col) - top + 1} (want 683)')
+    (ok if lines == [244, 293, 486] else fail)('rclick-menu', f'right-click group lines {lines} (want [244, 293, 486])')
 
 # 13c. settings window chrome measured on the Figma "Settings - audio" frame (window coordinates)
 im = img('prefs-cats', 'audio')
