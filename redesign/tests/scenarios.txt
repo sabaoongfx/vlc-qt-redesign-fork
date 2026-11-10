@@ -77,3 +77,8 @@ qtdlg-open-day | 1 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_D
 
 # Enter toggles fullscreen like F (player key filter; a disc menu, a text field or a keyboard-focused control keeps Enter)
 enter-fullscreen | 2 | none | @sample.mp4 | sleep:3 key:Return sleep:1.5 shot:on key:KP_Enter sleep:1.5 shot:off
+# playlist context menu (Figma "playlist context menu"): a name-only playlist is listed, the menu has the Figma icons; the same menu from the player's library card (rail > Playlists, row and tile)
+pl-ctx           | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 shot:menu
+pl-ctx-day       | 1 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 shot:menu
+pl-rail-ctx      | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,248 sleep:2 click:150,186 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 move:300,400 sleep:0.5 rclick:150,228 sleep:1.2 shot:menu
+pl-rail-grid-ctx | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,248 sleep:2 click:150,186 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 move:300,400 sleep:0.5 click:362,120 sleep:1 rclick:140,260 sleep:1.2 shot:menu
