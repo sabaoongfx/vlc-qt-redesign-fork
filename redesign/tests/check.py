@@ -292,7 +292,7 @@ def text_ink(im, box, bg):
     return brightest(im, box) if bg[0] < 128 else min(pixels(im.crop(box)), key=sum)
 
 # the main menu opens under the top bar's menu button: card x 48-423 (375 wide)
-MAIN_MENU_RIGHT = 423
+MAIN_MENU_RIGHT = 383  # under the "..." at x 19 (no cone before it since 2026-11-11)
 
 def ink_x(im, box, bg, tol=40):
     xs = [x for x in range(box[0], box[2]) for y in range(box[1], box[3])
@@ -306,7 +306,7 @@ for scene, bg, label, shortcut in (('main-menu', (0x18, 0x18, 0x18), (0x8F, 0x8F
     # the menu opens under the top bar's menu button; its first row (Open File(s)) is centred 28px below the card top
     # between two rows; the Night card touches the sidebar card (same colour): anchor on the right edge,
     # the card-relative columns below then catch a wrong width. Day has a 1px border.
-    L, R = card_run(im, 322, bg, 30, 600)
+    L, R = card_run(im, 322, bg, 0, 600)
     if bg[0] >= 128:
         L, R = L - 1, R + 1
         (ok if R - L == 375 else fail)(scene, f'menu card width {R - L} (want 375)')
