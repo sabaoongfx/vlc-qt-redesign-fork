@@ -851,8 +851,10 @@ void SystemPalette::makeDarkPalette()
     //badges
     {
         C::ColorSet CS = C::Badge;
-        setColor(CS, C::Bg, C::Primary, C::Normal, setColorAlpha(Qt::white, 0.8));
-        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::black);
+        // redesign: a dark badge in both themes, it sits on pictures (the light one was unreadable
+        // over a bright cover, user report)
+        setColor(CS, C::Bg, C::Primary, C::Normal, setColorAlpha(Qt::black, 0.6));
+        setColor(CS, C::Fg, C::Primary, C::Normal, Qt::white);
     }
 
     //tab button

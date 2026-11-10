@@ -58,8 +58,8 @@ Row {
 
             background: Rectangle {
                 anchors.fill: label
+                // redesign: the palette's own alpha only (a further 0.5 let bright pictures show through)
                 color: theme.bg.primary
-                opacity: 0.5
                 radius: VLCStyle.dp(3, VLCStyle.scale)
             }
 

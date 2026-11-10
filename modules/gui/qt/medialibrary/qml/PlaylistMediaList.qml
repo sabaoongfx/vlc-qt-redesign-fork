@@ -331,12 +331,21 @@ MainViewLoader {
                 labels: [
                     (function () {
                         const labels = []
-                        if (model.nb_audio > 0)
-                            labels.push(qsTr("%1 Track", "%1 Tracks", model.nb_audio).arg(model.nb_audio))
-                        if (model.nb_video > 0)
-                            labels.push(qsTr("%1 Video", "%1 Videos", model.nb_video).arg(model.nb_video))
-                        if (model.nb_unknown > 0)
-                            labels.push(qsTr("%1 Other", "%1 Other", model.nb_unknown).arg(model.nb_unknown))
+                        // redesign: media the library has not read yet (files added to a playlist from
+                        // outside the library folders) are "unknown"; in a playlist without songs they
+                        // count as videos, without videos as tracks (user report: 26 Videos, 131 Other)
+                        const nbAudio = model.nb_audio ?? 0
+                        const nbVideo = model.nb_video ?? 0
+                        const nbUnknown = model.nb_unknown ?? 0
+                        const videos = nbVideo + (nbAudio === 0 ? nbUnknown : 0)
+                        const tracks = nbAudio + (nbAudio > 0 && nbVideo === 0 ? nbUnknown : 0)
+                        const others = (nbAudio > 0 && nbVideo > 0) ? nbUnknown : 0
+                        if (tracks > 0)
+                            labels.push(qsTr("%1 Track", "%1 Tracks", tracks).arg(tracks))
+                        if (videos > 0)
+                            labels.push(qsTr("%1 Video", "%1 Videos", videos).arg(videos))
+                        if (others > 0)
+                            labels.push(qsTr("%1 Other", "%1 Other", others).arg(others))
 
                         return labels.join("\n")
                     })()
