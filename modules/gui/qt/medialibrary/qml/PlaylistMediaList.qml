@@ -43,6 +43,11 @@ MainViewLoader {
 
     property bool isMusic: false
 
+    // redesign: which playlists the page lists; the top-level Playlists page takes all of them (an
+    // empty playlist, saved from New Playlist with a name only, contains no video and was never shown)
+    property int playlistType: isMusic ? MLPlaylistListModel.PLAYLIST_TYPE_AUDIO
+                                       : MLPlaylistListModel.PLAYLIST_TYPE_VIDEO
+
     readonly property int currentIndex: currentItem?.currentIndex ?? -1
 
     property Component header: null
@@ -112,8 +117,7 @@ MainViewLoader {
         id: playlistModel
         ml: MediaLib
 
-        playlistType: isMusic ? MLPlaylistListModel.PLAYLIST_TYPE_AUDIO
-                              : MLPlaylistListModel.PLAYLIST_TYPE_VIDEO
+        playlistType: root.playlistType
 
         coverSize: (isMusic) ? Qt.size(512, 512)
                              : Qt.size(1024, 640)

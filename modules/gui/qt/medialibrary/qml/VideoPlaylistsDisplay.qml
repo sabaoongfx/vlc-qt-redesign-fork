@@ -86,6 +86,7 @@ Widgets.PageLoader {
                 focus: true
 
                 isMusic: false
+                playlistType: MLPlaylistListModel.PLAYLIST_TYPE_ALL
 
                 searchPattern: playlistPage.search.pattern
                 sortOrder: playlistPage.sort.order
