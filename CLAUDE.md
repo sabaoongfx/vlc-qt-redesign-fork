@@ -68,22 +68,22 @@ build. Pushed to `origin/redesign` (head `cc471c6e8a`, a `[skip ci]` commit, so 
   outside the library folders, not parsed yet) into Videos when there are no songs, Tracks when no videos.
 - `77daaecaad` a video clicked inside a playlist queues the whole playlist in the shown order and starts at it
   (`MediaLib::addAndPlayFrom`).
-Local commits, NOT pushed (pushing starts CI; ask first):
+Local commits, later pushed (see below):
 - `2c7b882be9` list views: `VideoProgressBar` under the thumbnail of a started video (`TableColumns.titleDelegate`).
 - `0fdecb5730` + `65799a8e8e` right-click menu = the Figma frame: Previous Item, Next Item, More Settings (was
   Tools), Playlist (was View), Quit VLC; submenus Playback, Video, Audio, Subtitle; no Fullscreen entry; three 1px
   #1D1D1D group lines (menu property `redesignHairlineSeparators`) after Record, Hide UI, Subtitle: 292x683 like the
   frame; check.py measures the height and the lines.
-UNCOMMITTED in the working tree (built, not verified; the user interrupted the verification run):
-- `menus.hpp`/`menus.cpp`: menus are 265px wide by default (the Figma file, folder, playlist, sort and View Options
-  frames, measured on the user's exports `VLC Redesign (Community) (4).zip`: cards 265 wide, 48px rows, 4px padding),
-  `rightClickWidth` 292 set in `PopupMenu`; the 40px label-to-shortcut gap only on rows with a shortcut or a submenu.
-  This part WAS checked: widths measured 292 / 265 / 265 / 265 / 265 / 375 (main menu), check.py 31/31.
-- Icons 1:1 with Figma: every `pixmaps/menu/redesign-*.svg` re-framed to a 24-unit viewBox around its old centre
-  (they were 21, 22.5 or 23 units drawn into 20px, so 0.87-0.95 scale; the file menu's were ~10% small), and
-  `RedesignMenuStyle` iconX 18 / iconSize 24 (same centre). Re-measure icon sizes against the zip exports before
-  committing (VLCIcons glyph pixmaps such as Rename/Delete should stay 20px, centred), and run check.py's menu checks
-  (`main-menu` checks the icon x 19-22).
+- `48ca942f1e` menus are 265px wide by default (the Figma file, folder, playlist, sort and View Options frames, measured
+  on the user's exports `VLC Redesign (Community) (4).zip`: cards 265 wide, 48px rows, 4px padding), `rightClickWidth`
+  292 set in `PopupMenu`; the 40px label-to-shortcut gap only on rows with a shortcut or a submenu. Icons 1:1 with
+  Figma: every `pixmaps/menu/redesign-*.svg` has a 24-unit viewBox around its old centre (they were 21/22.5/23 units
+  drawn into 20px), `RedesignMenuStyle` iconX 18 / iconSize 24; Hide UI and Video, cut larger than the frame, use a
+  26.67 viewBox (0.9); glyph icons are 24px pixmaps. Measured equal to the exports within 1-2px (Previous/Next differ
+  in shape, not scale). 55/55 menu checks.
+Pushed and CI started 2026-11-11 (the user asked).
+Harness runs with `OUT=<scratchpad>` copy the profiles (media) each time: delete `<out>/profiles` after a run, /tmp
+(tmpfs, 6.8 GB) filled up once.
 Also seen, not fixed: `PageLoader.qml:99` "Cannot assign to non-existent property parentId/title/trail" when the
 player returns to a Videos folder page (folder tree, since 2026-10-28; harmless); "0 ms" under a playlist card
 subtitle when empty; "1 items" in the player card header; the light playlist placeholder in Night.
