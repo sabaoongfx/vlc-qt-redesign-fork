@@ -171,6 +171,10 @@ vlc_ml_sorting_criteria_t MLVideoFolderTreeModel::nameToCriteria(QByteArray name
         { QByteArrayLiteral("playcount"), VLC_ML_SORTING_PLAYCOUNT     },
         { QByteArrayLiteral("insertion"), VLC_ML_SORTING_INSERTIONDATE },
         { QByteArrayLiteral("filename"),  VLC_ML_SORTING_FILENAME      },
+        // the music tree (Figma Sorting Options); the folders stay sorted by name
+        { QByteArrayLiteral("main_artist"),  VLC_ML_SORTING_ARTIST      },
+        { QByteArrayLiteral("album_title"),  VLC_ML_SORTING_ALBUM       },
+        { QByteArrayLiteral("track_number"), VLC_ML_SORTING_TRACKNUMBER },
     }.value(name, VLC_ML_SORTING_DEFAULT);
 }
 

@@ -53,7 +53,7 @@
 
 namespace
 {
-    QIcon sortIcon(QWidget *widget, int order)
+    [[maybe_unused]] QIcon sortIcon(QWidget *widget, int order)
     {
         assert(order == Qt::AscendingOrder || order == Qt::DescendingOrder);
 
@@ -181,8 +181,8 @@ void SortMenu::popup(const QPoint &point, const bool popupAbovePoint, const QVar
         const bool checked = obj.value("checked").toBool();
         action->setChecked(checked);
 
-        if (checked)
-            action->setIcon(sortIcon(m_menu.get(), obj.value("order").toInt()));
+        // redesign: the Figma sort menu marks the current sort with the accent tick only (an
+        // icon, even a hidden one, made QMenu keep an icon column and pushed the labels right)
 
         connect(action, &QAction::triggered, this, [this, i]()
         {

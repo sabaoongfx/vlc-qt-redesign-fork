@@ -96,6 +96,7 @@ constexpr int sectionFontSize = 11;
 constexpr int iconX = 20;
 constexpr int iconSize = 20;
 constexpr int labelX = 52;
+constexpr int plainLabelX = 18;     // a menu without icons (the Figma sort and option menus)
 constexpr int labelGap = 40;        // least space between a label and its shortcut
 constexpr int shortcutInset = 18;   // shortcut and tick right edge
 constexpr int tickWidth = 14;       // the tick is 14x10, 12px clear of a shortcut on its left
@@ -240,7 +241,8 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
             if (item->menuItemType == QStyleOptionMenuItem::Separator)
                 return QSize(size.width(), item->text.isEmpty() ? separatorHeight : sectionHeight);
             // QMenu adds the widest shortcut (unspaced) to this; the gap covers the spaces and the chevron
-            int width = labelX - menuPadding + size.width() + labelGap + shortcutInset - menuPadding;
+            const int x = item->maxIconWidth > 0 ? labelX : plainLabelX;
+            int width = x - menuPadding + size.width() + labelGap + shortcutInset - menuPadding;
             // QMenu ignores its maximum width when it lays out the rows: cap them, the label is elided
             if (widget && widget->maximumWidth() < QWIDGETSIZE_MAX)
                 width = std::min(width, widget->maximumWidth() - 2 * menuPadding);
@@ -340,7 +342,9 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     }
 
     const bool enabled = item->state & State_Enabled;
-    if (enabled && (item->state & State_Selected))
+    // the current choice of an option list sits on the hover band (Figma Sorting Options)
+    const bool chosen = item->checkType == QStyleOptionMenuItem::Exclusive && item->checked;
+    if (enabled && ((item->state & State_Selected) || chosen))
     {
         painter->setPen(Qt::NoPen);
         painter->setBrush(c.hover);
@@ -377,7 +381,8 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
     }
 
     painter->setFont(item->font);
-    const QRect textRect(cardLeft + labelX, row.top(), right - cardLeft - labelX, row.height());
+    const int textX = item->maxIconWidth > 0 ? labelX : plainLabelX;
+    const QRect textRect(cardLeft + textX, row.top(), right - cardLeft - textX, row.height());
     painter->setPen(enabled ? c.label : c.disabled);
     // a label too long for a width-capped menu (device names) is elided; a menu can ask for the
     // middle with its "elideMode" property (Open Recent: paths keep their file name)

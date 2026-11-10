@@ -155,6 +155,28 @@ Widgets.PageLoader {
 
             audio: level.audio
 
+            // the Figma Sorting Options: the video entries, and for songs artist, album and track
+            // number too (Disc Number has no library criterion). With no sort chosen the tree lists
+            // by title A to Z (MLVideoFolderTreeModel), so Title A-Z is ticked then.
+            sortModel: [
+                { text: qsTr("Unwatched First"), criteria: "playcount", order: Qt.AscendingOrder  },
+                { text: qsTr("Watched First"),   criteria: "playcount", order: Qt.DescendingOrder },
+                { text: qsTr("Newest First"),    criteria: "insertion", order: Qt.DescendingOrder },
+                { text: qsTr("Oldest First"),    criteria: "insertion", order: Qt.AscendingOrder  },
+                { text: qsTr("Title A-Z"),       criteria: "title",     order: Qt.AscendingOrder, isDefault: true },
+                { text: qsTr("Title Z-A"),       criteria: "title",     order: Qt.DescendingOrder },
+                ...(level.audio ? [
+                    { text: qsTr("Artist A-Z"), criteria: "main_artist", order: Qt.AscendingOrder  },
+                    { text: qsTr("Artist Z-A"), criteria: "main_artist", order: Qt.DescendingOrder },
+                    { text: qsTr("Album A-Z"),  criteria: "album_title", order: Qt.AscendingOrder  },
+                    { text: qsTr("Album Z-A"),  criteria: "album_title", order: Qt.DescendingOrder },
+                    { text: qsTr("Track Number Ascending"),  criteria: "track_number", order: Qt.AscendingOrder  },
+                    { text: qsTr("Track Number Descending"), criteria: "track_number", order: Qt.DescendingOrder }
+                ] : []),
+                { text: qsTr("URI Ascending"),   criteria: "filename",  order: Qt.AscendingOrder  },
+                { text: qsTr("URI Descending"),  criteria: "filename",  order: Qt.DescendingOrder }
+            ]
+
             // square covers in the music list, 16:9 for videos
             listCoverWidth: level.audio ? VLCStyle.trackListAlbumCover_width : VLCStyle.listAlbumCover_width
             listCoverHeight: level.audio ? VLCStyle.trackListAlbumCover_heigth : VLCStyle.listAlbumCover_height

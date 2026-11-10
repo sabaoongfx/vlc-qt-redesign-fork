@@ -118,10 +118,13 @@ Widgets.IconToolButton {
     // Functions
 
     function show() {
+        const matches = (modelData) => modelData.criteria === sortKey
+                                       && (modelData.order === undefined || modelData.order === root.sortOrder)
+        // redesign: with no sort chosen, the entry flagged isDefault (what the model does then) is ticked
+        const anyMatch = root.model.some(matches)
         const model = root.model.map(function(modelData) {
-            const checked = modelData.criteria === sortKey
-                            && (modelData.order === undefined || modelData.order === root.sortOrder)
-            const order = checked ? root.sortOrder : undefined
+            const checked = anyMatch ? matches(modelData) : !!modelData.isDefault
+            const order = checked ? (anyMatch ? root.sortOrder : modelData.order) : undefined
             return {
                 "text": modelData.text,
                 "checked": checked,
