@@ -997,14 +997,22 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
 
     // redesign: the Figma "playlist context menu" (Play, Shuffle, Export Playlist, Add to Queue),
     // with Rename and Delete kept. Favorite, Add Subtitle / Audio Tracks and Properties have no
-    // backend for playlists.
+    // backend for playlists. Duotone icons from the Figma menu; Rename and Delete have none there
+    // and take plain glyphs in the label colour.
+    const auto setIcon = [](QAction * action, const QIcon & icon) {
+        action->setIcon(icon);
+        action->setIconVisibleInMenu(true);
+    };
+
     QAction * action = menu->addAction(qtr("Play"));
+    setIcon(action, QIcon(QStringLiteral(":/menu/redesign-play.svg")));
 
     connect(action, &QAction::triggered, [ml, ids]() {
         ml->addAndPlay(ids);
     });
 
     action = menu->addAction(qtr("Shuffle"));
+    setIcon(action, QIcon(QStringLiteral(":/menu/redesign-shuffle.svg")));
 
     connect(action, &QAction::triggered, [ml, ids, p_intf]() {
         THEMPL->setRandom(true);
@@ -1014,6 +1022,7 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
     if (ids.count() == 1)
     {
         action = menu->addAction(qtr("Export Playlist"));
+        setIcon(action, QIcon(QStringLiteral(":/menu/redesign-export.svg")));
 
         connect(action, &QAction::triggered, [this, ml, ids]() {
             exportPlaylist(ml, ids.first());
@@ -1021,6 +1030,7 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
     }
 
     action = menu->addAction(qtr("Add to Queue"));
+    setIcon(action, QIcon(QStringLiteral(":/menu/redesign-queue.svg")));
 
     connect(action, &QAction::triggered, [ml, ids]() {
         ml->addToPlaylist(ids);
@@ -1029,6 +1039,7 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
     if (ids.count() == 1)
     {
         action = menu->addAction(qtr("Rename"));
+        setIcon(action, redesignGlyphIcon(VLCIcons::edit, menu));
 
         QModelIndex index = selected.first();
 
@@ -1038,6 +1049,7 @@ void PlaylistListContextMenu::popup(const QModelIndexList & selected, QPoint pos
     }
 
     action = menu->addAction(qtr("Delete"));
+    setIcon(action, redesignGlyphIcon(VLCIcons::del, menu));
 
     connect(action, &QAction::triggered, this, &PlaylistListContextMenu::requestDeleteSelectedPlaylists);
 

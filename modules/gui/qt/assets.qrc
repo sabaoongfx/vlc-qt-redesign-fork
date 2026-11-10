@@ -45,6 +45,9 @@
         <file alias="redesign-playlist.svg">pixmaps/menu/redesign-playlist.svg</file>
         <file alias="redesign-previous.svg">pixmaps/menu/redesign-previous.svg</file>
         <file alias="redesign-profile.svg">pixmaps/menu/redesign-profile.svg</file>
+        <file alias="redesign-export.svg">pixmaps/menu/redesign-export.svg</file>
+        <file alias="redesign-queue.svg">pixmaps/menu/redesign-queue.svg</file>
+        <file alias="redesign-shuffle.svg">pixmaps/menu/redesign-shuffle.svg</file>
         <file alias="redesign-quit.svg">pixmaps/menu/redesign-quit.svg</file>
         <file alias="redesign-recent.svg">pixmaps/menu/redesign-recent.svg</file>
         <file alias="redesign-record.svg">pixmaps/menu/redesign-record.svg</file>
