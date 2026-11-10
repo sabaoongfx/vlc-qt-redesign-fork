@@ -4,7 +4,7 @@
 home             | 2 | ml   |               | sleep:3 move:960,1000 shot:a
 videos           | 2 | ml   |               | sleep:2 click:80,125 sleep:3 click:390,220 sleep:4 move:960,1000 shot:a
 videos-day       | 1 | ml   |               | sleep:2 click:80,125 sleep:3 click:390,220 sleep:4 move:960,1000 shot:a
-videos-list      | 2 | ml   |               | sleep:2 click:80,125 sleep:3 click:390,220 sleep:3 press:List/Grid sleep:2 move:960,1000 shot:a
+videos-list      | 2 | ml   |               | sleep:2 click:80,125 sleep:3 click:390,220 sleep:3 click:1503,77 sleep:1.2 click:1560,168 sleep:2 move:960,1000 shot:a
 music            | 2 | ml   |               | sleep:2 click:80,171 sleep:3 click:300,190 sleep:4 move:960,1000 shot:a geom:a
 player           | 2 | none | @golden.mp4   | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.6 shot:a
 player-day       | 1 | none | @golden.mp4   | sleep:4 move:900,500 sleep:0.3 move:920,520 sleep:0.6 shot:a

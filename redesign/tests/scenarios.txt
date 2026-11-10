@@ -7,7 +7,7 @@ home-night       | 2 | ml   |                       | sleep:3 move:960,600 shot:
 home-day         | 1 | ml   |                       | sleep:3 move:960,600 shot:a geom:a
 home-system      | 0 | ml   |                       | sleep:3 move:960,600 shot:a
 start-nolib      | 2 | none |                       | sleep:2 shot:a geom:a
-video-grid       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:960,700 shot:a geom:a press:List/Grid sleep:2 shot:list
+video-grid       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:960,700 shot:a geom:a click:1503,77 sleep:1.2 click:1560,168 sleep:2 shot:list
 music-albums     | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 move:960,700 shot:a
 folder-tree      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:960,700 shot:root geom:root click:390,220 sleep:2.5 move:960,700 shot:videos geom:videos click:390,220 sleep:2.5 move:960,700 shot:shows geom:shows click:390,220 sleep:2.5 click:390,220 sleep:2.5 move:960,700 shot:season geom:season
 search           | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1700,81 type:Wand sleep:2 shot:a
@@ -56,7 +56,7 @@ audio-menu       | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep
 audio-menu-day   | 1 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a
 video-hover      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 move:730,220 sleep:1 shot:a
 video-click      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:730,220 sleep:3 shot:a
-video-list-click | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 press:List/Grid sleep:2 geom:list move:600,230 sleep:0.5 click:600,230 sleep:0.6 shot:b sleep:2.5 shot:a
+video-list-click | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:1503,77 sleep:1.2 click:1560,168 sleep:2 geom:list move:600,230 sleep:0.5 click:600,230 sleep:0.6 shot:b sleep:2.5 shot:a
 a11y-home        | 2 | ml   |                       | sleep:3 move:960,600 audit:a
 a11y-video       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 audit:a
 a11y-music       | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 audit:a
@@ -82,3 +82,8 @@ pl-ctx           | 2 | ml   |                       | sleep:2 click:80,259 sleep
 pl-ctx-day       | 1 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 shot:menu
 pl-rail-ctx      | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,248 sleep:2 click:150,186 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 move:300,400 sleep:0.5 rclick:150,228 sleep:1.2 shot:menu
 pl-rail-grid-ctx | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,248 sleep:2 click:150,186 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 move:300,400 sleep:0.5 click:362,120 sleep:1 rclick:140,260 sleep:1.2 shot:menu
+# Figma folder context menu (the "..." of the header; the tracks entries need media) and View Options
+folder-menu      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1884,77 sleep:1.2 shot:a
+folder-menu-media | 2 | ml  | @sample.mp4           | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 click:1884,77 sleep:1.2 shot:a
+view-menu        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1503,77 sleep:1.2 shot:menu click:1560,168 sleep:1.5 shot:list click:1503,77 sleep:1.2 shot:menu2
+view-menu-day    | 1 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1503,77 sleep:1.2 shot:menu
