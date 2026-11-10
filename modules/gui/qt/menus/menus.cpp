@@ -89,6 +89,9 @@ constexpr int menuRadius = 10;
 constexpr int rowHeight = 48;
 constexpr int rowRadius = 4;
 constexpr int separatorHeight = 9;
+// a menu with this property set has the Figma right-click menu's group lines: 1px, the full row
+// width, barely lighter than the card (and the menu keeps its 48px rows' rhythm)
+constexpr const char* hairlineProperty = "redesignHairlineSeparators";
 constexpr int separatorInset = 12;  // line ends, from the row edges
 constexpr int sectionHeight = 28;   // a section title (QMenu::addSection): 11px caps, 10px above, 4px below
 constexpr int sectionBottom = 4;
@@ -107,7 +110,7 @@ constexpr qreal chevronHalfHeight = 5.25;
 
 struct MenuColors
 {
-    QColor background, hover, border, line, label, shortcut, disabled;
+    QColor background, hover, border, line, hairline, label, shortcut, disabled;
 };
 
 MenuColors menuColors(const QPalette& palette)
@@ -119,6 +122,7 @@ MenuColors menuColors(const QPalette& palette)
         c.hover = QColor(0x1F, 0x1F, 0x1F);
         c.border = Qt::transparent;
         c.line = Redesign::darkRaised();
+        c.hairline = QColor(0x1D, 0x1D, 0x1D); // the Figma right-click menu's group lines
     }
     else
     {
@@ -127,6 +131,7 @@ MenuColors menuColors(const QPalette& palette)
         c.hover = c.background.darker(107);
         c.border = palette.color(QPalette::Mid);
         c.line = c.background.darker(110);
+        c.hairline = c.background.darker(103);
     }
     // labels and shortcuts are the text colour faded into the card
     const QColor text = palette.color(QPalette::Active, QPalette::Text);
@@ -239,7 +244,11 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
         if (auto item = qstyleoption_cast<const QStyleOptionMenuItem*>(option))
         {
             if (item->menuItemType == QStyleOptionMenuItem::Separator)
+            {
+                if (item->text.isEmpty() && widget && widget->property(hairlineProperty).toBool())
+                    return QSize(size.width(), 1);
                 return QSize(size.width(), item->text.isEmpty() ? separatorHeight : sectionHeight);
+            }
             // QMenu adds the widest shortcut (unspaced) to this; the gap covers the spaces and the chevron
             const int x = item->maxIconWidth > 0 ? labelX : plainLabelX;
             int width = x - menuPadding + size.width() + labelGap + shortcutInset - menuPadding;
@@ -330,6 +339,13 @@ void RedesignMenuStyle::drawControl(ControlElement element, const QStyleOption* 
         painter->drawText(QRect(cardLeft + labelX, row.top(), row.width(), row.height() - sectionBottom),
                           Qt::AlignLeft | Qt::AlignBottom | Qt::TextSingleLine | Qt::TextHideMnemonic,
                           item->text);
+        painter->restore();
+        return;
+    }
+    if (item->menuItemType == QStyleOptionMenuItem::Separator
+        && widget->property(hairlineProperty).toBool())
+    {
+        painter->fillRect(QRect(row.left(), row.top(), row.width(), 1), c.hairline);
         painter->restore();
         return;
     }
@@ -1000,12 +1016,12 @@ void VLCMenuBar::PopupMenuPlaylistEntries( QMenu *menu, qt_intf_t *p_intf )
 
     /* Next / Previous */
     bool bPlaylistEmpty = THEMPL->isEmpty();
-    QAction* previousAction = addMPLStaticEntry( p_intf, menu, qtr( "Pre&vious" ) + hotkeyHint( p_intf, "key-prev" ),
+    QAction* previousAction = addMPLStaticEntry( p_intf, menu, qtr( "Previous Item" ) + hotkeyHint( p_intf, "key-prev" ),
             ":/menu/ic_fluent_previous.svg", &PlaylistController::prev );
     previousAction->setEnabled( !bPlaylistEmpty );
     connect( THEMPL, &PlaylistController::isEmptyChanged, previousAction, &QAction::setDisabled);
 
-    QAction* nextAction = addMPLStaticEntry( p_intf, menu, qtr( "Ne&xt" ) + hotkeyHint( p_intf, "key-next" ),
+    QAction* nextAction = addMPLStaticEntry( p_intf, menu, qtr( "Next Item" ) + hotkeyHint( p_intf, "key-next" ),
             ":/menu/ic_fluent_next.svg", &PlaylistController::next );
     nextAction->setEnabled( !bPlaylistEmpty );
     connect( THEMPL, &PlaylistController::isEmptyChanged, nextAction, &QAction::setDisabled);
@@ -1093,7 +1109,7 @@ void VLCMenuBar::PopupMenuStaticEntries( QMenu *menu )
 
     menu->addSeparator();
 
-    addDPStaticEntry( menu, qtr( "Quit" ), ":/menu/exit.svg",
+    addDPStaticEntry( menu, qtr( "Quit VLC" ), ":/menu/exit.svg",
                       &DialogsProvider::quit, "Ctrl+Q", QAction::QuitRole );
 }
 
@@ -1145,18 +1161,18 @@ static void applyRedesignPopupIcons( QMenu *menu )
         { qtr( "Play" ), ":/menu/redesign-play.svg" },
         { qtr( "Pause" ), ":/menu/redesign-pause.svg" },
         { qtr( "Stop" ), ":/menu/redesign-stop.svg" },
-        { qtr( "Previous" ), ":/menu/redesign-previous.svg" },
-        { qtr( "Next" ), ":/menu/redesign-next.svg" },
+        { qtr( "Previous Item" ), ":/menu/redesign-previous.svg" },
+        { qtr( "Next Item" ), ":/menu/redesign-next.svg" },
         { qtr( "Record" ), ":/menu/redesign-record.svg" },
         { qtr( "Hide UI" ), ":/menu/redesign-hideui.svg" },
         { qtr( "Playback" ), ":/menu/redesign-playback.svg" },
         { qtr( "Video" ), ":/menu/redesign-video.svg" },
         { qtr( "Audio" ), ":/menu/redesign-audio.svg" },
         { qtr( "Subtitle" ), ":/menu/redesign-subtitle.svg" },
-        { qtr( "Tools" ), ":/menu/redesign-moresettings.svg" },
-        { qtr( "View" ), ":/menu/redesign-playlist.svg" },
+        { qtr( "More Settings" ), ":/menu/redesign-moresettings.svg" },
+        { qtr( "Playlist" ), ":/menu/redesign-playlist.svg" },
         { qtr( "Open Media" ), ":/menu/redesign-openmedia.svg" },
-        { qtr( "Quit" ), ":/menu/redesign-quit.svg" },
+        { qtr( "Quit VLC" ), ":/menu/redesign-quit.svg" },
     };
     for( QAction *action : menu->actions() )
     {
@@ -1199,12 +1215,9 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         QMenu *submenu;
         SharedVOutThread p_vout = THEMIM->getVout();
 
-        /* Add a fullscreen switch button, since it is the most used function */
-        if( p_vout )
-        {
-            menu->addAction(new BooleanPropertyAction(qtr( "&Fullscreen" ) + hotkeyHint( p_intf, "key-toggle-fullscreen" ),
-                                                      THEMIM, "fullscreen", menu) );
-        }
+        /* redesign: no Fullscreen entry (not in the Figma menu; F, a double click and the top bar's
+         * button still toggle it) */
+        (void)p_vout;
 
         /* redesign: the Figma menu's "Hide UI" is VLC's minimal view (the bars and the sidebar
          * hidden; Ctrl+H, the GlobalShortcuts key, brings them back) */
@@ -1215,11 +1228,12 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
 
         /* Input menu */
 
-        /* Audio menu */
+        /* redesign: the Figma order: Playback, Video, Audio, Subtitle */
+        /* Playback menu for chapters */
         submenu = new QMenu( menu );
-        AudioMenu( p_intf, submenu );
+        NavigMenu( p_intf, submenu );
         action = menu->addMenu( submenu );
-        action->setText( qtr( "&Audio" ) );
+        action->setText( qtr( "&Playback" ) );
         if( action->menu()->isEmpty() )
             action->setEnabled( false );
 
@@ -1231,19 +1245,19 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         if( action->menu()->isEmpty() )
             action->setEnabled( false );
 
+        /* Audio menu */
+        submenu = new QMenu( menu );
+        AudioMenu( p_intf, submenu );
+        action = menu->addMenu( submenu );
+        action->setText( qtr( "&Audio" ) );
+        if( action->menu()->isEmpty() )
+            action->setEnabled( false );
+
         /* Subtitles menu */
         submenu = new QMenu( menu );
         SubtitleMenu( p_intf, submenu, true );
         action = menu->addMenu( submenu );
         action->setText( qtr( "Subti&tle") );
-
-        /* Playback menu for chapters */
-        submenu = new QMenu( menu );
-        NavigMenu( p_intf, submenu );
-        action = menu->addMenu( submenu );
-        action->setText( qtr( "&Playback" ) );
-        if( action->menu()->isEmpty() )
-            action->setEnabled( false );
     }
 
     menu->addSeparator();
@@ -1284,11 +1298,12 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         }
         else
         {
-            QMenu* toolsMenu = new QMenu( qtr( "Tool&s" ), menu );
+            // redesign: the Figma names (More Settings, Playlist)
+            QMenu* toolsMenu = new QMenu( qtr( "More Settings" ), menu );
             ToolsMenu( p_intf, toolsMenu );
             menu->addMenu( toolsMenu );
 
-            QMenu* viewMenu = new QMenu( qtr( "V&iew" ), menu );
+            QMenu* viewMenu = new QMenu( qtr( "Playlist" ), menu );
             ViewMenu( p_intf, viewMenu );
             menu->addMenu( viewMenu );
         }
@@ -1315,6 +1330,25 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
         PopupMenuStaticEntries( menu );
 
     applyRedesignPopupIcons( menu );
+
+    // redesign: the Figma right-click menu's groups (transport, Hide UI, the media submenus, the
+    // rest) are split by 1px lines (292 x 683 for its 14 rows), drawn by RedesignMenuStyle
+    menu->setProperty( hairlineProperty, true );
+    // the Figma menu has three, after Record, Hide UI and Subtitle; none before Open Media or Quit
+    // (a separator right after another one is dropped first: they draw as one but would count twice)
+    int separators = 0;
+    bool afterSeparator = true;
+    for( QAction *action : menu->actions() )
+    {
+        if( !action->isSeparator() )
+        {
+            afterSeparator = false;
+            continue;
+        }
+        if( afterSeparator || ++separators > 3 )
+            menu->removeAction( action );
+        afterSeparator = true;
+    }
 
     if( show )
         menu->popup( QCursor::pos() );
