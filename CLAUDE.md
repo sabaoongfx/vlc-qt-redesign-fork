@@ -56,7 +56,26 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## After v0.1.10 (2026-11-11 night) — state when the session stopped
+## After v0.1.11 (2026-11-11) — CONTINUE FROM HERE
+
+v0.1.11 is released (Latest, on `7979c8a2fd`, 8 assets; changelog in `redesign/docs/10-changelog.md`; blog
+`whats-new-in-0-1-11` live in `../vlc-web`). Everything below is pushed; `origin/redesign` = local head `3f6fd959cd`.
+Not released yet (next "what's new" material):
+- `6146c61639` volume bar empty when a video starts / VLC opens: `src/player/aout.c` sends the first known volume
+  (upstream 6958b29519 dropped it). Core change: keep when rebasing. Checked with a PulseAudio null sink.
+- `163ea641e7` U shows or hides the player's library menu (`MLGlobalShortcuts.qml`, `MainCtx.libraryPanel.visible`);
+  both library buttons' tooltips say "(U)" (`LibraryButton.qml`, `TopBar.qml`). Smell left: "U" and the toggle line in 3 places.
+- `cd585b1c3d` volume cone has no outline (user request); `contrast-allow.txt` allows its ~1.1:1 track. CI green (4/4).
+- `f22d56e327` hand cursor on the play/pause button (its hover MouseArea hid the HoverHandler: the handler is now inside
+  the MouseArea) and on play queue rows (`PlaylistDelegate`, next to the TapHandler; double-click still plays).
+  Checked with `cursor:`/`ptr:` on X11 and `QPA=wayland`. CI started 2026-11-11 on it (4 workflows): check the result.
+  Video/folder cards, list rows and the library card already showed the hand in the harness; the user also said "on
+  clicking videos and items": if they still see an arrow, ask which page/list.
+- Settings tests (section below): CI runs the static checks; the runtime suite is local (~75 min). Findings are
+  collected in `redesign/tests/settings-findings.md`, not fixed until the user plans them (5 rows Save cannot keep:
+  spdif, http-proxy, http-proxy-pwd obsolete; verbose, reset-plugins-cache never written).
+
+## After v0.1.10 (2026-11-11 night; all of it shipped in v0.1.11)
 
 CI: the user stopped all runs (2026-11-11 ~01:50) and has not asked for new ones. Nothing after v0.1.10 has a CI
 build. Pushed to `origin/redesign` (head `cc471c6e8a`, a `[skip ci]` commit, so no runs) and harness-checked only:
@@ -509,6 +528,9 @@ commit each fix on its own, push a code commit before any docs-only one (see the
 - Released 2026-11-11: **v0.1.10** on `a67f9c82f9` (four CI runs green; release run 42894038211). The Figma menus
   (file, playlist, right-click Hide UI, sort tick, View Options, folder menu icons), the Playlists page listing
   every playlist, the darker volume fill, no second cone. Blog `whats-new-in-0-1-10` (vlc-web).
+- Released 2026-11-11: **v0.1.11** on `7979c8a2fd` (the changelog commit; the first tag sat on a `[skip ci]` commit, so
+  no runs and no release: deleted and re-tagged). Post-v0.1.10 work (top bar order, Next/Previous tooltips, badges,
+  playlist play order, list progress bars, Figma right-click menu, 265px menus). Blog `whats-new-in-0-1-11`.
 - CI caches: the repo hit GitHub's 10 GB cache limit on 2026-11-01 (one ccache per commit per workflow) and the Windows
   contrib cache was evicted (a 2-hour rebuild). Each ccache workflow now has a `prune-ccache` job keeping only the
   current commit's ccache. If a Windows run takes over an hour, check `gh cache list` for the contrib key.
