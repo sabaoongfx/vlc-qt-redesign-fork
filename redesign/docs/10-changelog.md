@@ -2,6 +2,15 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.12 (2026-11-11)
+- **Volume bar:** it shows the real volume as soon as VLC opens or a video starts; before, it stayed
+  empty until you touched the volume.
+- **U key:** shows or hides the library menu beside the video. Both library buttons say "(U)" in their
+  tooltip.
+- **Volume control:** the cone has no grey outline any more, as in the design.
+- **Hand pointer** on the play/pause button and on the rows of the play queue (double-click a row still
+  plays it).
+
 ## v0.1.11 (2026-11-11)
 - **Right-click menu on the video** now matches the design: Previous Item, Next Item, the Playback,
   Video, Audio and Subtitle submenus, More Settings (was Tools), Playlist (was View) and Quit VLC, with
