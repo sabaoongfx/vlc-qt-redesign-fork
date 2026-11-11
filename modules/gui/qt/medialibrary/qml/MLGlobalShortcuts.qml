@@ -20,9 +20,13 @@ import QtQuick
 import VLC.MediaLibrary
 import VLC.Dialogs
 import VLC.Menus
+import VLC.MainInterface
 
 Item {
     ShortcutExt{ sequence:"Ctrl+B"; onActivated: DialogsProvider.bookmarksDialog() }
+    // redesign: U shows or hides the library menu beside the video (user request; U is free in
+    // VLC's default hotkeys, L is loop); text fields keep the letter (ShortcutOverride)
+    ShortcutExt{ sequence:"U"; onActivated: MainCtx.libraryPanel.visible = !MainCtx.libraryPanel.visible }
 
     MLRecentMediaModel {
         id: recentModel

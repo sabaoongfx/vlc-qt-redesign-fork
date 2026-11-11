@@ -30,6 +30,7 @@ Widgets.IconToolButton {
 
     text: " " // the glyph is drawn below; IconToolButton wants some text
     description: qsTr("Library")
+    shortcut: "U"
 
     Widgets.SidebarGlyph {
         anchors.centerIn: parent

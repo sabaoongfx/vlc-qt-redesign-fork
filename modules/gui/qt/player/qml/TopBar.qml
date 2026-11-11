@@ -359,6 +359,7 @@ FocusScope{
 
                     text: " " // the glyph is drawn below; IconToolButton wants some text
                     description: qsTr("Show or hide the library menu")
+                    shortcut: "U"
 
                     checked: MainCtx.libraryPanel.visible
                     // grey like the Figma icons; the glyph shows the state (wide bar: shown)
