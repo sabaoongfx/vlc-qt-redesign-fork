@@ -169,7 +169,8 @@ g = geom('resume-prompt', 'b')
 if g:
     crumb = [k for k in g if k.startswith('Back to ')]
     (ok if crumb else fail)('resume-prompt', 'folder crumb visible while the resume prompt is shown')
-    (ok if 'Continue Watching' in g else fail)('resume-prompt', 'resume prompt shown')
+    # the player resumes by itself (restore-playback-pos defaults to "always") and says so
+    (ok if 'Start over' in g else fail)('resume-prompt', 'resumed notice with Start over shown')
 
 # 7. mini player card (Figma "Miniplayer"): the video corners are rounded into its 2px dark frame,
 #    the card is 391x338 in the secondary window colour

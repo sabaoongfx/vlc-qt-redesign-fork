@@ -59,6 +59,11 @@ FocusScope {
     // redesign: explicit state, `visible` reads false while the floating card around it is hidden
     property bool shown: false
 
+    // redesign: the player already continued where the video was left (restore-playback-pos
+    // "always", the default): the card says so and offers Start over instead of Continue Watching
+    property bool resumedMode: false
+    property real _resumedAt: -1 // seconds
+
     function _hms(seconds) {
         const pad = (n) => String(Math.floor(n)).padStart(2, "0")
         return pad(seconds / 3600) + ":" + pad((seconds % 3600) / 60) + ":" + pad(seconds % 60)
@@ -78,6 +83,7 @@ FocusScope {
 
     function showResumePanel ()
     {
+        resumePanel.resumedMode = false
         resumePanel.shown = true
         resumePanel.visible = true
         _queryWatchedTill()
@@ -91,6 +97,75 @@ FocusScope {
         resumePanel.visible = false
         Player.acknowledgeRestoreCallback()
         hidden()
+    }
+
+    // A video that starts at its saved place was resumed by the player itself: the saved progress
+    // comes from the media library, then the card shows once the position has jumped there (the
+    // player resumes only videos, never songs, so a song never gets the card)
+    function _checkResumed() {
+        resumeWatch.stop()
+        if (resumePanel.shown && resumePanel.resumedMode)
+            hideResumePanel()
+
+        if (!MainCtx.mediaLibraryAvailable || !Player.url)
+            return
+
+        const url = Player.url
+        MainCtx.mediaLibrary.mediaProgress(url, (progress) => {
+            if (progress <= 0 || Player.url !== url || Player.canRestorePlayback)
+                return
+            resumeWatch.progress = progress
+            resumeWatch.tries = 0
+            resumeWatch.start()
+        })
+    }
+
+    function showResumedPanel() {
+        resumePanel.resumedMode = true
+        resumePanel._resumedAt = Player.length.toSeconds() > 0
+                ? Player.position * Player.length.toSeconds() : -1
+        resumePanel.shown = true
+        resumePanel.visible = true
+        // no focus: Enter, Space and the arrows keep their usual meaning in the player
+        resumeTimeout.restart()
+    }
+
+    Timer {
+        id: resumeWatch
+
+        property real progress: 0
+        property int tries: 0
+
+        interval: 250
+        repeat: true
+        onTriggered: {
+            if (Player.position > 0 && Player.position >= progress - 0.01) {
+                stop()
+                if (!Player.canRestorePlayback)
+                    resumePanel.showResumedPanel()
+            } else if (++tries > 40) {
+                stop()
+            }
+        }
+    }
+
+    Connections {
+        target: Player
+        function onInputChanged() {
+            resumePanel._checkResumed()
+        }
+    }
+
+    // the card stays while the pointer is on it
+    HoverHandler {
+        onHoveredChanged: {
+            if (!resumePanel.shown)
+                return
+            if (hovered)
+                resumeTimeout.stop()
+            else
+                resumeTimeout.restart()
+        }
     }
 
     Timer {
@@ -123,6 +198,9 @@ FocusScope {
     Component.onCompleted: {
         if (Player.canRestorePlayback) {
             showResumePanel()
+        } else {
+            // the player view (and this card) is created after the video started
+            _checkResumed()
         }
     }
 
@@ -153,9 +231,13 @@ FocusScope {
             textFormat: Text.StyledText
             elide: Text.ElideRight
 
-            text: (resumePanel.watchedTill >= 0)
-                  ? qsTr("You already watched till <b>%1</b>").arg(resumePanel._hms(resumePanel.watchedTill))
-                  : qsTr("You already watched this")
+            text: resumePanel.resumedMode
+                  ? ((resumePanel._resumedAt >= 0)
+                     ? qsTr("Continued from <b>%1</b>").arg(resumePanel._hms(resumePanel._resumedAt))
+                     : qsTr("Continued where you left off"))
+                  : (resumePanel.watchedTill >= 0)
+                    ? qsTr("You already watched till <b>%1</b>").arg(resumePanel._hms(resumePanel.watchedTill))
+                    : qsTr("You already watched this")
         }
 
         Rectangle {
@@ -174,13 +256,16 @@ FocusScope {
             activeFocusOnTab: true
 
             Accessible.role: Accessible.Button
-            Accessible.name: qsTr("Continue Watching")
+            Accessible.name: continueLabel.text
             Accessible.onPressAction: continueBtn.activate()
 
             AccessibleCompat.id: "resumeContinueButton"
 
             function activate() {
-                Player.restorePlaybackPos()
+                if (resumePanel.resumedMode)
+                    Player.position = 0
+                else
+                    Player.restorePlaybackPos()
                 resumePanel.hideResumePanel()
             }
 
@@ -189,7 +274,7 @@ FocusScope {
 
                 anchors.centerIn: parent
 
-                text: qsTr("Continue Watching")
+                text: resumePanel.resumedMode ? qsTr("Start over") : qsTr("Continue Watching")
                 color: accentTheme.fg.primary // dark text on the accent fill, from the palette
                 font.pixelSize: VLCStyle.fontSize_normal
                 font.bold: true
