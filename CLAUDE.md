@@ -56,7 +56,29 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## After v0.1.11 (2026-11-11) — CONTINUE FROM HERE
+## After v0.1.12 (2026-11-12) — CONTINUE FROM HERE
+
+Pushed, not released (next "what's new" material). CI green on both commits (Linux build, Linux packages, Windows,
+macOS; the macOS run of `a1c8431d9f` needed a re-run for a runner, the one of `e0ef2a0cba` was still running at writing).
+- `a1c8431d9f` "new version" toast (user request: weekly, on by default, a card with a close x). `ReleaseCheck`
+  (`maininterface/release_check.*`, QML singleton registered in `mainui.cpp`) + `maininterface/qml/ReleaseToast.qml`
+  (bottom left in `MainInterface.qml`, raised above the player bar while playing). 20 s after start, then hourly looks at
+  `[ReleaseCheck] next` in the Qt settings: GitHub API `releases/latest`, then `tags` pages 1-5 (the fork carries upstream's
+  100+ tags) to find which tag the build's commit is. The commit comes from `src/revision.txt` via the generated
+  `maininterface/release_revision.cpp` (Makefile.am rule; meson `vcs_tag` written but untested). Builds not on a release
+  tag never show the toast. Dismiss stores the version (`dismissed`); a newer one shows again. Packaged Linux installs
+  (`/opt/vlc-juxtopposed/`) say "Your system's updater installs it" and open the release page; others open
+  `https://vlc.sabaoon.dev/#download`. Off with `qt-updates-notif` (Settings "Check for updates automatically"; now
+  declared outside `#ifdef UPDATE_CHECK` in `qt.cpp`). Checked in the harness with a faked revision stamp. Unverified:
+  that the Windows/macOS CI builds write the commit into `revision.txt` (if not, the toast never shows there). Nobody
+  sees it before v0.1.14 (v0.1.13 is the first build that checks).
+- `e0ef2a0cba` videos resume where they were left by default (user request: no racing for the Continue button):
+  core default `restore-playback-pos` = ALWAYS in `src/libvlc-module.c` (core change: keep when rebasing). `ResumeDialog.qml`
+  then shows "Continued from HH:MM:SS" with a Start over button (seeks to 0) for 10 s, no focus taken, hover holds it;
+  the old ask mode (option set to Ask) still shows Continue Watching. Harness `resume-prompt` checks for Start over.
+  Existing installs follow the new default unless the option was changed by hand.
+
+## After v0.1.11 (2026-11-11)
 
 RELEASED 2026-11-11: **v0.1.12** on `f22d56e327` (Latest, 8 assets, release run 43078984261; changelog `477abebd3a`;
 blog `whats-new-in-0-1-12` in `../vlc-web` `5f7d56b`). It ships everything listed in this section below.
