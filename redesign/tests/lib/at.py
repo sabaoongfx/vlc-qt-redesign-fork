@@ -175,6 +175,10 @@ elif cmd in ('rows', 'setrow'):
         # the row's control: a sibling of the label that is not the label or the info icon; a container
         # (a path field with Browse, a group of buttons) is returned as it is
         row = label_node.get_parent()
+        # a row holds the label, maybe an info icon and the control; a section title sits in the page
+        # itself, next to every row (same text as a row: "Deinterlacing")
+        if row is None or row.get_child_count() > 4:
+            return None
         for c in kids(row):
             if c and c.get_role_name() not in ('label', 'image') and on_screen(c):
                 return c
@@ -215,8 +219,14 @@ elif cmd in ('rows', 'setrow'):
 
     label, _, value = sys.argv[2].partition('=')
     label = label.replace('_', ' ')
-    hits = [l for l in labels if (l.get_name() or '').strip() == label]
-    c = control_of(hits[0]) if hits else None
+    def find_control(label):
+        for l in labels:
+            if (l.get_name() or '').strip() == label:
+                c = control_of(l)
+                if c is not None:
+                    return c
+        return None
+    c = find_control(label)
     if c is None:
         print('no row:', label); sys.exit(2)
     role = c.get_role_name()
@@ -256,10 +266,17 @@ elif cmd in ('rows', 'setrow'):
         cur, step = v.get_current_value(), (v.get_minimum_increment() or 1)
         v.set_current_value(cur + step if cur + step <= v.get_maximum_value() else cur - step)
     elif role == 'combo box':
+        # open the list with the combo's own action (no click: the row may be scrolled out of view),
+        # then move in the popup, which grabs the keyboard, and accept
         items, i = combo_state(c)
-        c.get_component_iface().grab_focus()
-        time.sleep(0.3)
+        ai = c.get_action_iface()
+        names = [ai.get_name(k) for k in range(ai.get_n_actions())]
+        k = next((names.index(x) for x in ('Press', 'press', 'ShowMenu', 'showMenu') if x in names), 0)
+        ai.do_action(k)
+        time.sleep(0.6)
         xdo('key', 'Up' if items and i == len(items) - 1 else 'Down')
+        time.sleep(0.2)
+        xdo('key', 'Return')
     else:
         fields = [c] if role in TEXT else [d for d in descendants(c) if d.get_role_name() in TEXT]
         if not fields:
@@ -269,8 +286,7 @@ elif cmd in ('rows', 'setrow'):
     time.sleep(0.5)
     # a combo box is renamed after its new item: read the row again
     labels = [n for _, n in nodes() if n.get_role_name() == 'label' and on_screen(n)]
-    hits = [l for l in labels if (l.get_name() or '').strip() == label]
-    c2 = control_of(hits[0]) if hits else None
+    c2 = find_control(label)
     try:
         _, new = value_of(c2) if c2 else ('', '')
     except Exception:

@@ -70,12 +70,16 @@ def profile(out, name):
 
 
 def rows_file(path):
-    """label -> (role, value), first row with that label (the page's own rows come first)"""
+    """label -> (role, value), first row with that label (the page's own rows come first); a section
+    title listed by an older at.py (role "buttons" or "field": the page's first group) gives way to a
+    real control with the same label"""
     out = {}
     if os.path.exists(path):
         for line in open(path, encoding='utf-8', errors='replace'):
             parts = line.rstrip('\n').split('\t')
-            if len(parts) == 3 and parts[0] not in out:
+            if len(parts) != 3:
+                continue
+            if parts[0] not in out or (out[parts[0]][0] in ('buttons', 'field') and parts[1] not in ('buttons', 'field')):
                 out[parts[0]] = (parts[1], parts[2])
     return out
 
@@ -127,6 +131,8 @@ def main():
             res('SKIP' if opts[0] not in base else 'FAIL', 'load', name,
                 'option not in this build' if opts[0] not in base else 'row not listed on its page')
             continue
+        if opts[0] not in base:
+            res('SKIP', 'load', name, f'shows {shown[1]}; {opts[0]} is never written to vlcrc'); continue
         want = shown_as_stored(r['label'], shown[0], shown[1])
         if want is None:
             continue
@@ -174,7 +180,9 @@ def main():
             own = [o for o in opts if o in changed]
             other = sorted(changed - set(opts))
             problems = []
-            if not own:
+            if not own and all(o not in saved and o not in base for o in opts):
+                problems.append(f'{"/".join(opts)} is never written to vlcrc: Save drops the change')
+            elif not own:
                 problems.append(f'{"/".join(opts)} not written (still {[base.get(o, ("?",))[0] for o in opts]})')
             if other:
                 problems.append(f'other options changed: {other[:8]}')
