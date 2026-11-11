@@ -4,7 +4,7 @@
 T=$(cd "$(dirname "$0")" && pwd)
 R=$(cd "$T/../.." && pwd)
 export VLC=${VLC:-$R/build/vlc}
-export OUT=${OUT:-$T/out/run}
+export OUT=$(realpath -m "${OUT:-$T/out/run}")  # absolute: inner.sh starts VLC from it
 export FIX=${FIX:-$T/out/fixtures}
 # SCEN: another scene list (showcase.sh uses showcase.txt, with its own fixtures and no checks)
 SCEN=${SCEN:-$T/scenarios.txt}

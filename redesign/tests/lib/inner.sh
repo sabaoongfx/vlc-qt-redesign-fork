@@ -20,6 +20,9 @@ Q="$CFG/vlc/vlc-qt-interface.conf"
 if grep -q '^color-scheme-index=' "$Q" 2>/dev/null; then sed -i "s/^color-scheme-index=.*/color-scheme-index=$THEME/" "$Q"; else printf '[MainWindow]\ncolor-scheme-index=%s\n' "$THEME" >> "$Q"; fi
 # env:NAME=value actions are set for VLC only (e.g. Qt's own file dialog instead of the desktop's)
 VENV=""; set -f; for a in $ACTIONS; do case "$a" in env:*) VENV="$VENV ${a#env:}" ;; esac; done; set +f
+# start in the output folder: a scene that turns on "Save a log" makes VLC write vlc-log.txt into its working
+# directory (it was the repository root)
+cd "$OUT"
 setsid env $VENV "$VLC" ${VLCARGS} $ML ${WIZ:---no-qt-privacy-ask} --no-qt-backdrop-blur $MEDIA > "$OUT/$NAME.log" 2>&1 &
 VPID=$!
 for i in $(seq 40); do W=$(xdotool search --onlyvisible --class vlc 2>/dev/null | tail -1); [ -n "$W" ] && break; sleep 0.25; done

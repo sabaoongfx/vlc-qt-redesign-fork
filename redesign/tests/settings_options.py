@@ -15,7 +15,8 @@ work from that file.
     3. redesign/SETTINGS-MAP.md lists the same rows with the same options, page by page
     4. no row repeats an option the classic pages' own Save code writes (see SETTINGS-MAP.md)
     5. labels are unique on a page (the runtime tests find a row by its label)
-    6. an option shown on two pages is reported (both rows must not undo each other on Save;
+    6. settings.txt (the runtime scenes) is current
+    7. an option shown on two pages is reported (both rows must not undo each other on Save;
        the runtime tests change each one on its own)
 """
 import os
@@ -249,7 +250,12 @@ def main():
         check(k not in seen, f'{r["page"]}: two rows labelled "{r["label"]}"')
         seen[k] = r
 
-    # 6. options on two pages (information)
+    # 6. settings.txt is what settings_scenes.py makes from this list (imported here: it imports this file)
+    from settings_scenes import OUT as SCENES, scene_lines
+    current = open(SCENES, encoding='utf-8').read() if os.path.exists(SCENES) else ''
+    check(current == '\n'.join(scene_lines()[0]) + '\n', 'settings.txt is out of date (run settings_scenes.py)')
+
+    # 7. options on two pages (information)
     pages = {}
     for r in rows:
         for opt in r['options'].split():

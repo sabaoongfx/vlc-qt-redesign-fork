@@ -15,7 +15,7 @@ set-video-deinterlacing | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Video
 set-video-deinterlacing-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 rows:video term
 set-video-method | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 setrow:Method=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-video-method-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 rows:video term
-set-video-aspect-ratio | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 setrow:Aspect_ratio=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 term
+set-video-aspect-ratio | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 setrow:Aspect_ratio=16:9 sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-video-aspect-ratio-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 rows:video term
 set-video-crop | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 setrow:Crop=16:9 sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-video-crop-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Video sleep:0.8 rows:video term
@@ -49,7 +49,7 @@ set-playback-start-playing-as-soon-as-a-file-opens | 2 | prefs | | sleep:2 key:c
 set-playback-start-playing-as-soon-as-a-file-opens-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 rows:playback term
 set-playback-default-playback-speed | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 setrow:Default_playback_speed=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-playback-default-playback-speed-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 rows:playback term
-set-playback-preferred-video-quality | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 setrow:Preferred_video_quality=720 sleep:0.8 shotwin:changed press:Save sleep:1.5 term
+set-playback-preferred-video-quality | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 setrow:Preferred_video_quality=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-playback-preferred-video-quality-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 rows:playback term
 set-playback-preferred-menu-language | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 setrow:Preferred_menu_language=fr sleep:0.8 shotwin:changed press:Save sleep:1.5 term
 set-playback-preferred-menu-language-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Playback sleep:0.8 rows:playback term
