@@ -13,13 +13,12 @@ collect these and plan the fixes later (2026-11-11). Each entry: what is wrong, 
 | Show minor warnings (General, Advanced) | `verbose` | never written to vlcrc (volatile) | load check |
 | Rescan plugins at the next start (Performance) | `reset-plugins-cache` | never written to vlcrc (volatile) | load check |
 
-## Rows that show the wrong value
+## Full run (2026-11-11, second run after the harness fixes)
 
-| Row (page) | Option | Shows | vlcrc default | Seen |
-|---|---|---|---|---|
-| Last.fm submission URL (Privacy) | `scrobbler-url` | empty | `post.audioscrobbler.com` | load check |
-| Preferred decoders (Performance, Advanced) | `codec` | empty | `any` | load check |
+523 passed, 10 failed, 8 skipped (233 scenes + baseline). All 10 failures are the five rows above, each failing save
+and reload: the row changes, Save drops the change, and after a restart it shows the old value again.
+The 8 skips are the same five (never in vlcrc, so load cannot compare), Check for updates automatically
+(`qt-updates-notif` is not in this build, the row is hidden), and Start minimized to the tray (no reload scene).
 
-## Full run
-
-Pending: the full run (233 scenes) results go here.
+Not a finding: Last.fm submission URL and Preferred decoders were listed here as "shows empty" after the first run.
+That was the harness reading text fields wrong; they show `post.audioscrobbler.com` and `any`.

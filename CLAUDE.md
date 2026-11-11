@@ -92,7 +92,7 @@ behaviour may predate v0.1.10.
 Measuring a Figma menu: the exports carry a 15px shadow margin (card at 15,7 in a 295-wide PNG); compare at native
 size (player frames are 1920x1080).
 
-## Settings tests (2026-11-11; first full run 353 pass / 55 fail, mostly harness bugs since fixed)
+## Settings tests (2026-11-11; second full run 523 pass / 10 fail, the 10 = five rows Save cannot keep, see settings-findings.md)
 
 - `redesign/tests/settings_options.py --write` reads every Settings row (`SettingsRows` in `simple_preferences.cpp`) into
   `redesign/tests/settings-options.tsv` (121 rows, 113 options: page, section, label, option(s), kind option/widget/action,

@@ -23,7 +23,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from settings_options import read_tsv  # noqa: E402
 from settings_options import declared_kind, declared_options  # noqa: E402
-from settings_scenes import NO_RELOAD, SPECIAL, on_linux, scene_for, slug  # noqa: E402
+from settings_scenes import NO_RELOAD, SPECIAL, TEXT, on_linux, scene_for, slug  # noqa: E402
 
 # the controls SettingsRows::option may build for each declaration (add_<type>), as at.py names them
 ROLES = {
@@ -191,6 +191,11 @@ def main():
                 if role == 'colour':
                     if not same(stored, 0x123456):
                         problems.append(f'{opts[0]}={stored}, expected #123456 ({0x123456})')
+                elif role == 'password text':
+                    # the field shows dots: compare with what setrow typed
+                    typed = TEXT.get(opts[0], 'vlctest')
+                    if stored != typed:
+                        problems.append(f'{opts[0]}={stored}, typed {typed}')
                 elif r['label'] == 'Accent color':
                     if stored.lower() != '#8d721c':
                         problems.append(f'{opts[0]}={stored}, expected #8D721C (third swatch)')
