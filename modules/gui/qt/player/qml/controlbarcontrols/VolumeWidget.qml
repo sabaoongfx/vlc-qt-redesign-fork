@@ -213,26 +213,15 @@ T.Pane {
                 // drawn ~20% small; it may reach a few pixels past the slider, inside the 55px bar
                 readonly property real unit: VLCStyle.dp(1, VLCStyle.scale)
                 readonly property color trackColor: VLCStyle.figmaColors(dark).track
-                // the wedge's outline: the dark track alone was 1.1:1 on the bar, the control vanished at
-                // low volume (the hint grey is 3.2:1 on the #1B1B1B bar)
-                readonly property color edgeColor: VLCStyle.figmaColors(dark).hint
 
+                // no outline (user request 2026-11-11; the grey one added for 3:1 contrast on 2026-11-02 read as
+                // white): the empty track is 1.1:1 on the bar, so the cone is hard to see at low volume
                 Wedge {
                     anchors.fill: parent
                     a: 10.7 * cone.unit
                     b: 27.4 * cone.unit
                     radius: 2 * cone.unit
                     leftRadius: 4.5 * cone.unit
-                    color: cone.edgeColor
-                }
-
-                Wedge {
-                    anchors.fill: parent
-                    a: 10.7 * cone.unit
-                    b: 27.4 * cone.unit
-                    inset: cone.unit
-                    radius: 1.5 * cone.unit
-                    leftRadius: 3.5 * cone.unit
                     color: cone.trackColor
                 }
 
