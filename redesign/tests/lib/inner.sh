@@ -17,7 +17,9 @@ if [ -n "$PROFILE" ]; then export HOME=$PROFILE/home; ML=""; else ML=--no-media-
 export HOME=$CFG/home; mkdir -p "$HOME/Videos/Shows/The Wand/S01" "$HOME/Videos/Movies" "$HOME/Music/Albums" "$HOME/Desktop"; for e in 01 02 03 04 05 06; do ln -s "$FIX/sample.mp4" "$HOME/Videos/Shows/The Wand/S01/The_Wand_S01E$e.mp4"; done; ln -s "$FIX/sample.mp4" "$HOME/Videos/Movies/Sample Movie.mp4"
 fi
 Q="$CFG/vlc/vlc-qt-interface.conf"
-if grep -q '^color-scheme-index=' "$Q" 2>/dev/null; then sed -i "s/^color-scheme-index=.*/color-scheme-index=$THEME/" "$Q"; else printf '[MainWindow]\ncolor-scheme-index=%s\n' "$THEME" >> "$Q"; fi
+# theme "-": keep the profile's own (a Settings test checks the theme it saved)
+if [ "$THEME" = "-" ]; then :
+elif grep -q '^color-scheme-index=' "$Q" 2>/dev/null; then sed -i "s/^color-scheme-index=.*/color-scheme-index=$THEME/" "$Q"; else printf '[MainWindow]\ncolor-scheme-index=%s\n' "$THEME" >> "$Q"; fi
 # env:NAME=value actions are set for VLC only (e.g. Qt's own file dialog instead of the desktop's)
 VENV=""; set -f; for a in $ACTIONS; do case "$a" in env:*) VENV="$VENV ${a#env:}" ;; esac; done; set +f
 # start in the output folder: a scene that turns on "Save a log" makes VLC write vlc-log.txt into its working

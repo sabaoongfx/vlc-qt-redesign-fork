@@ -92,7 +92,7 @@ behaviour may predate v0.1.10.
 Measuring a Figma menu: the exports carry a 15px shadow margin (card at 15,7 in a 295-wide PNG); compare at native
 size (player frames are 1920x1080).
 
-## Settings tests (2026-11-11, written, NOT run yet: the user asked for them unrun)
+## Settings tests (2026-11-11; first full run 353 pass / 55 fail, mostly harness bugs since fixed)
 
 - `redesign/tests/settings_options.py --write` reads every Settings row (`SettingsRows` in `simple_preferences.cpp`) into
   `redesign/tests/settings-options.tsv` (121 rows, 113 options: page, section, label, option(s), kind option/widget/action,
@@ -116,6 +116,15 @@ size (player frames are 1920x1080).
 - Run: `SKIP_FIXTURES=1 SCEN=redesign/tests/settings.txt OUT=<dir> redesign/tests/run.sh 'set-'` (~1 h) then
   `python3 redesign/tests/check_settings.py <dir>`. Still unproven: focus + Down reaching a combo box in the nested KWin, rows
   scrolled below the window, values of spin boxes with a special text (-1 = Automatic).
+
+- Harness lessons from the first runs: in this gi binding `n.get_name(k)` / `n.get_text(...)` resolve to Accessible methods,
+  call `Atspi.Action.get_action_name(n, k)` / `Atspi.Text.get_text(n, ...)`; Qt ignores AT-SPI SetTextContents on line edits
+  and focus + key on a combo, so setrow types into fields (after clicking a label to activate the window) and opens combos
+  with their own action + Down/Return; the theme is saved to vlc-qt-interface.conf only on a clean quit (scenes end with
+  Ctrl+Q) and inner.sh forces the scene theme at launch unless the theme column is "-". VLC starts in OUT (file logging
+  wrote vlc-log.txt into the repository root). Findings for the Settings code: `redesign/tests/settings-findings.md`
+  (collect only; the user plans fixes later).
+- Core change to keep when rebasing: `src/player/aout.c` sends the first known volume (upstream 6958b29519 dropped it).
 
 ## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
 

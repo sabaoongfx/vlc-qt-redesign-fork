@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # AT-SPI helper: at.py tree | geom | audit | controls | press NAME [nth] | setrow LABEL=VALUE | dump-file PATH
-import sys, gi, time
+import sys, gi, time, warnings
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 gi.require_version('Atspi', '2.0')
 from gi.repository import Atspi
 
@@ -157,8 +158,8 @@ elif cmd in ('rows', 'setrow'):
         return [d for _, d in out[1:]]
     def text_of(n):
         try:
-            t = n.get_text_iface()
-            return t.get_text(0, t.get_character_count()) if t else ''
+            # Atspi.Text explicitly: n.get_text resolves to a deprecated Accessible method that returned ''
+            return Atspi.Text.get_text(n, 0, Atspi.Text.get_character_count(n)) if n.get_text_iface() else ''
         except Exception:
             return ''
     TEXT = ('text', 'entry', 'password text')
@@ -219,6 +220,31 @@ elif cmd in ('rows', 'setrow'):
 
     label, _, value = sys.argv[2].partition('=')
     label = label.replace('_', ' ')
+    def window_of(n):
+        while n is not None and n.get_role_name() not in ('dialog', 'frame', 'window'):
+            n = n.get_parent()
+        return n
+    def activate(n):
+        # keys go to the active window: click a label of n's window that is on screen (no effect) first
+        w = window_of(n)
+        if w is None:
+            return
+        we = ext(w)
+        for l in labels:
+            if window_of(l) is not None and ext(window_of(l)).x == we.x:
+                e = ext(l)
+                if we.y + 60 < e.y < we.y + we.height - 20:
+                    click(l); time.sleep(0.4); return
+    def type_into(field, text, then=None):
+        # set_text_contents is ignored by Qt's line edits: focus the field and type
+        activate(field)
+        field.get_component_iface().grab_focus()
+        time.sleep(0.3)
+        xdo('key', 'ctrl+a')
+        xdo('type', '--delay', '20', text)
+        if then:
+            xdo('key', then)
+        time.sleep(0.3)
     def find_control(label):
         for l in labels:
             if (l.get_name() or '').strip() == label:
@@ -247,16 +273,15 @@ elif cmd in ('rows', 'setrow'):
         time.sleep(1.5)
         dlg = [n for _, n in nodes()]
         html = [n for n in dlg if (n.get_name() or '').replace('&', '').strip() == 'HTML:' and n.get_role_name() in TEXT]
-        okb = [n for n in dlg if (n.get_name() or '').replace('&', '') == 'OK' and n.get_role_name() in BUTTONS and on_screen(n)]
         if not html:
             xdo('key', 'Escape'); print('no row:', label, '(no HTML: field in the colour dialog)'); sys.exit(2)
         old = text_of(html[0])
-        html[0].get_editable_text_iface().set_text_contents('#123456')
+        # Return ends the edit (the dialog takes the colour on editingFinished) and accepts the dialog
+        html[0].get_component_iface().grab_focus()
         time.sleep(0.3)
-        if okb:
-            click(okb[0])
-        else:
-            xdo('key', 'Return')
+        xdo('key', 'ctrl+a')
+        xdo('type', '--delay', '20', '#123456')
+        xdo('key', 'Return')
         time.sleep(0.8)
         print(f'setrow\t{label}\tcolour\t{old}\t#123456'); sys.exit(0)
     elif role == 'check box':
@@ -270,7 +295,7 @@ elif cmd in ('rows', 'setrow'):
         # then move in the popup, which grabs the keyboard, and accept
         items, i = combo_state(c)
         ai = c.get_action_iface()
-        names = [ai.get_name(k) for k in range(ai.get_n_actions())]
+        names = [Atspi.Action.get_action_name(ai, k) for k in range(ai.get_n_actions())]  # ai.get_name is the Accessible's
         k = next((names.index(x) for x in ('Press', 'press', 'ShowMenu', 'showMenu') if x in names), 0)
         ai.do_action(k)
         time.sleep(0.6)
@@ -281,7 +306,7 @@ elif cmd in ('rows', 'setrow'):
         fields = [c] if role in TEXT else [d for d in descendants(c) if d.get_role_name() in TEXT]
         if not fields:
             print('no row:', label, f'(role {role} not handled)'); sys.exit(2)
-        fields[0].get_editable_text_iface().set_text_contents(value)
+        type_into(fields[0], value)
         role = fields[0].get_role_name()
     time.sleep(0.5)
     # a combo box is renamed after its new item: read the row again
