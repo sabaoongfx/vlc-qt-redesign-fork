@@ -2,6 +2,21 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.11 (2026-11-11)
+- **Right-click menu on the video** now matches the design: Previous Item, Next Item, the Playback,
+  Video, Audio and Subtitle submenus, More Settings (was Tools), Playlist (was View) and Quit VLC, with
+  thin lines between the groups. The Fullscreen entry is gone from it; double-click, F or Enter still
+  switch to fullscreen.
+- **Menu sizes as in the design:** menus are 265 px wide (the right-click menu 292 px) and their icons
+  are drawn at the design's size.
+- **Player top bar:** the "..." menu button is now first on the left, the library button after it.
+- **Next and Previous** show their keyboard key in the tooltip, for example "Next (N)".
+- **Playlist cards:** the video count is readable in the dark theme, and files the library has not
+  read yet are counted as videos instead of "others".
+- **Playlists:** a video clicked inside a playlist plays with the whole playlist in the queue, starting
+  at that video.
+- **List view:** a video you started shows its progress bar under the thumbnail, like the grid.
+
 ## v0.1.10 (2026-11-11)
 - **Menus drawn from the design:** every menu now follows the redesign's menu frames, with their
   orange-and-grey icons.
