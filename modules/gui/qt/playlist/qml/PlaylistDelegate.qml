@@ -317,6 +317,12 @@ T.Control {
     DoubleClickIgnoringItem {
         anchors.fill: parent
 
+        // redesign: the hand cursor over everything clickable, like the prototype (next to the TapHandler:
+        // on the row's root it kept clicks away from it, see TableViewDelegateExt)
+        HoverHandler {
+            cursorShape: Qt.PointingHandCursor
+        }
+
         TapHandler {
             acceptedDevices: PointerDevice.AllDevices & ~(PointerDevice.TouchScreen)
 

@@ -151,6 +151,14 @@ T.Control {
 
         hoverEnabled: true
 
+        // redesign: the hand cursor over everything clickable, like the prototype. The handler sits inside
+        // this hover-enabled MouseArea (on the button it lost to it: arrow); a cursorShape on the MouseArea
+        // left the next button an arrow when the pointer moved straight onto it
+        HoverHandler {
+            cursorShape: Qt.PointingHandCursor
+            enabled: root.enabled
+        }
+
         readonly property bool cursorInside: {
             if (!containsMouse)
                 return false
@@ -264,11 +272,5 @@ T.Control {
                 color: Qt.alpha(root._showsPause ? VLCStyle.figmaColors(theme.palette.isDark).hint : theme.accent, 0.29)
             }
         }
-    }
-
-    // redesign: the hand cursor over everything clickable, like the prototype
-    HoverHandler {
-        cursorShape: Qt.PointingHandCursor
-        enabled: root.enabled
     }
 }
