@@ -44,10 +44,17 @@ for a in $ACTIONS; do
        [ "$CONTRAST" = 0 ] || "$LIB/at.py" controls > "${f%.png}.ctl" 2>/dev/null ;;
     sleep:*) sleep ${a#sleep:} ;;
     term) kill -TERM -- -$VPID 2>/dev/null; for i in $(seq 40); do kill -0 $VPID 2>/dev/null || break; sleep 0.25; done ;;
-    click:*) xy=${a#click:}; xdotool mousemove ${xy%,*} ${xy#*,} click 1 ;;
+    click:*) xy=${a#click:}; LXY=$xy; xdotool mousemove ${xy%,*} ${xy#*,} click 1 ;;
     rclick:*) xy=${a#rclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click 3 ;;
     dclick:*) xy=${a#dclick:}; xdotool mousemove ${xy%,*} ${xy#*,} click --repeat 2 --delay 60 1 ;;
-    move:*) xy=${a#move:}; xdotool mousemove ${xy%,*} ${xy#*,} ;;
+    move:*) xy=${a#move:}; LXY=$xy; xdotool mousemove ${xy%,*} ${xy#*,} ;;
+    down:*) xy=${a#down:}; LXY=$xy; xdotool mousemove ${xy%,*} ${xy#*,} mousedown 1 ;;
+    up) xdotool mouseup 1 ;;
+    # ptr:<tag> a 96x96 shot around the last pointer position, pointer drawn (works for Wayland clients too, unlike cursor:)
+    ptr:*) f="$OUT/$NAME-ptr-${a#ptr:}.png"; spectacle -b -n -f -p -o "$f" >/dev/null 2>&1
+       X=${LXY%,*}; Y=${LXY#*,}  # the last click/move/down: xdotool cannot read the pointer over a Wayland window
+       magick "$f" -crop 96x96+$((X > 32 ? X - 32 : 0))+$((Y > 32 ? Y - 32 : 0)) +repage "$f" ;;
+    cursor:*) printf '%s\t%s\n' "${a#cursor:}" "$("$LIB/cursor.py" 2>&1)" >> "$OUT/$NAME.cursor" ;;
     resize:*) wh=${a#resize:}; W=$(xdotool search --onlyvisible --class vlc | head -1); xdotool windowmove $W 0 0 windowsize $W ${wh%,*} ${wh#*,} ;;
     type:*) xdotool type --delay 20 "${a#type:}" ;;
     key:*) xdotool key ${a#key:} ;;

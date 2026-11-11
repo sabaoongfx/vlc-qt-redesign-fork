@@ -391,6 +391,10 @@ commit each fix on its own, push a code commit before any docs-only one (see the
   track, Advanced Options) were fixed on 2026-11-02 at the user's request (`accentText`, `readableOn`, token `knob`). `redesign/tests/lint.py` (CI step) checks the redesign's added code: no Canvas/Shapes,
   no colour literals in QML (`VLCStyle`; `// lint: allow <rule> (reason)` for deliberate ones), QML files in
   both build files. `qtdlg-*` scenes use `env:` to get Qt's own file dialog (what the packages show on KDE).
+- Cursor checks (2026-11-11): `cursor:<tag>` appends the X cursor (XFixes: size, hot spot, pixel hash; the hand is 32x32 hot
+  16,4, the arrow hot 4,4) to `<scene>.cursor`; `ptr:<tag>` shoots 96x96 around the last pointer position with the pointer
+  drawn (works with `QPA=wayland`, where the player window is not maximised: its bar is at y 547); `down:x,y` / `up` press and
+  release. A hover-enabled MouseArea hides a HoverHandler's cursor on its parent: put the handler inside the MouseArea.
 - Harness extras: `SCEN=<file>` runs another scene list, `SKIP_FIXTURES=1` skips the test fixtures and check.py,
   `KWINRULES=<file>` replaces the KWin rules (an empty rules file leaves VLC's own window size and placement; the
   default rules maximise the main window, so window-size tests need it). `redesign/tests/showcase.sh` makes the website
