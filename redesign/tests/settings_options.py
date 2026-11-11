@@ -157,6 +157,9 @@ def declared_options():
                     continue
                 defines = dict(re.findall(r'#\s*define\s+([A-Z_][A-Z0-9_]*)\s+"([^"]*)"', text))
                 for macro, arg in decl.findall(text):
+                    # add_obsolete_*: the name is kept only to ignore old vlcrc lines, no row can use it
+                    if macro.startswith('obsolete') or macro in ('shortcut', 'submodule', 'category', 'subcategory'):
+                        continue
                     m = re.match(r'(?:([A-Z_][A-Z0-9_]*)\s*)?"([^"]*)"', arg)
                     prefix = defines.get(m.group(1), '') if m.group(1) else ''
                     if m.group(1) and m.group(1) not in defines:

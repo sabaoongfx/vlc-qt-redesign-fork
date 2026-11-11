@@ -117,110 +117,164 @@ elif cmd == 'apps':
     d = Atspi.get_desktop(0)
     for i in range(d.get_child_count()):
         a = d.get_child_at_index(i); print(a.get_name() if a else None)
-elif cmd == 'setrow':
-    # change one Settings row to another value (redesign/tests/settings_scenes.py): the row's control
-    # carries the row label as its accessible name (SettingsRows::addRow). VALUE is used by text fields
-    # (the new text), "dialog" by colour buttons (types a colour into Qt's colour dialog), "child:N" by
-    # rows of plain buttons (presses the Nth, e.g. the accent swatches); check boxes toggle, spin boxes
-    # step once, combo boxes move to the next item (the previous one when on the last).
-    # Prints: setrow<TAB>label<TAB>role<TAB>old<TAB>new (or "no row: label", exit 2)
+elif cmd in ('rows', 'setrow'):
+    # Settings rows (redesign/tests/settings_scenes.py). A row (SettingsRows::addRow) is a widget holding
+    # its label, an optional info icon and the control; a combo box is named after its current item, not
+    # after the label, so rows are found through their label. Only rows on screen count (the classic pages
+    # under Advanced Options reuse labels such as "Font").
+    #   rows             label<TAB>role<TAB>value for every row on screen; value: check box 1/0, spin box
+    #                    the number, combo box the current item, text field the text, a group of buttons
+    #                    the checked ones (name or index)
+    #   setrow LABEL=V   change the row once and print setrow<TAB>label<TAB>role<TAB>old<TAB>new (or
+    #                    "no row: ..." and exit 2): a check box toggles, a spin box steps once (down at its
+    #                    maximum), a combo box takes the next item (the previous one on the last), a text
+    #                    field gets V; V = "click:NAME" or "click:N" clicks a button of a group (Theme, accent
+    #                    swatches: they react to clicked, which an AT-SPI action does not send), V = "colour"
+    #                    sets #123456 through Qt's colour dialog (the row's button opens it modally)
     import subprocess
-    label, _, value = sys.argv[2].partition('=')
-    label = label.replace('_', ' ')
     S = Atspi.StateType
-    def showing(n):
+    def xdo(*a):
+        subprocess.run(['env', '-u', 'WAYLAND_DISPLAY', 'xdotool'] + list(a))
+    def ext(n):
+        return n.get_extents(Atspi.CoordType.SCREEN)
+    def on_screen(n):
         try:
-            return n.get_state_set().contains(S.SHOWING)
+            e = ext(n)
+            return e.width > 0 and e.height > 0 and e.x >= 0 and e.y >= 0 and n.get_state_set().contains(S.SHOWING)
         except Exception:
             return False
-    def key(k):
-        subprocess.run(['env', '-u', 'WAYLAND_DISPLAY', 'xdotool', 'key', k])
+    def click(n):
+        e = ext(n)
+        xdo('mousemove', str(e.x + e.width // 2), str(e.y + e.height // 2), 'click', '1')
+    def kids(n):
+        try:
+            return [n.get_child_at_index(i) for i in range(n.get_child_count())]
+        except Exception:
+            return []
+    def descendants(n, maxd=6):
+        out = []
+        walk(n, 0, out, maxd)
+        return [d for _, d in out[1:]]
     def text_of(n):
         try:
             t = n.get_text_iface()
             return t.get_text(0, t.get_character_count()) if t else ''
         except Exception:
             return ''
-    def descendants(n):
-        out = []
-        walk(n, 0, out)
-        return [d for _, d in out[1:]]
+    TEXT = ('text', 'entry', 'password text')
+    BUTTONS = ('push button', 'button', 'toggle button', 'check box', 'radio button')
     def combo_state(n):
-        # (items, selected index) from the combo's list child; ([], -1) when Qt does not expose it
-        for d in descendants(n):
+        # (items, selected index) from the combo's list child
+        for d in descendants(n, 3):
             if d.get_role_name() in ('list', 'list box', 'menu'):
-                items = [d.get_child_at_index(i) for i in range(d.get_child_count())]
-                sel = [i for i, it in enumerate(items) if it and it.get_state_set().contains(S.SELECTED)]
-                return [(it.get_name() or '') for it in items if it], (sel[0] if sel else -1)
+                items = [it for it in kids(d) if it]
+                sel = [i for i, it in enumerate(items) if it.get_state_set().contains(S.SELECTED)]
+                return [it.get_name() or '' for it in items], (sel[0] if sel else -1)
         return [], -1
-    hits = [n for _, n in nodes() if (n.get_name() or '') == label and n.get_role_name() != 'label']
-    hits = [n for n in hits if showing(n)] + [n for n in hits if not showing(n)]
-    if not hits:
+    def control_of(label_node):
+        # the row's control: a sibling of the label that is not the label or the info icon; a container
+        # (a path field with Browse, a group of buttons) is returned as it is
+        row = label_node.get_parent()
+        for c in kids(row):
+            if c and c.get_role_name() not in ('label', 'image') and on_screen(c):
+                return c
+        return None
+    def value_of(c):
+        role = c.get_role_name()
+        if role == 'check box':
+            return role, int(c.get_state_set().contains(S.CHECKED))
+        if role in ('spin button', 'slider'):
+            v = c.get_value_iface()
+            return role, (v.get_current_value() if v else text_of(c))
+        if role == 'combo box':
+            items, i = combo_state(c)
+            return role, (items[i] if 0 <= i < len(items) else c.get_name() or '')
+        if role in TEXT:
+            return role, text_of(c)
+        inner = [d for d in descendants(c) if d.get_role_name() in TEXT]
+        if inner:
+            return 'field', text_of(inner[0])
+        buttons = [d for d in descendants(c) if d.get_role_name() in BUTTONS]
+        if buttons:
+            return 'buttons', ','.join((b.get_name() or str(i)) for i, b in enumerate(buttons)
+                                        if b.get_state_set().contains(S.CHECKED))
+        return role, ''
+    all_nodes = [n for _, n in nodes()]
+    labels = [n for n in all_nodes if n.get_role_name() == 'label' and on_screen(n)]
+    if cmd == 'rows':
+        for l in labels:
+            c = control_of(l)
+            if c is None:
+                continue
+            try:
+                role, val = value_of(c)
+                print(f"{(l.get_name() or '').strip()}\t{role}\t{val}")
+            except Exception:
+                pass
+        sys.exit(0)
+
+    label, _, value = sys.argv[2].partition('=')
+    label = label.replace('_', ' ')
+    hits = [l for l in labels if (l.get_name() or '').strip() == label]
+    c = control_of(hits[0]) if hits else None
+    if c is None:
         print('no row:', label); sys.exit(2)
-    n = hits[0]
-    role = n.get_role_name()
-    # a row widget holding the real control (a path field with Browse, swatches): use what is inside
-    if role in ('panel', 'filler', 'unknown', 'grouping'):
-        inner = [d for d in descendants(n) if d.get_role_name() in ('text', 'entry', 'password text', 'push button', 'button', 'toggle button')]
-        if value.startswith('child:'):
-            buttons = [d for d in inner if d.get_role_name() in ('push button', 'button', 'toggle button')]
-            k = int(value.split(':', 1)[1])
-            if len(buttons) <= k:
-                print('no row:', label, f'(only {len(buttons)} buttons)'); sys.exit(2)
-            old = ','.join(str(i) for i, b in enumerate(buttons) if b.get_state_set().contains(S.CHECKED))
-            buttons[k].get_action_iface().do_action(0)
-            print(f'setrow\t{label}\t{role}\tchecked {old}\tpressed {k}'); sys.exit(0)
-        fields = [d for d in inner if d.get_role_name() in ('text', 'entry', 'password text')]
-        if fields:
-            n, role = fields[0], fields[0].get_role_name()
-    old = new = ''
-    if role == 'check box':
-        old = n.get_state_set().contains(S.CHECKED)
-        n.get_action_iface().do_action(0)
-        time.sleep(0.3)
-        new = n.get_state_set().contains(S.CHECKED)
-    elif role in ('spin button', 'slider'):
-        v = n.get_value_iface()
-        old = v.get_current_value()
-        step = v.get_minimum_increment() or 1
-        target = old + step if old + step <= v.get_maximum_value() else old - step
-        v.set_current_value(target)
-        time.sleep(0.3)
-        new = v.get_current_value()
-    elif role == 'combo box':
-        items, idx = combo_state(n)
-        old = items[idx] if 0 <= idx < len(items) else text_of(n)
-        n.get_component_iface().grab_focus()
-        time.sleep(0.3)
-        key('Up' if items and idx == len(items) - 1 else 'Down')
-        time.sleep(0.4)
-        items, idx = combo_state(n)
-        new = items[idx] if 0 <= idx < len(items) else text_of(n)
-    elif role in ('text', 'entry', 'password text'):
-        old = text_of(n)
-        n.get_editable_text_iface().set_text_contents(value)
-        time.sleep(0.3)
-        new = text_of(n)
-    elif role in ('push button', 'button') and value == 'dialog':
-        # a colour row: its button opens Qt's colour dialog; type the colour, then OK
-        n.get_action_iface().do_action(0)
+    role = c.get_role_name()
+    try:
+        _, old = value_of(c)
+    except Exception:
+        old = ''
+    if value.startswith('click:'):
+        want = value.split(':', 1)[1]
+        buttons = [d for d in descendants(c) if d.get_role_name() in BUTTONS]
+        target = [b for b in buttons if (b.get_name() or '') == want] or \
+                 ([buttons[int(want)]] if want.isdigit() and int(want) < len(buttons) else [])
+        if not target:
+            print('no row:', label, f'(no button {want} among {len(buttons)})'); sys.exit(2)
+        click(target[0]); role = 'buttons'
+    elif value == 'colour':
+        click(c)  # the dialog is modal: an AT-SPI action would not return until it closes
         time.sleep(1.5)
-        all_nodes = [x for _, x in nodes()]
-        html = [x for x in all_nodes if (x.get_name() or '').replace('&', '').rstrip(':') == 'HTML'
-                and x.get_role_name() in ('text', 'entry')]
+        dlg = [n for _, n in nodes()]
+        html = [n for n in dlg if (n.get_name() or '').replace('&', '').strip() == 'HTML:' and n.get_role_name() in TEXT]
+        okb = [n for n in dlg if (n.get_name() or '').replace('&', '') == 'OK' and n.get_role_name() in BUTTONS and on_screen(n)]
         if not html:
-            print('no row:', label, '(no HTML field in the colour dialog)'); key('Escape'); sys.exit(2)
+            xdo('key', 'Escape'); print('no row:', label, '(no HTML: field in the colour dialog)'); sys.exit(2)
         old = text_of(html[0])
         html[0].get_editable_text_iface().set_text_contents('#123456')
         time.sleep(0.3)
-        ok_btn = [x for x in all_nodes if (x.get_name() or '').replace('&', '') == 'OK' and x.get_role_name() in ('push button', 'button')]
-        if ok_btn:
-            ok_btn[0].get_action_iface().do_action(0)
+        if okb:
+            click(okb[0])
         else:
-            key('Return')
-        new = '#123456'
+            xdo('key', 'Return')
+        time.sleep(0.8)
+        print(f'setrow\t{label}\tcolour\t{old}\t#123456'); sys.exit(0)
+    elif role == 'check box':
+        c.get_action_iface().do_action(0)
+    elif role in ('spin button', 'slider'):
+        v = c.get_value_iface()
+        cur, step = v.get_current_value(), (v.get_minimum_increment() or 1)
+        v.set_current_value(cur + step if cur + step <= v.get_maximum_value() else cur - step)
+    elif role == 'combo box':
+        items, i = combo_state(c)
+        c.get_component_iface().grab_focus()
+        time.sleep(0.3)
+        xdo('key', 'Up' if items and i == len(items) - 1 else 'Down')
     else:
-        print('no row:', label, f'(role {role} not handled)'); sys.exit(2)
+        fields = [c] if role in TEXT else [d for d in descendants(c) if d.get_role_name() in TEXT]
+        if not fields:
+            print('no row:', label, f'(role {role} not handled)'); sys.exit(2)
+        fields[0].get_editable_text_iface().set_text_contents(value)
+        role = fields[0].get_role_name()
+    time.sleep(0.5)
+    # a combo box is renamed after its new item: read the row again
+    labels = [n for _, n in nodes() if n.get_role_name() == 'label' and on_screen(n)]
+    hits = [l for l in labels if (l.get_name() or '').strip() == label]
+    c2 = control_of(hits[0]) if hits else None
+    try:
+        _, new = value_of(c2) if c2 else ('', '')
+    except Exception:
+        new = ''
     print(f'setrow\t{label}\t{role}\t{old}\t{new}')
 
 elif cmd == 'press':

@@ -97,17 +97,25 @@ size (player frames are 1920x1080).
 - `redesign/tests/settings_options.py --write` reads every Settings row (`SettingsRows` in `simple_preferences.cpp`) into
   `redesign/tests/settings-options.tsv` (121 rows, 113 options: page, section, label, option(s), kind option/widget/action,
   under Advanced Options, #if guard). Without `--write` it runs static tests: the list matches the code, every option is
-  declared in `src/`/`modules/`, `SETTINGS-MAP.md` lists the same rows, no classic-only option, unique labels per page.
-- `settings_scenes.py` writes `settings.txt`: `set-baseline` (open Settings, Save) plus one scene per row (117; the Windows-only
-  volume keys row has none) on an empty kept profile (run.sh kind `prefs`): Ctrl+P, the page, Advanced Options if needed,
-  `setrow:Label=value` (new at.py command: toggles a check box, steps a spin box, moves a combo with focus + Down/Up, sets a text
-  field, types #123456 into the colour dialog, presses the Nth swatch), Save, quit.
-- `check_settings.py <out>`: per scene the row changed, Save wrote its option with a new value, and no other option changed
-  (vs the baseline vlcrc); Theme checks `color-scheme-index`. Report `<out>/settings-report.txt`.
-- Run: `SKIP_FIXTURES=1 SCEN=redesign/tests/settings.txt OUT=<dir> redesign/tests/run.sh 'set-'` (~118 scenes, ~25 s each)
-  then `python3 redesign/tests/check_settings.py <dir>`. Unproven guesses to fix on the first run: the AT-SPI role names Qt
-  gives line edits ("text" or "entry") and row containers, the combo's list child and SELECTED state, the colour dialog's
-  "HTML:" field name, the value interface on spin boxes, and whether focus + Down reaches a combo in the nested KWin.
+  declared in `src/`/`modules/` (obsolete declarations do not count), `SETTINGS-MAP.md` lists the same rows, no classic-only
+  option, unique labels per page.
+- `settings_scenes.py` writes `settings.txt` (233 scenes): `set-baseline` opens every page (+ Advanced Options where rows
+  are), lists the rows (`rows:<page>`) and saves unchanged; per row (the Windows-only volume keys row has none) a change scene
+  on an empty kept profile (run.sh kind `prefs`: Ctrl+P, page, `setrow:Label=value`, Save) and a `-reload` scene (kind `same`:
+  restart on that profile, list the rows of every page showing the option; none for `qt-start-minimized`).
+- at.py `rows` / `setrow` find a control through its row LABEL (label's parent = the row widget, the control is the sibling
+  that is not the label or the info icon): a combo box is named after its current item, not the label (seen in an AT-SPI
+  dump 2026-11-11). Facts from that dump: line edits are role "text"; spin boxes have the Value interface; combo boxes have a
+  list child whose current item is SELECTED; Theme's segments and the Advanced Options bar are "check box"es; Theme and the
+  swatches react to `clicked`, so setrow clicks them with xdotool; the colour button's dialog is modal (an AT-SPI action on it
+  never returns), so setrow clicks it, sets "HTML:" to #123456 and clicks OK.
+- `check_settings.py <out>`: load (baseline rows show the vlcrc values: check, spin, text), change (old != new), type (control
+  matches the add_<type> declaration), save (only that option changed in vlcrc, to the value shown; colour 1193046, accent
+  #8D721C, Theme = color-scheme-index), reload (every row with that option shows the new value after a restart). Report
+  `<out>/settings-report.txt`.
+- Run: `SKIP_FIXTURES=1 SCEN=redesign/tests/settings.txt OUT=<dir> redesign/tests/run.sh 'set-'` (~1 h) then
+  `python3 redesign/tests/check_settings.py <dir>`. Still unproven: focus + Down reaching a combo box in the nested KWin, rows
+  scrolled below the window, values of spin boxes with a special text (-1 = Automatic).
 
 ## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
 
