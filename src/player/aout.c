@@ -87,11 +87,16 @@ vlc_player_AoutCallback(vlc_object_t *this, const char *var,
 
     if (strcmp(var, "volume") == 0)
     {
-        if (oldval.f_float >= 0.f && oldval.f_float != newval.f_float)
+        /* redesign: report the first known volume too (old value -1 = the
+         * output had none yet), or the interfaces show an empty volume bar
+         * until the user changes it; only the OSD waits for a known value
+         * (upstream 6958b29519 gated both) */
+        if (newval.f_float >= 0.f && oldval.f_float != newval.f_float)
         {
             vlc_player_aout_SendEvent(player, on_volume_changed,
                                       (audio_output_t *)this, newval.f_float);
-            vlc_player_osd_Volume(player, false);
+            if (oldval.f_float >= 0.f)
+                vlc_player_osd_Volume(player, false);
         }
     }
     else if (strcmp(var, "mute") == 0)
