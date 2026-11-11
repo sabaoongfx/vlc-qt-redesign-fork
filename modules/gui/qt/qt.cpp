@@ -198,8 +198,7 @@ static void ShowDialog   ( intf_thread_t *, int, int, intf_dialog_args_t * );
 
 #define UPDATER_TEXT N_( "Activate the updates availability notification" )
 #define UPDATER_LONGTEXT N_( "Activate the automatic notification of new " \
-                            "versions of the software. It runs once every " \
-                            "two weeks." )
+                            "versions of the software. It runs once a week." )
 
 #define QT_QML_DEBUG_TEXT N_( "set the options for qml debugger" )
 #define QT_QML_DEBUG_LONGTEXT N_( "set the options for qml debugger (see http://doc.qt.io/qt-5/qtquick-debugging.html#starting-applications)" )
@@ -411,9 +410,11 @@ vlc_module_begin ()
     add_obsolete_string( "qt-recentplay-filter" )
     add_obsolete_integer( "qt-continue" )
 
-#ifdef UPDATE_CHECK
+    // redesign: declared in every build; without UPDATE_CHECK (VideoLAN's signed updates) it turns
+    // the weekly release check of this fork on or off (ReleaseCheck)
     add_bool( "qt-updates-notif", true, UPDATER_TEXT,
               UPDATER_LONGTEXT )
+#ifdef UPDATE_CHECK
     add_integer_with_range( "qt-updates-days", 3, 0, 180,
               UPDATER_DAYS_TEXT, nullptr )
 #endif

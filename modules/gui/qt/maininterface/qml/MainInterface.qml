@@ -335,6 +335,19 @@ Item {
             }
         }
 
+        // redesign: "a new version is available", bottom left over every page; in the player it
+        // sits above the seek bar and the control bar
+        ReleaseToast {
+            z: 98
+
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: VLCStyle.margin_normal
+            anchors.bottomMargin: (MainCtx.effectiveMainInterfaceMode === MainCtx.MAININTERFACE_MODE_MAINDISPLAY)
+                                  ? VLCStyle.margin_normal
+                                  : VLCStyle.dp(112, VLCStyle.scale)
+        }
+
         Loader {
             asynchronous: true
             source: "qrc:///qt/qml/VLC/Menus/GlobalShortcuts.qml"

@@ -1,0 +1,2 @@
+extern const char release_check_changeset[];
+const char release_check_changeset[] = "@VCS_TAG@";

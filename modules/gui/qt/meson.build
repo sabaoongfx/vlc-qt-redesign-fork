@@ -81,6 +81,7 @@ moc_headers = files(
     'maininterface/mainctx_submodels.hpp',
     'maininterface/mainui.hpp',
     'maininterface/navigationmodel.hpp',
+    'maininterface/release_check.hpp',
     'maininterface/videosurface.hpp',
     'maininterface/video_window_handler.hpp',
     'medialibrary/medialib.hpp',
@@ -310,6 +311,8 @@ qt_plugin_sources = files(
     'maininterface/mainui.hpp',
     'maininterface/navigationmodel.cpp',
     'maininterface/navigationmodel.hpp',
+    'maininterface/release_check.cpp',
+    'maininterface/release_check.hpp',
     'maininterface/videosurface.cpp',
     'maininterface/videosurface.hpp',
     'maininterface/video_window_handler.cpp',
@@ -650,6 +653,7 @@ qml_modules += {
         'maininterface/qml/MainInterface.qml',
         'maininterface/qml/MainViewLoader.qml',
         'maininterface/qml/MainDisplay.qml',
+        'maininterface/qml/ReleaseToast.qml',
         'maininterface/qml/MiniPlayerQueue.qml',
         'maininterface/qml/NoMedialibHome.qml',
         'maininterface/qml/FloatingMiniPlayer.qml',
@@ -1297,9 +1301,15 @@ if qt6_dep.found()
 
     # TODO support qmlcachegen
 
+    # redesign: the commit this build comes from, for the release check (ReleaseCheck)
+    release_revision = vcs_tag(command: ['git', '--git-dir', vlc_src_root / '.git',
+        'describe', '--tags', '--long', '--match', '?.*.*', '--always'],
+        input: 'maininterface/release_revision.cpp.in',
+        output: 'release_revision.cpp')
+
     vlc_modules += {
         'name' : 'qt',
-        'sources' : [qt6pre_files, qt6pre_qrc, shader_targets, shaders_processed, qt_sources, qt_plugin_sources],
+        'sources' : [qt6pre_files, qt6pre_qrc, shader_targets, shaders_processed, qt_sources, qt_plugin_sources, release_revision],
         'extra_files' : [shader_files],
         'dependencies' : [qt_extra_deps, qt6_dep, corefoundation_dep],
         'include_directories' : qt_include_dir,

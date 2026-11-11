@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "maininterface/navigationmodel.hpp"
+#include "maininterface/release_check.hpp"
 
 #include "medialibrary/medialib.hpp"
 #include "medialibrary/mlqmltypes.hpp"
@@ -248,6 +249,8 @@ void MainUI::registerQMLTypes()
         qmlRegisterTypesAndRevisions<CSDMenu>( uri, versionMajor);
         qmlRegisterUncreatableType<NavigationAttached>( uri, versionMajor, versionMinor, "Navigation", "Navigation is only available via attached properties");
         qmlRegisterTypesAndRevisions<AboutModel>( uri, versionMajor );
+        // redesign: "a new version is available" toast (ReleaseToast.qml)
+        qmlRegisterSingletonInstance<ReleaseCheck>( uri, versionMajor, versionMinor, "ReleaseCheck", new ReleaseCheck( m_intf, this ) );
 #ifdef UPDATE_CHECK
         qmlRegisterSingletonInstance<UpdateModel>( uri, versionMajor, versionMinor, "UpdateModel", m_mainCtx->getUpdateModel() );
 #endif

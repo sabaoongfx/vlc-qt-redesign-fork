@@ -184,6 +184,7 @@ libqt_plugin_la_SOURCES = \
 	maininterface/mainui.cpp \
 	maininterface/mainui.hpp \
 	maininterface/navigationmodel.cpp maininterface/navigationmodel.hpp \
+	maininterface/release_check.cpp maininterface/release_check.hpp \
 	maininterface/videosurface.cpp \
 	maininterface/videosurface.hpp \
 	maininterface/video_window_handler.cpp \
@@ -402,6 +403,14 @@ moc_verbose__0 = $(moc_verbose_0)
 .cpp.moc:
 	$(moc_verbose)$(MOC) $(MOC_CPPFLAGS) -o $@ $<
 
+# redesign: the commit this build comes from, for the release check (ReleaseCheck), taken from the
+# revision that src/ stamps with git describe (src is built before the modules)
+maininterface/release_revision.cpp: $(top_srcdir)/src/revision.txt
+	$(AM_V_at)$(MKDIR_P) maininterface
+	$(AM_V_GEN)echo "extern const char release_check_changeset[]; const char release_check_changeset[] = \"$$(cat $(top_srcdir)/src/revision.txt 2>/dev/null)\";" > $@
+$(top_srcdir)/src/revision.txt:
+CLEANFILES += maininterface/release_revision.cpp
+
 # These MOC files depend on the configure settings:
 dialogs/dialogs_provider.moc.cpp dialogs/vlm/vlm.moc.cpp: $(top_builddir)/config.h
 
@@ -457,6 +466,8 @@ nodist_libqt_plugin_la_SOURCES = \
 	maininterface/mainctx_submodels.moc.cpp \
 	maininterface/mainui.moc.cpp \
 	maininterface/navigationmodel.moc.cpp \
+	maininterface/release_check.moc.cpp \
+	maininterface/release_revision.cpp \
 	maininterface/videosurface.moc.cpp \
 	maininterface/video_window_handler.moc.cpp \
 	medialibrary/medialib.moc.cpp \
@@ -1194,6 +1205,7 @@ libqml_module_maininterface_a_QML = \
 	maininterface/qml/MainInterface.qml \
 	maininterface/qml/MainViewLoader.qml \
 	maininterface/qml/MainDisplay.qml \
+	maininterface/qml/ReleaseToast.qml \
 	maininterface/qml/MiniPlayerQueue.qml \
 	maininterface/qml/SideNavigationPane.qml \
 	maininterface/qml/SideNavigationDelegate.qml \
