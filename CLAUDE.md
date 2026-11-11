@@ -58,6 +58,9 @@ The Figma "07 Menus" frames are all built now:
 
 ## After v0.1.11 (2026-11-11) — CONTINUE FROM HERE
 
+RELEASED 2026-11-11: **v0.1.12** on `f22d56e327` (Latest, 8 assets, release run 43078984261; changelog `477abebd3a`;
+blog `whats-new-in-0-1-12` in `../vlc-web` `5f7d56b`). It ships everything listed in this section below.
+
 v0.1.11 is released (Latest, on `7979c8a2fd`, 8 assets; changelog in `redesign/docs/10-changelog.md`; blog
 `whats-new-in-0-1-11` live in `../vlc-web`). Everything below is pushed; `origin/redesign` = local head `3f6fd959cd`.
 Not released yet (next "what's new" material):
