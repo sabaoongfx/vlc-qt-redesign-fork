@@ -45,6 +45,9 @@ jobs:
           # the diff base (upstream commit the redesign started from); the checkout is shallow
           git fetch -q --depth=1 origin dd056f2640fc8505993260441a6d185dcd616155
           python3 redesign/tests/lint.py
+          # the Settings rows: the option list is current, every option exists, SETTINGS-MAP.md matches
+          # (redesign/tests/settings_options.py; the runtime settings scenes need the local harness)
+          python3 redesign/tests/settings_options.py
 
       - name: Restore medialibrary contrib cache
         uses: actions/cache@v4

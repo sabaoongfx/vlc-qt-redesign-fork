@@ -143,7 +143,9 @@ def read_tsv(path=TSV):
 def declared_options():
     """option name -> declaration macro (add_bool, add_integer...), from every C/C++ source"""
     found = {}
-    decl = re.compile(r'\badd_(\w+)\s*\(\s*((?:[A-Z_][A-Z0-9_]*\s*)?"[^"]*")')
+    # the name may start with a #define'd prefix (SOUT_CFG_PREFIX "audio") or with a macro parameter
+    # (renderer_common.hpp: add_integer(prefix "conversion-quality", ...)), kept as "*conversion-quality"
+    decl = re.compile(r'\badd_(\w+)\s*\(\s*((?:[A-Za-z_][A-Za-z0-9_]*\s*)?"[^"]*")')
     for top in ('src', 'modules', 'lib'):
         for dirpath, _, files in os.walk(os.path.join(ROOT, top)):
             for fn in files:
@@ -160,12 +162,23 @@ def declared_options():
                     # add_obsolete_*: the name is kept only to ignore old vlcrc lines, no row can use it
                     if macro.startswith('obsolete') or macro in ('shortcut', 'submodule', 'category', 'subcategory'):
                         continue
-                    m = re.match(r'(?:([A-Z_][A-Z0-9_]*)\s*)?"([^"]*)"', arg)
-                    prefix = defines.get(m.group(1), '') if m.group(1) else ''
+                    m = re.match(r'(?:([A-Za-z_][A-Za-z0-9_]*)\s*)?"([^"]*)"', arg)
                     if m.group(1) and m.group(1) not in defines:
+                        found.setdefault('*' + m.group(2), macro)
                         continue
+                    prefix = defines.get(m.group(1), '') if m.group(1) else ''
                     found.setdefault(prefix + m.group(2), macro)
     return found
+
+
+def declared_kind(declared, opt):
+    """the add_<type> of an option, also through a prefix macro parameter (None: not declared)"""
+    if opt in declared:
+        return declared[opt]
+    for k, v in declared.items():
+        if k.startswith('*') and opt.endswith('-' + k[1:]):
+            return v
+    return None
 
 
 def map_rows():
@@ -214,7 +227,7 @@ def main():
         for opt in r['options'].split():
             if opt.startswith('qt:'):
                 continue
-            check(opt in declared, f'{r["page"]} / {r["label"]}: option "{opt}" is not declared anywhere (row dropped at runtime)')
+            check(declared_kind(declared, opt) is not None, f'{r["page"]} / {r["label"]}: option "{opt}" is not declared anywhere (row dropped at runtime)')
 
     # 3. SETTINGS-MAP.md matches
     mapped = map_rows()

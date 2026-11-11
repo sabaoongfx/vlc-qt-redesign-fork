@@ -22,7 +22,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from settings_options import read_tsv  # noqa: E402
-from settings_options import declared_options  # noqa: E402
+from settings_options import declared_kind, declared_options  # noqa: E402
 from settings_scenes import NO_RELOAD, SPECIAL, on_linux, scene_for, slug  # noqa: E402
 
 # the controls SettingsRows::option may build for each declaration (add_<type>), as at.py names them
@@ -155,7 +155,7 @@ def main():
             res('FAIL', 'change', name, f'the {role} did not change (stayed "{old}")'); continue
         res('PASS', 'change', name, f'{role}: {old} -> {new}')
         if r['kind'] == 'option':
-            kind = declared.get(opts[0])
+            kind = declared_kind(declared, opts[0])
             if kind in ROLES:
                 res('PASS' if role in ROLES[kind] else 'FAIL', 'type', name,
                     f'add_{kind} option shown as a {role} (expected {"/".join(sorted(ROLES[kind]))})')
