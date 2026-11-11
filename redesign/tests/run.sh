@@ -35,6 +35,12 @@ grep -v '^\s*#' "$SCEN" | grep -v '^\s*$' | while IFS='|' read -r name theme kin
         sed -i '/^\[ControlbarProfileModel\]/,/^\[/{/^\[ControlbarProfileModel\]/d;/^\[/!d}' "$P/config/vlc/vlc-qt-interface.conf" 2>/dev/null
         export PROFILE=$P
     fi
+    # "prefs": an empty profile of its own, kept after the scene (settings_scenes.py: the saved vlcrc is
+    # compared with the baseline scene's; a copy of the library profile per option would be ~16 GB)
+    if [ "$kind" = prefs ]; then
+        mkdir -p "$OUT/profiles"; P=$(mktemp -d -p "$OUT/profiles" "$name.XXXX"); mkdir -p "$P/home" "$P/config"
+        export PROFILE=$P
+    fi
     # ~/ = the library home (indexed media)
     [ -n "$PROFILE" ] && media=$(echo $media | sed "s|~/|$FIX/profile/home/|g")
     echo "scene $name"

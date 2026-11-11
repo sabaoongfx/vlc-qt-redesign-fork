@@ -92,6 +92,23 @@ behaviour may predate v0.1.10.
 Measuring a Figma menu: the exports carry a 15px shadow margin (card at 15,7 in a 295-wide PNG); compare at native
 size (player frames are 1920x1080).
 
+## Settings tests (2026-11-11, written, NOT run yet: the user asked for them unrun)
+
+- `redesign/tests/settings_options.py --write` reads every Settings row (`SettingsRows` in `simple_preferences.cpp`) into
+  `redesign/tests/settings-options.tsv` (121 rows, 113 options: page, section, label, option(s), kind option/widget/action,
+  under Advanced Options, #if guard). Without `--write` it runs static tests: the list matches the code, every option is
+  declared in `src/`/`modules/`, `SETTINGS-MAP.md` lists the same rows, no classic-only option, unique labels per page.
+- `settings_scenes.py` writes `settings.txt`: `set-baseline` (open Settings, Save) plus one scene per row (117; the Windows-only
+  volume keys row has none) on an empty kept profile (run.sh kind `prefs`): Ctrl+P, the page, Advanced Options if needed,
+  `setrow:Label=value` (new at.py command: toggles a check box, steps a spin box, moves a combo with focus + Down/Up, sets a text
+  field, types #123456 into the colour dialog, presses the Nth swatch), Save, quit.
+- `check_settings.py <out>`: per scene the row changed, Save wrote its option with a new value, and no other option changed
+  (vs the baseline vlcrc); Theme checks `color-scheme-index`. Report `<out>/settings-report.txt`.
+- Run: `SKIP_FIXTURES=1 SCEN=redesign/tests/settings.txt OUT=<dir> redesign/tests/run.sh 'set-'` (~118 scenes, ~25 s each)
+  then `python3 redesign/tests/check_settings.py <dir>`. Unproven guesses to fix on the first run: the AT-SPI role names Qt
+  gives line edits ("text" or "entry") and row containers, the combo's list child and SELECTED state, the colour dialog's
+  "HTML:" field name, the value interface on spin boxes, and whether focus + Down reaches a combo in the nested KWin.
+
 ## Done 2026-10-29 evening (after the backlog; Windows, CI-checked only where said)
 
 - Sort: the Videos and Music folder trees list their media by title A to Z when no sort is chosen
