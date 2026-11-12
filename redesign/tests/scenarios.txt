@@ -96,3 +96,5 @@ queue-around     | 2 | ml   |                       | sleep:2 click:80,125 sleep
 bars-idle        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:1 shot:t0 sleep:12 shot:idle move:900,520 sleep:1 shot:moved sleep:12 shot:hidden
 # play queue: one click plays a row (short.mp4 plays)
 queue-click      | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1750,213 sleep:2 move:1500,700 sleep:0.5 shot:a
+# the left menu (rail) and the library card open over the video: the picture starts at the same x with the rail shown (with) and hidden (without)
+rail-move        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 shot:with key:u sleep:1.5 move:900,500 sleep:0.5 shot:without key:u sleep:1.5 click:25,248 sleep:2 move:900,500 sleep:0.5 shot:card

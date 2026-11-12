@@ -4,6 +4,11 @@ on:
   push:
     branches: [redesign]
   workflow_dispatch:
+    inputs:
+      scenes:
+        description: "Harness scenes to run (regex on the scene names; empty = all)"
+        required: false
+        default: ""
 
 # one build at a time per branch: a newer push waits for the running one and replaces an older waiting one
 concurrency:
@@ -416,6 +421,76 @@ jobs:
           name: screenshots
           path: shots/
           if-no-files-found: ignore
+
+  # The test harness (redesign/tests: ~80 scenes in a headless nested KWin, then check.py: QML warnings,
+  # Figma geometry, behaviour checks, accessibility, contrast). It ran only on the developer's machine
+  # until 2026-11-13. Uses the install tree of the build job, in the same image and at the same path
+  # (the prefix is absolute). Not needed for a release.
+  harness:
+    needs: linux-qt
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container:
+      image: registry.videolan.org/vlc-debian-unstable:20260611225331
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download the build
+        uses: actions/download-artifact@v4
+        with:
+          name: vlc-linux-install
+          path: install
+
+      - name: Install the harness tools
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          for try in 1 2 3; do
+            timeout 900 apt-get install -y -qq --no-install-recommends \
+              kwin-wayland xwayland kde-spectacle xdotool imagemagick ffmpeg dbus-daemon dbus-user-session systemd \
+              at-spi2-core python3 python3-gi gir1.2-atspi-2.0 python3-pil python3-numpy \
+              libgl1-mesa-dri libegl1 qt6-wayland fonts-dejavu-core && break
+            sleep 20
+          done
+          command -v kwin_wayland spectacle xdotool magick ffmpeg busctl dbus-run-session
+          ls /usr/libexec/at-spi-bus-launcher /usr/libexec/at-spi2-registryd
+
+      - name: Run the scenes
+        run: |
+          # artifacts lose their permission bits
+          chmod -R a+rX install
+          chmod +x install/bin/* install/libexec/vlc/* 2>/dev/null || true
+          find install -name 'vlc-qt-check' -o -name 'vlc-cache-gen' | xargs -r chmod +x
+          # VLC refuses to run as root
+          id shotuser >/dev/null 2>&1 || useradd -m shotuser
+          mkdir -p harness-out harness-fix
+          chown -R shotuser harness-out harness-fix
+          runuser -u shotuser -- env VLC="$PWD/install/bin/vlc" VLC_PLUGIN_PATH="$PWD/install/lib/vlc/plugins" \
+            OUT="$PWD/harness-out" FIX="$PWD/harness-fix" HOME=/home/shotuser \
+            redesign/tests/run.sh "${{ github.event.inputs.scenes || '.' }}" 2>&1 | tee harness-out/run.txt
+          rm -rf harness-out/profiles harness-out/profile
+
+      - name: Result
+        run: |
+          # check.py prints its totals and writes report.html; a failed check fails the job
+          sed -n '/^scene /!p' harness-out/run.txt | tail -150
+          n=$(ls harness-out/*.png 2>/dev/null | wc -l)
+          echo "screenshots: $n"
+          [ "$n" -gt 0 ] || { echo "::error title=Harness::no scene produced a screenshot"; exit 1; }
+          python3 redesign/tests/check.py harness-out > harness-out/check.txt 2>&1; rc=$?
+          tail -60 harness-out/check.txt
+          grep -iE '^(FAIL|fail)' harness-out/check.txt | head -40 | while read -r line; do echo "::error title=Harness check::$line"; done
+          exit $rc
+
+      - name: Upload the harness output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness
+          path: harness-out/
+          if-no-files-found: ignore
+          retention-days: 7
 
   # GitHub keeps 10 GB of caches per repository and evicts the least recently used: one ccache per
   # commit per workflow (300-900 MB each) pushed out the Windows contrib cache (a 2-hour rebuild,

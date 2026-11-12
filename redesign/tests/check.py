@@ -371,6 +371,46 @@ if im:
     ink = ink_x(im, (215, 60, 400, 105), im.getpixel((600, 70)))
     (ok if ink and abs(ink[0] - 240) <= 1 else fail)('prefs-cats', f'Output section x {ink and ink[0]} (want 240)')
 
+# 13d. player behaviour (2026-11-13): checks that the action had its effect
+BAR = (0x1B, 0x1B, 0x1B)
+
+# bars-idle: in a normal window, 10 s without a pointer move hides both bars and the video fills the
+# window; a move shows the bars over it; 10 s later they are hidden again
+for tag, bars in (('t0', True), ('idle', False), ('moved', True), ('hidden', False)):
+    t = img('bars-idle', tag)
+    if t:
+        top = dominant(t, (300, 4, 1700, 36))
+        (ok if near(top, BAR, 4) == bars else fail)('bars-idle', f'{tag}: top strip {hexc(top)} (want {"the bar" if bars else "the video"})')
+        bottom = dominant(t, (300, 1030, 1700, 1076))
+        dark = max(bottom) < 0x30
+        (ok if dark == bars else fail)('bars-idle', f'{tag}: bottom strip {hexc(bottom)} (want {"the bar" if bars else "the video"})')
+
+# rail-move: the picture does not move when the left menu is shown or hidden
+def picture_x(im, y=500):
+    # first x of the test picture's red column (the letterbox and the rail are dark)
+    return next((x for x in range(im.size[0]) if im.getpixel((x, y))[0] > 200 and im.getpixel((x, y))[1] < 60), None)
+
+a, b = img('rail-move', 'with'), img('rail-move', 'without')
+if a and b:
+    xa, xb = picture_x(a), picture_x(b)
+    (ok if xa is not None and xa == xb else fail)('rail-move', f'picture starts at x {xa} with the left menu, {xb} without (want the same)')
+    c = dominant(a, (4, 300, 40, 700))
+    (ok if max(c) < 0x30 else fail)('rail-move', f'rail strip {hexc(c)} (want the dark rail over the video)')
+
+# queue-click: one click on the second queue row plays it (the accent marker moves to that row)
+t = img('queue-click', 'a')
+if t:
+    row1 = count_color(t, (1612, 160, 1622, 186), ACCENT, 40)
+    row2 = count_color(t, (1612, 196, 1622, 222), ACCENT, 40)
+    (ok if row2 > 0 and row1 == 0 else fail)('queue-click', f'playing marker: {row1}px on row 1, {row2}px on row 2 (want only row 2)')
+
+# queue-around: E06 plays, the folder E01-E12 is queued: E06 is the sixth row of the queue card
+# (accent title), not the first
+t = img('queue-around', 'after')
+if t:
+    rows = [count_color(t, (1556, 462 + 40 * i, 1700, 484 + 40 * i), ACCENT, 60) for i in range(6)]
+    (ok if rows[5] > 0 and not any(rows[:5]) else fail)('queue-around', f'accent title pixels per queue row {rows} (want only the sixth)')
+
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):
     scene = os.path.basename(at)[:-3]

@@ -7,10 +7,12 @@ export XDG_CURRENT_DESKTOP=KDE KDE_FULL_SESSION=true KDE_SESSION_VERSION=6 DESKT
 xdotool() { env -u WAYLAND_DISPLAY /usr/bin/xdotool "$@"; }
 # spectacle as an X11 client hangs when there is no logind session: keep it on Wayland
 spectacle() { QT_QPA_PLATFORM=wayland timeout 20 /usr/bin/spectacle "$@"; }
-/usr/lib/at-spi-bus-launcher --launch-immediately &
+# Arch has the AT-SPI helpers in /usr/lib, Debian (CI) in /usr/libexec
+ATLIB=/usr/lib; [ -x $ATLIB/at-spi-bus-launcher ] || ATLIB=/usr/libexec
+$ATLIB/at-spi-bus-launcher --launch-immediately &
 sleep 1
 export AT_SPI_BUS_ADDRESS=$(busctl --user call org.a11y.Bus /org/a11y/bus org.a11y.Bus GetAddress | sed 's/^s "//;s/"$//')
-/usr/lib/at-spi2-registryd --use-gnome-session=false >/dev/null 2>&1 &
+$ATLIB/at-spi2-registryd --use-gnome-session=false >/dev/null 2>&1 &
 sleep 0.5
 mkdir -p "$CFG/vlc"
 if [ -n "$PROFILE" ]; then export HOME=$PROFILE/home; ML=""; else ML=--no-media-library
