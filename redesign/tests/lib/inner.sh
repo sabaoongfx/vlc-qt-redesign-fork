@@ -65,6 +65,7 @@ for a in $ACTIONS; do
     rows:*) "$LIB/at.py" rows > "$OUT/$NAME-${a#rows:}.rows" 2>/dev/null ;;
     tree) "$LIB/at.py" tree > "$OUT/$NAME.tree" 2>&1 ;;
     geom:*) "$LIB/at.py" geom > "$OUT/$NAME-${a#geom:}.geom" 2>/dev/null ;;
+    values:*) "$LIB/at.py" values > "$OUT/$NAME-${a#values:}.values" 2>/dev/null ;;
     audit:*) "$LIB/at.py" audit > "$OUT/$NAME-${a#audit:}.a11y" 2>/dev/null ;;
   esac
 done

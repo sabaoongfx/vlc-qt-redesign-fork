@@ -114,6 +114,23 @@ elif cmd == 'controls':
             print(f"{role}\t{nm}\t{flags}\t{e.x}\t{e.y}\t{e.width}\t{e.height}")
         except Exception:
             pass
+elif cmd == 'values':
+    # name<TAB>role<TAB>current<TAB>min<TAB>max for every on-screen node with a Value interface (sliders:
+    # Progress, Volume; spin boxes), then name<TAB>label for every on-screen label (times, counts, titles)
+    for d, n in nodes():
+        try:
+            e = n.get_extents(Atspi.CoordType.SCREEN)
+            if e.width <= 0 or e.height <= 0:
+                continue
+            nm = (n.get_name() or '').replace('\t', ' ').replace('\n', ' ')
+            v = n.get_value_iface()
+            if v:
+                print(f"{nm}\t{n.get_role_name()}\t{Atspi.Value.get_current_value(v):g}\t"
+                      f"{Atspi.Value.get_minimum_value(v):g}\t{Atspi.Value.get_maximum_value(v):g}")
+            elif n.get_role_name() == 'label' and nm:
+                print(f"{nm}\tlabel\t{e.x}\t{e.y}")
+        except Exception:
+            pass
 elif cmd == 'apps':
     d = Atspi.get_desktop(0)
     for i in range(d.get_child_count()):

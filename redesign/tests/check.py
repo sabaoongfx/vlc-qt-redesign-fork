@@ -408,8 +408,180 @@ if t:
 # (accent title), not the first
 t = img('queue-around', 'after')
 if t:
-    rows = [count_color(t, (1556, 462 + 40 * i, 1700, 484 + 40 * i), ACCENT, 60) for i in range(6)]
-    (ok if rows[5] > 0 and not any(rows[:5]) else fail)('queue-around', f'accent title pixels per queue row {rows} (want only the sixth)')
+    # tight tolerance: the white titles' anti-aliased edges come within 60 of the accent
+    rows = [count_color(t, (1556, 462 + 40 * i, 1700, 484 + 40 * i), ACCENT, 25) for i in range(6)]
+    (ok if rows[5] > 40 and max(rows[:5]) < 20 else fail)('queue-around', f'accent title pixels per queue row {rows} (want only the sixth)')
+
+# 13e. player tests (2026-11-13): each asserts that the action had its effect
+def values(scene, tag):
+    # at.py values: sliders (name -> current) and labels (the times are labels such as 00:07)
+    p = f'{OUT}/{scene}-{tag}.values'
+    sliders, labels = {}, []
+    if os.path.exists(p):
+        for line in open(p):
+            f = line.rstrip('\n').split('\t')
+            if len(f) == 5:
+                sliders[f[0]] = float(f[2])
+            elif len(f) == 4 and f[1] == 'label':
+                labels.append((f[0], int(f[2]), int(f[3])))
+    return sliders, labels
+
+def bar_times(scene, tag):
+    # the elapsed (left of the seek bar) and total (right) times, in seconds
+    _, labels = values(scene, tag)
+    t = sorted((x, n) for n, x, y in labels if re.fullmatch(r'\d\d:\d\d', n) and y > 1000)
+    secs = lambda n: int(n[:2]) * 60 + int(n[3:])
+    return (secs(t[0][1]), secs(t[-1][1])) if len(t) >= 2 else (None, None)
+
+def controls(scene, tag):
+    # the ctl file of a shot: name -> flags ('c' checked)
+    p = f'{OUT}/{scene}-{tag}.ctl'
+    out = {}
+    if os.path.exists(p):
+        for line in open(p):
+            f = line.rstrip('\n').split('\t')
+            if len(f) >= 3 and not line.startswith('#'):
+                out.setdefault(f[1], f[2])
+    return out
+
+def card_rows(g):
+    # buttons inside the library card, below its header (x 60-430, y 150+)
+    return [n for n, boxes in g.items() for (x, y, w, h) in boxes if 60 <= x < 430 and 150 <= y < 1000]
+
+# card-sections: crumb per section, and the row that proves the right content loaded
+for tag, crumb, row in (('home', 'Home', None), ('videos', 'Videos', 'Videos'), ('music', 'Music', 'Music'),
+                        ('network', 'Network', 'Add Network Stream'), ('playlists', 'Playlists', 'Create playlist'),
+                        ('recent', 'Recent', None)):
+    g = geom('card-sections', tag)
+    if not g:
+        fail('card-sections', f'{tag}: no geometry'); continue
+    has_crumb = any(140 <= x < 300 and y < 100 for x, y, w, h in g.get(crumb, []))
+    (ok if has_crumb else fail)('card-sections', f'{tag}: card header says "{crumb}"')
+    if row:
+        rows = card_rows(g)
+        (ok if row in rows else fail)('card-sections', f'{tag}: card lists "{row}" (rows: {", ".join(sorted(set(rows))[:6])})')
+# the Music section must not list the video folders (seen 2026-11-13: it listed "Videos")
+g = geom('card-sections', 'music')
+if g:
+    (ok if 'Videos' not in card_rows(g) else fail)('card-sections', 'music: the Videos folder is not listed under Music')
+
+# card-play: S01 lists its episodes, a click on E02 plays it (top bar: Back to S01, window title)
+g = geom('card-play', 's01')
+if g:
+    (ok if 'The_Wand_S01E02' in card_rows(g) else fail)('card-play', 'S01 lists The_Wand_S01E02')
+g = geom('card-play', 'a')
+if g:
+    (ok if 'Back to S01' in g else fail)('card-play', 'the clicked episode plays (top bar "Back to S01")')
+
+# lib-button: rail shown, the library button hides it, U shows it, U hides it
+RAIL = ('Home', 'Recent', 'Add item')
+def rail_shown(tag):
+    g = geom('lib-button', tag)
+    return sum(1 for n in RAIL for (x, y, w, h) in g.get(n, []) if x < 50) == len(RAIL)
+if geom('lib-button', 'shown'):
+    for tag, want, what in (('shown', True, 'at start'), ('a', False, 'after the library button'),
+                            ('b', True, 'after U'), ('c', False, 'after U again')):
+        (ok if rail_shown(tag) == want else fail)('lib-button', f'rail {"shown" if want else "hidden"} {what}')
+
+# drag-to-queue: the queue had 1 element, a dragged row makes 2 (long_movie.mp4 added)
+def queue_count(g):
+    m = [re.match(r'(\d+) elements?', n) for n in g]
+    return next((int(x.group(1)) for x in m if x), None)
+a, b = geom('drag-to-queue', 'a'), geom('drag-to-queue', 'b')
+if a and b:
+    ca, cb = queue_count(a), queue_count(b)
+    (ok if ca == 1 and cb == 2 and 'long_movie.mp4' in b else fail)('drag-to-queue', f'queue {ca} -> {cb} elements, long_movie.mp4 {"queued" if "long_movie.mp4" in b else "missing"} (want 1 -> 2)')
+
+# queue-reorder: short.mp4 was second, after the drag it is first
+def queue_order(g):
+    rows = sorted((y, n) for n, boxes in g.items() for (x, y, w, h) in boxes
+                  if n.endswith('.mp4') and 1600 <= x < 1640 and 100 < y < 800)
+    return [n for _, n in rows]
+a, b = geom('queue-reorder', 'a'), geom('queue-reorder', 'b')
+if a and b:
+    oa, ob = queue_order(a), queue_order(b)
+    (ok if oa == ['sample.mp4', 'short.mp4'] and ob == ['short.mp4', 'sample.mp4'] else fail)('queue-reorder', f'order {oa} -> {ob} (want the two swapped)')
+
+# transport: +10 s, -10 s, Next (short.mp4, 4 s long), Previous (sample.mp4, 2 min)
+t0, fwd, back = (bar_times('transport', t) for t in ('a', 'fwd', 'back'))
+if t0[0] is not None and fwd[0] is not None and back[0] is not None:
+    (ok if 8 <= fwd[0] - t0[0] <= 12 else fail)('transport', f'Step forward: {t0[0]} s -> {fwd[0]} s (want +10)')
+    (ok if 7 <= fwd[0] - back[0] <= 12 else fail)('transport', f'Step back: {fwd[0]} s -> {back[0]} s (want -10)')
+else:
+    fail('transport', 'no times read under the seek bar')
+nx, pv = bar_times('transport', 'next'), bar_times('transport', 'prev')
+(ok if nx[1] == 4 else fail)('transport', f'Next: total time {nx[1]} s (want 4, short.mp4)')
+(ok if pv[1] == 120 else fail)('transport', f'Previous: total time {pv[1]} s (want 120, sample.mp4)')
+
+# keys-fullscreen: bars hidden in the middle, still hidden after a seek key, shown by Tab; the seek moved on
+if os.path.exists(f'{OUT}/keys-fullscreen-a.ctl'):
+    for tag, want in (('a', False), ('seek', False), ('tab', True)):
+        shown = 'Play/Pause' in controls('keys-fullscreen', tag)
+        (ok if shown == want else fail)('keys-fullscreen', f'{tag}: bars {"shown" if shown else "hidden"} (want {"shown" if want else "hidden"})')
+    el, _ = bar_times('keys-fullscreen', 'tab')
+    # started ~9 s before Tab; Right adds 10 s
+    (ok if el is not None and el >= 15 else fail)('keys-fullscreen', f'time after Right: {el} s (want 15 or more: the key seeked)')
+
+# resume-start: the second play continues past the start, says so, and Start over goes back
+g = geom('resume-start-2', 'a')
+if g:
+    (ok if any(n.startswith('Continued from') for n in g) and 'Start over' in g else fail)('resume-start-2', '"Continued from" and Start over shown')
+    a, b = bar_times('resume-start-2', 'a'), bar_times('resume-start-2', 'b')
+    (ok if a[0] is not None and a[0] >= 10 else fail)('resume-start-2', f'continued at {a[0]} s (want 10 or more)')
+    (ok if b[0] is not None and b[0] <= 3 else fail)('resume-start-2', f'Start over: {b[0]} s (want 3 or less)')
+
+# auto-subs: with the English audio no subtitle is on; the French audio turns Track 1 on
+e, f_ = controls('auto-subs', 'eng'), controls('auto-subs', 'fra')
+if e and f_:
+    # (the None row does not report itself checked: no track ticked means None)
+    (ok if not any('c' in v for k, v in e.items() if k.startswith('Track ')) else fail)('auto-subs', 'English audio: no subtitle on')
+    (ok if 'c' in f_.get('Track 1 - [English]', '') else fail)('auto-subs', 'French audio: subtitle Track 1 turned on')
+
+# mini-queue: the card lists both items; a click on short.mp4 opens the player on it
+a, b = geom('mini-queue', 'a'), geom('mini-queue', 'b')
+if a:
+    (ok if any(n.startswith('2 items') for n in a) and 'short.mp4' in a else fail)('mini-queue', 'queue card lists 2 items')
+if b:
+    (ok if 'short.mp4' in b and b['short.mp4'][0][:2] == (0, 0) and 'Player topbar' in b else fail)('mini-queue', 'a click on short.mp4 plays it in the player')
+
+# titlebar-drawn: VLC's own window buttons in the top bar
+g = geom('titlebar-drawn', 'a')
+if g:
+    for n in ('Minimize', 'Close'):
+        (ok if any(y < 40 for x, y, w, h in g.get(n, [])) else fail)('titlebar-drawn', f'{n} button in the top bar')
+
+# unpinned: no bar with the pointer in the middle, the control bar near the bottom edge
+a, b = controls('unpinned', 'a'), controls('unpinned', 'b')
+if os.path.exists(f'{OUT}/unpinned-a.ctl'):
+    (ok if 'Play/Pause' not in a else fail)('unpinned', 'pointer in the middle: no bar')
+    (ok if 'Play/Pause' in b else fail)('unpinned', 'pointer at the bottom: the control bar')
+
+# enter-fullscreen: Enter enters fullscreen (top bar hidden), keypad Enter leaves it
+gs = [geom('enter-fullscreen', t) for t in ('win', 'on', 'off')]
+if all(gs):
+    (ok if 'Player topbar' in gs[0] and 'Player topbar' not in gs[1] and 'Player topbar' in gs[2] else fail)(
+        'enter-fullscreen', 'Enter: fullscreen (no top bar), keypad Enter: back')
+
+# edge-bars: fullscreen, pointer in the middle = no bar, at the top = only the top bar, at the bottom = only the control bar
+if os.path.exists(f'{OUT}/edge-bars-mid.ctl'):
+    for tag, top, bottom in (('mid', False, False), ('top', True, False), ('mid2', False, False), ('bottom', False, True)):
+        c = controls('edge-bars', tag)
+        got = ('Fullscreen' in c, 'Play/Pause' in c)
+        (ok if got == (top, bottom) else fail)('edge-bars', f'{tag}: top bar {got[0]}, control bar {got[1]} (want {top}, {bottom})')
+
+# tracks-picker: three tabs and the subtitle tracks
+c = controls('tracks-picker', 'subs')
+if c:
+    for n in ('Video', 'Audio', 'Subtitles', 'None', 'Track 1 - [English]', 'Track 2 - [French]'):
+        (ok if n in c else fail)('tracks-picker', f'"{n}" in the picker')
+
+# effects panels: their sliders are there (the two of the control bar not counted)
+for scene, tag, least in (('effects-audio', 'eq', 10), ('effects-audio', 'compressor', 7),
+                          ('effects-video', 'essential', 6), ('effects-video', 'colors', 3)):
+    p = f'{OUT}/{scene}-{tag}.ctl'
+    if os.path.exists(p):
+        n = sum(1 for l in open(p) if l.startswith('slider\t')) - 2
+        (ok if n >= least else fail)(scene, f'{tag}: {n} sliders (want {least} or more)')
 
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):

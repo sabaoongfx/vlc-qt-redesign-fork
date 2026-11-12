@@ -76,7 +76,7 @@ qtdlg-open-night | 2 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT
 qtdlg-open-day | 1 | none | | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 key:ctrl+o sleep:3 shot:dlg key:Escape sleep:1
 
 # Enter toggles fullscreen like F (player key filter; a disc menu, a text field or a keyboard-focused control keeps Enter)
-enter-fullscreen | 2 | none | @sample.mp4 | sleep:3 key:Return sleep:1.5 shot:on key:KP_Enter sleep:1.5 shot:off
+enter-fullscreen | 2 | none | @sample.mp4 | sleep:3 geom:win key:Return sleep:1.5 shot:on geom:on key:KP_Enter sleep:1.5 shot:off geom:off
 # playlist context menu (Figma "playlist context menu"): a name-only playlist is listed, the menu has the Figma icons; the same menu from the player's library card (rail > Playlists, row and tile)
 pl-ctx           | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 shot:menu
 pl-ctx-day       | 1 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 shot:menu
@@ -98,3 +98,30 @@ bars-idle        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep
 queue-click      | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1750,213 sleep:2 move:1500,700 sleep:0.5 shot:a
 # the left menu (rail) and the library card open over the video: the picture starts at the same x with the rail shown (with) and hidden (without)
 rail-move        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 shot:with key:u sleep:1.5 move:900,500 sleep:0.5 shot:without key:u sleep:1.5 click:25,248 sleep:2 move:900,500 sleep:0.5 shot:card
+
+# --- player tests (2026-11-13). Each has a check.py block (13e) that asserts the result, not only a screenshot.
+# library card: every rail section opens its page (crumb), with its first content row
+card-sections    | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,64 sleep:2 geom:home click:25,110 sleep:2 geom:videos click:25,156 sleep:2.5 geom:music shot:music click:25,202 sleep:2 geom:network click:25,248 sleep:2 geom:playlists click:25,294 sleep:2 geom:recent
+# library card: Videos > Shows > The Wand > S01, a click on E02 plays it (top bar crumb "Back to S01")
+card-play        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 click:25,110 sleep:2 click:150,228 sleep:2 click:150,228 sleep:2 click:150,228 sleep:2 click:150,228 sleep:2 geom:s01 click:150,270 sleep:3 geom:a shot:a
+# the bar's library button and U both hide and show the rail
+lib-button       | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 geom:shown press:Show_or_hide_the_library_menu sleep:1 geom:a key:u sleep:1 geom:b key:u sleep:1 geom:c
+# a row dragged from the library card into the play queue is queued
+drag-to-queue    | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 press:Play_Queue sleep:1.5 click:25,110 sleep:2 click:150,228 sleep:2 geom:a down:150,270 move:200,280 move:600,300 move:1200,300 move:1700,300 sleep:0.5 up sleep:1.5 geom:b shot:b
+# dragging the second queue row above the first swaps them (slow moves: the drag has a threshold)
+queue-reorder    | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 geom:a down:1750,209 sleep:0.3 move:1752,205 sleep:0.2 move:1755,195 sleep:0.2 move:1755,180 sleep:0.2 move:1755,165 sleep:0.2 move:1755,158 sleep:0.5 up sleep:1.5 geom:b shot:b
+# control bar: 10 s forward, 10 s back, Next, Previous
+transport        | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:900,500 sleep:0.5 values:a press:Step_forward sleep:1 values:fwd press:Step_back sleep:1 values:back press:Next sleep:2 values:next press:Previous sleep:2 values:prev
+# fullscreen: a seek key keeps the bars hidden and seeks; Tab shows them
+keys-fullscreen  | 2 | none | @sample.mp4           | sleep:3 key:f sleep:2 move:960,540 sleep:0.3 move:961,541 sleep:3 shot:a key:Right sleep:1 shot:seek key:Tab sleep:1 shot:tab values:tab
+# resume: the second play continues and offers Start over, which seeks to the start
+resume-start     | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:16 term
+resume-start-2   | 2 | same | ~/Videos/long_movie.mp4 | sleep:1.5 geom:a values:a shot:a press:Start_over sleep:1.5 values:b
+# auto subtitles (nodefsub.mkv: no subtitle marked default): English audio = no subtitle; switching to the French audio track turns the first subtitle on
+auto-subs        | 2 | none | @nodefsub.mkv         | sleep:3 move:900,500 sleep:0.5 press:Languages_and_tracks sleep:1.2 shot:eng press:Languages_and_tracks sleep:1 move:900,500 key:b sleep:2.5 press:Languages_and_tracks sleep:1.2 shot:fra
+# mini player: its queue card lists the queue; a click on a row plays it in the player
+mini-queue       | 2 | ml   | @sample.mp4 @short.mp4 | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 move:960,700 press:Play_Queue sleep:1.5 shot:a geom:a click:1650,687 sleep:2 geom:b
+# Show window decorations off: VLC draws its own window buttons in the top bar
+titlebar-drawn   | 2 | none | --no-qt-titlebar @sample.mp4 | sleep:3 move:900,500 sleep:0.5 geom:a shot:a
+# controls not pinned: no bar in the middle of the video, the bottom bar near the bottom edge
+unpinned         | 2 | none | --no-qt-pin-controls @sample.mp4 | sleep:3 move:900,500 sleep:0.5 shot:a move:900,1050 sleep:1 shot:b

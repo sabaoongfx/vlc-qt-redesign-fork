@@ -25,6 +25,9 @@ if [ ! -f multi.mkv ]; then
        -c:a aac -c:s srt -metadata:s:a:0 language=eng -metadata:s:a:1 language=fra \
        -metadata:s:s:0 language=eng -metadata:s:s:1 language=fra multi.mkv
 fi
+# the same with no subtitle marked default (ffmpeg marks the first one, and VLC then turns it on whatever
+# the audio): the auto-subs scene checks that VLC turns a subtitle on by itself for non-English audio
+[ -f nodefsub.mkv ] || ff -i multi.mkv -map 0 -c copy -disposition:s:0 0 -disposition:s:1 0 nodefsub.mkv
 # audio with cover art
 if [ ! -f neon.mp3 ]; then
     magick -size 600x600 gradient:'#3b1d4a'-'#d37918' cover.jpg
