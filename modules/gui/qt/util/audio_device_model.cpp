@@ -52,7 +52,20 @@ AudioDeviceModel::AudioDeviceModel(vlc_player_t *player, QObject *parent)
 
     m_aout = vlc_player_aout_Hold(m_player);
     if (m_aout)
+    {
         m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
+        // redesign: the device in use now; the player's callback only reports later changes, so a
+        // list made after the output reported its device ticked nothing
+        m_current = currentDevice();
+    }
+}
+
+QString AudioDeviceModel::currentDevice() const
+{
+    char *device = m_aout ? aout_DeviceGet(m_aout) : nullptr;
+    const QString current = device ? QString::fromUtf8(device) : QString();
+    free(device);
+    return current;
 }
 
 void AudioDeviceModel::refresh()
@@ -72,6 +85,7 @@ void AudioDeviceModel::refresh()
     m_inputs = aout_DevicesList(m_aout, &m_ids, &m_names);
     if (m_inputs < 0)
         m_inputs = 0;
+    m_current = currentDevice();
     endResetModel();
 }
 

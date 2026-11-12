@@ -836,6 +836,38 @@ static void registry_node(audio_output_t *aout, uint32_t id, uint32_t perms,
 }
 
 /**
+ * Link callback.
+ *
+ * redesign: report the output device the stream actually plays to. The stream
+ * follows the system default (or a chosen device) through the session manager,
+ * which links our stream node to a sink node; without this the current device
+ * was never reported (nothing ticked in the interface's device lists, also
+ * after choosing another device while playing).
+ */
+static void registry_link(audio_output_t *aout, const struct spa_dict *props)
+{
+    struct vlc_pw_aout *sys = aout->sys;
+    uint32_t out_node, in_node;
+
+    if (props == NULL || sys->stream == NULL)
+        return;
+    if (!spa_atou32(spa_dict_lookup(props, PW_KEY_LINK_OUTPUT_NODE), &out_node, 0)
+     || !spa_atou32(spa_dict_lookup(props, PW_KEY_LINK_INPUT_NODE), &in_node, 0))
+        return;
+    if (out_node != pw_stream_get_node_id(sys->stream->stream))
+        return; /* not our stream */
+
+    struct vlc_pw_node key = { .id = in_node };
+    struct vlc_pw_node **pp = tfind(&key, &sys->nodes, node_by_id);
+    if (pp == NULL)
+        return; /* not an output device */
+
+    char serialstr[21];
+    snprintf(serialstr, sizeof (serialstr), "%"PRIu64, (*pp)->serial);
+    aout_DeviceReport(aout, serialstr);
+}
+
+/**
  * Global callback.
  *
  * This gets called for every initial, then every new, object from the PipeWire
@@ -849,6 +881,8 @@ static void registry_global(void *data, uint32_t id, uint32_t perms,
 
     if (strcmp(name, PW_TYPE_INTERFACE_Node) == 0)
         registry_node(aout, id, perms, version, props);
+    else if (strcmp(name, PW_TYPE_INTERFACE_Link) == 0)
+        registry_link(aout, props);
 }
 
 /**

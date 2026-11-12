@@ -58,6 +58,9 @@ public:
     enum Roles { IsDefaultRole = Qt::UserRole + 1 };
 
 private:
+    // redesign: the output's device in use now (aout_DeviceGet), empty if unknown
+    QString currentDevice() const;
+
     int m_inputs = 0;
     char **m_names = nullptr;
     char **m_ids = nullptr;
