@@ -22,7 +22,7 @@ concurrency:
 jobs:
   linux-qt:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 300
     # Same image upstream VLC uses for its debian CI job (has Qt and all build deps).
     container:
       image: registry.videolan.org/vlc-debian-unstable:20260611225331
@@ -35,6 +35,33 @@ jobs:
 
       - name: Install ccache
         run: apt-get update -qq && apt-get install -y -qq ccache
+
+      # The test harness (redesign/tests: ~120 scenes in a headless nested KWin, then check.py: QML warnings,
+      # Figma geometry, behaviour checks, accessibility, contrast). Its tools are installed BEFORE the build:
+      # kwin-wayland pulls the newest Qt from Debian unstable, and VLC's ahead-of-time compiled QML only loads
+      # with the Qt it was built against (a separate harness job, installing them after the build, got
+      # "File was compiled ahead of time with an incompatible version of Qt": no interface at all).
+      - name: Install the harness tools
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          for try in 1 2 3; do
+            timeout 900 apt-get install -y -qq --no-install-recommends \
+              kwin-wayland xwayland kde-spectacle xdotool imagemagick ffmpeg dbus-daemon dbus-user-session systemd \
+              at-spi2-core python3 python3-gi gir1.2-atspi-2.0 python3-pil python3-numpy \
+              libgl1-mesa-dri libegl1 qt6-wayland fonts-dejavu-core pipewire pipewire-pulse wireplumber && break
+            sleep 20
+          done
+          # the package gives kwin_wayland CAP_SYS_NICE as a file capability; a container's bounding set
+          # lacks it, so the binary cannot even start (every scene of the first run ended at once)
+          setcap -r /usr/bin/kwin_wayland 2>/dev/null || true
+          # every installed Qt package at the version KWin pulled in (runtime, headers and qmlcachegen alike),
+          # so VLC is built and its QML compiled against the Qt it then runs with
+          timeout 900 apt-get install -y -qq --only-upgrade $(dpkg-query -W -f '${Package}\n' | grep -E '^(libqt6|qt6-|qml6-)') || true
+          dpkg-query -W -f '${Package} ${Version}\n' libqt6core6t64 libqt6core6 qt6-base-dev qt6-declarative-dev-tools 2>/dev/null || true
+          for t in kwin_wayland spectacle xdotool magick ffmpeg busctl dbus-run-session; do command -v $t || echo "missing: $t"; done
+          ls /usr/libexec/at-spi-bus-launcher /usr/libexec/at-spi2-registryd
+
 
       - name: Restore ccache
         uses: actions/cache@v4
@@ -426,49 +453,10 @@ jobs:
           path: shots/
           if-no-files-found: ignore
 
-  # The test harness (redesign/tests: ~80 scenes in a headless nested KWin, then check.py: QML warnings,
-  # Figma geometry, behaviour checks, accessibility, contrast). It ran only on the developer's machine
-  # until 2026-11-13. Uses the install tree of the build job, in the same image and at the same path
-  # (the prefix is absolute). Not needed for a release.
-  harness:
-    needs: linux-qt
-    runs-on: ubuntu-latest
-    timeout-minutes: 240
-    container:
-      image: registry.videolan.org/vlc-debian-unstable:20260611225331
-      options: --user root
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download the build
-        uses: actions/download-artifact@v4
-        with:
-          name: vlc-linux-install
-          path: install
-
-      - name: Install the harness tools
+      - name: Harness scenes
+        if: ${{ !cancelled() }}
         run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          for try in 1 2 3; do
-            timeout 900 apt-get install -y -qq --no-install-recommends \
-              kwin-wayland xwayland kde-spectacle xdotool imagemagick ffmpeg dbus-daemon dbus-user-session systemd \
-              at-spi2-core python3 python3-gi gir1.2-atspi-2.0 python3-pil python3-numpy \
-              libgl1-mesa-dri libegl1 qt6-wayland fonts-dejavu-core pipewire pipewire-pulse wireplumber && break
-            sleep 20
-          done
-          # the package gives kwin_wayland CAP_SYS_NICE as a file capability; a container's bounding set
-          # lacks it, so the binary cannot even start (every scene of the first run ended at once)
-          setcap -r /usr/bin/kwin_wayland 2>/dev/null || true
-          for t in kwin_wayland spectacle xdotool magick ffmpeg busctl dbus-run-session; do command -v $t || echo "missing: $t"; done
-          ls /usr/libexec/at-spi-bus-launcher /usr/libexec/at-spi2-registryd
-
-      - name: Run the scenes
-        run: |
-          # artifacts lose their permission bits
           chmod -R a+rX install
-          chmod +x install/bin/* install/libexec/vlc/* 2>/dev/null || true
-          find install -name 'vlc-qt-check' -o -name 'vlc-cache-gen' | xargs -r chmod +x
           # VLC refuses to run as root
           id shotuser >/dev/null 2>&1 || useradd -m shotuser
           mkdir -p harness-out harness-fix
@@ -491,7 +479,9 @@ jobs:
             redesign/tests/run.sh '^(player-audio|player-longtitle|audio-menu|effects-gear|queue-open)$' 2>&1 | tee harness-wayland/run.txt
           rm -rf harness-out/profiles harness-out/profile harness-wayland/profiles harness-window/profiles
 
-      - name: Result
+
+      - name: Harness result
+        if: ${{ !cancelled() }}
         run: |
           # check.py prints its totals and writes report.html; a failed check fails the job
           sed -n '/^scene /!p' harness-out/run.txt | tail -150
@@ -517,6 +507,7 @@ jobs:
           [ -s harness-wayland/fails.txt ] && rc=1
           exit $rc
 
+
       - name: Settings suite (manual runs with "settings" on)
         if: ${{ !cancelled() && github.event.inputs.settings == 'true' }}
         run: |
@@ -528,6 +519,7 @@ jobs:
           tail -40 settings-out/settings-report.txt 2>/dev/null
           rm -rf settings-out/profiles
           exit $rc
+
 
       - name: Upload the harness output
         if: always()
@@ -541,6 +533,7 @@ jobs:
             settings-out/
           if-no-files-found: ignore
           retention-days: 7
+
 
   # The Qt module's unit tests (modules/gui/qt/tests: base model, ML model, navigation model, renderer
   # manager, CSD buttons, thread runner, dialog model, the toolbar FSM in QML). They were never built or run
