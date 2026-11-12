@@ -86,7 +86,20 @@ RendererMenu *VLCMenuBar::rendererMenu = NULL;
 namespace {
 constexpr int menuPadding = 4;      // card padding around the rows
 constexpr int menuRadius = 10;
-constexpr int rowHeight = 48;
+constexpr int rowHeight = 48;       // the default; RedesignMenuStyle::rowHeightProperty overrides it per menu
+
+// the row height of a menu: its own rowHeightProperty, or the nearest parent menu's (submenus are
+// children of their menu), or the default
+int menuRowHeight(const QWidget* widget)
+{
+    for (const QWidget* w = widget; w; w = w->parentWidget())
+    {
+        const QVariant v = w->property(RedesignMenuStyle::rowHeightProperty);
+        if (v.isValid())
+            return v.toInt();
+    }
+    return rowHeight;
+}
 constexpr int rowRadius = 4;
 constexpr int separatorHeight = 9;
 // a menu with this property set has the Figma right-click menu's group lines: 1px, the full row
@@ -261,7 +274,7 @@ QSize RedesignMenuStyle::sizeFromContents(ContentsType type, const QStyleOption*
             // QMenu ignores its maximum width when it lays out the rows: cap them, the label is elided
             if (widget && widget->maximumWidth() < QWIDGETSIZE_MAX)
                 width = std::min(width, widget->maximumWidth() - 2 * menuPadding);
-            return QSize(width, rowHeight);
+            return QSize(width, menuRowHeight(widget));
         }
     }
     return QProxyStyle::sizeFromContents(type, option, size, widget);
@@ -1338,9 +1351,10 @@ QMenu* VLCMenuBar::PopupMenu( qt_intf_t *p_intf, bool show )
     applyRedesignPopupIcons( menu );
 
     // redesign: the Figma right-click menu's groups (transport, Hide UI, the media submenus, the
-    // rest) are split by 1px lines (292 x 683 for its 14 rows), drawn by RedesignMenuStyle
+    // rest) are split by 1px lines (280 x 627 for its 14 rows of 44), drawn by RedesignMenuStyle
     menu->setProperty( hairlineProperty, true );
     menu->setMinimumWidth( RedesignMenuStyle::rightClickWidth );
+    menu->setProperty( RedesignMenuStyle::rowHeightProperty, RedesignMenuStyle::rightClickRowHeight );
     // the Figma menu has three, after Record, Hide UI and Subtitle; none before Open Media or Quit
     // (a separator right after another one is dropped first: they draw as one but would count twice)
     int separators = 0;

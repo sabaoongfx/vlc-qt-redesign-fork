@@ -42,7 +42,12 @@ class RedesignMenuStyle : public QProxyStyle
 {
 public:
     static constexpr int minimumWidth = 265;   // the Figma file, folder, playlist, sort menus
-    static constexpr int rightClickWidth = 292; // the Figma right-click menu (on the video)
+    // the Figma right-click menu (on the video) is 292 wide with 48px rows; it is drawn a bit smaller
+    // (user request 2026-11-13): 280 wide, 44px rows, its submenus too (rowHeightProperty)
+    static constexpr int rightClickWidth = 280;
+    static constexpr int rightClickRowHeight = 44;
+    // an int property on a QMenu: its rows' height (and its submenus', they are its children)
+    static constexpr const char* rowHeightProperty = "redesignRowHeight";
     static constexpr int mainMenuWidth = 375;  // the Figma main menu
 
     static RedesignMenuStyle* instance();
