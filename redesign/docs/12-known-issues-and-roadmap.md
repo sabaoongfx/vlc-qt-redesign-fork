@@ -42,8 +42,29 @@ Not built yet (Figma frames exist; status per frame in `redesign/remaining/index
 5. **Player:** subtitle timeline, waveform seek bar, bookmarks panel (Ctrl+B), shortcut hints in the OSD.
 6. **Mini player:** hover overlay (close, pop-out, previous/play/next), drag to reorder the queue.
 7. **Settings presets/profiles; Add Subtitles to Playlist.**
-8. **Audio:** visualizer, EQ presets frames; HDR, spatializer and stereo widener frames as far as VLC
-   supports them.
+8. **Audio:** HDR, spatializer and stereo widener frames as far as VLC supports them; the visualizer
+   (planned below). EQ preset icons: being built (2026-11-13).
+
+### Planned: audio visualizer picker (Figma "Audio Visualizer", planned 2026-11-13)
+
+- **What the Figma has:** a dropdown (Disabled, Spectometer, Scope, Spectrum, Waveform, each with a
+  duotone icon; `~/Downloads/Audio Visualizer.svg`, also in the Figma export under 06 Player side
+  panels). No frame places it: it is a lone component at the side panel card width (362 px).
+- **Where it goes:** a "Visualizer" row in the side panel's Audio tab, next to Stereo Mode and Mix Mode
+  (`TracksListPage.qml`). It sets VLC's `audio-visual` option for the current playback
+  (`effects_controller`), like the "..." menu > Audio > Visualizations entries do today.
+- **Where it shows:** VLC draws a visualization as a video, so it fills the player's video area while
+  audio plays, in place of the cover art of `Player - Music`. Turning it off brings the cover back.
+- **Mapping:** Spectometer = `visual` effect `spectrometer`; Scope = `scope`; Spectrum = `spectrum`;
+  Waveform has no exact match (VLC's scope already draws the waveform; the closest separate one is
+  `vuMeter`), to be decided. VLC's Goom, 3D spectrum and projectM stay out unless asked (the Figma
+  has none of them). Spelling: "Spectrometer" in the interface.
+- **Open decisions:** the Waveform entry; whether the choice is remembered (the option is global in
+  vlcrc) or only for the current playback.
+- **Tests first:** a scene plays an mp3 with sound:null (a real, silent audio output), picks each entry
+  and checks the video area shows the visualization (not the cover) and the dropdown ticks it; picks
+  Disabled and checks the cover is back.
+- **Effort:** ~1 day (the row and dropdown with icons reuse the EQ preset dropdown's work).
 9. **Library card:** Podcasts/Radio, sort/view/pop-out buttons.
 10. **macOS:** Intel build, notarization, window controls, polish (`redesign/MACOS-PLAN.md`).
 11. **Upstream:** propose the small generic patches (04: subfolder wrappers, folder play order).

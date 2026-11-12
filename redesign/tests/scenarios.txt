@@ -170,3 +170,9 @@ audio-menu-switch| 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep
 # the current device (Test Speakers, the default) is ticked when the picker opens; choosing Test Headphones
 # moves the tick; the volume bar is not empty when the video starts
 audio-device-tick | 2 | none | @sample.mp4           | sound:null sleep:3 move:900,500 sleep:0.5 values:vol press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:1 shot:a geom:a press:Test_Headphones sleep:1.5 press:Languages_and_tracks sleep:1 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:1 shot:b geom:b
+
+# equalizer presets with the Figma icons ("EQ presets" frame, Options.svg): each preset row of the dropdown
+# draws its curve icon (accent and grey; Flat is grey only) left of the name; choosing Rock selects it.
+# (pointer moves between the steps: the 10 s idle timer would close the panel, see test-findings.md)
+eq-preset-icons  | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list move:700,500 press:Rock sleep:1.2 move:710,505 geom:rock shot:rock
+eq-preset-icons-day | 1 | none | @multi.mkv          | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list

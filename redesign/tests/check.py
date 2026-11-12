@@ -751,6 +751,37 @@ if os.path.exists(f'{OUT}/audio-device-tick.log'):
     sl, _ = values('audio-device-tick', 'vol')
     check('audio-device-tick', sl.get('Volume', 0) > 0, f'the volume bar is not empty when the video starts (Volume {sl.get("Volume")})')
 
+# equalizer preset icons: every preset row of the open dropdown has its icon left of the name
+PRESETS = ['Flat', 'Classical', 'Club', 'Dance', 'Full bass', 'Full bass and treble', 'Full treble', 'Headphones',
+           'Large Hall', 'Live', 'Party', 'Pop', 'Reggae', 'Rock', 'Ska', 'Soft', 'Soft rock', 'Techno']
+for scene in ('eq-preset-icons', 'eq-preset-icons-day'):
+    t, rows = img(scene, 'list'), geom_rows(scene, 'list')
+    if not (t and rows):
+        continue
+    found, missing = 0, []
+    for name in PRESETS:
+        boxes = [(x, y, w, h) for n, r, x, y, w, h in rows if n == name and r in ('list item', 'menu item', 'label', 'push button', 'button')]
+        if not boxes:
+            missing.append(name + ' (no row)'); continue
+        x, y, w, h = max(boxes, key=lambda b: b[2])           # the row (the widest box of that name)
+        icon = (x + 8, y + 4, x + 52, y + h - 4)               # the icon sits left of the label
+        acc = count_color(t, icon, ACCENT, 60)
+        if name == 'Flat':
+            # grey line only: some pixels away from the row colour, none of them accent
+            face = dominant(t, icon)
+            ink = sum(1 for p in pixels(t.crop(icon)) if max(abs(a - b) for a, b in zip(p, face)) > 40)
+            ok_ = acc == 0 and ink >= 10
+        else:
+            ok_ = acc >= 4
+        found += ok_
+        if not ok_:
+            missing.append(f'{name} ({acc} accent px)')
+    check(scene, not missing, f'{found}/{len(PRESETS)} preset rows draw their icon' + (f'; missing: {missing}' if missing else ''))
+g = geom('eq-preset-icons', 'rock')
+if g:
+    check('eq-preset-icons', any(n == 'Rock' and r == 'combo box' for n, r, *_ in geom_rows('eq-preset-icons', 'rock')),
+          'choosing Rock in the dropdown selects it (the preset box shows Rock)')
+
 # window (window.txt, run with an empty KWINRULES)
 r = geom_rows('win-open-size', 'a')
 if r:
