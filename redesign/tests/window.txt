@@ -1,0 +1,5 @@
+# name | theme | kind | media | actions -- run with KWINRULES set to an empty file (VLC places and sizes its own window)
+# the main window opens at 1280x800 (85% of a smaller screen), centred
+win-open-size    | 2 | none |                       | sleep:3 geom:a
+# a resized player window: the bars follow the window width
+win-resize       | 2 | none | @sample.mp4           | sleep:3 resize:1000,700 sleep:2 move:500,350 sleep:0.5 geom:a shot:a

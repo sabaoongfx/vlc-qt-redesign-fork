@@ -83,6 +83,10 @@ Add Folder, Resync, Info); player library card and rail, drag into the queue; mi
 Back/Forward up/down; Music artists/genres/songs lists; window resizing; unpinned controls in a window;
 most keyboard shortcuts.
 
+**Engine (formats, codecs, filters, outputs, network, streaming, casting):** not tested by this project yet;
+planned in `redesign/tests/ENGINE-TEST-PLAN.md` (plugin inventory per package first, then a playback matrix
+with generated media, filters, network inputs with local servers, stream out and Convert, casting).
+
 ## Adding a test with a feature
 
 1. Add an FRS requirement (02) with acceptance criteria.

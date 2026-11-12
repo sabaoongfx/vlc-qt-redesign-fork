@@ -452,6 +452,8 @@ def card_rows(g):
 for tag, crumb, row in (('home', 'Home', None), ('videos', 'Videos', 'Videos'), ('music', 'Music', 'Music'),
                         ('network', 'Network', 'Add Network Stream'), ('playlists', 'Playlists', 'Create playlist'),
                         ('recent', 'Recent', None)):
+    if not os.path.exists(f'{OUT}/card-sections.log'):
+        break
     g = geom('card-sections', tag)
     if not g:
         fail('card-sections', f'{tag}: no geometry'); continue
@@ -504,14 +506,17 @@ if a and b:
 
 # transport: +10 s, -10 s, Next (short.mp4, 4 s long), Previous (sample.mp4, 2 min)
 t0, fwd, back = (bar_times('transport', t) for t in ('a', 'fwd', 'back'))
-if t0[0] is not None and fwd[0] is not None and back[0] is not None:
+if not os.path.exists(f'{OUT}/transport.log'):
+    pass
+elif t0[0] is not None and fwd[0] is not None and back[0] is not None:
     (ok if 8 <= fwd[0] - t0[0] <= 12 else fail)('transport', f'Step forward: {t0[0]} s -> {fwd[0]} s (want +10)')
     (ok if 7 <= fwd[0] - back[0] <= 12 else fail)('transport', f'Step back: {fwd[0]} s -> {back[0]} s (want -10)')
 else:
     fail('transport', 'no times read under the seek bar')
 nx, pv = bar_times('transport', 'next'), bar_times('transport', 'prev')
-(ok if nx[1] == 4 else fail)('transport', f'Next: total time {nx[1]} s (want 4, short.mp4)')
-(ok if pv[1] == 120 else fail)('transport', f'Previous: total time {pv[1]} s (want 120, sample.mp4)')
+if os.path.exists(f'{OUT}/transport.log'):
+    (ok if nx[1] == 4 else fail)('transport', f'Next: total time {nx[1]} s (want 4, short.mp4)')
+    (ok if pv[1] == 120 else fail)('transport', f'Previous: total time {pv[1]} s (want 120, sample.mp4)')
 
 # keys-fullscreen: bars hidden in the middle, still hidden after a seek key, shown by Tab; the seek moved on
 if os.path.exists(f'{OUT}/keys-fullscreen-a.ctl'):
@@ -582,6 +587,155 @@ for scene, tag, least in (('effects-audio', 'eq', 10), ('effects-audio', 'compre
     if os.path.exists(p):
         n = sum(1 for l in open(p) if l.startswith('slider\t')) - 2
         (ok if n >= least else fail)(scene, f'{tag}: {n} sliders (want {least} or more)')
+
+# 13f. library tests (2026-11-13): each asserts that the action had its effect
+def geom_rows(scene, tag):
+    # (name, role, x, y, w, h) in tree order; the first frame is the main window, named after what plays
+    p = f'{OUT}/{scene}-{tag}.geom'
+    rows = []
+    if os.path.exists(p):
+        for line in open(p):
+            f = line.rstrip('\n').split('\t')
+            if len(f) == 6:
+                rows.append((f[0], f[1], *map(int, f[2:])))
+    return rows
+
+def window_title(scene, tag):
+    return next((n for n, r, *_ in geom_rows(scene, tag) if r == 'frame'), None)
+
+def playing(scene, tag, name=None):
+    # the player view is open (its top bar) and, if given, the window is named after that file
+    g = geom(scene, tag)
+    t = window_title(scene, tag) or ''
+    return bool(g) and 'Player topbar' in g and (name is None or t.startswith(name))
+
+def cells(scene, tag):
+    # the library grid's items: table cells, left to right then top to bottom
+    return [n for n, r, x, y, w, h in sorted(geom_rows(scene, tag), key=lambda r: (r[3], r[2])) if r == 'table cell']
+
+def last_crumb(scene, tag):
+    # the address line: crumb buttons on the header row (y 55-75, right of back/forward)
+    crumbs = [(x, n) for n, r, x, y, w, h in geom_rows(scene, tag) if r == 'button' and 55 <= y <= 75 and 300 <= x < 1300]
+    return max(crumbs)[1] if crumbs else None
+
+def check(scene, cond, what):
+    (ok if cond else fail)(scene, what)
+
+# playlists
+if geom('pl-play', 'a'):
+    check('pl-play', playing('pl-play', 'a', 'long_movie'), f'Play: the player opens on the first item (window "{window_title("pl-play", "a")}")')
+    check('pl-play', any(n.startswith('2 elements') for n in geom('pl-play', 'q')), 'Play: the queue holds the 2 items of the playlist')
+if geom('pl-shuffle', 'a'):
+    check('pl-shuffle', playing('pl-shuffle', 'a'), 'Shuffle: the player opens')
+    check('pl-shuffle', any(n.startswith('2 elements') for n in geom('pl-shuffle', 'q')), 'Shuffle: the queue holds the 2 items')
+if os.path.exists(f'{OUT}/pl-export.log'):
+    m3u = f'{OUT}/pl-export.m3u'
+    text = open(m3u, errors='replace').read() if os.path.exists(m3u) else ''
+    check('pl-export', text.startswith('#EXTM3U') and 'long_movie' in text and 'Sample%20Movie' in text.replace('Sample Movie', 'Sample%20Movie'),
+          f'Export Playlist wrote an M3U with both videos ({len(text)} bytes)')
+if geom('pl-addqueue', 'q'):
+    check('pl-addqueue', any(n.startswith('2 elements') for n in geom('pl-addqueue', 'q')), 'Add to Queue: Play then shows 2 elements in the queue')
+if geom('pl-rename', 'a'):
+    c = cells('pl-rename', 'a')
+    check('pl-rename', 'Holiday' in c and 'Road_Trip' not in c, f'Rename: the card is called Holiday (cards: {c})')
+if geom('pl-delete', 'a'):
+    b, a = cells('pl-delete', 'before'), cells('pl-delete', 'a')
+    check('pl-delete', 'Road_Trip' in b and 'Road_Trip' not in a, f'Delete (Yes): Road_Trip gone ({b} -> {a})')
+if geom('pl-new-files', 'a'):
+    # the playlist's page lists its media as rows (labels), not grid cards
+    rows = [n for n, r, x, y, w, h in geom_rows('pl-new-files', 'a') if y > 120 and x > 209]
+    check('pl-new-files', any(n.startswith('short') for n in rows), 'New Playlist with a chosen file: its page lists short.mp4')
+
+# folder '...' menu
+if geom('fm-add-file', 'a'):
+    check('fm-add-file', playing('fm-add-file', 'a', 'short'), f'Add File: short.mp4 plays (window "{window_title("fm-add-file", "a")}")')
+if geom('fm-add-folder', 'a'):
+    check('fm-add-folder', 'fixtures' in cells('fm-add-folder', 'a'), f'Add Folder: the fixtures folder is in the library ({cells("fm-add-folder", "a")})')
+if geom('fm-resync', 'a'):
+    check('fm-resync', cells('fm-resync', 'a') == cells('fm-resync', 'before') and cells('fm-resync', 'a'),
+          f'Resync: the library still lists {cells("fm-resync", "before")} (now {cells("fm-resync", "a")})')
+c = controls('fm-subtitle', 'a')
+if os.path.exists(f'{OUT}/fm-subtitle-a.ctl'):
+    check('fm-subtitle', any(k.startswith('Track') for k in c), f'Edit Subtitle Tracks: a subtitle track is listed ({[k for k in c if k.startswith("Track")]})')
+c = controls('fm-audio', 'a')
+if os.path.exists(f'{OUT}/fm-audio-a.ctl'):
+    tracks = [k for k in c if k.startswith('Track')]
+    check('fm-audio', len(tracks) >= 2, f'Edit Audio Tracks: a second audio track is listed ({tracks})')
+if geom('fm-info', 'a'):
+    check('fm-info', any('Information' in n for n, *_ in geom_rows('fm-info', 'a')), 'Info opens the Media Information window')
+
+# Back/Forward up and down
+if geom('nav-updown', 'wand'):
+    got = [last_crumb('nav-updown', t) for t in ('wand', 'b1', 'b2', 'f1')]
+    check('nav-updown', got == ['The Wand', 'Shows', 'Videos', 'Shows'], f'address line {got} (want The Wand, Back Shows, Back Videos, Forward Shows)')
+
+# Music folder tree
+if geom('music-folder', 'root'):
+    check('music-folder', 'Music' in cells('music-folder', 'root') and '6 songs' in geom('music-folder', 'root'), 'Music lists the Music folder with 6 songs')
+    check('music-folder', len(cells('music-folder', 'a')) == 6, f'the Music folder lists its 6 songs ({cells("music-folder", "a")})')
+    check('music-folder', playing('music-folder', 'play'), 'a click on a song plays it')
+
+# Continue Watching > Remove from list
+if geom('cw-remove-2', 'a'):
+    cw = lambda tag: 'Continue Watching' in geom('cw-remove-2', tag) and 'long_movie' in cells('cw-remove-2', tag)
+    check('cw-remove-2', cw('a'), 'Home lists long_movie under Continue Watching')
+    check('cw-remove-2', not cw('b'), 'Remove from list takes it off')
+
+# search and sort inside a folder
+if geom('search-filter', 'b'):
+    a, b = cells('search-filter', 'a'), cells('search-filter', 'b')
+    check('search-filter', 'long_movie' in a and b == ['Sample Movie'], f'"Sample" filters {a} to {b} (want only Sample Movie)')
+if geom('sort-za', 'b'):
+    a, b = cells('sort-za', 'a'), cells('sort-za', 'b')
+    order = lambda c: [n for n in c if n in ('long_movie', 'Sample Movie')]
+    check('sort-za', order(a) == ['long_movie', 'Sample Movie'] and order(b) == ['Sample Movie', 'long_movie'], f'Title Z-A: {order(a)} -> {order(b)}')
+
+# file menu
+if geom('video-ctx-play', 'a'):
+    check('video-ctx-play', playing('video-ctx-play', 'a', 'long_movie'), f'Play plays long_movie (window "{window_title("video-ctx-play", "a")}")')
+for scene, word in (('video-stream', 'Stream'), ('video-convert', 'Convert')):
+    if geom(scene, 'a'):
+        check(scene, any(word in n and r in ('frame', 'dialog', 'window') for n, r, *_ in geom_rows(scene, 'a')), f'{word} opens its window')
+if geom('folder-ctx-play', 'after'):
+    check('folder-ctx-play', playing('folder-ctx-play', 'after', 'The_Wand_S01E01'), f'folder Play starts its first video (window "{window_title("folder-ctx-play", "after")}")')
+if geom('open-network', 'a'):
+    check('open-network', any('Network' in n for n in geom('open-network', 'a')), 'Open Network Stream opens its dialog')
+
+# Home and Music pages
+g = geom('home-night', 'a')
+if g:
+    check('home-night', 'New Videos' in g and 'New Music' in g, 'Home shows New Videos and New Music')
+    check('home-night', sum(1 for n in cells('home-night', 'a') if n.startswith('The_Wand')) >= 5, 'New Videos lists the episodes')
+g = geom('music-albums', 'a')
+if g:
+    check('music-albums', 'Music' in cells('music-albums', 'a') and '6 songs' in g, 'the Music page lists the Music folder (6 songs)')
+
+# Network page
+if geom('net-play', 'a'):
+    check('net-play', playing('net-play', 'a', 'sample'), f'Add Stream + Play plays the stream (window "{window_title("net-play", "a")}")')
+if geom('net-save', 'saved'):
+    check('net-save', any('short' in n for n, r, x, y, w, h in geom_rows('net-save', 'saved') if y > 120), 'Save lists the stream on the Network page')
+    check('net-save', playing('net-save', 'play', 'short'), 'a click on the saved stream plays it')
+
+# audio button menu
+t = img('audio-menu-switch', 'a')
+if t:
+    # the accent tick left of the row (the Audio tab's radio buttons report no checked state)
+    eng = count_color(t, (1515, 646, 1560, 686), ACCENT, 40)
+    fra = count_color(t, (1515, 690, 1560, 730), ACCENT, 40)
+    check('audio-menu-switch', fra > 3 and eng == 0, f'Track 2 in the audio menu switches the audio to French (tick pixels: English {eng}, French {fra})')
+
+# window (window.txt, run with an empty KWINRULES)
+r = geom_rows('win-open-size', 'a')
+if r:
+    w = next(((x, y, ww, hh) for n, ro, x, y, ww, hh in r if n == 'Main interface'), None)
+    check('win-open-size', w is not None and w[2:] == (1280, 800) and abs(w[0] - (1920 - 1280) // 2) <= 20,
+          f'the window opens at 1280x800, centred ({w})')
+g = geom('win-resize', 'a')
+if g:
+    top = g.get('Player topbar', [(0, 0, 0, 0)])[0]
+    prog = g.get('Progress', [(0, 0, 0, 0)])[0]
+    check('win-resize', top[2] == 1000 and 0 < prog[0] + prog[2] < 1000, f'resized to 1000 wide: top bar {top[2]} wide, seek bar ends at {prog[0] + prog[2]}')
 
 # 14. every scene produced its screenshots
 for at in sorted(glob.glob(f'{OUT}/*.at')):

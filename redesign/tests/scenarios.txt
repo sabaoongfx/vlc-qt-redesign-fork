@@ -8,12 +8,12 @@ home-day         | 1 | ml   |                       | sleep:3 move:960,600 shot:
 home-system      | 0 | ml   |                       | sleep:3 move:960,600 shot:a
 start-nolib      | 2 | none |                       | sleep:2 shot:a geom:a
 video-grid       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:960,700 shot:a geom:a click:1503,77 sleep:1.2 click:1560,168 sleep:2 shot:list
-music-albums     | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 move:960,700 shot:a
+music-albums     | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 move:960,700 shot:a geom:a
 folder-tree      | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 move:960,700 shot:root geom:root click:390,220 sleep:2.5 move:960,700 shot:videos geom:videos click:390,220 sleep:2.5 move:960,700 shot:shows geom:shows click:390,220 sleep:2.5 click:390,220 sleep:2.5 move:960,700 shot:season geom:season
 search           | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:1700,81 type:Wand sleep:2 shot:a
 sort             | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 press:Sort sleep:1.2 shot:a
 video-ctx        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 shot:a
-folder-ctx-play  | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:390,220 sleep:1.2 shot:menu key:Down key:Return sleep:4 shot:after
+folder-ctx-play  | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:390,220 sleep:1.2 shot:menu key:Down key:Return sleep:4 shot:after geom:after
 edge-bars        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:730,220 sleep:3 key:f sleep:2 move:960,500 sleep:0.3 move:960,540 sleep:3 shot:mid move:960,30 sleep:0.3 move:961,20 sleep:3 shot:top move:960,600 sleep:0.3 move:960,560 sleep:3 shot:mid2 move:960,1050 sleep:0.3 move:961,1060 sleep:3 shot:bottom
 lib-mini-video   | 2 | ml   | @sample.mp4           | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 move:960,700 shot:a geom:a
 lib-mini-audio   | 1 | ml   | @neon.mp3             | sleep:3 press:Back_to_* sleep:1.5 click:80,171 sleep:3 move:960,700 shot:a
@@ -41,7 +41,7 @@ prefs-search     | 2 | ml   |                       | sleep:2 key:ctrl+p sleep:2
 prefs-day        | 1 | ml   |                       | sleep:2 key:ctrl+p sleep:2.5 shotwin:general
 prefs-live-day   | 2 | ml   |                       | sleep:2 key:ctrl+p sleep:2.5 click:1305,237 sleep:1.5 shotwin:general
 prefs-all        | 2 | ml   |                       | sleep:2 key:ctrl+p sleep:2.5 click:542,952 sleep:1.5 shotwin:a
-open-network     | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:200,156 sleep:2 shotwin:a
+open-network     | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:200,156 sleep:2 shotwin:a geom:a
 open-network-day | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:200,156 sleep:2 shotwin:a
 customize        | 2 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
 customize-day    | 1 | ml   |                       | sleep:2 press:Menu sleep:1.2 click:150,446 sleep:2.5 shotwin:a
@@ -125,3 +125,43 @@ mini-queue       | 2 | ml   | @sample.mp4 @short.mp4 | sleep:3 press:Back_to_* s
 titlebar-drawn   | 2 | none | --no-qt-titlebar @sample.mp4 | sleep:3 move:900,500 sleep:0.5 geom:a shot:a
 # controls not pinned: no bar in the middle of the video, the bottom bar near the bottom edge
 unpinned         | 2 | none | --no-qt-pin-controls @sample.mp4 | sleep:3 move:900,500 sleep:0.5 shot:a move:900,1050 sleep:1 shot:b
+
+# --- library tests (2026-11-13). Each has a check.py block (13f) that asserts the result. Menus are Qt Widgets
+# menus (not reachable through AT-SPI): their items are clicked by position, measured on the menu screenshots.
+# playlists: Play, Shuffle, Export, Add to Queue, Rename, Delete (Delete asks; its default button is No)
+pl-play          | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:820,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 rclick:1060,220 sleep:1.2 click:1150,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 click:80,259 sleep:3 rclick:340,220 sleep:1.2 click:420,248 sleep:3 geom:a press:Play_Queue sleep:1.5 geom:q
+pl-shuffle       | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:820,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 rclick:1060,220 sleep:1.2 click:1150,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 click:80,259 sleep:3 rclick:340,220 sleep:1.2 click:420,296 sleep:3 geom:a press:Play_Queue sleep:1.5 geom:q
+pl-export        | 2 | ml   |                       | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:820,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 rclick:1060,220 sleep:1.2 click:1150,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 click:80,259 sleep:3 rclick:340,220 sleep:1.2 click:420,344 sleep:2.5 key:ctrl+a type:@OUT@/pl-export.m3u key:Return sleep:2 geom:a
+pl-addqueue      | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:820,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 rclick:1060,220 sleep:1.2 click:1150,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 click:80,259 sleep:3 rclick:340,220 sleep:1.2 click:420,392 sleep:2 click:1500,900 sleep:0.3 key:space sleep:3 move:900,500 sleep:0.5 press:Play_Queue sleep:1.5 geom:q
+pl-rename        | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 rclick:340,220 sleep:1.2 click:420,440 sleep:1.5 key:ctrl+a type:Holiday key:Return sleep:2 geom:a
+pl-delete        | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 geom:before rclick:340,220 sleep:1.2 click:420,488 sleep:1.5 press:Yes sleep:2 geom:a
+# New Playlist with a file chosen in the dialog (Qt's file dialog): the playlist holds short.mp4
+pl-new-files     | 2 | ml   |                       | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:With_Files sleep:0.5 press:Select_files sleep:2.5 type:@FIX@/short.mp4 key:Return sleep:1.5 shot:dlg click:1253,798 sleep:2.5 click:390,220 sleep:2.5 geom:a
+# folder '...' menu: Add File plays the file, Add Folder adds a library folder, Resync keeps the library,
+# with media: Edit Subtitle/Audio Tracks add a track to the playing video, Info opens Media Information
+fm-add-file      | 2 | ml   |                       | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:2 click:80,125 sleep:3 click:1884,77 sleep:1.2 click:1700,116 sleep:2.5 type:@FIX@/short.mp4 key:Return sleep:3 geom:a
+fm-add-folder    | 2 | ml   |                       | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:2 click:80,125 sleep:3 click:1884,77 sleep:1.2 click:1700,164 sleep:2.5 type:@FIX@ key:Return sleep:10 geom:a shot:a
+fm-resync        | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 geom:before click:1884,77 sleep:1.2 click:1700,212 sleep:6 geom:a
+fm-subtitle      | 2 | ml   | @sample.mp4           | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 click:1884,77 sleep:1.2 click:1700,212 sleep:2.5 type:@FIX@/fr.srt key:Return sleep:2 click:110,20 sleep:2 move:900,500 sleep:0.3 press:Languages_and_tracks sleep:1.2 shot:a
+fm-audio         | 2 | ml   | @sample.mp4           | env:QT_QPA_PLATFORMTHEME=generic env:XDG_CURRENT_DESKTOP=none sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 click:1884,77 sleep:1.2 click:1700,260 sleep:2.5 type:@FIX@/neon.mp3 key:Return sleep:2 click:110,20 sleep:2 move:900,500 sleep:0.3 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:0.8 shot:a
+fm-info          | 2 | ml   | @sample.mp4           | sleep:3 press:Back_to_* sleep:1.5 click:80,125 sleep:3 click:1884,77 sleep:1.2 click:1700,356 sleep:2.5 geom:a shotwin:a
+# Back/Forward in a folder tree go up and down: The Wand, Back = Shows, Back = Videos, Forward = Shows
+nav-updown       | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:390,220 sleep:2.5 click:390,220 sleep:2.5 geom:wand press:Back sleep:2 geom:b1 press:Back sleep:2 geom:b2 press:Forward sleep:2 geom:f1
+# Music is a folder tree: the Music folder (6 songs), its songs, a click plays one
+music-folder     | 2 | ml   |                       | sleep:2 click:80,171 sleep:3 geom:root click:310,200 sleep:2.5 geom:a shot:a click:310,200 sleep:3 geom:play
+# Continue Watching: a started video is listed on Home; Remove from list takes it off
+cw-remove        | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:16 term
+cw-remove-2      | 2 | same |                       | sleep:3 move:960,700 geom:a shot:a rclick:390,300 sleep:1.2 shot:menu click:460,808 sleep:2.5 geom:b
+# search inside a folder: Videos > Videos lists Shows, long_movie, Sample Movie; "Sample" leaves Sample Movie
+search-filter    | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 geom:a click:1700,77 sleep:0.5 type:Sample sleep:2.5 geom:b
+# sort: Title Z-A puts Sample Movie before long_movie (A-Z by default)
+sort-za          | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 geom:a press:Sort sleep:1.2 shot:menu click:1500,360 sleep:2.5 geom:b
+# file menu: Play plays the video; Stream and Convert open their windows
+video-ctx-play   | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:800,248 sleep:3 geom:a
+video-stream     | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:800,440 sleep:2.5 geom:a shotwin:a
+video-convert    | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:800,488 sleep:2.5 geom:a shotwin:a
+# Network page: Add Stream ('...' menu) and Play plays at once; Save lists the stream, a click on it plays it
+net-play         | 2 | ml   |                       | sleep:2 click:80,213 sleep:3 geom:empty click:1884,77 sleep:1.2 key:Down key:Return sleep:2 type:file://@FIX@/sample.mp4 sleep:0.5 shot:dlg key:ctrl+Return sleep:4 geom:a
+net-save         | 2 | ml   |                       | sleep:2 click:80,213 sleep:3 click:1884,77 sleep:1.2 key:Down key:Return sleep:2 type:file://@FIX@/short.mp4 sleep:0.5 key:Tab sleep:0.5 key:Return sleep:3 geom:saved shot:saved click:600,168 sleep:3 geom:play
+# audio button menu: Track 2 switches the audio to French (checked in the tracks picker's Audio tab)
+audio-menu-switch| 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 click:1537,949 sleep:1.5 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:0.8 shot:a

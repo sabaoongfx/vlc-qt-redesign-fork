@@ -1,6 +1,6 @@
 # Exceptions for contrast.py: scene regex | control name regex | reason (the reason is shown in the report)
 # Only for controls the measurement cannot judge; a real low-contrast design colour stays a failure.
-^open-network | ^(Sort|More|See All|View|Menu)$ | behind the open dialog's dimming layer (modal, not operable)
+^(open-network|net-play|net-save|pl-new-files) | ^(Sort|More|See All|View|Menu)$ | behind the open dialog's dimming layer (modal, not operable)
 ^prefs | ^#[0-9A-Fa-f]{6}$ | accent swatch: it shows the colour it offers
 ^prefs | ^(Outline color|Background color|Text color|Font color)$ | colour button: shows the colour chosen by the user
 ^ | ^Volume$ | volume cone without an outline (user request 2026-11-11): its dark track is ~1.1:1 on the bar

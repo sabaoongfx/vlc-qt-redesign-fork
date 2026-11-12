@@ -24,6 +24,8 @@ for i in 1 2 3 4 5; do rm -rf "$OUT"/*.png "$OUT"/*.ctl "$OUT"/*.log "$OUT"/*.at
 grep -v '^\s*#' "$SCEN" | grep -v '^\s*$' | while IFS='|' read -r name theme kind media actions; do
     name=$(echo $name); [[ "$name" =~ $FILTER ]] || continue
     media=$(echo $media | sed "s|@|$FIX/|g")
+    # @FIX@ and @OUT@ in actions: the fixtures and output folders (typed into file dialogs and URL fields)
+    actions=$(echo "$actions" | sed "s|@FIX@|$FIX|g; s|@OUT@|$OUT|g")
     kind=$(echo $kind)
     # "same": keep the previous scene's profile (e.g. to get the resume prompt on a second launch)
     [ "$kind" = same ] || unset PROFILE
