@@ -165,3 +165,8 @@ net-play         | 2 | ml   |                       | sleep:2 click:80,213 sleep
 net-save         | 2 | ml   |                       | sleep:2 click:80,213 sleep:3 click:1884,77 sleep:1.2 key:Down key:Return sleep:2 type:file://@FIX@/short.mp4 sleep:0.5 key:Tab sleep:0.5 key:Return sleep:3 geom:saved shot:saved click:600,168 sleep:3 geom:play
 # audio button menu: Track 2 switches the audio to French (checked in the tracks picker's Audio tab)
 audio-menu-switch| 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 click:1537,949 sleep:1.5 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:0.8 shot:a
+
+# output devices and volume with a private PipeWire and two silent null outputs (sound:null, see inner.sh):
+# the current device (Test Speakers, the default) is ticked when the picker opens; choosing Test Headphones
+# moves the tick; the volume bar is not empty when the video starts
+audio-device-tick | 2 | none | @sample.mp4           | sound:null sleep:3 move:900,500 sleep:0.5 values:vol press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:1 shot:a geom:a press:Test_Headphones sleep:1.5 press:Languages_and_tracks sleep:1 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:1 shot:b geom:b

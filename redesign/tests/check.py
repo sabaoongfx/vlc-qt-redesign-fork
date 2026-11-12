@@ -731,6 +731,26 @@ if t:
     fra = count_color(t, (1515, 690, 1560, 730), ACCENT, 40)
     check('audio-menu-switch', fra > 3 and eng == 0, f'Track 2 in the audio menu switches the audio to French (tick pixels: English {eng}, French {fra})')
 
+# output devices (sound:null): the current device is ticked, the tick follows a change; volume at start
+def device_ticks(scene, tag):
+    # {device: accent tick pixels left of its row} for the two null outputs in the picker
+    t, rows = img(scene, tag), geom_rows(scene, tag)
+    out = {}
+    if t:
+        for n, r, x, y, w, h in rows:
+            if n in ('Test Speakers', 'Test Headphones') and x > 1400 and h >= 20:
+                out[n] = max(out.get(n, 0), count_color(t, (x, y, min(x + 60, t.size[0]), y + h), ACCENT, 40))
+    return out
+if os.path.exists(f'{OUT}/audio-device-tick.log'):
+    a, b = device_ticks('audio-device-tick', 'a'), device_ticks('audio-device-tick', 'b')
+    check('audio-device-tick', set(a) == {'Test Speakers', 'Test Headphones'}, f'the picker lists both outputs ({sorted(a)})')
+    check('audio-device-tick', a.get('Test Speakers', 0) > 3 and a.get('Test Headphones', 0) == 0,
+          f'the current output (Test Speakers) is ticked when the picker opens (tick pixels {a})')
+    check('audio-device-tick', b.get('Test Headphones', 0) > 3 and b.get('Test Speakers', 0) == 0,
+          f'after choosing Test Headphones the tick moves to it (tick pixels {b})')
+    sl, _ = values('audio-device-tick', 'vol')
+    check('audio-device-tick', sl.get('Volume', 0) > 0, f'the volume bar is not empty when the video starts (Volume {sl.get("Volume")})')
+
 # window (window.txt, run with an empty KWINRULES)
 r = geom_rows('win-open-size', 'a')
 if r:

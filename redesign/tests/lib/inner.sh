@@ -24,10 +24,52 @@ if [ "$THEME" = "-" ]; then :
 elif grep -q '^color-scheme-index=' "$Q" 2>/dev/null; then sed -i "s/^color-scheme-index=.*/color-scheme-index=$THEME/" "$Q"; else printf '[MainWindow]\ncolor-scheme-index=%s\n' "$THEME" >> "$Q"; fi
 # env:NAME=value actions are set for VLC only (e.g. Qt's own file dialog instead of the desktop's)
 VENV=""; set -f; for a in $ACTIONS; do case "$a" in env:*) VENV="$VENV ${a#env:}" ;; esac; done; set +f
+# sound:null: a private PipeWire (+ WirePlumber, + its PulseAudio server) with two silent null outputs,
+# "Test Speakers" (the default) and "Test Headphones", for the scenes about output devices and volume.
+# Its own runtime folder (never the desktop's sound server), no ALSA/Bluetooth monitors (no real device),
+# null sinks discard the audio: nothing reaches the speakers. VLC picks its audio output itself, like a
+# normal start (--aout=any: on a PipeWire system that is VLC's PipeWire output); SNDAOUT=pulse forces one.
+SOUNDARGS=""; SNDPIDS=""
+case " $ACTIONS " in *" sound:null "*)
+    SND=$(mktemp -d /tmp/vlcsnd.XXXX)   # short: a socket path must stay under 108 characters
+    mkdir -p "$CFG/pipewire/pipewire.conf.d" "$CFG/wireplumber/wireplumber.conf.d"
+    cat > "$CFG/pipewire/pipewire.conf.d/test-sinks.conf" <<'PW'
+context.objects = [
+    { factory = adapter
+      args = { factory.name = support.null-audio-sink node.name = "test-speakers"
+               node.description = "Test Speakers" media.class = "Audio/Sink"
+               audio.position = [ FL FR ] priority.session = 2000 priority.driver = 2000 } }
+    { factory = adapter
+      args = { factory.name = support.null-audio-sink node.name = "test-headphones"
+               node.description = "Test Headphones" media.class = "Audio/Sink"
+               audio.position = [ FL FR ] priority.session = 1000 priority.driver = 1000 } }
+]
+PW
+    cat > "$CFG/wireplumber/wireplumber.conf.d/no-hardware.conf" <<'WP'
+wireplumber.profiles = {
+    main = {
+        monitor.alsa = disabled
+        monitor.alsa-midi = disabled
+        monitor.bluez = disabled
+        monitor.bluez-midi = disabled
+        monitor.libcamera = disabled
+        monitor.v4l2 = disabled
+    }
+}
+WP
+    for p in pipewire wireplumber pipewire-pulse; do
+        env XDG_RUNTIME_DIR="$SND" PIPEWIRE_RUNTIME_DIR="$SND" XDG_CONFIG_HOME="$CFG" $p > "$OUT/$NAME.$p.txt" 2>&1 &
+        SNDPIDS="$SNDPIDS $!"; sleep 1
+    done
+    for i in $(seq 20); do [ -S "$SND/pulse/native" ] && break; sleep 0.25; done
+    VENV="$VENV PULSE_SERVER=unix:$SND/pulse/native PIPEWIRE_RUNTIME_DIR=$SND"
+    SOUNDARGS="--aout=${SNDAOUT:-any}"
+    ;;
+esac
 # start in the output folder: a scene that turns on "Save a log" makes VLC write vlc-log.txt into its working
 # directory (it was the repository root)
 cd "$OUT"
-setsid env $VENV "$VLC" ${VLCARGS} $ML ${WIZ:---no-qt-privacy-ask} --no-qt-backdrop-blur $MEDIA > "$OUT/$NAME.log" 2>&1 &
+setsid env $VENV "$VLC" ${VLCARGS} $SOUNDARGS $ML ${WIZ:---no-qt-privacy-ask} --no-qt-backdrop-blur $MEDIA > "$OUT/$NAME.log" 2>&1 &
 VPID=$!
 for i in $(seq 40); do W=$(xdotool search --onlyvisible --class vlc 2>/dev/null | tail -1); [ -n "$W" ] && break; sleep 0.25; done
 sleep 1
@@ -70,3 +112,4 @@ for a in $ACTIONS; do
   esac
 done
 kill -- -$VPID 2>/dev/null; sleep 0.5; kill -9 -- -$VPID 2>/dev/null
+[ -n "$SNDPIDS" ] && { kill $SNDPIDS 2>/dev/null; sleep 0.3; kill -9 $SNDPIDS 2>/dev/null; rm -rf "$SND"; }
