@@ -1343,6 +1343,7 @@ if qt6_dep.found()
             'name': 'test_qt_ml_model',
             'sources': files(
                 'tests/test_ml_model.cpp',
+                'tests/test_ml_model_stubs.cpp',
                 'tests/vlc_stub_modules.cpp',
                 'util/base_model.cpp',
                 'util/vlctick.cpp',

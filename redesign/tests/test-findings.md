@@ -19,7 +19,7 @@ Bugs the harness tests found, kept here until the user plans the fixes (same pra
 
 | What | Check | Likely cause |
 |---|---|---|
-| `test_ml_model` does not link: undefined `MainCtx::settingValue`, `MainCtx::setSettingValue` (from `MediaLib::recordVisit` / `frequentVisits`) and `DialogsProvider::streamingDialog` (from `MediaLib::streamMedia`) | `make -C modules/gui/qt check` | the redesign added these calls to `medialibrary/medialib.cpp`; the test links `medialib.cpp` with stubs (`tests/vlc_stub_modules.cpp`) but without `MainCtx`/`DialogsProvider`. Fix options: move the calls behind an interface the test can stub, or add stubs for the three functions to the test. |
+| FIXED 2026-11-13 (`tests/test_ml_model_stubs.cpp`, stand-ins for the three functions; confirm in CI): `test_ml_model` did not link: undefined `MainCtx::settingValue`, `MainCtx::setSettingValue` (from `MediaLib::recordVisit` / `frequentVisits`) and `DialogsProvider::streamingDialog` (from `MediaLib::streamMedia`) | `make -C modules/gui/qt check` | the redesign added these calls to `medialibrary/medialib.cpp`; the test links `medialib.cpp` with stubs (`tests/vlc_stub_modules.cpp`) but without `MainCtx`/`DialogsProvider`. Fix options: move the calls behind an interface the test can stub, or add stubs for the three functions to the test. |
 
 ## Documentation (2026-11-13, found while writing the library tests)
 
