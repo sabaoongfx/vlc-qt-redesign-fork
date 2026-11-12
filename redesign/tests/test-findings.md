@@ -15,6 +15,12 @@ Bugs the harness tests found, kept here until the user plans the fixes (same pra
 | The Convert window's "Delete selected profile" button: red icon 2.88:1 on its dark face (under 3:1) | `video-convert` (contrast) | the Widgets profile toolbar keeps VLC's red delete icon |
 | The player's library card, Music section, lists the **Videos** folder instead of the Music folder (the library's own Music page is right: Music, 6 songs) | `card-sections`: "music: card lists Music", "the Videos folder is not listed under Music" | `MLVideoFolderTreeModel::setAudio` only emits `resetRequested`, which refreshes with the existing loader; the loader holds a copy of the `audio` flag from when it was made (`createMLLoader` copies the model). The card sets `audio` after `ml`, so the first loader is a video one. `setSearchPattern` and the others call `resetCache()`, which makes a new loader. |
 
+## Qt unit tests (2026-11-13, first CI run of `qt-unit-tests`, run 43298787021)
+
+| What | Check | Likely cause |
+|---|---|---|
+| `test_ml_model` does not link: undefined `MainCtx::settingValue`, `MainCtx::setSettingValue` (from `MediaLib::recordVisit` / `frequentVisits`) and `DialogsProvider::streamingDialog` (from `MediaLib::streamMedia`) | `make -C modules/gui/qt check` | the redesign added these calls to `medialibrary/medialib.cpp`; the test links `medialib.cpp` with stubs (`tests/vlc_stub_modules.cpp`) but without `MainCtx`/`DialogsProvider`. Fix options: move the calls behind an interface the test can stub, or add stubs for the three functions to the test. |
+
 ## Documentation (2026-11-13, found while writing the library tests)
 
 | What | Where |

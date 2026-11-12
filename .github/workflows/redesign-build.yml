@@ -575,8 +575,12 @@ jobs:
           make -j"$(getconf _NPROCESSORS_ONLN)"
           # Qt Quick tests need a platform: offscreen (no display in the container)
           export QT_QPA_PLATFORM=offscreen
-          make -C modules/gui/qt -j"$(getconf _NPROCESSORS_ONLN)" check || { cat modules/gui/qt/test-suite.log 2>/dev/null; exit 1; }
-          cat modules/gui/qt/test-suite.log 2>/dev/null | head -60 || true
+          # -k: build and run every test even when one does not build (test_ml_model did not link, 2026-11-13)
+          rc=0
+          make -k -C modules/gui/qt -j"$(getconf _NPROCESSORS_ONLN)" check > qt-check.txt 2>&1 || rc=1
+          grep -E '^(PASS|FAIL|XFAIL|XPASS|SKIP|ERROR):|^# |undefined reference|error:' qt-check.txt | sort | uniq | head -80
+          cat modules/gui/qt/test-suite.log 2>/dev/null | head -80 || true
+          exit $rc
 
   # GitHub keeps 10 GB of caches per repository and evicts the least recently used: one ccache per
   # commit per workflow (300-900 MB each) pushed out the Windows contrib cache (a 2-hour rebuild,
