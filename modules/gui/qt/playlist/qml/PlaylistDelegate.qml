@@ -342,12 +342,13 @@ T.Control {
 
                 if (contextMenu && button === Qt.RightButton)
                     contextMenu.popup(delegate.mappedIndex(), eventPoint.globalPosition)
-            }
 
-            onDoubleTapped: (eventPoint, button) => {
-                if (button !== Qt.RightButton) {
+                // redesign: one click plays the row (user request; it was a double click). Ctrl/Shift
+                // clicks only select; the row already playing is not restarted.
+                if (button === Qt.LeftButton
+                        && !(point.modifiers & (Qt.ControlModifier | Qt.ShiftModifier))
+                        && delegate.mappedIndex() !== MainPlaylistController.currentIndex)
                     MainPlaylistController.goTo(delegate.mappedIndex(), true)
-                }
             }
 
             Component.onCompleted: {
