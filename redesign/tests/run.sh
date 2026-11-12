@@ -27,15 +27,20 @@ grep -v '^\s*#' "$SCEN" | grep -v '^\s*$' | while IFS='|' read -r name theme kin
     # @FIX@ and @OUT@ in actions: the fixtures and output folders (typed into file dialogs and URL fields)
     actions=$(echo "$actions" | sed "s|@FIX@|$FIX|g; s|@OUT@|$OUT|g")
     kind=$(echo $kind)
-    # "same": keep the previous scene's profile (e.g. to get the resume prompt on a second launch)
-    [ "$kind" = same ] || unset PROFILE
+    # "same": keep the previous scene's profile (e.g. to get the resume prompt on a second launch).
+    # Otherwise the previous scene's library copy is no longer needed: delete it now (/tmp is a RAM disk
+    # here; a full run's copies filled it, 2026-11-13). "prefs" profiles stay: check_settings.py reads them.
+    if [ "$kind" != same ]; then
+        [ -n "$LIBCOPY" ] && rm -rf "$LIBCOPY"
+        unset PROFILE LIBCOPY
+    fi
     # "fixture": like ml, for scenes that play from the library (e.g. resume tests); ~/ media paths point
     # at the fixture's own files, which its library database lists
     if [ "$kind" = ml ] || [ "$kind" = fixture ]; then
         # a fresh copy per scene (the nested session can keep writing to the previous one for a moment)
         mkdir -p "$OUT/profiles"; P=$(mktemp -d -p "$OUT/profiles" "$name.XXXX"); rmdir "$P"; cp -a "$FIX/profile" "$P"
         sed -i '/^\[ControlbarProfileModel\]/,/^\[/{/^\[ControlbarProfileModel\]/d;/^\[/!d}' "$P/config/vlc/vlc-qt-interface.conf" 2>/dev/null
-        export PROFILE=$P
+        export PROFILE=$P LIBCOPY=$P
     fi
     # "prefs": an empty profile of its own, kept after the scene (settings_scenes.py: the saved vlcrc is
     # compared with the baseline scene's; a copy of the library profile per option would be ~16 GB)

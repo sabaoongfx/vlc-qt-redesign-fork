@@ -634,7 +634,8 @@ if os.path.exists(f'{OUT}/pl-export.log'):
     check('pl-export', text.startswith('#EXTM3U') and 'long_movie' in text and 'Sample%20Movie' in text.replace('Sample Movie', 'Sample%20Movie'),
           f'Export Playlist wrote an M3U with both videos ({len(text)} bytes)')
 if geom('pl-addqueue', 'q'):
-    check('pl-addqueue', any(n.startswith('2 elements') for n in geom('pl-addqueue', 'q')), 'Add to Queue: Play then shows 2 elements in the queue')
+    # sample.mp4 plays; the playlist's two videos are queued after it
+    check('pl-addqueue', any(n.startswith('3 items') for n in geom('pl-addqueue', 'q')), 'Add to Queue: the mini player queue card lists 3 items (1 playing + the 2 of the playlist)')
 if geom('pl-rename', 'a'):
     c = cells('pl-rename', 'a')
     check('pl-rename', 'Holiday' in c and 'Road_Trip' not in c, f'Rename: the card is called Holiday (cards: {c})')
@@ -696,6 +697,11 @@ if geom('video-ctx-play', 'a'):
 for scene, word in (('video-stream', 'Stream'), ('video-convert', 'Convert')):
     if geom(scene, 'a'):
         check(scene, any(word in n and r in ('frame', 'dialog', 'window') for n, r, *_ in geom_rows(scene, 'a')), f'{word} opens its window')
+# Convert: a profile is chosen (an empty Profile box means Start can never be used)
+p = f'{OUT}/video-convert-a.ctl'
+if os.path.exists(p):
+    combos = [l.split('\t')[1] for l in open(p) if l.startswith('combo box\t')]
+    check('video-convert', any(c.strip() for c in combos), f'Convert has a profile selected (combo boxes: {combos})')
 if geom('folder-ctx-play', 'after'):
     check('folder-ctx-play', playing('folder-ctx-play', 'after', 'The_Wand_S01E01'), f'folder Play starts its first video (window "{window_title("folder-ctx-play", "after")}")')
 if geom('open-network', 'a'):
