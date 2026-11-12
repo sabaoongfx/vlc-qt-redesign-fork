@@ -53,13 +53,14 @@ Widgets.IconToolButton {
 
     // Events
 
-    // redesign: the Figma "Languages and tracks" picker on its Subtitles tab; its Show Preferences
-    // button opens the full side panel
+    // redesign: the Figma "Languages and tracks" picker, always on its Subtitles tab (it kept the last
+    // tab used, so it opened on Audio after a visit there); its Show Preferences button opens the full
+    // side panel. The audio button opens the same picker on Audio.
     onClicked: {
         if (menuLoader.item?.visible)
             menuLoader.item.close()
         else
-            pickerLoader.item?.toggle()
+            pickerLoader.item?.toggle(2)
     }
 
     // redesign: accent while the picker or the panel is open (Figma active state)

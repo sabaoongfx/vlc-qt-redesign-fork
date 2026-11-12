@@ -25,8 +25,9 @@ import VLC.Style
 import VLC.Player
 import VLC.Util
 
-// redesign: the prototype's audio button, a popup with the audio tracks and the output devices,
-// and a link to the Audio tab of the tracks panel
+// redesign: the audio button opens the Figma tracks picker on its Audio tab (the audio tracks and the
+// output devices; user request 2026-11-13: it had its own small menu), the subtitles button the same
+// picker on Subtitles. Show Preferences opens the full side panel on the same tab.
 Widgets.IconToolButton {
     id: root
 
@@ -39,9 +40,6 @@ Widgets.IconToolButton {
             return g_mainDisplay
     }
 
-    property bool _menuShown: false
-    // the popup closes on the press outside, before this button gets the click (see TracksMenu.toggle)
-    property double _menuHiddenAt: 0
 
     // Signals
 
@@ -56,40 +54,47 @@ Widgets.IconToolButton {
 
     AccessibleCompat.id: "audioButton"
 
-    // accent while the popup or the panel it opened is shown
-    color: (_menuShown || (panelLoader.item && panelLoader.item.visible)) ? colorContext.accent
-                                                                           : colorContext.fg.primary
+    // accent while the picker or the panel it opened is shown
+    color: ((pickerLoader.item && pickerLoader.item.visible) || (panelLoader.item && panelLoader.item.visible))
+           ? colorContext.accent : colorContext.fg.primary
 
     // Events
 
     onClicked: {
         if (panelLoader.item?.visible)
             panelLoader.item.close()
-        else if (Date.now() - Math.max(_menuHiddenAt, panelLoader.item?._closedAt ?? 0) > 300)
-            menu.popup(root.mapToGlobal(root.width, 0))
+        else if (Date.now() - (panelLoader.item?._closedAt ?? 0) > 300)
+            pickerLoader.item?.toggle(1)
     }
 
     // Children
 
-    QmlAudioTracksMenu {
-        id: menu
+    Loader {
+        id: pickerLoader
 
-        ctx: MainCtx
+        active: !root.paintOnly
 
-        onAboutToShow: {
-            MainCtx.playqueuePanel.visible = false
-            root._menuShown = true
-            root.requestLockUnlockAutoHide(true)
-        }
-        onAboutToHide: {
-            root._menuShown = false
-            root._menuHiddenAt = Date.now()
-            root.requestLockUnlockAutoHide(false)
-        }
+        sourceComponent: TracksPicker {
+            id: picker
 
-        onSettingsRequested: {
-            if (panelLoader.item)
-                panelLoader.item.openTab(2)
+            parent: root._parentItem
+            z: 1
+
+            colorContext.palette: root.colorContext.palette
+
+            onPreferencesRequested: (panelTab) => panelLoader.item?.openTab(panelTab)
+
+            onOpened: {
+                MainCtx.playqueuePanel.visible = false
+                root.requestLockUnlockAutoHide(true)
+                root.menuOpened(picker)
+            }
+
+            onClosed: {
+                root.requestLockUnlockAutoHide(false)
+                root.forceActiveFocus()
+                root.menuOpened(null)
+            }
         }
     }
 
@@ -126,6 +131,7 @@ Widgets.IconToolButton {
 
     function forceUnlock() {
         // also called while the bar is torn down, after the loader
+        pickerLoader?.item?.close()
         panelLoader?.item?.close()
     }
 }
