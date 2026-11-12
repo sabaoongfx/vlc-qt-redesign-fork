@@ -163,8 +163,8 @@ video-convert    | 2 | ml   |                       | sleep:2 click:80,125 sleep
 # Network page: Add Stream ('...' menu) and Play plays at once; Save lists the stream, a click on it plays it
 net-play         | 2 | ml   |                       | sleep:2 click:80,213 sleep:3 geom:empty click:1884,77 sleep:1.2 key:Down key:Return sleep:2 type:file://@FIX@/sample.mp4 sleep:0.5 shot:dlg key:ctrl+Return sleep:4 geom:a
 net-save         | 2 | ml   |                       | sleep:2 click:80,213 sleep:3 click:1884,77 sleep:1.2 key:Down key:Return sleep:2 type:file://@FIX@/short.mp4 sleep:0.5 key:Tab sleep:0.5 key:Return sleep:3 geom:saved shot:saved click:600,168 sleep:3 geom:play
-# audio button menu: Track 2 switches the audio to French (checked in the tracks picker's Audio tab)
-audio-menu-switch| 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 click:1537,949 sleep:1.5 press:Languages_and_tracks sleep:1.2 click:1702,518 sleep:0.8 shot:a
+# audio button: its picker opens on Audio; Track 2 switches the audio to French (the tick moves)
+audio-menu-switch| 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 press:Track_2_-_[French] sleep:1.5 shot:a
 
 # output devices and volume with a private PipeWire and two silent null outputs (sound:null, see inner.sh):
 # the current device (Test Speakers, the default) is ticked when the picker opens; choosing Test Headphones
@@ -176,3 +176,8 @@ audio-device-tick | 2 | none | @sample.mp4           | sound:null sleep:3 move:9
 # (pointer moves between the steps: the 10 s idle timer would close the panel, see test-findings.md)
 eq-preset-icons  | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list move:700,500 press:Rock sleep:1.2 move:710,505 geom:rock shot:rock
 eq-preset-icons-day | 1 | none | @multi.mkv          | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list
+
+# the tracks picker opens on the tab of its button (user request 2026-11-13): the subtitles button on Subtitles,
+# also after the Audio tab was used; the audio button opens the same picker on Audio (it had its own small menu)
+picker-default-tab | 2 | none | @multi.mkv          | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1.2 shot:first click:1702,518 sleep:1 shot:audio press:Languages_and_tracks sleep:1 move:910,510 press:Languages_and_tracks sleep:1.2 shot:again
+audio-button-picker | 2 | none | @multi.mkv         | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a press:Audio_tracks_and_output sleep:1 move:910,510 press:Languages_and_tracks sleep:1.2 shot:subs

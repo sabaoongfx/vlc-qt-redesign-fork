@@ -783,6 +783,30 @@ if g:
     check('eq-preset-icons', any(n == 'Rock' and r == 'combo box' for n, r, *_ in geom_rows('eq-preset-icons', 'rock')),
           'choosing Rock in the dropdown selects it (the preset box shows Rock)')
 
+# tracks picker: which tab is current (the accent underline under the tab buttons), per button
+def picker_tab(scene, tag):
+    t, c = img(scene, tag), f'{OUT}/{scene}-{tag}.ctl'
+    if not (t and os.path.exists(c)):
+        return None
+    under = {}
+    for line in open(c):
+        f = line.rstrip('\n').split('\t')
+        if len(f) == 7 and f[0] == 'button' and f[1] in ('Video', 'Audio', 'Subtitles') and int(f[3]) > 1400:
+            x, y, w, h = map(int, f[3:])
+            under[f[1]] = count_color(t, (x, y + h - 6, x + w, y + h + 2), ACCENT, 40)
+    if not under or max(under.values()) < 10:
+        return 'none'                                   # no picker open
+    return max(under, key=under.get)
+
+for scene, tag, want, what in (('picker-default-tab', 'first', 'Subtitles', 'the subtitles button opens the picker on Subtitles'),
+                               ('picker-default-tab', 'audio', 'Audio', 'the Audio tab can be chosen'),
+                               ('picker-default-tab', 'again', 'Subtitles', 'reopened, it is on Subtitles again (not the last tab)'),
+                               ('audio-button-picker', 'a', 'Audio', 'the audio button opens the same picker on Audio'),
+                               ('audio-button-picker', 'subs', 'Subtitles', 'then the subtitles button opens it on Subtitles')):
+    if img(scene, tag):
+        got = picker_tab(scene, tag)
+        check(scene, got == want, f'{what} (current tab: {got})')
+
 # window (window.txt, run with an empty KWINRULES)
 r = geom_rows('win-open-size', 'a')
 if r:
