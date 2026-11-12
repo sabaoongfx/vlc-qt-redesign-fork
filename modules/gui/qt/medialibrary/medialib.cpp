@@ -25,6 +25,7 @@
 
 #include <utility>
 #include <algorithm>
+#include <cstring>
 
 #include <QQmlEngine>
 #include <QFileInfo>
@@ -160,18 +161,47 @@ MLItemId MediaLib::deserializeMlItemIdFromString(const QString& serialized_id) {
     return MLItemId::fromString(serialized_id);
 }
 
+// redesign: "Add to Queue" with a list that holds the item playing now (episode 47 of a playlist
+// of 1 to 100): the items before it in the list go in before it and the rest after it, in the
+// list's order, so the queue reads 1 to 100 and 47 is not queued twice. Any other list is
+// appended at the end, as before.
+void MediaLib::appendToQueue(const QVector<vlc::playlist::Media>& medias)
+{
+    const int current = m_playlistController->currentIndex();
+    const PlaylistItem currentItem = m_playlistController->getCurrentItem();
+    input_item_t *const currentMedia = (current >= 0 && currentItem) ? currentItem.inputItem() : nullptr;
+    if (currentMedia && currentMedia->psz_uri)
+    {
+        const auto it = std::find_if(medias.cbegin(), medias.cend(), [currentMedia](const vlc::playlist::Media& m) {
+            return m.raw() && m.raw()->psz_uri && strcmp(m.raw()->psz_uri, currentMedia->psz_uri) == 0;
+        });
+        if (it != medias.cend())
+        {
+            const qsizetype k = it - medias.cbegin();
+            const QVector<vlc::playlist::Media> after = medias.mid(k + 1);
+            const QVector<vlc::playlist::Media> before = medias.mid(0, k);
+            if (!after.isEmpty())
+                m_playlistController->insert(current + 1, after, false);
+            if (!before.isEmpty())
+                m_playlistController->insert(current, before, false);
+            return;
+        }
+    }
+    m_playlistController->append(medias, false);
+}
+
 void MediaLib::addToPlaylist(const QString& mrl, const QStringList &options)
 {
     QVector<vlc::playlist::Media> medias;
     convertQStringToPlaylistMedias(mrl, options, medias);
-    m_playlistController->append(medias, false);
+    appendToQueue(medias);
 }
 
 void MediaLib::addToPlaylist(const QUrl& mrl, const QStringList &options)
 {
     QVector<vlc::playlist::Media> medias;
     convertQUrlToPlaylistMedias(mrl, options, medias);
-    m_playlistController->append(medias, false);
+    appendToQueue(medias);
 }
 
 // A specific item has been asked to be added to the playlist
@@ -189,7 +219,7 @@ void MediaLib::addToPlaylist(const MLItemId & itemId, const QStringList &options
     //UI thread
     [this](quint64, Context& ctx){
         if (!ctx.medias.empty())
-            m_playlistController->append(ctx.medias, false);
+            appendToQueue(ctx.medias);
     });
 }
 
@@ -208,7 +238,7 @@ void MediaLib::addToPlaylist(const QVariantList& itemIdList, const QStringList &
     //UI thread
     [this](quint64, Context& ctx){
         if (!ctx.medias.empty())
-            m_playlistController->append(ctx.medias, false);
+            appendToQueue(ctx.medias);
     });
 }
 

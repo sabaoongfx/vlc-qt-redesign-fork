@@ -198,6 +198,9 @@ signals:
 private:
     static void onMediaLibraryEvent( void* data, const vlc_ml_event_t* event );
 
+    // redesign: queue medias; when the playing item is one of them, the others go around it
+    void appendToQueue(const QVector<vlc::playlist::Media>& medias);
+
 private:
     qt_intf_t* m_intf;
     vlc::playlist::PlaylistController* m_playlistController = nullptr;
