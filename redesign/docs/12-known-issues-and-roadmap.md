@@ -39,11 +39,32 @@ Not built yet (Figma frames exist; status per frame in `redesign/remaining/index
 2. **Onboarding** (11 frames).
 3. **Keyboard Shortcuts dialog.**
 4. **Home rows:** Listen Again, Frequently Visited folders.
-5. **Player:** subtitle timeline, waveform seek bar, bookmarks panel (Ctrl+B), shortcut hints in the OSD.
+5. **Player:** subtitle timeline, waveform seek bar, shortcut hints in the OSD; the queue panel's Bookmarks and
+   Chapters tabs (planned below).
 6. **Mini player:** hover overlay (close, pop-out, previous/play/next), drag to reorder the queue.
 7. **Settings presets/profiles; Add Subtitles to Playlist.**
 8. **Audio:** HDR, spatializer and stereo widener frames as far as VLC supports them; the visualizer
    (planned below). EQ preset icons: being built (2026-11-13).
+
+### Planned: queue panel with Bookmarks and Chapters tabs (Figma "Queue", planned 2026-11-13)
+
+- **What the Figma has** (`VLC Redesign (Community) (5).zip`: `Queue.svg`, `Queue-1.svg`, 400 x 946): the
+  play queue panel gets a tab bar, Queue | Bookmarks | Chapters (icon + label, accent underline and accent
+  icon on the current tab, dark bar). The Queue tab is not drawn: it is today's queue list.
+  - **Bookmarks:** a header "N Bookmarks" with - (remove the selected one) and + (add one at the current
+    time); rows: name left ("DON'T BLINK 1"), time with milliseconds right ("00:00:42:023").
+  - **Chapters:** rows: accent number, chapter name, start time right (00:02:15); no header.
+- **Backend (exists):** bookmarks: the player's bookmark functions (add, remove, rename, jump; today only in
+  the old Widgets Bookmarks dialog); chapters: the player's chapter list (`Player` chapters model, already used
+  by the seek bar's chapter marks).
+- **Behaviour to build:** a click on a bookmark or a chapter seeks there; double-click renames a bookmark (as
+  in VLC's dialog); + adds at the current time; - removes the selected one; Ctrl+B opens the panel on
+  Bookmarks. The tabs replace the panel's "Play Queue" title; the queue's sort/search/add buttons stay on the
+  Queue tab.
+- **Tests first:** a fixture video with chapters (ffmpeg metadata chapters) and a scene per tab: the chapter
+  rows and their times, a click seeks (seek bar time), + adds a bookmark at the current time, - removes it,
+  rename, the accent tab underline follows the tab; the queue tab still passes the queue scenes.
+- **Effort:** ~1 day.
 
 ### Planned: audio visualizer picker (Figma "Audio Visualizer", planned 2026-11-13)
 
