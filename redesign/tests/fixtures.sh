@@ -4,6 +4,8 @@ set -e
 T=$(cd "$(dirname "$0")" && pwd)
 FIX=${FIX:-$T/out/fixtures}
 export VLC=${VLC:-$(cd "$T/../.." && pwd)/build/vlc}
+# silent like run.sh, also when this script runs on its own (Open Folder plays the folders)
+case " $VLCARGS " in *--aout=*) ;; *) export VLCARGS="--aout=adummy $VLCARGS" ;; esac
 mkdir -p "$FIX"
 cd "$FIX"
 ff() { ffmpeg -loglevel error -y "$@"; }
