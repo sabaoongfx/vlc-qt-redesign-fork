@@ -100,6 +100,26 @@
         <file alias="volume-low.svg">pixmaps/menu/volume-low.svg</file>
         <file alias="volume-muted.svg">pixmaps/menu/volume-muted.svg</file>
     </qresource>
+    <qresource prefix="/eq">
+        <file alias="flat.svg">pixmaps/eq/flat.svg</file>
+        <file alias="classical.svg">pixmaps/eq/classical.svg</file>
+        <file alias="club.svg">pixmaps/eq/club.svg</file>
+        <file alias="dance.svg">pixmaps/eq/dance.svg</file>
+        <file alias="fullbass.svg">pixmaps/eq/fullbass.svg</file>
+        <file alias="fullbasstreble.svg">pixmaps/eq/fullbasstreble.svg</file>
+        <file alias="fulltreble.svg">pixmaps/eq/fulltreble.svg</file>
+        <file alias="headphones.svg">pixmaps/eq/headphones.svg</file>
+        <file alias="largehall.svg">pixmaps/eq/largehall.svg</file>
+        <file alias="live.svg">pixmaps/eq/live.svg</file>
+        <file alias="party.svg">pixmaps/eq/party.svg</file>
+        <file alias="pop.svg">pixmaps/eq/pop.svg</file>
+        <file alias="reggae.svg">pixmaps/eq/reggae.svg</file>
+        <file alias="rock.svg">pixmaps/eq/rock.svg</file>
+        <file alias="ska.svg">pixmaps/eq/ska.svg</file>
+        <file alias="soft.svg">pixmaps/eq/soft.svg</file>
+        <file alias="softrock.svg">pixmaps/eq/softrock.svg</file>
+        <file alias="techno.svg">pixmaps/eq/techno.svg</file>
+    </qresource>
     <qresource prefix="/misc">
         <file alias="cone.svg">pixmaps/misc/cone.svg</file>
         <file alias="new_indicator.svg">pixmaps/misc/new_indicator.svg</file>

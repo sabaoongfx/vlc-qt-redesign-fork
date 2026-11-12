@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="29.8 803.8 24 24" fill="none">
+<!-- Figma "EQ presets" icon: #FF00FF = the label grey, #FF8800 = the accent (SVGColorImage) -->
+  <path d="M30.7998 815.8H52.7998" stroke-width="2" stroke-linecap="round" stroke="#FF00FF"/>
+  <path d="M34.7998 817.8H47.7998C47.7998 817.8 44.7998 819.8 41.3008 819.8C37.8017 819.8 34.7998 817.8 34.7998 817.8Z" fill="#FF8800"/>
+  <path d="M52.7998 813.8V810.8L52.2189 811.454C51.2869 812.502 50.1133 813.307 48.7998 813.8H52.7998Z" fill="#FF8800"/>
+  <path d="M30.7998 813.8H33.7998C33.7998 813.8 33.1998 813.125 32.3 812.9C31.4003 812.675 30.7998 812.9 30.7998 812.9V813.8Z" fill="#FF8800"/>
+</svg>

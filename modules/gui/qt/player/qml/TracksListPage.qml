@@ -421,11 +421,21 @@ FocusScope {
                     EffectCard {
                         label: qsTr("Equalizer")
 
-                        // Figma EQ presets: None (the equalizer off) and VLC's presets
+                        // Figma EQ presets: None (the equalizer off) and VLC's presets, each with its
+                        // curve icon (pixmaps/eq, named after VLC's preset ids, in equalizer_presets.h order;
+                        // grey = the label colour, orange = the accent)
                         CardCombo {
+                            readonly property var presetIds: ["flat", "classical", "club", "dance", "fullbass",
+                                "fullbasstreble", "fulltreble", "headphones", "largehall", "live", "party", "pop",
+                                "reggae", "rock", "ska", "soft", "softrock", "techno"]
+
                             model: effects.equalizerPresetNames
                             currentIndex: (root._rev, effects.equalizerPreset())
                             onActivated: (i) => effects.setEqualizerPreset(i)
+                            iconAt: (i) => (i > 0 && i <= presetIds.length)
+                                ? SVGColorImage.colorize("qrc:///eq/" + presetIds[i - 1] + ".svg")
+                                               .color1(root.valueColor).accent(theme.accent).uri()
+                                : ""
                         }
 
                         EffectSlider {

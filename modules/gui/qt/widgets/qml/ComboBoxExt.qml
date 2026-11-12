@@ -55,6 +55,9 @@ T.ComboBox {
     property int labelPixelSize: VLCStyle.fontSize_normal
     property int indicatorPixelSize: VLCStyle.icon_normal
     property real indicatorRightMargin: 0
+    // redesign: an icon in front of a list row: a function (index) -> image url, "" for none (the Figma
+    // EQ presets list). Rows with an icon put their name after it; the others keep the plain label.
+    property var iconAt: null
 
     Keys.priority: Keys.AfterItem
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
@@ -64,11 +67,36 @@ T.ComboBox {
         height: implicitContentHeight + topPadding + bottomPadding
         padding: VLCStyle.margin_xsmall
         leftPadding: control.leftPadding
-        contentItem: Widgets.ListLabel {
-            text: control.textRole ? (Helpers.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
-            color: control.color
-            elide: Text.ElideRight
-            verticalAlignment: Text.AlignVCenter
+        contentItem: Item {
+            readonly property url icon: control.iconAt ? control.iconAt(index) : ""
+
+            implicitWidth: (rowIcon.visible ? rowIcon.width + rowLabel.anchors.leftMargin : 0) + rowLabel.implicitWidth
+            implicitHeight: Math.max(rowLabel.implicitHeight, rowIcon.visible ? rowIcon.height : 0)
+
+            Image {
+                id: rowIcon
+
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: VLCStyle.dp(24, VLCStyle.scale)
+                height: width
+                sourceSize: Qt.size(width, height)
+                visible: parent.icon.toString() !== ""
+                source: parent.icon
+            }
+
+            Widgets.ListLabel {
+                id: rowLabel
+
+                anchors.left: rowIcon.visible ? rowIcon.right : parent.left
+                anchors.leftMargin: rowIcon.visible ? VLCStyle.dp(11, VLCStyle.scale) : 0
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: control.textRole ? (Helpers.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
+                color: control.color
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+            }
         }
         highlighted: control.highlightedIndex === index
     }

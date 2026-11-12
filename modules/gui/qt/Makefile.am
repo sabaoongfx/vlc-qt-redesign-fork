@@ -1038,6 +1038,24 @@ libqt_plugin_la_RES = \
 	pixmaps/menu/redesign-addfile.svg \
 	pixmaps/menu/redesign-addfolder.svg \
 	pixmaps/menu/redesign-resync.svg \
+	pixmaps/eq/flat.svg \
+	pixmaps/eq/classical.svg \
+	pixmaps/eq/club.svg \
+	pixmaps/eq/dance.svg \
+	pixmaps/eq/fullbass.svg \
+	pixmaps/eq/fullbasstreble.svg \
+	pixmaps/eq/fulltreble.svg \
+	pixmaps/eq/headphones.svg \
+	pixmaps/eq/largehall.svg \
+	pixmaps/eq/live.svg \
+	pixmaps/eq/party.svg \
+	pixmaps/eq/pop.svg \
+	pixmaps/eq/reggae.svg \
+	pixmaps/eq/rock.svg \
+	pixmaps/eq/ska.svg \
+	pixmaps/eq/soft.svg \
+	pixmaps/eq/softrock.svg \
+	pixmaps/eq/techno.svg \
 	pixmaps/menu/redesign-gridview.svg \
 	pixmaps/menu/redesign-listview.svg \
 	pixmaps/menu/redesign-quit.svg \
