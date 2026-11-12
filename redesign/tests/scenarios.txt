@@ -92,3 +92,7 @@ pl-queue         | 2 | ml   |                       | sleep:2 click:80,259 sleep
 pl-badge         | 2 | ml   |                       | sleep:2 click:80,259 sleep:3 click:1066,708 sleep:1.5 type:Road_Trip sleep:0.5 click:1253,798 sleep:2.5 click:80,125 sleep:3 click:390,220 sleep:2.5 rclick:730,220 sleep:1.2 click:820,583 sleep:2 click:874,456 sleep:0.5 click:970,674 sleep:2 click:80,259 sleep:3 move:900,700 sleep:1 shot:page
 # Add to Queue around the playing item: E06 plays alone, S01 queued -> E01-E05, E06 (current), E07-E12, 12 items
 queue-around     | 2 | ml   |                       | sleep:2 click:80,125 sleep:3 click:390,220 sleep:2.5 click:390,220 sleep:2.5 click:390,220 sleep:2.5 click:390,220 sleep:2.5 click:390,480 sleep:2 move:900,1050 sleep:0.5 click:118,1053 sleep:0.5 press:Play_Queue sleep:1.5 shot:before press:Play_Queue sleep:1 click:120,20 sleep:2.5 click:580,77 sleep:2.5 rclick:390,220 sleep:1.2 click:487,343 sleep:2 click:1881,1046 sleep:1.5 shot:after
+# normal window: 10 s idle hides both bars and the video fills the window (idle), a move shows them over it (moved), 10 s later hidden
+bars-idle        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:1 shot:t0 sleep:12 shot:idle move:900,520 sleep:1 shot:moved sleep:12 shot:hidden
+# play queue: one click plays a row (short.mp4 plays)
+queue-click      | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1750,213 sleep:2 move:1500,700 sleep:0.5 shot:a
