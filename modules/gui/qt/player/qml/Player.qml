@@ -93,7 +93,71 @@ FocusScope {
 
     property bool _controlsUnderVideo: (MainCtx.pinVideoControls
                                         &&
-                                        (MainCtx.intfMainWindow.visibility !== Window.FullScreen))
+                                        (MainCtx.intfMainWindow.visibility !== Window.FullScreen)
+                                        && !_windowFill)
+
+    // redesign: in a normal window, after 10 s without the pointer moving or a key (while a video
+    // plays and nothing is open) both bars hide and the video fills the window (user request). It
+    // stays full size for this video; the bars then come back over it on any pointer move and hide
+    // again after 10 s. Leaving the video, fullscreen or showing the library rail ends it.
+    property bool _windowFill: false
+    readonly property int _windowIdleMs: 10000
+
+    Timer {
+        id: windowIdleTimer
+
+        interval: rootPlayer._windowIdleMs
+        // the stage itself holds one auto-hide lock (on_ControlsUnderVideoChanged); any other lock
+        // (a panel, a menu, the pointer on a bar) or the library card keeps the bars
+        running: rootPlayer._videoStage
+                 && Player.playingState === Player.PLAYING_STATE_PLAYING
+                 && !rootPlayer._libraryCardVisible
+                 && playerToolbarVisibilityFSM.lockCount <= 1
+        onTriggered: {
+            rootPlayer._windowFillSince = Date.now()
+            rootPlayer._windowFill = true
+        }
+    }
+
+    // the video growing under a still pointer sends a hover move: not a user move
+    property double _windowFillSince: 0
+
+    // with the video filling the window, the bars shown by the pointer hide after the same 10 s
+    Timer {
+        id: windowFillBarsTimer
+
+        interval: rootPlayer._windowIdleMs
+        onTriggered: {
+            if (!rootPlayer._windowFill)
+                return
+            // the pointer still on a bar, a panel or a menu: keep them
+            if (playerToolbarVisibilityFSM.lockCount - (rootPlayer._edgeLock ? 1 : 0) > 0) {
+                restart()
+                return
+            }
+            rootPlayer._activeBar = "none"
+            rootPlayer._setEdgeLock(false)
+        }
+    }
+
+    function _userActive() {
+        if (_videoStage && windowIdleTimer.running)
+            windowIdleTimer.restart()
+    }
+
+    Connections {
+        target: MainCtx
+        function onHasEmbededVideoChanged() { rootPlayer._windowFill = false }
+        function onPinVideoControlsChanged() { rootPlayer._windowFill = false }
+    }
+
+    Connections {
+        target: MainCtx.intfMainWindow
+        function onVisibilityChanged() {
+            if (MainCtx.intfMainWindow.visibility === Window.FullScreen)
+                rootPlayer._windowFill = false
+        }
+    }
 
     property bool _keyPressed: false
 
@@ -114,7 +178,8 @@ FocusScope {
     }
 
     HoverHandler {
-        enabled: rootPlayer._edgeBars
+        // also on the video stage: a pointer move over the bars counts as activity (_userActive)
+        enabled: MainCtx.hasEmbededVideo
 
         onPointChanged: rootPlayer._pointerAt(point.position.y)
     }
@@ -132,11 +197,21 @@ FocusScope {
     }
 
     function _pointerAt(y) {
+        _userActive()
         if (!_edgeBars)
             return
         // another lock (panel, menu, pointer on a bar) keeps the shown bar
         if (playerToolbarVisibilityFSM.lockCount - (_edgeLock ? 1 : 0) > 0)
             return
+        // video filling the normal window: any move shows both bars, for 10 s
+        if (_windowFill) {
+            if (Date.now() - _windowFillSince < 800)
+                return
+            _activeBar = "both"
+            _setEdgeLock(true)
+            windowFillBarsTimer.restart()
+            return
+        }
         if (y < topBar.implicitHeight * 2)
             _activeBar = "top"
         else if (y > height - controlBar.implicitHeight * 2)
@@ -1121,6 +1196,15 @@ FocusScope {
         target: MainCtx.libraryPanel
 
         function onVisibleChanged() {
+            // the library button or U while the video fills the window brings the bars and the
+            // rail back (the rail is hidden then, so a press that hid it shows it again)
+            if (rootPlayer._windowFill) {
+                rootPlayer._windowFill = false
+                if (!MainCtx.libraryPanel.visible) {
+                    MainCtx.libraryPanel.visible = true
+                    return
+                }
+            }
             // hiding the left menu closes the card with it
             if (!MainCtx.libraryPanel.visible)
                 rootPlayer.librarySection = ""
@@ -1606,6 +1690,7 @@ FocusScope {
     target: MainCtx.intfMainWindow
 
         Keys.onPressed: (event) => {
+            rootPlayer._userActive()
             if (rootPlayer._enterTogglesFullscreen(event)) {
                 if (!event.isAutoRepeat)
                     Player.toggleFullscreen()
