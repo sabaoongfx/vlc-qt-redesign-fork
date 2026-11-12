@@ -67,8 +67,8 @@ FocusScope {
                                        : 0
     readonly property real _libraryCardWidth: Helpers.clamp(MainCtx.libraryPanel.width, VLCStyle.dp(240, VLCStyle.scale),
                                                             width / 2)
-    // The video starts after the rail; the library card opens over the video's left part instead
-    // of making it smaller
+    // The rail and the library card open over the video's left part instead of moving it; the
+    // side panels (panelArea) still start after the rail
     readonly property real _leftInset: _railWidth
 
     readonly property string coverSource: {
@@ -293,9 +293,8 @@ FocusScope {
             right: parent.right
             top: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? topBar.bottom : parent.top
             bottom: (MainCtx.hasEmbededVideo && rootPlayer._controlsUnderVideo) ? controlBar.top : parent.bottom
-            // redesign: the video fills the space between the bars, square, from the rail (or the
-            // library card) to the window edge (Figma Player, Player - customize-8)
-            leftMargin: rootPlayer._leftInset
+            // redesign: the video fills the space between the bars, edge to edge; the rail and the
+            // library card open over its left part, so the video does not move (user request)
         }
 
         sourceComponent: MainCtx.hasEmbededVideo ? videoComponent : audioComponent
