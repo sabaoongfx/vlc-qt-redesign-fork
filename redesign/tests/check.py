@@ -335,13 +335,20 @@ if im:
     L, R = card_run(im, 500, (0x18, 0x18, 0x18), 900, 1400)
     # 2026-11-13: a bit smaller than the 292 x 683 Figma frame (user request): 280 wide, 44px rows
     (ok if R - L == 280 else fail)('rclick-menu', f'right-click card width {R - L} (want 280)')
-    # the configured hotkey shown on the first row (Pause: Space), in the shortcut colour
-    c = brightest(im, (R - 80, 14, R - 4, 42))
-    (ok if near(c, (0x6B, 0x6B, 0x6B), 6) else fail)('rclick-menu', f'Pause hotkey hint {hexc(c)} (want #6B6B6B)')
-    # 627 tall (14 rows of 44, 4px padding, three 1px group lines #1D1D1D after Record, Hide UI and Subtitle)
+    # 627 tall (14 rows of 44, 4px padding, three 1px group lines #1D1D1D after Record, Hide UI and Subtitle):
+    # the card is the continuous run of card pixels down from its top (the menu opens below the click now
+    # that it fits; other #181818 pixels further down belong to the bottom bar)
     x = L + 150
-    col = [y for y in range(0, im.height) if im.getpixel((x, y))[:3] in ((0x18, 0x18, 0x18), (0x1D, 0x1D, 0x1D))]
-    top = min(col) if col else None
+    card_px = ((0x18, 0x18, 0x18), (0x1D, 0x1D, 0x1D))
+    top = next((y for y in range(0, im.height) if im.getpixel((x, y))[:3] in card_px), None)
+    col = []
+    if top is not None:
+        y = top
+        while y < im.height and im.getpixel((x, y))[:3] in card_px:
+            col.append(y); y += 1
+    # the configured hotkey shown on the first row (Pause: Space), in the shortcut colour
+    c = brightest(im, (R - 80, (top or 0) + 10, R - 4, (top or 0) + 38))
+    (ok if near(c, (0x6B, 0x6B, 0x6B), 6) else fail)('rclick-menu', f'Pause hotkey hint {hexc(c)} (want #6B6B6B)')
     lines = [y - top for y in col if im.getpixel((x, y))[:3] == (0x1D, 0x1D, 0x1D)] if col else []
     (ok if col and max(col) - top + 1 == 627 else fail)('rclick-menu', f'right-click card height {col and max(col) - top + 1} (want 627)')
     (ok if lines == [224, 269, 446] else fail)('rclick-menu', f'right-click group lines {lines} (want [224, 269, 446])')
@@ -731,6 +738,10 @@ if t:
     eng = count_color(t, (1515, 646, 1560, 686), ACCENT, 40)
     fra = count_color(t, (1515, 690, 1560, 730), ACCENT, 40)
     check('audio-menu-switch', fra > 3 and eng == 0, f'Track 2 in the audio menu switches the audio to French (tick pixels: English {eng}, French {fra})')
+    # and screen readers are told: the row reports itself checked (test-findings: it did not)
+    c = controls('audio-menu-switch', 'a')
+    check('audio-menu-switch', 'c' in c.get('Track 2 - [French]', '') and 'c' not in c.get('Track 1 - [English]', ''),
+          f'screen readers see Track 2 checked (flags: English "{c.get("Track 1 - [English]")}", French "{c.get("Track 2 - [French]")}")')
 
 # output devices (sound:null): the current device is ticked, the tick follows a change; volume at start
 def device_ticks(scene, tag):

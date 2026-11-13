@@ -547,7 +547,9 @@ Rectangle {
     PlaylistListContextMenu {
         id: playlistMenu
 
-        model: root._playlistMenu ? modelLoader.item : null
+        // the section can change before the model does (Network to Playlists: the Network list's model for
+        // a moment, "Unable to assign MLUrlModel to MLPlaylistListModel"): only a playlist list model
+        model: (root._playlistMenu && modelLoader.item instanceof MLPlaylistListModel) ? modelLoader.item : null
         ctx: MainCtx
 
         onRequestDeleteSelectedPlaylists: {

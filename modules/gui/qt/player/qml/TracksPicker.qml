@@ -192,6 +192,9 @@ T.Popup {
                     tracks: [Player.videoTracks, Player.audioTracks, Player.subtitleTracks][root.currentTab]
                     external: false
                     showNone: true
+                    // only Subtitles has an External Tracks section: on Video and Audio a track loaded from
+                    // a file (Edit Audio Tracks) is listed here, it was listed nowhere
+                    splitExternal: root.currentTab === 2
                 }
 
                 // Figma Audio: a 1px line, then the output devices with a refresh button
@@ -366,6 +369,8 @@ T.Popup {
         property var tracks: null
         property bool external: false
         property bool showNone: false
+        // list only the tracks whose "external" matches (the Subtitles tab's two sections), or all of them
+        property bool splitExternal: true
         default property alias buttons: heading.buttons
 
         width: parent?.width ?? 0
@@ -405,7 +410,7 @@ T.Popup {
                 // the embedded list and the external list split one model
                 readonly property bool selected: model.checked
 
-                visible: model.external === section.external
+                visible: !section.splitExternal || model.external === section.external
                 text: model.display
                 ticked: visible && selected
                 onClicked: model.checked = true
@@ -430,6 +435,13 @@ T.Popup {
         Accessible.role: Accessible.RadioButton
         Accessible.name: text
         Accessible.checked: ticked
+
+        // the button's own checked state follows the tick: unlike Accessible.checked, a change of it
+        // reaches screen readers (a track chosen while the picker was open stayed "not checked" for them).
+        // A click toggles a checkable button by itself: follow the tick again right after.
+        checkable: true
+        checked: ticked
+        onToggled: checked = Qt.binding(() => row.ticked)
 
         HoverHandler { cursorShape: Qt.PointingHandCursor }
 

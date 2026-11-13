@@ -225,6 +225,15 @@ Item {
 
         const requestId = ++dragItem._grabImageRequest
 
+        // redesign: without a window (the overlay of a view that has none, e.g. the player's play queue)
+        // there is nothing to grab from: drag without an image right away (grabToImage only warned
+        // "item is not attached to a window" before the same fallback below)
+        if (!dragItem.Window.window) {
+            dragItem.Drag.imageSource = ""
+            dragItem.Drag.startDrag()
+            return
+        }
+
         visible = true
 
         const s = dragItem.grabToImage(function (result) {

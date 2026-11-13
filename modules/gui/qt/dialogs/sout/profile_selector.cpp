@@ -24,6 +24,8 @@
 #include "dialogs/sout/profiles.hpp"
 #include "dialogs/sout/sout.hpp"
 #include "util/soutchain.hpp"
+#include "style/redesign.hpp"
+#include "style/vlcicons.hpp"
 
 #include <QHBoxLayout>
 #include <QToolButton>
@@ -61,7 +63,11 @@ VLCProfileSelector::VLCProfileSelector( QWidget *_parent ): QWidget( _parent )
     layout->addWidget( editButton );
 
     QToolButton *deleteButton = new QToolButton( this );
-    deleteButton->setIcon( QIcon( ":/menu/clear.svg" ) );
+    /* redesign: the delete glyph in the window's text colour; VLC's red cross (clear.svg, #D80E0E) was
+     * 2.9:1 on the dark button, under the 3:1 a control needs to stand out (WCAG 1.4.11) */
+    deleteButton->setIcon( QIcon( Redesign::glyphPixmap( VLCIcons::del, 24,
+                                  deleteButton->palette().color( QPalette::ButtonText ),
+                                  deleteButton->devicePixelRatioF() ) ) );
     deleteButton->setToolTip( qtr( "Delete selected profile" ) );
     layout->addWidget( deleteButton );
 
@@ -122,9 +128,11 @@ inline void VLCProfileSelector::fillProfilesCombo()
     }
     settings.endArray();
 
-    profileBox->setCurrentIndex(
-        profileBox->findText(
-            settings.value( "codecs-profiles-selected" ).toString() ));
+    /* redesign: the profile used last time, else the first one: on a first use nothing was saved,
+     * findText("") gave -1 and the box showed no profile, so Convert could not be started */
+    const int selected = profileBox->findText(
+            settings.value( "codecs-profiles-selected" ).toString() );
+    profileBox->setCurrentIndex( selected >= 0 ? selected : 0 );
 
 }
 

@@ -42,6 +42,13 @@ Widgets.PageLoader {
     // History hands it to every page of the path (PageLoader); the folder page uses it
     property int initialIndex: 0
 
+    // the same for the folder page's own properties: taken here so the hand-over does not fail ("Cannot
+    // assign to non-existent property", when the player goes back to a folder page); the folder page gets
+    // them from its own PageLoader step
+    property var parentId
+    property string title
+    property var trail
+
     // the Music page (MusicDisplay)
     property bool audio: false
 

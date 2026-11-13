@@ -1,4 +1,8 @@
-# Test findings (collected, not fixed)
+# Test findings
+
+Fixed 2026-11-13 (user request: "fix the bugs"), checked by a local build and the scenes named in each row,
+unless a row says otherwise.
+
 
 Bugs the harness tests found, kept here until the user plans the fixes (same practice as
 `settings-findings.md`). Each entry: what is wrong, the failing check, the likely cause.

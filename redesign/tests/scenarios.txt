@@ -173,9 +173,9 @@ audio-device-tick | 2 | none | @sample.mp4           | sound:null sleep:3 move:9
 
 # equalizer presets with the Figma icons ("EQ presets" frame, Options.svg): each preset row of the dropdown
 # draws its curve icon (accent and grey; Flat is grey only) left of the name; choosing Rock selects it.
-# (pointer moves between the steps: the 10 s idle timer would close the panel, see test-findings.md)
-eq-preset-icons  | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list move:700,500 press:Rock sleep:1.2 move:710,505 geom:rock shot:rock
-eq-preset-icons-day | 1 | none | @multi.mkv          | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 press:None sleep:1.2 shot:list geom:list
+# (the preset box is clicked by position: three dropdowns on the panel are named "None")
+eq-preset-icons  | 2 | none | @multi.mkv            | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 click:1714,669 sleep:1.2 shot:list geom:list click:1715,572 sleep:1.2 move:710,505 geom:rock shot:rock
+eq-preset-icons-day | 1 | none | @multi.mkv          | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:0.8 move:700,500 press:Expand_Equalizer sleep:0.8 move:710,505 click:1714,669 sleep:1.2 shot:list geom:list
 
 # the tracks picker opens on the tab of its button (user request 2026-11-13): the subtitles button on Subtitles,
 # also after the Audio tab was used; the audio button opens the same picker on Audio (it had its own small menu)

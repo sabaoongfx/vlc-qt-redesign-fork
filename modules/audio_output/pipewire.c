@@ -422,20 +422,6 @@ static void vlc_pw_stream_set_mute(struct vlc_pw_stream *s, bool mute)
     vlc_pw_unlock(s->context);
 }
 
-static void vlc_pw_stream_select_device(struct vlc_pw_stream *s,
-                                        const char *name)
-{
-    struct spa_dict_item items[] = {
-        SPA_DICT_ITEM_INIT(PW_KEY_OBJECT_SERIAL, name),
-    };
-    struct spa_dict dict = SPA_DICT_INIT(items, ARRAY_SIZE(items));
-
-    vlc_pw_debug(s->context, "setting object serial: %s", name);
-    vlc_pw_lock(s->context);
-    pw_stream_update_properties(s->stream, &dict);
-    vlc_pw_unlock(s->context);
-}
-
 static void vlc_pw_stream_destroy(struct vlc_pw_stream *s)
 {
     vlc_pw_stream_flush(s);
@@ -781,12 +767,18 @@ static int DeviceSelect(audio_output_t *aout, const char *name)
 {
     struct vlc_pw_aout *sys = aout->sys;
 
+    sys->initial.target = strtoul(name, NULL, 10);
+
+    /* redesign: a playing stream did not move. The session manager (WirePlumber) moves a running
+     * stream only when "target.object" changes in its "default" metadata; it ignores a stream updating
+     * its own properties (which is how it was done: object.serial). Restart the output instead, like ALSA:
+     * the new stream connects with the chosen target (vlc_pw_stream_create), and its link reports the
+     * device (registry_link). */
     if (sys->stream != NULL) {
-        vlc_pw_stream_select_device(sys->stream, name);
+        aout_RestartRequest(aout, false);
         return 0;
     }
 
-    sys->initial.target = strtoul(name, NULL, 10);
     aout_DeviceReport(aout, name);
     return 0;
 }

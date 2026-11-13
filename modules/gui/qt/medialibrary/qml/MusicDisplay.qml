@@ -66,6 +66,12 @@ Widgets.PageLoader {
     // redesign: History hands it to every page of the path (PageLoader)
     property int initialIndex: 0
 
+    // the folder page's own properties pass through here too (History hands them to every page of the
+    // path): taken, not used ("Cannot assign to non-existent property" when going back to a folder page)
+    property var parentId
+    property string title
+    property var trail
+
     onCurrentItemChanged: {
         if (currentItem) {
             if (currentItem.displayMarginBeginning !== undefined)

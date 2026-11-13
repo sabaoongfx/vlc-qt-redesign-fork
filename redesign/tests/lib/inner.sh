@@ -6,7 +6,8 @@ export QT_QPA_PLATFORM=${QPA:-xcb} QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1
 export XDG_CURRENT_DESKTOP=KDE KDE_FULL_SESSION=true KDE_SESSION_VERSION=6 DESKTOP_SESSION=plasma
 xdotool() { env -u WAYLAND_DISPLAY /usr/bin/xdotool "$@"; }
 # spectacle as an X11 client hangs when there is no logind session: keep it on Wayland
-spectacle() { QT_QPA_PLATFORM=wayland timeout 20 /usr/bin/spectacle "$@"; }
+# its errors go to <scene>.spectacle.txt (in CI no shot was ever written; the reason was thrown away)
+spectacle() { QT_QPA_PLATFORM=wayland timeout 20 /usr/bin/spectacle "$@" 2>>"$OUT/$NAME.spectacle.txt"; }
 # Arch has the AT-SPI helpers in /usr/lib, Debian (CI) in /usr/libexec
 ATLIB=/usr/lib; [ -x $ATLIB/at-spi-bus-launcher ] || ATLIB=/usr/libexec
 $ATLIB/at-spi-bus-launcher --launch-immediately &

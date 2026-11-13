@@ -107,12 +107,13 @@ FocusScope {
         id: windowIdleTimer
 
         interval: rootPlayer._windowIdleMs
-        // the stage itself holds one auto-hide lock (on_ControlsUnderVideoChanged); any other lock
-        // (a panel, a menu, the pointer on a bar) or the library card keeps the bars
+        // an open panel, popup or menu, the play queue, the pointer on a bar (_holds) or the library
+        // card keeps the bars. (Not the auto-hide lockCount: the state machine ignores locks while the
+        // bars are hidden, so it did not count an open panel and the panel closed after 10 s.)
         running: rootPlayer._videoStage
                  && Player.playingState === Player.PLAYING_STATE_PLAYING
                  && !rootPlayer._libraryCardVisible
-                 && playerToolbarVisibilityFSM.lockCount <= 1
+                 && rootPlayer._holds === 0
         onTriggered: {
             rootPlayer._windowFillSince = Date.now()
             rootPlayer._windowFill = true
@@ -131,7 +132,7 @@ FocusScope {
             if (!rootPlayer._windowFill)
                 return
             // the pointer still on a bar, a panel or a menu: keep them
-            if (playerToolbarVisibilityFSM.lockCount - (rootPlayer._edgeLock ? 1 : 0) > 0) {
+            if (rootPlayer._holds > 0) {
                 restart()
                 return
             }
@@ -284,6 +285,16 @@ FocusScope {
 
     // Functions
 
+    // redesign: what keeps the bars of a normal window from hiding after 10 s (windowIdleTimer): open
+    // panels, popups and menus, the play queue, the pointer on a bar. Counted here, not with the auto-hide
+    // lockCount (see windowIdleTimer).
+    property int _holds: 0
+
+    function _hold(lock) {
+        _holds = Math.max(0, _holds + (lock ? 1 : -1))
+        lockUnlockAutoHide(lock)
+    }
+
     function lockUnlockAutoHide(lock) {
         if (lock) {
             playerToolbarVisibilityFSM.lock()
@@ -328,7 +339,7 @@ FocusScope {
     PlayerPlaylistVisibilityFSM {
         id: playlistVisibility
 
-        onIsPlaylistVisibleChanged: lockUnlockAutoHide(isPlaylistVisible)
+        onIsPlaylistVisibleChanged: rootPlayer._hold(isPlaylistVisible)
     }
 
     Connections {
@@ -1276,7 +1287,7 @@ FocusScope {
         onTogglePlaylistVisibility: playlistVisibility.togglePlaylistVisibility()
 
         onRequestLockUnlockAutoHide: (lock) => {
-            rootPlayer.lockUnlockAutoHide(lock)
+            rootPlayer._hold(lock)
         }
 
         onBackRequested: {
@@ -1614,12 +1625,12 @@ FocusScope {
                     || rootPlayer._controlsUnderVideo) ? "visible" : "hidden"
         }
 
-        onRequestLockUnlockAutoHide: (lock) => rootPlayer.lockUnlockAutoHide(lock)
+        onRequestLockUnlockAutoHide: (lock) => rootPlayer._hold(lock)
 
         identifier: (Player.hasVideoOutput) ? PlayerControlbarModel.Videoplayer
                                             : PlayerControlbarModel.Audioplayer
 
-        onHoveredChanged: rootPlayer.lockUnlockAutoHide(hovered)
+        onHoveredChanged: rootPlayer._hold(hovered)
 
         background: Rectangle {
             id: controlBarBackground

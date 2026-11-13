@@ -63,7 +63,11 @@ T.ComboBox {
     Keys.onPressed: (event) => Navigation.defaultKeyAction(event)
 
     delegate: T.ItemDelegate {
+        id: rowDelegate
+
         width: control.width
+        // the row's own text: its accessible name (screen readers, the harness found rows without a name)
+        text: control.textRole ? (Helpers.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
         height: implicitContentHeight + topPadding + bottomPadding
         padding: VLCStyle.margin_xsmall
         leftPadding: control.leftPadding
@@ -92,7 +96,7 @@ T.ComboBox {
                 anchors.leftMargin: rowIcon.visible ? VLCStyle.dp(11, VLCStyle.scale) : 0
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                text: control.textRole ? (Helpers.isArray(control.model) ? modelData[control.textRole] : model[control.textRole]) : modelData
+                text: rowDelegate.text
                 color: control.color
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter

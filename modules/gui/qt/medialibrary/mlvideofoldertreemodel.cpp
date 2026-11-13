@@ -85,7 +85,9 @@ void MLVideoFolderTreeModel::setAudio(bool audio)
     m_audio = audio;
 
     emit audioChanged();
-    emit resetRequested();
+    // a new loader: the current one holds a copy of the old flag (resetRequested only refreshes it,
+    // so the player's library card, which sets audio after ml, listed the video folders under Music)
+    resetCache();
 }
 
 bool MLVideoFolderTreeModel::canRemoveFolder(const QModelIndex & index) const

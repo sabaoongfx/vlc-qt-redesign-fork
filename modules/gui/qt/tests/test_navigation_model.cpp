@@ -139,6 +139,17 @@ private:
 } while (false)
 #define VERIFY_NOT_REMOVED QCOMPARE(m_removedSpy->size(), 0)
 
+    // The entries, with the media library: all of them are leaves. A helper, not a slot: QtTest runs
+    // every private slot as a test, and on its own (no model set up) it failed ("Home" vs nothing).
+    void compareClosed() {
+        int i = 0;
+        COMPARE_ROW(i++, "Home", Leaf);
+        COMPARE_ROW(i++, "Videos", Leaf);
+        COMPARE_ROW(i++, "Music", Leaf);
+        COMPARE_ROW(i++, "Network", Leaf);
+        COMPARE_ROW(i++, "Playlists", Leaf);
+    }
+
     void initWithMedialib(bool hasMedialib) {
         m_model->classBegin();
         m_model->setHasMedialib(hasMedialib);
@@ -167,16 +178,6 @@ private slots:
     void cleanup() {
         m_model.reset();
         //m_medialib.reset();
-    }
-
-    // The entries, with the media library: all of them are leaves.
-    void compareClosed() {
-        int i = 0;
-        COMPARE_ROW(i++, "Home", Leaf);
-        COMPARE_ROW(i++, "Videos", Leaf);
-        COMPARE_ROW(i++, "Music", Leaf);
-        COMPARE_ROW(i++, "Network", Leaf);
-        COMPARE_ROW(i++, "Playlists", Leaf);
     }
 
     void testInitialValues() {
