@@ -30,6 +30,12 @@ Bugs the harness tests found, kept here until the user plans the fixes (same pra
 
 | `test_qt_navigation_model` fails 1 of 9: `compareClosed` expects the first entry's title to be "Home", gets an empty QVariant (`tests/test_navigation_model.cpp:52`). The test was rewritten blind for the new sidebar (Home, Videos, Music, Network, Playlists) and never ran before. The other 7 Qt tests pass (run 43303752841). | `make -C modules/gui/qt check` | either the test reads the title with a role the model no longer fills, or the closed (no media library) model starts with another row; compare `navigationmodel.cpp` with the test |
 
+## Found by the visualizer scenes (2026-11-13, not fixed: tests first)
+
+| What | Check | Likely cause |
+|---|---|---|
+| **Day theme, music playing, side panel open: the active subtitles button is 1.39:1** (accent icon on the light bar). Video scenes never showed it: the video player's bars stay dark in Day. | `visualizer-day` (contrast) | the bar's checked/active button colours are picked for the dark bar; the music player's Day bar is light grey |
+
 ## Documentation (2026-11-13, found while writing the library tests)
 
 | What | Where |

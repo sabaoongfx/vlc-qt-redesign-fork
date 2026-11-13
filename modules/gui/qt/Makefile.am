@@ -1056,6 +1056,10 @@ libqt_plugin_la_RES = \
 	pixmaps/eq/soft.svg \
 	pixmaps/eq/softrock.svg \
 	pixmaps/eq/techno.svg \
+	pixmaps/visual/spectrometer.svg \
+	pixmaps/visual/scope.svg \
+	pixmaps/visual/spectrum.svg \
+	pixmaps/visual/vumeter.svg \
 	pixmaps/menu/redesign-gridview.svg \
 	pixmaps/menu/redesign-listview.svg \
 	pixmaps/menu/redesign-quit.svg \

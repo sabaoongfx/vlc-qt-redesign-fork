@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="38 286 24 24" fill="none">
+<!-- Figma "Audio Visualizer" icon: #FF00FF = the label grey, #FF8800 = the accent (SVGColorImage) -->
+  <path d="M40 296L40 300" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF8800"/>
+  <path d="M44 291V305" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M48 293V303" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF8800"/>
+  <path d="M52 289V307" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M56 292V304" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF8800"/>
+  <path d="M60 294V302" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+</svg>

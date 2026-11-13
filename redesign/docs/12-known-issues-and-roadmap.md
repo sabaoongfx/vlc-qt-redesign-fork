@@ -43,8 +43,8 @@ Not built yet (Figma frames exist; status per frame in `redesign/remaining/index
    Chapters tabs (planned below).
 6. **Mini player:** hover overlay (close, pop-out, previous/play/next), drag to reorder the queue.
 7. **Settings presets/profiles; Add Subtitles to Playlist.**
-8. **Audio:** HDR, spatializer and stereo widener frames as far as VLC supports them; the visualizer
-   (planned below). EQ preset icons: being built (2026-11-13).
+8. **Audio:** HDR, spatializer and stereo widener frames as far as VLC supports them. Done 2026-11-13:
+   EQ preset icons, the visualizer picker (below).
 
 ### Planned: queue panel with Bookmarks and Chapters tabs (Figma "Queue", planned 2026-11-13)
 
@@ -66,7 +66,12 @@ Not built yet (Figma frames exist; status per frame in `redesign/remaining/index
   rename, the accent tab underline follows the tab; the queue tab still passes the queue scenes.
 - **Effort:** ~1 day.
 
-### Planned: audio visualizer picker (Figma "Audio Visualizer", planned 2026-11-13)
+### Done: audio visualizer picker (Figma "Audio Visualizer", built 2026-11-13)
+
+Built as planned: a Visualizer row in the side panel's Audio tab (`TracksListPage.qml` `VisualizerRow`, icons
+`pixmaps/visual/`), scenes `visualizer` / `visualizer-day`. Decisions: the Figma's Waveform entry is VLC's VU meter,
+named "VU Meter" (VLC has no separate waveform); the choice lasts for the session (like the menu), not saved in vlcrc.
+Plan as written:
 
 - **What the Figma has:** a dropdown (Disabled, Spectometer, Scope, Spectrum, Waveform, each with a
   duotone icon; `~/Downloads/Audio Visualizer.svg`, also in the Figma export under 06 Player side

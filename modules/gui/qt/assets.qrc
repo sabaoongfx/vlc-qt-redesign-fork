@@ -120,6 +120,12 @@
         <file alias="softrock.svg">pixmaps/eq/softrock.svg</file>
         <file alias="techno.svg">pixmaps/eq/techno.svg</file>
     </qresource>
+    <qresource prefix="/visual">
+        <file alias="spectrometer.svg">pixmaps/visual/spectrometer.svg</file>
+        <file alias="scope.svg">pixmaps/visual/scope.svg</file>
+        <file alias="spectrum.svg">pixmaps/visual/spectrum.svg</file>
+        <file alias="vumeter.svg">pixmaps/visual/vumeter.svg</file>
+    </qresource>
     <qresource prefix="/misc">
         <file alias="cone.svg">pixmaps/misc/cone.svg</file>
         <file alias="new_indicator.svg">pixmaps/misc/new_indicator.svg</file>

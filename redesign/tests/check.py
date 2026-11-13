@@ -794,6 +794,45 @@ if g:
     check('eq-preset-icons', any(n == 'Rock' and r == 'combo box' for n, r, *_ in geom_rows('eq-preset-icons', 'rock')),
           'choosing Rock in the dropdown selects it (the preset box shows Rock)')
 
+# audio visualizer (Figma "Audio Visualizer"): a Visualizer dropdown in the side panel's Audio tab. Its list
+# shows Disabled and the four Figma entries, each with its icon; choosing one replaces the song's cover in the
+# video area with VLC's visualization; Disabled brings the cover back. The video area is compared between
+# shots: cover (before), the visualization, cover again.
+VISUALS = ['Spectrometer', 'Scope', 'Spectrum', 'VU Meter']
+VIS_AREA = (500, 300, 1300, 800)   # the middle of the video area, left of the side panel
+def area_diff(a, b, box=VIS_AREA):
+    pa, pb = list(pixels(a.crop(box).resize((80, 50)))), list(pixels(b.crop(box).resize((80, 50))))
+    return sum(max(abs(x - y) for x, y in zip(p, q)) > 40 for p, q in zip(pa, pb)) / len(pa)
+for scene in ('visualizer', 'visualizer-day'):
+    t, rows = img(scene, 'list'), geom_rows(scene, 'list')
+    if not (t and rows):
+        continue
+    names = [n for n, r, *_ in rows if r in ('list item', 'menu item')]
+    check(scene, all(v in names for v in ['Disabled'] + VISUALS) and not any(n in names for n in ('Goom', 'projectM', '3D spectrum')),
+          f'the dropdown lists Disabled and the four Figma visualizations only ({[n for n in names if n]})')
+    missing = []
+    for name in VISUALS:
+        boxes = [(x, y, w, h) for n, r, x, y, w, h in rows if n == name and r in ('list item', 'menu item')]
+        if not boxes:
+            missing.append(name + ' (no row)'); continue
+        x, y, w, h = max(boxes, key=lambda b: b[2])
+        # orange-hued pixels: Spectrum's accent parts are 1.5px dots, antialiased away from the exact accent
+        orange = sum(1 for p in pixels(t.crop((x + 8, y + 4, x + 52, y + h - 4))) if p[0] > 100 and p[0] > p[2] + 50 and p[0] >= p[1])
+        if orange < 4:
+            missing.append(f'{name} ({orange} orange px)')
+    check(scene, not missing, 'each visualization row draws its icon' + (f'; missing: {missing}' if missing else ''))
+before, on, off = img('visualizer', 'before'), img('visualizer', 'on'), img('visualizer', 'off')
+if before and on:
+    d = area_diff(before, on)
+    check('visualizer', d > 0.2, f'choosing Spectrum replaces the cover with the visualization ({d:.0%} of the video area changed)')
+    check('visualizer', any(n == 'Spectrum' and r == 'combo box' for n, r, *_ in geom_rows('visualizer', 'on')),
+          'the Visualizer box shows Spectrum')
+if before and off:
+    d = area_diff(before, off)
+    check('visualizer', d < 0.05, f'Disabled brings the cover back ({d:.0%} of the video area differs from before)')
+    check('visualizer', any(n == 'Disabled' and r == 'combo box' for n, r, *_ in geom_rows('visualizer', 'off')),
+          'the Visualizer box shows Disabled')
+
 # tracks picker: which tab is current (the accent underline under the tab buttons), per button
 def picker_tab(scene, tag):
     t, c = img(scene, tag), f'{OUT}/{scene}-{tag}.ctl'

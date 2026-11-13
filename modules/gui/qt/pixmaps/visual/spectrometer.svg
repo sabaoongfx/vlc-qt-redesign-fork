@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="38 148 24 24" fill="none">
+<!-- Figma "Audio Visualizer" icon: #FF00FF = the label grey, #FF8800 = the accent (SVGColorImage) -->
+  <circle cx="50" cy="160" r="4" stroke-width="1.5" stroke="#FF00FF"/>
+  <circle cx="50" cy="160" r="7" stroke-width="1.5" stroke-linecap="round" stroke="#FF00FF"/>
+  <path d="M50 150C52.0318 150 53.9221 150.606 55.5 151.647C56.996 152.634 58.2112 154.012 59 155.636M41 155.636C40.3593 156.955 40 158.435 40 160C40 161.619 40.3846 163.147 41.0673 164.5M58.9327 164.5C58.1429 166.065 56.9541 167.394 55.5 168.353C53.9221 169.394 52.0318 170 50 170" stroke-width="1.5" stroke-linecap="round" stroke="#FF8800"/>
+</svg>

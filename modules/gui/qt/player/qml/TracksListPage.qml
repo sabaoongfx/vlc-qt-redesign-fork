@@ -405,6 +405,7 @@ FocusScope {
                     ComboRow { label: qsTr("Audio Track"); choices: Player.audioTracks }
                     ComboRow { label: qsTr("Stereo Mode"); choices: Player.audioStereoMode }
                     ComboRow { label: qsTr("Mix Mode"); choices: Player.audioMixMode }
+                    VisualizerRow {}
                 }
 
                 Section {
@@ -744,6 +745,80 @@ FocusScope {
 
             onActivated: (index) => {
                 const item = checkedTracker.itemAt(index)
+                if (item)
+                    item.model.checked = true
+            }
+        }
+    }
+
+    // Figma "Audio Visualizer": Disabled and four visualizations, each with its duotone icon (pixmaps/visual).
+    // It drives VLC's "visual" choice (the player's audioVisualization, the same as the "..." menu > Audio >
+    // Visualizations) for this session; VLC draws it in the video area in place of the cover. The core lists
+    // its first five choices in this order (src/audio_output/output.c): Disable, Spectrometer, Scope, Spectrum,
+    // VU meter. The Figma's "Waveform" entry is VLC's VU meter (VLC has no separate waveform; its scope draws
+    // the wave already), named as what it shows. Goom, 3D spectrum and projectM stay in the menu only.
+    component VisualizerRow: RowLayout {
+        id: visRow
+
+        readonly property var labels: [qsTr("Disabled"), qsTr("Spectrometer"), qsTr("Scope"), qsTr("Spectrum"),
+                                       qsTr("VU Meter")]
+        readonly property var icons: ["", "spectrometer", "scope", "spectrum", "vumeter"]
+
+        Layout.fillWidth: true
+        spacing: VLCStyle.margin_small
+
+        RowLabel { text: qsTr("Visualizer") }
+
+        Widgets.ComboBoxExt {
+            id: visCombo
+
+            // the choices exist while something plays (they live on the audio output)
+            property string otherText: ""
+
+            Layout.preferredWidth: VLCStyle.dp(220, VLCStyle.scale)
+            Layout.preferredHeight: VLCStyle.dp(48, VLCStyle.scale)
+            enabled: visTracker.count >= visRow.labels.length
+            opacity: enabled ? 1 : 0.5
+
+            bgColor: root._figma.dropdown
+            borderColor: root.fieldColor
+            color: root.valueColor
+            labelPixelSize: VLCStyle.fontSize_large
+            indicatorPixelSize: VLCStyle.dp(36, VLCStyle.scale)
+            leftPadding: VLCStyle.dp(18, VLCStyle.scale)
+            rightPadding: VLCStyle.dp(18, VLCStyle.scale)
+            indicatorRightMargin: VLCStyle.dp(8, VLCStyle.scale)
+
+            model: visRow.labels
+            currentIndex: 0
+            // a visualization chosen in the menu that is not in this list (Goom...) shows its own name
+            displayText: otherText !== "" ? otherText : currentText
+            iconAt: (i) => (i > 0 && i < visRow.icons.length)
+                ? SVGColorImage.colorize("qrc:///visual/" + visRow.icons[i] + ".svg")
+                               .color1(root.valueColor).accent(theme.accent).uri()
+                : ""
+
+            Repeater {
+                id: visTracker
+
+                model: Player.audioVisualization
+                delegate: Item {
+                    required property int index
+                    required property var model
+                    readonly property bool isChecked: !!model.checked
+                    function follow() {
+                        if (!isChecked)
+                            return
+                        visCombo.otherText = index < visRow.labels.length ? "" : (model.display ?? "")
+                        visCombo.currentIndex = index < visRow.labels.length ? index : -1
+                    }
+                    onIsCheckedChanged: follow()
+                    Component.onCompleted: follow()
+                }
+            }
+
+            onActivated: (index) => {
+                const item = visTracker.itemAt(index)
                 if (item)
                     item.model.checked = true
             }

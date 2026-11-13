@@ -75,7 +75,8 @@ T.ComboBox {
             readonly property url icon: control.iconAt ? control.iconAt(index) : ""
 
             implicitWidth: (rowIcon.visible ? rowIcon.width + rowLabel.anchors.leftMargin : 0) + rowLabel.implicitWidth
-            implicitHeight: Math.max(rowLabel.implicitHeight, rowIcon.visible ? rowIcon.height : 0)
+            // with icons in the list, a row without one (None, Disabled) keeps the same height
+            implicitHeight: Math.max(rowLabel.implicitHeight, control.iconAt ? rowIcon.height : 0)
 
             Image {
                 id: rowIcon

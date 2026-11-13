@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="38 240 24 24" fill="none">
+<!-- Figma "Audio Visualizer" icon: #FF00FF = the label grey, #FF8800 = the accent (SVGColorImage)  Dots are circles: Qt does not draw zero-length round-cap lines. -->
+  <path d="M40 256L40 261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <circle cx="40" cy="253" r="0.75" fill="#FF8800"/>
+  <circle cx="44" cy="244" r="0.75" fill="#FF8800"/>
+  <circle cx="48" cy="246" r="0.75" fill="#FF8800"/>
+  <circle cx="52" cy="242" r="0.75" fill="#FF8800"/>
+  <circle cx="56" cy="245" r="0.75" fill="#FF8800"/>
+  <circle cx="60" cy="250" r="0.75" fill="#FF8800"/>
+  <path d="M44 247V261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M48 249V261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M52 245V261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M56 248V261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M60 253V261" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+</svg>

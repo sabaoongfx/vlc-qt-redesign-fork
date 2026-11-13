@@ -5,4 +5,4 @@
 ^prefs | ^(Outline color|Background color|Text color|Font color)$ | colour button: shows the colour chosen by the user
 ^ | ^Volume$ | volume cone without an outline (user request 2026-11-11): its dark track is ~1.1:1 on the bar
 ^(effects-audio|eq-preset-icons) | ^[0-9.]+ K?Hz$ | an equalizer band slider scrolled out of sight inside the panel: AT-SPI still reports it on screen, so contrast.py measures the control bar behind it
-^eq-preset-icons | ^(Track 1 - \[English\]|None|Audio Track Delay)$ | under the open equalizer preset list (the list covers them; not operable while it is open)
+^eq-preset-icons | ^(Track 1 - \[English\]|None|Disabled|Audio Track Delay|Playback|Video|Audio|Subtitles)$ | under the open equalizer preset list (the list covers them; not operable while it is open)
