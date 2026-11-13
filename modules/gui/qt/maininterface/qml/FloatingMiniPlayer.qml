@@ -90,14 +90,73 @@ T.Control {
             border.color: VLCStyle.figmaColors(theme.palette.isDark).frame
             clip: true
 
-            // audio (or video without the PIP surface): the cover, a play/pause button on hover
+            // audio (or video without the PIP surface): the cover at its own shape in the middle, the same
+            // cover blurred and dimmed behind it, like the main player (a square cover was stretched to the
+            // 16:9 preview: ImageExt draws its texture over its whole box whatever the fillMode)
+            readonly property url coverSource: (Player.artwork && Player.artwork.toString() !== "")
+                                               ? VLCAccessImage.uri(Player.artwork) : VLCStyle.noArtAlbumCover
+
+            // the blur: the cover decoded tiny and scaled up smoothly, cropped to the preview
+            Image {
+                anchors.fill: parent
+                visible: !root.hasVideo
+                source: preview.coverSource
+                sourceSize: Qt.size(24, 24)
+                fillMode: Image.PreserveAspectCrop
+                smooth: true
+                asynchronous: true
+            }
+
+            Rectangle {
+                anchors.fill: parent
+                visible: !root.hasVideo
+                color: VLCStyle.scrim
+            }
+
+            // the rounded corners: the card colour around the preview's radius (an Image cannot be clipped
+            // round; same ring as PIPPlayer's corners)
+            Rectangle {
+                readonly property real spill: VLCStyle.dp(8, VLCStyle.scale)
+
+                anchors.fill: parent
+                anchors.margins: -spill
+                visible: !root.hasVideo
+                radius: preview.radius + spill
+                color: "transparent"
+                border.width: spill
+                border.color: theme.bg.secondary
+            }
+
             Widgets.ImageExt {
+                id: miniCover
+
+                // the picture's own shape (ImageExt does not size itself to it)
+                readonly property real sourceAspect: {
+                    const img = sourceTextureProviderItem
+                    return (img && img.implicitWidth > 0 && img.implicitHeight > 0)
+                        ? img.implicitWidth / img.implicitHeight : 1
+                }
+
+                anchors.centerIn: parent
+                height: Math.min(parent.height - 2 * parent.border.width,
+                                 (parent.width - 2 * parent.border.width) / sourceAspect)
+                width: height * sourceAspect
+                visible: !root.hasVideo
+                radius: Math.max(0, parent.radius - parent.border.width)
+                source: preview.coverSource
+
+                Accessible.role: Accessible.Graphic
+                Accessible.name: qsTr("Mini player cover")
+            }
+
+            // the 2px frame again, over the blur
+            Rectangle {
                 anchors.fill: parent
                 visible: !root.hasVideo
                 radius: parent.radius
-                fillMode: Image.PreserveAspectCrop
-                source: (Player.artwork && Player.artwork.toString() !== "") ? VLCAccessImage.uri(Player.artwork)
-                                                                               : VLCStyle.noArtAlbumCover
+                color: "transparent"
+                border.width: parent.border.width
+                border.color: parent.border.color
             }
 
             // the white play button stays readable on a light cover (PIPPlayer does the same over video)

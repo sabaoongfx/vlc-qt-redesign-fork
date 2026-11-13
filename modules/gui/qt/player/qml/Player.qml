@@ -619,7 +619,7 @@ FocusScope {
                         // used where texture sampling becomes broken, we need this as
                         // `QSGTextureView` has a workaround for that bug. This is totally
                         // acceptable as there is virtually no overhead.
-                        source: cover
+                        source: cover.sourceTextureProviderItem
                     }
 
                     Component.onCompleted: {
@@ -784,22 +784,28 @@ FocusScope {
                         anchors.centerIn: parent
                         spacing: 0
 
+                        // redesign: Figma "Player - Music": the cover is 75% of the area between the bars (738px
+                        // of 985 at 1080p), 20px corners, with the title line under it (the lyrics view keeps
+                        // upstream's size)
                         Item {
                             id: coverItem
-                            Layout.preferredHeight: rootPlayer.height / sizeConstant
-                            Layout.preferredWidth: cover.paintedWidth
-                            Layout.maximumHeight: centerContent.height
+                            Layout.preferredHeight: audioFocusScope.lyricsLayoutActive
+                                ? rootPlayer.height / sizeConstant
+                                : Math.round((centerContent.height + 2 * VLCStyle.margin_xsmall) * 0.75)
+                            Layout.preferredWidth: cover.width
+                            Layout.maximumHeight: centerContent.height - titleLabel.implicitHeight - titleLabel.Layout.topMargin
                             Layout.alignment: Qt.AlignHCenter
 
                             readonly property real sizeConstant: 2.7182
 
-                            Image {
+                            Widgets.ImageExt {
                                 id: cover
 
                                 //source aspect ratio
                                 readonly property real sar: paintedWidth / paintedHeight
-                                readonly property int maximumWidth: Helpers.alignUp((Screen.desktopAvailableWidth * eDPR / coverItem.sizeConstant), 32)
-                                readonly property int maximumHeight: Helpers.alignUp((Screen.desktopAvailableHeight * eDPR / coverItem.sizeConstant), 32)
+                                // decoded at the size it is drawn: up to 75% of the screen height (Figma), not upstream's 1/e
+                                readonly property int maximumWidth: Helpers.alignUp((Screen.desktopAvailableWidth * eDPR * 0.75), 32)
+                                readonly property int maximumHeight: Helpers.alignUp((Screen.desktopAvailableHeight * eDPR * 0.75), 32)
 
                                 readonly property int maximumSize: Math.min(maximumWidth, maximumHeight)
 
@@ -807,12 +813,20 @@ FocusScope {
 
                                 readonly property url targetSource: VLCAccessImage.uri(rootPlayer.coverSource)
 
+                                // the picture's own shape (ImageExt does not size itself to it like Image)
+                                readonly property real sourceAspect: {
+                                    const img = sourceTextureProviderItem
+                                    return (img && img.implicitWidth > 0 && img.implicitHeight > 0)
+                                        ? img.implicitWidth / img.implicitHeight : 1
+                                }
+
                                 anchors.top: parent.top
                                 anchors.bottom: parent.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                width: height * sourceAspect
                                 source: targetSource
                                 fillMode: Image.PreserveAspectFit
-                                mipmap: true
+                                radius: VLCStyle.dp(20, VLCStyle.scale)
                                 cache: false
                                 asynchronous: true
 
@@ -865,48 +879,30 @@ FocusScope {
                             }
                         }
 
+                        // redesign: Figma "Player - Music": one line "title - artist", 24px, the Figma title grey,
+                        // centred 88px under the cover (no album line, no separate artist line)
                         Widgets.SubtitleLabel {
-                            id: albumLabel
+                            id: titleLabel
+
+                            readonly property string titleText: Player.title || Player.name
 
                             Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: VLCStyle.margin_xxlarge
+                            Layout.maximumWidth: centerContent.width - VLCStyle.margin_xlarge * 2
+                            Layout.topMargin: VLCStyle.dp(88, VLCStyle.scale) - implicitHeight / 2
 
                             Binding on visible {
                                 delayed: true
-                                when: albumLabel.componentCompleted
-                                value: centerContent.height > (albumLabel.y + albumLabel.height)
+                                when: titleLabel.componentCompleted
+                                value: centerContent.height > (titleLabel.y + titleLabel.height)
                             }
 
-                            text: Player.album
-                            font.pixelSize: VLCStyle.fontSize_xxlarge
+                            text: Player.artist ? titleText + " - " + Player.artist : titleText
+                            font.pixelSize: VLCStyle.dp(24, VLCStyle.scale)
+                            font.weight: Font.Normal
+                            elide: Text.ElideRight
                             horizontalAlignment: Text.AlignHCenter
-                            color: centerTheme.fg.primary
-                            Accessible.description: qsTr("album")
-
-                            property bool componentCompleted: false
-
-                            Component.onCompleted: {
-                                componentCompleted = true
-                            }
-                        }
-
-                        Widgets.MenuLabel {
-                            id: artistLabel
-
-                            Layout.alignment: Qt.AlignHCenter
-                            Layout.topMargin: VLCStyle.margin_small
-
-                            Binding on visible {
-                                delayed: true
-                                when: artistLabel.componentCompleted
-                                value: centerContent.height > (artistLabel.y + artistLabel.height)
-                            }
-
-                            text: Player.artist
-                            font.weight: Font.Light
-                            horizontalAlignment: Text.AlignHCenter
-                            color: centerTheme.fg.primary
-                            Accessible.description: qsTr("artist")
+                            color: VLCStyle.figmaColors(centerTheme.palette.isDark).title
+                            Accessible.name: text
 
                             property bool componentCompleted: false
 
@@ -985,7 +981,10 @@ FocusScope {
                             Binding on visible {
                                 delayed: true
                                 when: audioControls.componentCompleted
-                                value: Player.videoTracks.count === 0 && centerContent.height > (audioControls.y + audioControls.height)
+                                // redesign: the Figma has no buttons under the cover; the 10 s jumps are in the bar and
+                                // the visualizer in the side panel, so only Lyrics stays, for songs that have lyrics
+                                value: Player.videoTracks.count === 0 && Player.hasLyrics
+                                       && centerContent.height > (audioControls.y + audioControls.height)
                             }
 
                             focus: true
@@ -1007,6 +1006,7 @@ FocusScope {
                                 description: qsTr("Step back")
 
                                 AccessibleCompat.id: "audioStepBackButton"
+                                visible: false
                             }
 
                             Widgets.IconToolButton {
@@ -1016,6 +1016,7 @@ FocusScope {
                                 description: qsTr("Visualization")
 
                                 AccessibleCompat.id: "audioVisualizationButton"
+                                visible: false
                             }
 
                             Widgets.IconToolButton {
@@ -1037,6 +1038,7 @@ FocusScope {
                                 description: qsTr("Step forward")
 
                                 AccessibleCompat.id: "audioStepForwardButton"
+                                visible: false
                             }
                         }
 

@@ -394,9 +394,12 @@ for tag, bars in (('t0', True), ('idle', False), ('moved', True), ('hidden', Fal
         (ok if dark == bars else fail)('bars-idle', f'{tag}: bottom strip {hexc(bottom)} (want {"the bar" if bars else "the video"})')
 
 # rail-move: the picture does not move when the left menu is shown or hidden
-def picture_x(im, y=500):
-    # first x of the test picture's red column (the letterbox and the rail are dark)
-    return next((x for x in range(im.size[0]) if im.getpixel((x, y))[0] > 200 and im.getpixel((x, y))[1] < 60), None)
+def picture_x(im, ys=(300, 500, 700)):
+    # first x of the test picture's red column (the letterbox and the rail are dark), the earliest of three
+    # lines: the test video's moving diagonal stripe can cover the red column on any one line
+    xs = [next((x for x in range(im.size[0]) if im.getpixel((x, y))[0] > 200 and im.getpixel((x, y))[1] < 60), None) for y in ys]
+    xs = [x for x in xs if x is not None]
+    return min(xs) if xs else None
 
 a, b = img('rail-move', 'with'), img('rail-move', 'without')
 if a and b:
@@ -793,6 +796,51 @@ g = geom('eq-preset-icons', 'rock')
 if g:
     check('eq-preset-icons', any(n == 'Rock' and r == 'combo box' for n, r, *_ in geom_rows('eq-preset-icons', 'rock')),
           'choosing Rock in the dropdown selects it (the preset box shows Rock)')
+
+# music player (Figma "Player - Music", 1920x1080): the cover is a 738px square with 20px corners, centred in the
+# area between the bars (40..1025: 75% of its height), the blurred cover behind it; under it one line
+# "title - artist" (centre 88px below the cover); no row of buttons (step back, visualization, step forward).
+# neon.mp3: title Neon, artist Static Bloom, no lyrics.
+g = geom_rows('player-audio', 'a')
+t = img('player-audio', 'a')
+if g and t:
+    covers = [(x, y, w, h) for n, r, x, y, w, h in g if n == 'Cover' and w > 50]
+    check('player-audio', bool(covers), 'the cover is shown (accessible "Cover")')
+    if covers:
+        x, y, w, h = covers[0]
+        check('player-audio', abs(w - h) <= 4 and abs(h - 738) <= 25, f'the cover is a square of ~738px, 75% of the area between the bars ({w}x{h})')
+        check('player-audio', abs(x + w / 2 - 960) <= 4, f'the cover is centred ({x + w / 2:.0f}, want 960)')
+        inner, corner, outside = t.getpixel((x + 30, y + 30)), t.getpixel((x + 1, y + 1)), t.getpixel((x - 6, y - 6))
+        dist = lambda a, b: max(abs(i - j) for i, j in zip(a, b))
+        check('player-audio', dist(corner, outside) < dist(corner, inner), f'the cover has rounded corners (corner {corner}, inside {inner}, outside {outside})')
+        labels = [(n, x2, y2, w2, h2) for n, r, x2, y2, w2, h2 in g if r == 'label' and n.startswith('Neon')]
+        check('player-audio', any(n == 'Neon - Static Bloom' for n, *_ in labels), f'one line "title - artist" under the cover ({[l[0] for l in labels]})')
+        for n, x2, y2, w2, h2 in labels:
+            if n == 'Neon - Static Bloom':
+                check('player-audio', abs((y2 + h2 / 2) - (y + h) - 88) <= 14 and abs(x2 + w2 / 2 - 960) <= 6,
+                      f'the title line is centred 88px under the cover ({(y2 + h2 / 2) - (y + h):.0f}px)')
+    names = {n for n, r, *_ in g if r == 'button'}
+    check('player-audio', not names & {'Step back', 'Step forward', 'Visualization', 'Lyrics'},
+          f'no row of buttons under the cover ({sorted(names & {"Step back", "Step forward", "Visualization", "Lyrics"})})')
+    check('player-audio', not any(n == 'Static Bloom' for n, r, *_ in g if r == 'label'), 'no separate artist line')
+
+# mini player with a song (user report 2026-11-13: the square cover was stretched/cropped to the 16:9 preview):
+# like the main player, the cover is fitted at its own shape in the middle of the preview, and the same cover,
+# blurred, fills the rest. neon.mp3's cover is a square purple-to-orange gradient, so the strips beside it
+# change colour from top to bottom (an empty backdrop would be one flat colour).
+for scene in ('lib-mini-audio', 'lib-mini-audio-night'):
+    g, t = geom_rows(scene, 'a'), img(scene, 'a')
+    if not (g and t):
+        continue
+    covers = [(x, y, w, h) for n, r, x, y, w, h in g if n == 'Mini player cover' and w > 20]
+    check(scene, bool(covers), 'the mini player shows the cover (accessible "Mini player cover")')
+    if not covers:
+        continue
+    x, y, w, h = covers[0]
+    check(scene, abs(w - h) <= 3, f'the square cover keeps its shape ({w}x{h})')
+    top, bottom = t.getpixel((x - 25, y + 8)), t.getpixel((x - 25, y + h - 8))
+    diff = max(abs(a - b) for a, b in zip(top, bottom))
+    check(scene, diff > 25, f'the blurred cover fills the preview beside it (left strip top {top}, bottom {bottom})')
 
 # audio visualizer (Figma "Audio Visualizer"): a Visualizer dropdown in the side panel's Audio tab. Its list
 # shows Disabled and the four Figma entries, each with its icon; choosing one replaces the song's cover in the
