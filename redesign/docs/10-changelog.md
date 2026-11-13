@@ -2,6 +2,27 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.13 (2026-11-13)
+- **Videos continue where you left them** without asking: a small "Continued from 00:12:34" note shows
+  for 10 seconds with a **Start over** button.
+- **New version notice:** VLC (juxtopposed) checks once a week for a newer release and shows a small card
+  you can close (Settings > "Check for updates automatically" turns it off). This is the first version
+  that checks, so you will first see it when the next one comes out.
+- **Subtitles button** opens the tracks picker on Subtitles; the **audio button** opens the same picker on
+  Audio (it had its own small menu).
+- **Audio output:** the device in use is ticked, and choosing another device while playing switches to it
+  at once (PipeWire on Linux).
+- **Normal window:** the bars hide after 10 seconds of no mouse movement and the video fills the window,
+  like fullscreen. Open panels and menus keep them up.
+- **Left menu and library card** open over the video instead of pushing it aside.
+- **Play queue:** one click plays a row. **Add to Queue** puts the playing episode in its place in the
+  list (episode 47 of 1-100 stays between 46 and 48).
+- **Right-click menu on the video** is a little smaller (280 px wide, 44 px rows).
+- **Equalizer presets** have the design's curve icon in front of each name.
+- **Fixed:** the side panel closing by itself after 10 seconds; the player's library card showing videos
+  under Music; audio or video tracks added with Edit Audio/Video Tracks missing from the picker; Convert
+  opening with an empty profile box (the delete icon is now readable too).
+
 ## v0.1.12 (2026-11-11)
 - **Volume bar:** it shows the real volume as soon as VLC opens or a video starts; before, it stayed
   empty until you touched the volume.
