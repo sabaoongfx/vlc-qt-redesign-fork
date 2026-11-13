@@ -56,6 +56,41 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
+## After v0.1.13 (2026-11-13 evening; pushed, not released: next "what's new" material)
+
+All tests first, run locally (tests never go into CI, user decision; memory `tests-local-only`).
+- `712a1d0546` Visualizer row in the side panel's Audio tab (Figma "Audio Visualizer"): Disabled, Spectrometer,
+  Scope, Spectrum, VU Meter (the Figma's "Waveform" = VLC's VU meter: VLC has no separate waveform), icons in
+  `pixmaps/visual/` (Spectrum's dots are circles: Qt's SVG renderer skips zero-length round-cap lines). Drives the
+  player's `audioVisualization` ("visual" var, rows 0-4 in core order) for the session, not saved. Dropdown rows
+  without an icon keep the icon rows' height (`ComboBoxExt`). The row moved the Equalizer card down 68px: the EQ
+  scenes click 1714,737 / Rock 1715,581 now. Scenes `visualizer`, `visualizer-day`.
+- `0e0a210766` Music player = Figma "Player - Music": cover 75% of the area between the bars, 20px corners
+  (`Widgets.ImageExt` sized by the picture's aspect: ImageExt draws its texture over its whole box whatever the
+  fillMode), decoded at 0.75 x screen height; one line "title - artist" 24px `figmaColors().title`, centre 88px under
+  the cover; no album/artist lines; the button row only for songs with lyrics (Lyrics is only reachable there).
+  Floating mini player (user report, stretched square cover): cover fitted in the middle, the cover decoded at 24px
+  and scaled up as the blur behind it, dimmed, a ring in the card colour keeps the corners round.
+  Checks: `player-audio` (geometry), `lib-mini-audio(-night)`.
+- `3498f115d0` Fullscreen: no position display (time + slider) over the video on a seek (user: "on using the ten
+  second forward button, the ui shows"; it was VLC's OSD, not the bars). `src/player/osd.c`: core change, keep.
+  `keys-fullscreen` counts the OSD's white text 0.3 s after Right.
+- Finding, not fixed: Day theme, music playing, side panel open: the active subtitles button is 1.39:1 on the light
+  bar (`visualizer-day` contrast; `test-findings.md`).
+- Last full local run (before `3498f115d0`): 477 pass, 4 fail = that finding + `video-grid` (shot before the window
+  drew) + `keys-fullscreen` (timing); both pass alone. `rail-move` now reads the picture edge on three lines.
+- Dropped by the user: the player top bar work (music player's library button toggles nothing: the rail exists only on
+  the video stage, `_libraryRail` needs `_videoStage`). Not done.
+- IN PROGRESS (user request "change the ui of the queue according to figma"): the queue panel tabs, Figma `Queue.svg`
+  / `Queue-1.svg` in `~/Downloads/VLC Redesign (Community) (5).zip` (400x946; plan in `12-known-issues-and-roadmap.md`).
+  Nothing written yet. Found so far: the panel is `PlaylistPane.qml` in `Player.qml`'s `playlistpopup` (header =
+  "Play Queue" title, sort, search, add, count line, column headers); tabs replace the title. Chapters:
+  `Player.chapters` (`ChapterListModel`: display, time roles, `selectChapter(i)`, `Player.hasChapters`). Bookmarks:
+  `MLBookmarkModel` (QML-registered, needs the media library and an indexed media: no bookmarks for files outside
+  the library; `add()`/`remove()` are not Q_INVOKABLE yet; names default to "Bookmark at HH:MM:SS"; time role is
+  H:M:S, the Figma shows milliseconds); upstream `medialibrary/qml/Bookmarks.qml` uses it. Next: a fixture with
+  chapters (ffmpeg metadata), scenes per tab, then build.
+
 ## 2026-11-13: tests for every feature, then the bugs they found fixed (`271bfbe603`)
 
 RELEASED 2026-11-13: **v0.1.13** on `271bfbe603` (Latest, 8 assets, release run 43403362980; changelog `d558120b1a`;
