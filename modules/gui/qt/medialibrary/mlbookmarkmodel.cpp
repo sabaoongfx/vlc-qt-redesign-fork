@@ -67,6 +67,8 @@ QVariant MLBookmarkModel::data( const QModelIndex &index, int role ) const
             return QVariant::fromValue( qfu( bookmark.psz_name ) );
         case BookmarkRoles::TimeRole:
             return QVariant::fromValue( VLCDuration::fromMS( bookmark.i_time ).formatHMS() );
+        case BookmarkRoles::TimeMsRole:
+            return QVariant::fromValue( (qint64)bookmark.i_time );
         case BookmarkRoles::PositionRole:
         {
             vlc_player_locker lock{ m_player };
@@ -149,6 +151,7 @@ QHash<int, QByteArray> MLBookmarkModel::roleNames() const{
     return QHash<int, QByteArray>{
         {BookmarkRoles::NameRole, QByteArrayLiteral("name")},
         {BookmarkRoles::TimeRole, QByteArrayLiteral("time")},
+        {BookmarkRoles::TimeMsRole, QByteArrayLiteral("timeMs")},
         {BookmarkRoles::PositionRole, QByteArrayLiteral("position")},
         {BookmarkRoles::DescriptionRole, QByteArrayLiteral("description")}
     };
@@ -302,6 +305,13 @@ void MLBookmarkModel::remove( const QModelIndexList &indexes )
     });
 }
 
+void MLBookmarkModel::removeRow( int row )
+{
+    if ( row < 0 || row >= rowCount() )
+        return;
+    remove( { index( row, 0 ) } );
+}
+
 void MLBookmarkModel::clear()
 {
     if (m_currentMediaId == 0)
@@ -421,9 +431,12 @@ void MLBookmarkModel::updateMediaId(uint64_t revision, const QString &mediaUri)
         {
             beginResetModel();
             m_bookmarks = std::move(ctx.newBookmarks);
+            const bool wasAvailable = available();
             m_currentMediaId = ctx.newMLid;
             refresh(MLBOOKMARKMODEL_REFRESH);
             endResetModel();
+            if (wasAvailable != available())
+                emit availableChanged();
         }
     });
 }

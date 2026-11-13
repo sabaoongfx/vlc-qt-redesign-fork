@@ -39,6 +39,17 @@ T.Pane {
 
     property bool useAcrylic: true
 
+    // redesign: Figma "Queue": the player's card has a tab bar Queue | Bookmarks | Chapters instead of the
+    // "Play Queue" title (the Bookmarks and Chapters pages are given by the player as urls: the Playlist module cannot import the
+    // player or the media library).
+    // The library's own queue panel keeps the title (tabs: false).
+    property bool tabs: false
+    property real tabRadius: 0
+    property int currentTab: 0 // 0 Queue, 1 Bookmarks, 2 Chapters
+    property url bookmarksPage
+    property url chaptersPage
+    readonly property bool _queueTab: !tabs || currentTab === 0
+
     readonly property real minimumWidth: contentItem.Layout.minimumWidth +
                                          leftPadding +
                                          rightPadding +
@@ -123,13 +134,48 @@ T.Pane {
 
         readonly property ListView listView: listView
 
+        // Figma Queue: a 50px #090909 bar over the card's width, the current tab has a 2px accent underline
+        Rectangle {
+            id: tabBar
+
+            readonly property var figma: VLCStyle.figmaColors(theme.palette.isDark)
+
+            visible: root.tabs
+            Layout.fillWidth: true
+            Layout.preferredHeight: visible ? VLCStyle.dp(50, VLCStyle.scale) : 0
+            Layout.leftMargin: -root.leftPadding
+            Layout.rightMargin: -root.rightPadding
+            radius: root.tabRadius
+            color: figma.bar
+
+            // square the bottom corners (only the top ones follow the card)
+            Rectangle {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                height: Math.max(0, parent.height - parent.radius)
+                color: parent.color
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+
+                QueueTab { text: qsTr("Queue"); iconName: "queue"; tabIndex: 0 }
+                QueueTab { text: qsTr("Bookmarks"); iconName: "bookmark"; tabIndex: 1 }
+                QueueTab { text: qsTr("Chapters"); iconName: "chapters"; tabIndex: 2 }
+            }
+        }
+
         Column {
             id: headerColumn
 
+            visible: root._queueTab
             Layout.fillHeight: false
             Layout.fillWidth: true
-            Layout.leftMargin: VLCStyle.margin_normal
-            Layout.rightMargin: VLCStyle.margin_normal
+            Layout.topMargin: root.tabs ? VLCStyle.dp(13, VLCStyle.scale) : 0
+            Layout.leftMargin: root.tabs ? VLCStyle.dp(24, VLCStyle.scale) : VLCStyle.margin_normal
+            Layout.rightMargin: root.tabs ? VLCStyle.dp(24, VLCStyle.scale) : VLCStyle.margin_normal
 
             spacing: VLCStyle.margin_xxxsmall
 
@@ -141,9 +187,23 @@ T.Pane {
 
                 spacing: VLCStyle.margin_normal
 
+                // with the tabs: the count and duration at the left of the buttons (Figma Bookmarks: "2 Bookmarks")
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.tabs
+                    text: queueSummary.text
+                    elide: Text.ElideRight
+                    color: tabBar.figma.hint
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_large
+                    Accessible.role: Accessible.StaticText
+                    Accessible.name: text
+                }
+
                 Widgets.SubtitleLabel {
                     id: titleLabel
 
+                    visible: !root.tabs
                     Layout.fillWidth: true
 
                     text: qsTr("Play Queue")
@@ -247,8 +307,10 @@ T.Pane {
             }
 
             Widgets.CaptionLabel {
+                id: queueSummary
+
                 color: theme.fg.secondary
-                visible: listView.count !== 0
+                visible: listView.count !== 0 && !root.tabs
                 text: {
                     if (listView.count <= 0)
                         return "" // Not visible otherwise
@@ -277,11 +339,12 @@ T.Pane {
         Item {
             // Spacer
 
+            visible: root._queueTab
             implicitHeight: VLCStyle.margin_xsmall
         }
 
         RowLayout {
-            visible: listView.count !== 0
+            visible: root._queueTab && listView.count !== 0
 
             Layout.fillHeight: false
             Layout.leftMargin: VLCStyle.margin_normal
@@ -344,9 +407,27 @@ T.Pane {
             }
         }
 
+        // the Bookmarks and Chapters tabs (pages of the player, see Player.qml)
+        Loader {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: root.tabs && root.currentTab === 1
+            active: visible
+            source: root.bookmarksPage
+        }
+
+        Loader {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: root.tabs && root.currentTab === 2
+            active: visible
+            source: root.chaptersPage
+        }
+
         Widgets.ListViewExt {
             id: listView
 
+            visible: root._queueTab
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -641,6 +722,69 @@ T.Pane {
     Keys.priority: Keys.AfterItem
     Keys.forwardTo: listView
     Keys.onPressed: (event) => root.Navigation.defaultKeyAction(event)
+
+    // one tab of the bar: the Figma icon (grey, its accent part dim accent while current) and the label,
+    // centred in a third of the bar, with the accent underline under them while current
+    component QueueTab : T.AbstractButton {
+        id: tab
+
+        required property string iconName
+        required property int tabIndex
+        readonly property bool current: root.currentTab === tabIndex
+        readonly property var figma: VLCStyle.figmaColors(theme.palette.isDark)
+
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        Layout.preferredWidth: 1
+
+        focusPolicy: Qt.StrongFocus
+        hoverEnabled: true
+        Accessible.role: Accessible.PageTab
+        Accessible.name: text
+
+        onClicked: root.currentTab = tabIndex
+
+        background: null
+
+        contentItem: Item {
+            Row {
+                id: tabContent
+
+                anchors.centerIn: parent
+                spacing: VLCStyle.dp(8, VLCStyle.scale)
+
+                Image {
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: VLCStyle.dp(24, VLCStyle.scale)
+                    height: width
+                    sourceSize: Qt.size(width * 2, height * 2)
+                    source: SVGColorImage.colorize("qrc:///queue/" + tab.iconName + ".svg")
+                                         .color1(tab.current ? tab.figma.hint : tab.figma.tabIcon)
+                                         .accent(tab.current ? Qt.darker(theme.accent, 1.25) : tab.figma.tabIcon)
+                                         .uri()
+                }
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: tab.text
+                    color: (tab.current || tab.hovered) ? tab.figma.label : tab.figma.hint
+                    font.family: VLCStyle.fontFamily
+                    font.pixelSize: VLCStyle.fontSize_large
+                }
+            }
+
+            Rectangle {
+                anchors.bottom: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: tabContent.width + VLCStyle.dp(26, VLCStyle.scale)
+                height: VLCStyle.dp(2, VLCStyle.scale)
+                visible: tab.current
+                color: theme.accent
+            }
+        }
+
+        HoverHandler { cursorShape: Qt.PointingHandCursor }
+    }
 
     component PlaylistToggleButton : Widgets.IconToolButton {
         id: playlistBtn

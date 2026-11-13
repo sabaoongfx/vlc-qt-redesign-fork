@@ -81,15 +81,21 @@ All tests first, run locally (tests never go into CI, user decision; memory `tes
   drew) + `keys-fullscreen` (timing); both pass alone. `rail-move` now reads the picture edge on three lines.
 - Dropped by the user: the player top bar work (music player's library button toggles nothing: the rail exists only on
   the video stage, `_libraryRail` needs `_videoStage`). Not done.
-- IN PROGRESS (user request "change the ui of the queue according to figma"): the queue panel tabs, Figma `Queue.svg`
-  / `Queue-1.svg` in `~/Downloads/VLC Redesign (Community) (5).zip` (400x946; plan in `12-known-issues-and-roadmap.md`).
-  Nothing written yet. Found so far: the panel is `PlaylistPane.qml` in `Player.qml`'s `playlistpopup` (header =
-  "Play Queue" title, sort, search, add, count line, column headers); tabs replace the title. Chapters:
-  `Player.chapters` (`ChapterListModel`: display, time roles, `selectChapter(i)`, `Player.hasChapters`). Bookmarks:
-  `MLBookmarkModel` (QML-registered, needs the media library and an indexed media: no bookmarks for files outside
-  the library; `add()`/`remove()` are not Q_INVOKABLE yet; names default to "Bookmark at HH:MM:SS"; time role is
-  H:M:S, the Figma shows milliseconds); upstream `medialibrary/qml/Bookmarks.qml` uses it. Next: a fixture with
-  chapters (ffmpeg metadata), scenes per tab, then build.
+- DONE 2026-11-14 (user request "change the ui of the queue according to figma", then "do it" for Ctrl+B): the queue
+  panel of the player has the Figma tabs Queue | Bookmarks | Chapters (`Queue.svg`/`Queue-1.svg` in `~/Downloads/VLC
+  Redesign (Community) (5).zip`; 400x946 frames). `PlaylistPane.qml` (`tabs: true` only in `Player.qml`; the library's
+  queue panel keeps the title) has the 50px #090909 bar (`QueueTab`, icons `pixmaps/queue/`, accent underline), the
+  Queue tab keeps the list with the count line beside sort/search/add; pages are urls given by the player:
+  `player/qml/QueueChaptersPage.qml` (accent number, name, HH:MM:SS; click seeks; VLC puts a space before mkv chapter
+  names: trimmed; time rounds to the second) and `medialibrary/qml/QueueBookmarksPage.qml` (+ `QueueBookmarkModel.qml`:
+  `MLBookmarkModel` is not registered without the media library, so it is loaded by url like `CompactLibrary`; the model
+  got `timeMs`, `available`, invokable `add()`/`removeRow()`; `VLCTime.toMilliseconds` is invokable). Card width 400
+  (`Player.qml`). Ctrl+B / Bookmarks > Manage in the player: `DialogsProvider::bookmarksDialog` emits
+  `MainCtx::bookmarksRequested` (player view + docked queue), `Player.qml` opens the panel on Bookmarks / switches to it
+  / closes it; the Widgets window stays in the library view. Ctrl+B only exists with the media library (the shortcut is
+  in `MLGlobalShortcuts.qml`). Fixture `chapters.mkv`; scenes `queue-tabs(-day)`, `queue-bookmarks`, `queue-bookmarks-key`;
+  `queue-open/click/reorder` re-measured. Full local run: 515 pass, 2 fail (the Day contrast finding and
+  `keys-fullscreen`, which reads its times too early in full runs: now reads twice); unit tests 8/8.
 
 ## 2026-11-13: tests for every feature, then the bugs they found fixed (`271bfbe603`)
 

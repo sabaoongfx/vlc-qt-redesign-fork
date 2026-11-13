@@ -1056,6 +1056,9 @@ libqt_plugin_la_RES = \
 	pixmaps/eq/soft.svg \
 	pixmaps/eq/softrock.svg \
 	pixmaps/eq/techno.svg \
+	pixmaps/queue/queue.svg \
+	pixmaps/queue/bookmark.svg \
+	pixmaps/queue/chapters.svg \
 	pixmaps/visual/spectrometer.svg \
 	pixmaps/visual/scope.svg \
 	pixmaps/visual/spectrum.svg \
@@ -1255,6 +1258,8 @@ libqml_module_medialibrary_a_QML = \
 	medialibrary/qml/HomePage.qml \
 	medialibrary/qml/MediaView.qml \
 	medialibrary/qml/CompactLibrary.qml \
+	medialibrary/qml/QueueBookmarkModel.qml \
+	medialibrary/qml/QueueBookmarksPage.qml \
 	medialibrary/qml/VideoFolderTreeDisplay.qml \
 	medialibrary/qml/MusicAlbums.qml \
 	medialibrary/qml/MusicAlbumsDisplay.qml \
@@ -1355,6 +1360,7 @@ libqml_module_player_a_QML = \
 	player/qml/TopBar.qml \
 	player/qml/TracksMenu.qml \
 	player/qml/TracksPicker.qml \
+	player/qml/QueueChaptersPage.qml \
 	player/qml/TracksPage.qml \
 	player/qml/TracksPageAudio.qml \
 	player/qml/TracksPageSpeed.qml \

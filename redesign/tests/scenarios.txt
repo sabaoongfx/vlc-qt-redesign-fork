@@ -96,7 +96,7 @@ queue-around     | 2 | ml   |                       | sleep:2 click:80,125 sleep
 # normal window: 10 s idle hides both bars and the video fills the window (idle), a move shows them over it (moved), 10 s later hidden
 bars-idle        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:1 shot:t0 sleep:12 shot:idle move:900,520 sleep:1 shot:moved sleep:12 shot:hidden
 # play queue: one click plays a row (short.mp4 plays)
-queue-click      | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1750,213 sleep:2 move:1500,700 sleep:0.5 shot:a
+queue-click      | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1750,237 sleep:2 move:1500,700 sleep:0.5 shot:a
 # the left menu (rail) and the library card open over the video: the picture starts at the same x with the rail shown (with) and hidden (without)
 rail-move        | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 shot:with key:u sleep:1.5 move:900,500 sleep:0.5 shot:without key:u sleep:1.5 click:25,248 sleep:2 move:900,500 sleep:0.5 shot:card
 
@@ -110,11 +110,11 @@ lib-button       | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep
 # a row dragged from the library card into the play queue is queued
 drag-to-queue    | 2 | ml   | @sample.mp4           | sleep:3 move:900,500 sleep:0.5 press:Play_Queue sleep:1.5 click:25,110 sleep:2 click:150,228 sleep:2 geom:a down:150,270 move:200,280 move:600,300 move:1200,300 move:1700,300 sleep:0.5 up sleep:1.5 geom:b shot:b
 # dragging the second queue row above the first swaps them (slow moves: the drag has a threshold)
-queue-reorder    | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 geom:a down:1750,209 sleep:0.3 move:1752,205 sleep:0.2 move:1755,195 sleep:0.2 move:1755,180 sleep:0.2 move:1755,165 sleep:0.2 move:1755,158 sleep:0.5 up sleep:1.5 geom:b shot:b
+queue-reorder    | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 geom:a down:1750,237 sleep:0.3 move:1752,233 sleep:0.2 move:1755,222 sleep:0.2 move:1755,208 sleep:0.2 move:1755,194 sleep:0.2 move:1755,187 sleep:0.5 up sleep:1.5 geom:b shot:b
 # control bar: 10 s forward, 10 s back, Next, Previous
 transport        | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:900,500 sleep:0.5 values:a press:Step_forward sleep:1 values:fwd press:Step_back sleep:1 values:back press:Next sleep:2 values:next press:Previous sleep:2 values:prev
 # fullscreen: a seek key keeps the bars hidden and seeks; Tab shows them
-keys-fullscreen  | 2 | none | @sample.mp4           | sleep:3 key:f sleep:2 move:960,540 sleep:0.3 move:961,541 sleep:3 shot:a key:Right sleep:0.3 shot:osd sleep:0.7 shot:seek key:Tab sleep:1 shot:tab values:tab
+keys-fullscreen  | 2 | none | @sample.mp4           | sleep:3 key:f sleep:2 move:960,540 sleep:0.3 move:961,541 sleep:3 shot:a key:Right sleep:0.3 shot:osd sleep:0.7 shot:seek key:Tab sleep:1 shot:tab values:tab sleep:0.6 values:tab2
 # resume: the second play continues and offers Start over, which seeks to the start
 resume-start     | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:16 term
 resume-start-2   | 2 | same | ~/Videos/long_movie.mp4 | sleep:1.5 geom:a values:a shot:a press:Start_over sleep:1.5 values:b
@@ -184,3 +184,7 @@ picker-default-tab | 2 | none | @multi.mkv          | sleep:3 move:900,500 sleep
 audio-button-picker | 2 | none | @multi.mkv         | sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Audio_tracks_and_output sleep:1.2 shot:a press:Audio_tracks_and_output sleep:1 move:910,510 press:Languages_and_tracks sleep:1.2 shot:subs
 visualizer       | 2 | none | --repeat @neon.mp3    | sound:null sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:1 move:700,500 shot:before click:1780,382 sleep:1.2 shot:list geom:list click:1780,546 sleep:3 move:710,505 shot:on geom:on click:1780,382 sleep:1.2 click:1780,426 sleep:3 move:700,500 shot:off geom:off
 visualizer-day   | 1 | none | --repeat @neon.mp3    | sound:null sleep:3 move:900,500 sleep:0.3 move:920,520 sleep:0.5 press:Languages_and_tracks sleep:1 press:Show_Preferences sleep:1.5 click:1745,64 sleep:1 move:700,500 click:1780,382 sleep:1.2 shot:list geom:list
+queue-tabs       | 2 | none | @chapters.mkv @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 move:1500,700 sleep:0.5 shot:queue geom:queue click:1845,73 sleep:1 move:1500,700 sleep:0.3 shot:chapters geom:chapters values:chapters click:1712,223 sleep:1.5 values:seek move:1500,700 sleep:0.3 shot:seek click:1712,73 sleep:1 move:1500,700 sleep:0.3 shot:bookmarks geom:bookmarks click:1578,73 sleep:1 move:1500,700 sleep:0.3 shot:back geom:back
+queue-tabs-day   | 1 | none | @chapters.mkv @short.mp4 | sleep:3 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 move:1500,700 sleep:0.5 shot:queue click:1845,73 sleep:1 move:1500,700 sleep:0.3 shot:chapters geom:chapters
+queue-bookmarks  | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:4 move:1880,1050 sleep:0.4 press:Play_Queue sleep:1.5 click:1712,73 sleep:1 move:1500,700 sleep:0.3 shot:empty geom:empty click:1880,131 sleep:1.5 move:1500,700 sleep:0.3 shot:one geom:one click:1700,180 sleep:0.8 click:1844,131 sleep:1.5 move:1500,700 sleep:0.3 shot:none geom:none
+queue-bookmarks-key | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:4 move:900,500 sleep:0.4 key:ctrl+b sleep:1.5 move:1500,700 sleep:0.3 shot:open geom:open click:1845,73 sleep:0.8 key:ctrl+b sleep:1 move:1500,700 shot:switch geom:switch key:ctrl+b sleep:1.2 move:1500,700 shot:closed geom:closed key:ctrl+b sleep:1.2 move:1500,700 shot:again geom:again

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="35 12 24 24" fill="none">
+<!-- Figma Queue tab icon: #FF00FF = the grey, #FF8800 = the accent (SVGColorImage) -->
+  <path d="M41.5 25.6665H53.1667" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <path d="M41.5 29.8335H53.1667" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" stroke="#FF00FF"/>
+  <rect x="40.4584" y="17.9585" width="13.75" height="3.75" rx="1.875" stroke-width="1.25" stroke="#FF8800"/>
+</svg>

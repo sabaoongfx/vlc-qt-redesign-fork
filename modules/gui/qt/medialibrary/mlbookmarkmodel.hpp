@@ -48,6 +48,9 @@ class MLBookmarkModel : public QAbstractListModel
 
     Q_PROPERTY(MediaLib * ml READ ml WRITE setMl FINAL)
 
+    // redesign: the playing media is in the media library (bookmarks live there: none for other files)
+    Q_PROPERTY(bool available READ available NOTIFY availableChanged FINAL)
+
 public:
     explicit MLBookmarkModel( QObject* parent = nullptr );
     virtual ~MLBookmarkModel();
@@ -56,7 +59,8 @@ public:
         NameRole = Qt::UserRole,
         TimeRole = Qt::UserRole + 1,
         PositionRole = Qt::UserRole + 2,
-        DescriptionRole = Qt::UserRole + 3
+        DescriptionRole = Qt::UserRole + 3,
+        TimeMsRole = Qt::UserRole + 4 // redesign: the time in milliseconds (the queue panel shows HH:MM:SS:mmm)
     };
     QHash<int, QByteArray> roleNames() const override;
 
@@ -78,10 +82,17 @@ public:
     MediaLib* ml() const;
     void setMl(MediaLib* ml);
 
-    void add();
+    bool available() const { return m_currentMediaId != 0; }
+
+    // redesign: callable from the queue panel's Bookmarks tab
+    Q_INVOKABLE void add();
+    Q_INVOKABLE void removeRow( int row );
     void remove( const QModelIndexList& indexes );
     void clear();
     Q_INVOKABLE void select( const QModelIndex& index );
+
+signals:
+    void availableChanged();
 
 private:
     static void onCurrentMediaChanged( vlc_player_t* player, input_item_t* media,

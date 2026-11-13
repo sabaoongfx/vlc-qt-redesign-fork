@@ -117,7 +117,8 @@ for scene, tag, inside in (('queue-open', 'a', (0x0E, 0x0E, 0x0E)), ('panel-tabs
         # the stage is flush with the window: the card keeps an 8px gap to the window edge
         c = t.getpixel((W - 4, 500))
         (ok if not near(c, inside, 3) else fail)(scene, f'panel colour {hexc(c)} at the window edge (want a gap)')
-        c = t.getpixel((W - 200, 60))
+        # below the queue's tab bar (#090909, y 48-98) for the queue card
+        c = t.getpixel((W - 200, 700 if scene == 'queue-open' else 60))
         (ok if near(c, inside, 3) else fail)(scene, f'panel {hexc(c)} (want solid {hexc(inside)})')
 
 # 4b. right panel measured on the Figma Subtitles SVGs (panel-relative x and y; the panel top is the tab row's)
@@ -411,8 +412,9 @@ if a and b:
 # queue-click: one click on the second queue row plays it (the accent marker moves to that row)
 t = img('queue-click', 'a')
 if t:
-    row1 = count_color(t, (1612, 160, 1622, 186), ACCENT, 40)
-    row2 = count_color(t, (1612, 196, 1622, 222), ACCENT, 40)
+    # the queue card is 400px at x 1512 with a tab bar: rows at y 183-219 and 219-255, the marker at the card's left edge
+    row1 = count_color(t, (1512, 186, 1522, 216), ACCENT, 40)
+    row2 = count_color(t, (1512, 222, 1522, 252), ACCENT, 40)
     (ok if row2 > 0 and row1 == 0 else fail)('queue-click', f'playing marker: {row1}px on row 1, {row2}px on row 2 (want only row 2)')
 
 # queue-around: E06 plays, the folder E01-E12 is queued: E06 is the sixth row of the queue card
@@ -508,7 +510,7 @@ if a and b:
 # queue-reorder: short.mp4 was second, after the drag it is first
 def queue_order(g):
     rows = sorted((y, n) for n, boxes in g.items() for (x, y, w, h) in boxes
-                  if n.endswith('.mp4') and 1600 <= x < 1640 and 100 < y < 800)
+                  if n.endswith('.mp4') and 1575 <= x < 1600 and 100 < y < 800)
     return [n for _, n in rows]
 a, b = geom('queue-reorder', 'a'), geom('queue-reorder', 'b')
 if a and b:
@@ -535,6 +537,8 @@ if os.path.exists(f'{OUT}/keys-fullscreen-a.ctl'):
         shown = 'Play/Pause' in controls('keys-fullscreen', tag)
         (ok if shown == want else fail)('keys-fullscreen', f'{tag}: bars {"shown" if shown else "hidden"} (want {"shown" if want else "hidden"})')
     el, _ = bar_times('keys-fullscreen', 'tab')
+    if el is None:  # the bars were still drawing: read them again 0.6 s later
+        el, _ = bar_times('keys-fullscreen', 'tab2')
     # started ~9 s before Tab; Right adds 10 s
     (ok if el is not None and el >= 15 else fail)('keys-fullscreen', f'time after Right: {el} s (want 15 or more: the key seeked)')
 
@@ -849,6 +853,94 @@ for scene in ('lib-mini-audio', 'lib-mini-audio-night'):
     top, bottom = t.getpixel((x - 25, y + 8)), t.getpixel((x - 25, y + h - 8))
     diff = max(abs(a - b) for a, b in zip(top, bottom))
     check(scene, diff > 25, f'the blurred cover fills the preview beside it (left strip top {top}, bottom {bottom})')
+
+# queue panel (Figma "Queue" / "Queue-1", 400px card): a 50px tab bar Queue | Bookmarks | Chapters instead of the
+# "Play Queue" title, the current tab has an accent underline; Chapters: a row per chapter (accent number, name,
+# start time HH:MM:SS right), a click seeks; Bookmarks: "N Bookmarks" with - and + (Figma frames at 1912-400).
+# chapters.mkv: Winter 0, Spring 24 s, Summer 48 s, Fall 1:12, Winter (5 Years Later) 1:36.
+TABS = ('Queue', 'Bookmarks', 'Chapters')
+CHAPTERS = [('Winter', '00:00:00'), ('Spring', '00:00:24'), ('Summer', '00:00:48'), ('Fall', '00:01:12'),
+            ('Winter (5 Years Later)', '00:01:36')]
+def tab_underlines(scene, tag):
+    t, rows = img(scene, tag), geom_rows(scene, tag)
+    if not (t and rows):
+        return None
+    out = {}
+    for n, r, x, y, w, h in rows:
+        if n in TABS and r == 'page tab' and x > 1480 and y < 110 and w > 40:
+            out[n] = (count_color(t, (x, y + h - 6, x + w, y + h + 2), ACCENT, 40), x, y, w, h)
+    return out
+def underlined(u):
+    return max(u, key=lambda k: u[k][0]) if u and max(v[0] for v in u.values()) > 30 else None
+for scene in ('queue-tabs', 'queue-tabs-day'):
+    if not (geom_rows(scene, 'queue') or geom_rows(scene, 'chapters')):
+        continue
+    u = tab_underlines(scene, 'queue' if scene == 'queue-tabs' else 'chapters')
+    if scene == 'queue-tabs':
+        check(scene, bool(u) and set(u) == set(TABS), f'the tab bar has the tabs Queue, Bookmarks, Chapters ({sorted(u or [])})')
+        check(scene, underlined(u) == 'Queue', f'the Queue tab is underlined first ({ {k: v[0] for k, v in (u or {}).items()} })')
+        if u and len(u) == 3:
+            xs = sorted(v[1] + v[3] / 2 for v in u.values())
+            check(scene, all(abs(x - c) <= 12 for x, c in zip(xs, (1578, 1712, 1845))),
+                  f'the three tabs sit at the card thirds ({[round(x) for x in xs]}, want 1578, 1712, 1845)')
+            check(scene, all(abs(v[4] - 50) <= 4 for v in u.values()), f'the tab bar is 50px high ({[v[4] for v in u.values()]})')
+        names = [n for n, r, *_ in geom_rows(scene, 'queue') if r == 'label']
+        check(scene, 'Play Queue' not in names, 'the "Play Queue" title is gone (the Queue tab says it)')
+        check(scene, any(n.startswith('chapters.mkv') for n in names) and any(n.startswith('short.mp4') for n in names),
+              f'the Queue tab still lists the queue ({names[:8]})')
+        for tag2, want in (('chapters', 'Chapters'), ('bookmarks', 'Bookmarks'), ('back', 'Queue')):
+            check(scene, underlined(tab_underlines(scene, tag2)) == want, f'the {want} tab is underlined after choosing it')
+    else:
+        check(scene, underlined(u) == 'Chapters', f'Day: the Chapters tab is underlined ({ {k: v[0] for k, v in (u or {}).items()} })')
+    g = geom_rows(scene, 'chapters')
+    if g:
+        labels = {n: (x, y, w, h) for n, r, x, y, w, h in g if r == 'label' and x > 1480}
+        miss = [c for c, _ in CHAPTERS if c not in labels]
+        check(scene, not miss, f'Chapters lists the five chapters' + (f' (missing {miss})' if miss else ''))
+        miss = [tm for _, tm in CHAPTERS if tm not in labels]
+        check(scene, not miss, 'each chapter shows its start time as HH:MM:SS' + (f' (missing {miss})' if miss else ''))
+        ys = [labels[c][1] + labels[c][3] / 2 for c, _ in CHAPTERS if c in labels]
+        check(scene, len(ys) == 5 and all(abs(b - a - 44) <= 3 for a, b in zip(ys, ys[1:])), f'the chapter rows are 44px apart ({[round(y) for y in ys]})')
+        if 'Winter' in labels:
+            x0 = labels['Winter'][0]
+            check(scene, abs(x0 - (1512 + 69)) <= 8, f'chapter names start 69px into the card (x {x0}, want {1512 + 69})')
+        rt = [(x + w) for tm in (c[1] for c in CHAPTERS) for (x, y, w, h) in [labels.get(tm, (0, 0, 0, 0))] if w]
+        check(scene, bool(rt) and all(abs(r - (1512 + 376)) <= 8 for r in rt), f'start times end 24px from the card edge ({[round(r) for r in rt]}, want {1512 + 376})')
+if geom_rows('queue-tabs', 'chapters'):
+    el, _ = bar_times('queue-tabs', 'seek')
+    check('queue-tabs', el is not None and 48 <= el < 60, f'a click on Summer seeks to 00:48 ({el} s)')
+    nums = [(n, x, y, w, h) for n, r, x, y, w, h in geom_rows('queue-tabs', 'chapters') if r == 'label' and n in '12345' and x > 1480]
+    t = img('queue-tabs', 'chapters')
+    if t and nums:
+        acc = [count_color(t, (x - 2, y, x + w + 2, y + h), ACCENT, 60) for n, x, y, w, h in nums]
+        check('queue-tabs', len(nums) == 5 and all(a >= 4 for a in acc), f'the chapter numbers 1-5 are accent ({acc})')
+    gb = geom_rows('queue-tabs', 'bookmarks')
+    lb = [n for n, r, *_ in gb if r == 'label']
+    check('queue-tabs', any('library' in n.lower() for n in lb), f'a file outside the library says bookmarks need the library ({lb[:6]})')
+    cb = controls('queue-tabs', 'bookmarks')
+    check('queue-tabs', 'Add bookmark' not in cb, 'and its + (Add bookmark) is not offered')
+# Ctrl+B in the player (roadmap: "Ctrl+B opens the panel on Bookmarks"): closed -> opens on Bookmarks; open on
+# another tab -> switches to Bookmarks and stays open; open on Bookmarks -> closes; again -> opens
+for tag, want, what in (('open', 'Bookmarks', 'Ctrl+B opens the queue panel on the Bookmarks tab'),
+                        ('switch', 'Bookmarks', 'Ctrl+B with the Chapters tab open switches to Bookmarks'),
+                        ('closed', None, 'Ctrl+B with Bookmarks open closes the panel'),
+                        ('again', 'Bookmarks', 'Ctrl+B again opens it on Bookmarks')):
+    if geom_rows('queue-bookmarks-key', tag):
+        u = tab_underlines('queue-bookmarks-key', tag)
+        got = underlined(u) if u else None
+        (ok if got == want else fail)('queue-bookmarks-key', f'{what} (tab: {got})')
+
+def bm_label(g, pat):
+    return [n for n, r, x, y, w, h in g if r == 'label' and x > 1480 and re.fullmatch(pat, n)]
+if geom_rows('queue-bookmarks', 'empty'):
+    ge, g1, g0 = (geom_rows('queue-bookmarks', t) for t in ('empty', 'one', 'none'))
+    check('queue-bookmarks', bool(bm_label(ge, r'0 Bookmarks')), f'a library video with no bookmark says "0 Bookmarks" ({bm_label(ge, ".*Bookmark.*")})')
+    check('queue-bookmarks', {'Add bookmark', 'Remove bookmark'} <= {n for n, r, *_ in ge if r == 'button'},
+          'the Bookmarks header has - (Remove bookmark) and + (Add bookmark)')
+    check('queue-bookmarks', bool(bm_label(g1, r'1 Bookmark')), f'+ adds one at the current time: "1 Bookmark" ({bm_label(g1, ".*Bookmark.*")})')
+    check('queue-bookmarks', bool(bm_label(g1, r'Bookmark at \d\d:\d\d(:\d\d)?')) and bool(bm_label(g1, r'\d\d:\d\d:\d\d:\d\d\d')),
+          f'the row shows its name and its time with milliseconds ({bm_label(g1, ".*")[:8]})')
+    check('queue-bookmarks', bool(bm_label(g0, r'0 Bookmarks')), f'selecting the row and - removes it: "0 Bookmarks" ({bm_label(g0, ".*Bookmark.*")})')
 
 # audio visualizer (Figma "Audio Visualizer"): a Visualizer dropdown in the side panel's Audio tab. Its list
 # shows Disabled and the four Figma entries, each with its icon; choosing one replaces the song's cover in the

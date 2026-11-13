@@ -565,6 +565,8 @@ signals:
     void toggleWindowVisibility(bool requestActivate = false);
     void askToQuit();
     void askShow();
+    // redesign: Ctrl+B / the Bookmarks menu in the player: the player shows its queue panel on the Bookmarks tab
+    void bookmarksRequested();
     void askBoss();
     void askRaise();
     void kc_pressed(); /* easter eggs */

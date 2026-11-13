@@ -46,7 +46,15 @@ Not built yet (Figma frames exist; status per frame in `redesign/remaining/index
 8. **Audio:** HDR, spatializer and stereo widener frames as far as VLC supports them. Done 2026-11-13:
    EQ preset icons, the visualizer picker (below).
 
-### Planned: queue panel with Bookmarks and Chapters tabs (Figma "Queue", planned 2026-11-13)
+### Done: queue panel with Bookmarks and Chapters tabs (Figma "Queue", built 2026-11-14)
+
+Built as planned (below): `PlaylistPane` tab bar (`tabs`, player only), `QueueChaptersPage` (player module),
+`QueueBookmarksPage` + `QueueBookmarkModel` (media library module, loaded by url: the player module does not import
+it and the type is missing without the library), card 400px wide, Ctrl+B (and Bookmarks > Manage) opens the panel
+on Bookmarks in the player (`DialogsProvider::bookmarksDialog` emits `MainCtx::bookmarksRequested`; the old window stays
+in the library view). Decisions: the library's own queue panel keeps its title (no tabs); bookmarks need the file in the
+library (hint + disabled + otherwise); the queue tab's count line moved beside sort/search/add. Scenes `queue-tabs(-day)`,
+`queue-bookmarks`, `queue-bookmarks-key`. Plan as written:
 
 - **What the Figma has** (`VLC Redesign (Community) (5).zip`: `Queue.svg`, `Queue-1.svg`, 400 x 946): the
   play queue panel gets a tab bar, Queue | Bookmarks | Chapters (icon + label, accent underline and accent

@@ -336,6 +336,25 @@ FocusScope {
         }
     }
 
+    // redesign: Ctrl+B and the Bookmarks menu's Manage show the queue panel on its Bookmarks tab (Figma "Queue"):
+    // closed -> opens on Bookmarks, open on another tab -> switches to Bookmarks, open on Bookmarks -> closes
+    Connections {
+        target: MainCtx
+
+        function onBookmarksRequested() {
+            const view = playlistpopup.item
+            if (!view)
+                return
+            if (playlistVisibility.isPlaylistVisible && view.currentTab === 1) {
+                playlistVisibility.togglePlaylistVisibility()
+                return
+            }
+            view.currentTab = 1
+            if (!playlistVisibility.isPlaylistVisible)
+                playlistVisibility.togglePlaylistVisibility()
+        }
+    }
+
     PlayerPlaylistVisibilityFSM {
         id: playlistVisibility
 
@@ -1400,10 +1419,16 @@ FocusScope {
 
             property real maximumWidth: (rootPlayer.width + playlistView.rightPadding) / 2
 
-            implicitWidth: Helpers.clamp(MainCtx.playqueuePanel.width
+            // redesign: Figma "Queue": a 400px card (the side panels' width) with the tabs Queue | Bookmarks | Chapters
+            implicitWidth: Helpers.clamp(Math.max(MainCtx.playqueuePanel.width, VLCStyle.dp(400, VLCStyle.scale))
                                  , playlistView.minimumWidth
                                  , playlistView.maximumWidth)
             height: playlistpopup.height
+
+            tabs: true
+            tabRadius: rootPlayer.panelRadius
+            bookmarksPage: "qrc:///qt/qml/VLC/MediaLibrary/QueueBookmarksPage.qml"
+            chaptersPage: "qrc:///qt/qml/VLC/Player/QueueChaptersPage.qml"
 
             useAcrylic: false
             focus: true
@@ -1411,8 +1436,8 @@ FocusScope {
             wheelEnabled: true
 
             rightPadding: VLCStyle.applicationHorizontalMargin
-            // redesign: the card starts below the top bar (panelArea)
-            topPadding: VLCStyle.margin_normal
+            // redesign: the card starts below the top bar (panelArea); its tab bar is flush with the card's top
+            topPadding: 0
             bottomPadding: 0
 
             // redesign: a solid rounded card like the tracks panel (was 80% opaque and square)

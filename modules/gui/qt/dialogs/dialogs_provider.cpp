@@ -38,6 +38,7 @@
 #include "util/qt_dirs.hpp"
 #include "util/vlchotkeyconverter.hpp"
 #include "maininterface/mainctx.hpp"
+#include "maininterface/mainctx_submodels.hpp" /* SidePanelCtx (bookmarksDialog) */
 #include "medialibrary/medialib.hpp"
 
 /* The dialogs */
@@ -573,6 +574,14 @@ void DialogsProvider::playlistsDialog( const QVariantList & medias, MLPlaylistLi
 
 void DialogsProvider::bookmarksDialog()
 {
+    // redesign: in the player (queue panel docked) the bookmarks are a tab of the queue panel (Figma "Queue");
+    // the window stays for the library view
+    MainCtx *ctx = p_intf->p_mi;
+    if (ctx && ctx->isPlayerView() && ctx->getPlayqueuePanel()->isDocked())
+    {
+        emit ctx->bookmarksRequested();
+        return;
+    }
     toggleDialogVisible(m_bookmarkDialog);
 }
 

@@ -28,6 +28,18 @@ fi
 # the same with no subtitle marked default (ffmpeg marks the first one, and VLC then turns it on whatever
 # the audio): the auto-subs scene checks that VLC turns a subtitle on by itself for non-English audio
 [ -f nodefsub.mkv ] || ff -i multi.mkv -map 0 -c copy -disposition:s:0 0 -disposition:s:1 0 nodefsub.mkv
+# five chapters (the Figma Queue > Chapters frame: Winter ... Winter (5 Years Later)), 24 s apart in 2 minutes
+if [ ! -f chapters.mkv ]; then
+    {
+        echo ';FFMETADATA1'
+        n=0
+        for t in Winter Spring Summer Fall "Winter (5 Years Later)"; do
+            printf '[CHAPTER]\nTIMEBASE=1/1000\nSTART=%d\nEND=%d\ntitle=%s\n' $((n * 24000)) $((n * 24000 + 23999)) "$t"
+            n=$((n + 1))
+        done
+    } > chapters.ffmeta
+    ff -i sample.mp4 -i chapters.ffmeta -map 0 -map_metadata 1 -map_chapters 1 -c copy chapters.mkv
+fi
 # audio with cover art
 if [ ! -f neon.mp3 ]; then
     magick -size 600x600 gradient:'#3b1d4a'-'#d37918' cover.jpg
