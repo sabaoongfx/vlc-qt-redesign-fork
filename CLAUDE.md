@@ -82,6 +82,7 @@ resume by default, the user requests and fixes below). First build with the rele
   is linked to; a device change restarts the output, WirePlumber ignored the stream's own property update);
   `modules/gui/qt/dialogs/sout/profile_selector.cpp` (first profile when none saved);
   `modules/gui/qt/tests/test_ml_model_stubs.cpp`.
+  Also `src/player/osd.c` (2026-11-13): no seek position display (time + slider) over a fullscreen video.
 - User decisions today: the tracks picker opens on its button's tab (subtitles / audio button), the audio
   button opens that picker (no own menu); right-click menu 280 wide, 44px rows; bars of a normal window hide
   after 10 s and the video fills it; queue rows play on one click; Add to Queue places the playing item; video

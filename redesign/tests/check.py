@@ -538,6 +538,14 @@ if os.path.exists(f'{OUT}/keys-fullscreen-a.ctl'):
     # started ~9 s before Tab; Right adds 10 s
     (ok if el is not None and el >= 15 else fail)('keys-fullscreen', f'time after Right: {el} s (want 15 or more: the key seeked)')
 
+# keys-fullscreen: a 10 s jump in fullscreen shows nothing over the video (user request 2026-11-13): VLC's
+# position display (white "00:21 / 02:00" top right, a slider along the bottom) stays off. The test video is
+# cyan in the top right, so white pixels there are the display's text.
+t = img('keys-fullscreen', 'osd')
+if t:
+    white = sum(1 for p in pixels(t.crop((1400, 30, 1900, 130))) if min(p) > 235)
+    (ok if white < 30 else fail)('keys-fullscreen', f'no position display after the jump in fullscreen ({white} white text px top right)')
+
 # resume-start: the second play continues past the start, says so, and Start over goes back
 g = geom('resume-start-2', 'a')
 if g:

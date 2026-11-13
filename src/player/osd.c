@@ -122,6 +122,12 @@ vlc_player_osd_Position(vlc_player_t *player,
                         struct vlc_player_input *input, vlc_tick_t time,
                         double position)
 {
+    /* redesign: no position display over a fullscreen video (user request): a seek (the 10 s
+     * buttons and keys, the seek bar) showed the time and a slider over the picture; the
+     * interface's own bars show the time when the user wants them */
+    if (vlc_player_vout_IsFullscreen(player))
+        return;
+
     if (input->length != VLC_TICK_INVALID)
     {
         if (time == VLC_TICK_INVALID)
@@ -147,8 +153,6 @@ vlc_player_osd_Position(vlc_player_t *player,
             vouts_osd_Message(vouts, count, "%s", time_text);
     }
 
-    if (vlc_player_vout_IsFullscreen(player))
-        vouts_osd_Slider(vouts, count, position * 100, OSD_HOR_SLIDER);
     vlc_player_osd_ReleaseAll(player, vouts, count);
 }
 

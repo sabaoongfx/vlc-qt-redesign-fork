@@ -114,7 +114,7 @@ queue-reorder    | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:1880,1050 sl
 # control bar: 10 s forward, 10 s back, Next, Previous
 transport        | 2 | none | @sample.mp4 @short.mp4 | sleep:3 move:900,500 sleep:0.5 values:a press:Step_forward sleep:1 values:fwd press:Step_back sleep:1 values:back press:Next sleep:2 values:next press:Previous sleep:2 values:prev
 # fullscreen: a seek key keeps the bars hidden and seeks; Tab shows them
-keys-fullscreen  | 2 | none | @sample.mp4           | sleep:3 key:f sleep:2 move:960,540 sleep:0.3 move:961,541 sleep:3 shot:a key:Right sleep:1 shot:seek key:Tab sleep:1 shot:tab values:tab
+keys-fullscreen  | 2 | none | @sample.mp4           | sleep:3 key:f sleep:2 move:960,540 sleep:0.3 move:961,541 sleep:3 shot:a key:Right sleep:0.3 shot:osd sleep:0.7 shot:seek key:Tab sleep:1 shot:tab values:tab
 # resume: the second play continues and offers Start over, which seeks to the start
 resume-start     | 2 | fixture | ~/Videos/long_movie.mp4 | sleep:16 term
 resume-start-2   | 2 | same | ~/Videos/long_movie.mp4 | sleep:1.5 geom:a values:a shot:a press:Start_over sleep:1.5 values:b
