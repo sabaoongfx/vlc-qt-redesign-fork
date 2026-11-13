@@ -4,15 +4,6 @@ on:
   push:
     branches: [redesign]
   workflow_dispatch:
-    inputs:
-      scenes:
-        description: "Harness scenes to run (regex on the scene names; empty = all)"
-        required: false
-        default: ""
-      settings:
-        description: "Also run the Settings suite (every Settings row: change, save, restart; ~75 min)"
-        type: boolean
-        default: false
 
 # one build at a time per branch: a newer push waits for the running one and replaces an older waiting one
 concurrency:
@@ -35,33 +26,6 @@ jobs:
 
       - name: Install ccache
         run: apt-get update -qq && apt-get install -y -qq ccache
-
-      # The test harness (redesign/tests: ~120 scenes in a headless nested KWin, then check.py: QML warnings,
-      # Figma geometry, behaviour checks, accessibility, contrast). Its tools are installed BEFORE the build:
-      # kwin-wayland pulls the newest Qt from Debian unstable, and VLC's ahead-of-time compiled QML only loads
-      # with the Qt it was built against (a separate harness job, installing them after the build, got
-      # "File was compiled ahead of time with an incompatible version of Qt": no interface at all).
-      - name: Install the harness tools
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get update -qq
-          for try in 1 2 3; do
-            timeout 900 apt-get install -y -qq --no-install-recommends \
-              kwin-wayland xwayland kde-spectacle xdotool imagemagick ffmpeg dbus-daemon dbus-user-session systemd \
-              at-spi2-core python3 python3-gi gir1.2-atspi-2.0 python3-pil python3-numpy \
-              libgl1-mesa-dri libegl1 qt6-wayland qt6-svg-plugins fonts-dejavu-core pipewire pipewire-pulse wireplumber && break
-            sleep 20
-          done
-          # the package gives kwin_wayland CAP_SYS_NICE as a file capability; a container's bounding set
-          # lacks it, so the binary cannot even start (every scene of the first run ended at once)
-          setcap -r /usr/bin/kwin_wayland 2>/dev/null || true
-          # every installed Qt package at the version KWin pulled in (runtime, headers and qmlcachegen alike),
-          # so VLC is built and its QML compiled against the Qt it then runs with
-          timeout 900 apt-get install -y -qq --only-upgrade $(dpkg-query -W -f '${Package}\n' | grep -E '^(libqt6|qt6-|qml6-)') || true
-          dpkg-query -W -f '${Package} ${Version}\n' libqt6core6t64 libqt6core6 qt6-base-dev qt6-declarative-dev-tools 2>/dev/null || true
-          for t in kwin_wayland spectacle xdotool magick ffmpeg busctl dbus-run-session; do command -v $t || echo "missing: $t"; done
-          ls /usr/libexec/at-spi-bus-launcher /usr/libexec/at-spi2-registryd
-
 
       - name: Restore ccache
         uses: actions/cache@v4
@@ -452,129 +416,6 @@ jobs:
           name: screenshots
           path: shots/
           if-no-files-found: ignore
-
-      - name: Harness scenes
-        if: ${{ !cancelled() }}
-        run: |
-          chmod -R a+rX install
-          # VLC refuses to run as root
-          id shotuser >/dev/null 2>&1 || useradd -m shotuser
-          mkdir -p harness-out harness-fix
-          chown -R shotuser harness-out harness-fix
-          runuser -u shotuser -- env KWINLOG=1 VLC="$PWD/install/bin/vlc" VLC_PLUGIN_PATH="$PWD/install/lib/vlc/plugins" \
-            OUT="$PWD/harness-out" FIX="$PWD/harness-fix" HOME=/home/shotuser \
-            redesign/tests/run.sh "${{ github.event.inputs.scenes || '.' }}" 2>&1 | tee harness-out/run.txt
-          # the window scenes: no KWin rules, so VLC places and sizes its own window
-          # (its own folder: run.sh clears its output folder's screenshots when it starts)
-          : > /tmp/no-rules
-          mkdir -p harness-window; chown shotuser harness-window
-          runuser -u shotuser -- env KWINLOG=1 KWINRULES=/tmp/no-rules SKIP_FIXTURES=1 VLC="$PWD/install/bin/vlc" \
-            VLC_PLUGIN_PATH="$PWD/install/lib/vlc/plugins" OUT="$PWD/harness-window" FIX="$PWD/harness-fix" HOME=/home/shotuser \
-            SCEN=redesign/tests/window.txt redesign/tests/run.sh 2>&1 | tee harness-window/run.txt
-          # a few player scenes with VLC as a native Wayland client (the user's KDE session); only their
-          # QML warnings and contrast are judged (the window is not maximised there: other coordinates)
-          mkdir -p harness-wayland; chown shotuser harness-wayland
-          runuser -u shotuser -- env KWINLOG=1 QPA=wayland SKIP_FIXTURES=1 VLC="$PWD/install/bin/vlc" \
-            VLC_PLUGIN_PATH="$PWD/install/lib/vlc/plugins" OUT="$PWD/harness-wayland" FIX="$PWD/harness-fix" HOME=/home/shotuser \
-            redesign/tests/run.sh '^(player-audio|player-longtitle|audio-menu|effects-gear|queue-open)$' 2>&1 | tee harness-wayland/run.txt
-          rm -rf harness-out/profiles harness-out/profile harness-wayland/profiles harness-window/profiles
-
-
-      - name: Harness result
-        if: ${{ !cancelled() }}
-        run: |
-          # check.py prints its totals and writes report.html; a failed check fails the job
-          sed -n '/^scene /!p' harness-out/run.txt | tail -150
-          n=$(ls harness-out/*.png 2>/dev/null | wc -l)
-          echo "screenshots: $n"
-          if [ "$n" -eq 0 ]; then
-            echo "::error title=Harness::no scene produced a screenshot"
-            for f in $(ls harness-out/*.kwin.txt 2>/dev/null | head -2); do echo "--- $f"; tail -40 "$f"; done
-            for f in $(ls harness-out/*.spectacle.txt 2>/dev/null | head -2); do echo "--- $f"; tail -30 "$f"; done
-            for f in $(ls harness-out/*.log 2>/dev/null | head -2); do echo "--- $f"; tail -20 "$f"; done
-            exit 1
-          fi
-          python3 redesign/tests/check.py harness-out > harness-out/check.txt 2>&1; rc=$?
-          tail -60 harness-out/check.txt
-          grep -iE '^(FAIL|fail)' harness-out/check.txt | head -60 | while read -r line; do echo "::error title=Harness check::$line"; done
-          # window pass (window.txt)
-          python3 redesign/tests/check.py harness-window > harness-window/check.txt 2>&1 || rc=1
-          grep '^FAIL' harness-window/check.txt | sed 's/^/::error title=Harness (window)::/' | head -10
-          # Wayland pass: QML warnings and contrast only
-          python3 redesign/tests/check.py harness-wayland > harness-wayland/check.txt 2>&1
-          grep '^FAIL' harness-wayland/check.txt | grep -E 'QML|contrast' > harness-wayland/fails.txt || true
-          echo "Wayland: $(wc -l < harness-wayland/fails.txt) QML/contrast failures"
-          sed 's/^/::error title=Harness (Wayland)::/' harness-wayland/fails.txt | head -20
-          [ -s harness-wayland/fails.txt ] && rc=1
-          exit $rc
-
-
-      - name: Settings suite (manual runs with "settings" on)
-        if: ${{ !cancelled() && github.event.inputs.settings == 'true' }}
-        run: |
-          mkdir -p settings-out; chown shotuser settings-out
-          runuser -u shotuser -- env SKIP_FIXTURES=1 SCEN=redesign/tests/settings.txt VLC="$PWD/install/bin/vlc" \
-            VLC_PLUGIN_PATH="$PWD/install/lib/vlc/plugins" OUT="$PWD/settings-out" FIX="$PWD/harness-fix" HOME=/home/shotuser \
-            redesign/tests/run.sh 'set-' > settings-out/run.txt 2>&1
-          python3 redesign/tests/check_settings.py settings-out; rc=$?
-          tail -40 settings-out/settings-report.txt 2>/dev/null
-          rm -rf settings-out/profiles
-          exit $rc
-
-
-      - name: Upload the harness output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: harness
-          path: |
-            harness-out/
-            harness-wayland/
-            harness-window/
-            settings-out/
-          if-no-files-found: ignore
-          retention-days: 7
-
-
-  # The Qt module's unit tests (modules/gui/qt/tests: base model, ML model, navigation model, renderer
-  # manager, CSD buttons, thread runner, dialog model, the toolbar FSM in QML). They were never built or run
-  # before 2026-11-13. Built in the same image from a fresh tree (the build job keeps no build directory).
-  qt-unit-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    container:
-      image: registry.videolan.org/vlc-debian-unstable:20260611225331
-      options: --user root
-    env:
-      CCACHE_DIR: ${{ github.workspace }}/.ccache
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install ccache
-        run: apt-get update -qq && apt-get install -y -qq ccache
-      - name: Restore ccache
-        uses: actions/cache/restore@v4
-        with:
-          path: .ccache
-          key: ccache-${{ github.ref_name }}-${{ github.sha }}
-          restore-keys: |
-            ccache-${{ github.ref_name }}-
-            ccache-
-      - name: Configure
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          ./bootstrap
-          CC="ccache gcc" CXX="ccache g++" ./configure --prefix=$PWD/install --disable-nls
-      - name: Build and run the Qt tests
-        run: |
-          make -j"$(getconf _NPROCESSORS_ONLN)"
-          # Qt Quick tests need a platform: offscreen (no display in the container)
-          export QT_QPA_PLATFORM=offscreen
-          # -k: build and run every test even when one does not build (test_ml_model did not link, 2026-11-13)
-          rc=0
-          make -k -C modules/gui/qt -j"$(getconf _NPROCESSORS_ONLN)" check > qt-check.txt 2>&1 || rc=1
-          grep -E '^(PASS|FAIL|XFAIL|XPASS|SKIP|ERROR):|^# |undefined reference|error:' qt-check.txt | sort | uniq | head -80
-          cat modules/gui/qt/test-suite.log 2>/dev/null | head -80 || true
-          exit $rc
 
   # GitHub keeps 10 GB of caches per repository and evicts the least recently used: one ccache per
   # commit per workflow (300-900 MB each) pushed out the Windows contrib cache (a 2-hour rebuild,

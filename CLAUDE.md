@@ -67,9 +67,11 @@ The Figma "07 Menus" frames are all built now:
   server); each scene's library copy is deleted when the next starts (/tmp is a RAM disk); `@FIX@`/`@OUT@` in
   actions; menus of Qt Widgets and the picker's tabs need real clicks (AT-SPI press does not select a Qt
   dropdown row either); look at the screenshots after every run.
-- CI: the harness runs inside `linux-qt`; its tools (and every Qt package at the same version) are installed
-  BEFORE the build, else VLC's AOT-compiled QML does not load ("compiled ahead of time with an incompatible
-  version of Qt"). Open in CI: no screenshots yet (spectacle errors now logged per scene), SVG plugin added.
+- Tests run LOCALLY ONLY (user decision 2026-11-13): the harness, window pass, Settings suite and the Qt unit tests
+  were removed from `redesign-build.yml` (CI keeps the build, lint, static Settings checks and its screenshots).
+  If they ever go back into CI: install the harness tools (and every Qt package at the same version) BEFORE the build,
+  else VLC's AOT-compiled QML does not load ("compiled ahead of time with an incompatible version of Qt"); CI never
+  produced harness screenshots (spectacle, cause unknown).
 - Core/upstream changes to keep when rebasing: `modules/audio_output/pipewire.c` (reports the device its stream
   is linked to; a device change restarts the output, WirePlumber ignored the stream's own property update);
   `modules/gui/qt/dialogs/sout/profile_selector.cpp` (first profile when none saved);
