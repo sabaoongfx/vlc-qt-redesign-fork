@@ -59,6 +59,11 @@ public:
     Q_INVOKABLE void addAndPlay(const QVariantList&itemIdList, const QStringList &options = {});
     // redesign: queue all of them and play the one at startIndex (a video clicked inside a playlist)
     Q_INVOKABLE void addAndPlayFrom(const QVariantList& itemIdList, int startIndex, const QStringList &options = {});
+
+    // redesign: Resume on a playlist card: plays the playlist from the video played last (the core restores
+    // where it stopped); playlistStarted tells (callback(bool)) whether any video of it was played
+    Q_INVOKABLE void resumePlaylist(const MLItemId &playlistId, const QStringList &options = {});
+    Q_INVOKABLE void playlistStarted(const MLItemId &playlistId, QJSValue callback);
     Q_INVOKABLE void insertIntoPlaylist(size_t index, const QVariantList &itemIds /*QList<MLParentId>*/, const QStringList &options = {});
 
     Q_INVOKABLE void reload();

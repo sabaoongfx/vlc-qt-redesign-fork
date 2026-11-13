@@ -68,7 +68,16 @@ Widgets.PageLoader {
             focus: true
 
             onSeeAllButtonClicked: (name, reason) => {
-                History.push([...root.pagePrefix, name], reason)
+                // the playlists have their own entry in the sidebar: See All goes there
+                if (name === "playlists")
+                    History.push(["playlists"], {}, reason)
+                else
+                    History.push([...root.pagePrefix, name], reason)
+            }
+
+            // a playlist of the Playlists row opens like one chosen on the Playlists page
+            onPlaylistRequested: (id, title, reason) => {
+                History.push(["playlists", "list"], { parentId: id, title: title }, reason)
             }
         }
     }

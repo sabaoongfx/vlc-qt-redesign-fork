@@ -930,6 +930,38 @@ for tag, want, what in (('open', 'Bookmarks', 'Ctrl+B opens the queue panel on t
         got = underlined(u) if u else None
         (ok if got == want else fail)('queue-bookmarks-key', f'{what} (tab: {got})')
 
+# Home lists the playlists too (user request 2026-11-14): a "Playlists" row header over a card per playlist
+# (Road_Trip, made with New Playlist before), a click opens the playlist (address line Playlists > Road_Trip);
+# a library with no playlist shows no such row
+g = geom_rows('home-playlists', 'a')
+if g:
+    heads = [(y, x) for n, r, x, y, w, h in g if r == 'label' and n == 'Playlists' and x > 230]
+    cards = [(y, x) for n, r, x, y, w, h in g if n == 'Road_Trip' and x > 230]
+    check('home-playlists', bool(heads), 'Home has a "Playlists" row header')
+    check('home-playlists', bool(cards), 'the Road_Trip playlist is a card in the row')
+    check('home-playlists', not [1 for n, r, x, y, w, h in g if n == 'New Playlist' and r == 'button'],
+          'no New Playlist button inside the row (the Playlists page has it)')
+    if heads and cards:
+        check('home-playlists', 0 < cards[0][0] - heads[0][0] < 400, f'the card sits under the header ({heads[0][0]} -> {cards[0][0]})')
+    check('home-playlists', last_crumb('home-playlists', 'opened') == 'Road_Trip',
+          f'a click on the card opens the playlist ({last_crumb("home-playlists", "opened")})')
+# Resume on a playlist card (user request 2026-11-14: "show a resume button on playlists"): hovering the card of a
+# playlist you have started shows Resume; it plays the playlist from the video played last, which continues where
+# it stopped ("Continued from"); a playlist never played shows none
+gh = geom_rows('home-playlists', 'hover')
+if gh:
+    check('home-playlists', not [1 for n, r, *_ in gh if n == 'Resume'], 'a playlist you never played shows no Resume button')
+g1, g2 = geom_rows('resume-playlist-2', 'hover'), geom_rows('resume-playlist-2', 'playing')
+if g1:
+    check('resume-playlist-2', any(n == 'Resume' and r == 'button' for n, r, *_ in g1), 'hovering a started playlist card shows Resume')
+    check('resume-playlist-2', playing('resume-playlist-2', 'playing'), 'Resume opens the player')
+    check('resume-playlist-2', any(n.startswith('Continued from') for n, *_ in g2), 'and the video continues where it stopped ("Continued from")')
+
+g = geom_rows('home-night', 'a')
+if g:
+    check('home-night', not [1 for n, r, x, y, w, h in g if r == 'label' and n == 'Playlists' and x > 230],
+          'no playlists: Home shows no Playlists row')
+
 def bm_label(g, pat):
     return [n for n, r, x, y, w, h in g if r == 'label' and x > 1480 and re.fullmatch(pat, n)]
 if geom_rows('queue-bookmarks', 'empty'):

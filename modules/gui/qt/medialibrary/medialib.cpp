@@ -320,6 +320,81 @@ void MediaLib::addAndPlayFrom(const QVariantList& itemIdList, int startIndex, co
     });
 }
 
+// redesign: the videos of a playlist in its order, and the index of the one played last (-1: none was played)
+static void listPlaylistForResume(vlc_medialibrary_t* ml, int64_t playlistId, const QStringList& options,
+                                  QVector<vlc::playlist::Media>& medias, int& lastPlayed)
+{
+    lastPlayed = -1;
+    vlc_ml_query_params_t query = vlc_ml_query_params_create();
+    ml_unique_ptr<vlc_ml_media_list_t> list(vlc_ml_list_media_of(ml, &query, VLC_ML_PARENT_PLAYLIST, playlistId));
+    if (!list)
+        return;
+    time_t latest = 0;
+    for (vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>(list))
+    {
+        SharedInputItem item(vlc_ml_get_input_item(ml, m.i_id), false);
+        if (!item)
+            continue;
+        if (m.i_last_played_date > latest)
+        {
+            latest = m.i_last_played_date;
+            lastPlayed = medias.size();
+        }
+        medias.push_back(vlc::playlist::Media(item.get(), options));
+    }
+}
+
+void MediaLib::resumePlaylist(const MLItemId &playlistId, const QStringList &options)
+{
+    struct Context {
+        QVector<vlc::playlist::Media> medias;
+        int lastPlayed = -1;
+    };
+    runOnMLThread<Context>(this,
+    //ML thread
+    [playlistId, options](vlc_medialibrary_t* ml, Context& ctx)
+    {
+        listPlaylistForResume(ml, playlistId.id, options, ctx.medias, ctx.lastPlayed);
+    },
+    //UI thread
+    [this](quint64, Context& ctx){
+        if (ctx.medias.empty())
+            return;
+        const int first = m_playlistController->count();
+        m_playlistController->append(ctx.medias, false);
+        m_playlistController->goTo(first + std::max(ctx.lastPlayed, 0), true);
+    });
+}
+
+void MediaLib::playlistStarted(const MLItemId &playlistId, QJSValue callback)
+{
+    if (!callback.isCallable())
+        return;
+
+    struct Context {
+        bool started = false;
+    };
+    runOnMLThread<Context>(this,
+    //ML thread
+    [playlistId](vlc_medialibrary_t* ml, Context& ctx)
+    {
+        vlc_ml_query_params_t query = vlc_ml_query_params_create();
+        ml_unique_ptr<vlc_ml_media_list_t> list(vlc_ml_list_media_of(ml, &query, VLC_ML_PARENT_PLAYLIST, playlistId.id));
+        if (!list)
+            return;
+        for (vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>(list))
+            if (m.i_last_played_date > 0)
+            {
+                ctx.started = true;
+                return;
+            }
+    },
+    //UI thread
+    [callback](quint64, Context& ctx) mutable {
+        callback.call({ctx.started});
+    });
+}
+
 void MediaLib::insertIntoPlaylist(const size_t index, const QVariantList &itemIdList, const QStringList &options)
 {
     struct Context {

@@ -31,6 +31,11 @@ Widgets.PageLoader {
     // a missing one is a "Cannot assign to non-existent property" warning)
     property int initialIndex: 0
 
+    // the playlist page's own properties pass through here too (History hands them to every page of the path;
+    // Home opens a playlist with them): taken, not used
+    property var parentId
+    property string title
+
     id: root
 
     property int displayMarginBeginning: 0

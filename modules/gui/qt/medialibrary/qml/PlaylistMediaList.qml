@@ -62,6 +62,11 @@ MainViewLoader {
     property bool enableBeginningFade: true
     property bool enableEndFade: true
 
+    // redesign: Home shows the playlists as a row (a few of them, not scrolling on its own)
+    property alias limit: playlistModel.limit
+    property bool interactive: true // false, when as a row
+    property int listHeaderPositioning: ListView.OverlayHeader // ListView.InlineHeader, when as a row
+
     property alias searchPattern: playlistModel.searchPattern
     property alias sortOrder: playlistModel.sortOrder
     property alias sortCriteria: playlistModel.sortCriteria
@@ -294,6 +299,8 @@ MainViewLoader {
             //-------------------------------------------------------------------------------------
             // Settings
 
+            interactive: root.interactive
+
             basePictureWidth: isMusic ? VLCStyle.gridCover_music_width : VLCStyle.gridCover_video_width
             basePictureHeight: isMusic ? VLCStyle.gridCover_music_height : VLCStyle.gridCover_video_height
 
@@ -309,10 +316,25 @@ MainViewLoader {
             Navigation.parentItem: root
 
             delegate: VideoGridItem {
+                id: playlistItem
+
                 //---------------------------------------------------------------------------------
                 // Properties
 
                 property var model: ({})
+
+                // redesign: Resume (user request): a playlist whose videos you have started shows a Resume
+                // button on hover; it plays the playlist from the video played last, which continues
+                // where it stopped. Asked again each time the pointer comes: it changes while you watch.
+                property bool started: false
+
+                function refreshStarted() {
+                    if (model.id !== undefined)
+                        MediaLib.playlistStarted(model.id, (value) => { playlistItem.started = value })
+                }
+
+                Component.onCompleted: refreshStarted()
+                onHoveredChanged: if (hovered) refreshStarted()
 
                 property int index: -1
 
@@ -353,6 +375,65 @@ MainViewLoader {
 
                 dragItem: dragItemPlaylist
 
+                // the accent pill of the player's resume card (ResumeDialog), over the bottom of the cover
+                ColorContext {
+                    id: resumeTheme
+
+                    colorSet: ColorContext.ButtonAccent
+                }
+
+                Rectangle {
+                    id: resumeButton
+
+                    parent: playlistItem.mediaCover
+                    z: 2
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: VLCStyle.margin_small
+
+                    visible: playlistItem.started && (playlistItem.hovered || resumeHover.hovered)
+
+                    width: resumeLabel.implicitWidth + VLCStyle.margin_normal * 2
+                    height: VLCStyle.dp(34, VLCStyle.scale)
+                    radius: VLCStyle.dp(6, VLCStyle.scale)
+                    color: playlistItem.colorContext.accent
+
+                    Accessible.role: Accessible.Button
+                    Accessible.name: qsTr("Resume")
+                    Accessible.onPressAction: resumeButton.activate()
+
+                    function activate() {
+                        MediaLib.resumePlaylist(playlistItem.model.id)
+                        MainCtx.playerView = true
+                    }
+
+                    Text {
+                        id: resumeLabel
+
+                        anchors.centerIn: parent
+
+                        text: qsTr("Resume")
+                        color: resumeTheme.fg.primary // dark text on the accent fill, from the palette
+                        font.family: VLCStyle.fontFamily
+                        font.pixelSize: VLCStyle.fontSize_normal
+                        font.bold: true
+                    }
+
+                    // a MouseArea, not a TapHandler: it takes the click, the card under it would also
+                    // open the playlist
+                    MouseArea {
+                        id: resumeHover
+
+                        readonly property bool hovered: containsMouse
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: resumeButton.activate()
+                    }
+                }
 
                 //---------------------------------------------------------------------------------
                 // Events
@@ -466,6 +547,9 @@ MainViewLoader {
             //-------------------------------------------------------------------------------------
             // Settings
 
+            interactive: root.interactive
+            headerPositioning: root.listHeaderPositioning
+
             rowHeight: VLCStyle.tableCoverRow_height
 
             model: root.model
@@ -552,7 +636,8 @@ MainViewLoader {
 
         z: 2
 
-        visible: playlistModel.count > 0
+        // not as a row on Home: the Playlists page has the button
+        visible: playlistModel.count > 0 && root.interactive
 
         text: qsTr("New Playlist")
         iconTxt: VLCIcons.add

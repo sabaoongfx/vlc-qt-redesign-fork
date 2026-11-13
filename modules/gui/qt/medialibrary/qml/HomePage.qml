@@ -62,6 +62,8 @@ Widgets.PageExt {
     }
 
     signal seeAllButtonClicked(string name, int reason)
+    // redesign: a playlist of the Playlists row was opened
+    signal playlistRequested(var id, string title, int reason)
 
     function positionContentAtBeginning() {
         contentYBehavior.enabled = true
@@ -248,6 +250,71 @@ Widgets.PageExt {
 
                     showPlayAsAudioAction: true
                 }
+
+                onActiveFocusChanged: {
+                    if (activeFocus) {
+                        const item = currentItem?.currentItem ?? currentItem?._getItem(currentIndex) // FIXME: `ExpandGridView` does not have `currentItem`.
+                        contentYBehavior.enabled = true
+                        Helpers.positionFlickableToContainItem(flickable, item ?? this)
+                        contentYBehavior.enabled = false
+                    }
+                }
+
+                onCurrentIndexChanged: {
+                    if (activeFocus) {
+                        const item = currentItem?.currentItem ?? currentItem?._getItem(currentIndex) // FIXME: `ExpandGridView` does not have `currentItem`.
+                        if (item) {
+                            contentYBehavior.enabled = true
+                            Helpers.positionFlickableToContainItem(flickable, item)
+                            contentYBehavior.enabled = false
+                        }
+                    }
+                }
+            }
+
+            // redesign: the playlists too (user request); a click opens one, See All opens the Playlists page
+            Widgets.ViewHeader {
+                visible: playlistsRow.visible
+                text: qsTr("Playlists")
+                view: playlistsRow
+                seeAllButton.visible: playlistsRow.model.maximumCount > playlistsRow.model.count
+
+                onSeeAllButtonClicked: function (reason) {
+                    root.seeAllButtonClicked("playlists", reason)
+                }
+            }
+
+            PlaylistMediaList {
+                id: playlistsRow
+
+                AccessibleCompat.id: "homePlaylists"
+
+                anchors.left: parent.left
+                anchors.right: parent.right
+
+                height: currentItem?.contentHeight ?? implicitHeight
+
+                visible: model.count !== 0
+
+                isMusic: false
+                playlistType: MLPlaylistListModel.PLAYLIST_TYPE_ALL
+
+                // the page's sort and view options are about media; playlists are listed by title
+                sortCriteria: "title"
+                sortOrder: Qt.AscendingOrder
+                searchPattern: root.search.pattern
+
+                listHeaderPositioning: ListView.InlineHeader
+                enableBeginningFade: false
+                enableEndFade: false
+                interactive: false
+
+                Navigation.parentItem: mediaRows
+
+                // FIXME: Make limit 0 load no items, instead of loading all items.
+                limit: MainCtx.gridView ? Math.max(playlistsRow.currentItem?.nbItemPerRow ?? null, 1) : 5
+
+                onShowList: (model, reason) => root.playlistRequested(model.id, model.name, reason)
 
                 onActiveFocusChanged: {
                     if (activeFocus) {
