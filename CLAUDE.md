@@ -56,13 +56,18 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## 2026-11-13: tests for every feature, then the bugs they found fixed (pushed, `271bfbe603`; not released)
+## 2026-11-13: tests for every feature, then the bugs they found fixed (`271bfbe603`)
+
+RELEASED 2026-11-13: **v0.1.13** on `271bfbe603` (Latest, 8 assets, release run 43403362980; changelog `d558120b1a`;
+blog `whats-new-in-0-1-13` and the tests post marked fixed, vlc-web `241ef43`). Ships everything since v0.1.12 (toast,
+resume by default, the user requests and fixes below). First build with the release toast.
+
 
 - Harness: 124 scenes + `window.txt` (2, run with an empty `KWINRULES`), checks in `check.py` 13d-13f;
   last full local run 453/453, window 5/5; Qt unit tests 8/8 (`make -k -C build/modules/gui/qt check`,
   `QT_QPA_PLATFORM=offscreen`). Findings and their fixes: `redesign/tests/test-findings.md`. Engine tests are
-  only planned: `redesign/tests/ENGINE-TEST-PLAN.md`. Blog post: `what-the-tests-found` (vlc-web `37a1e6b`);
-  it still lists the bugs as open: update it when they ship.
+  only planned: `redesign/tests/ENGINE-TEST-PLAN.md`. Blog post: `what-the-tests-found` (vlc-web `37a1e6b`, bugs
+  marked fixed in 0.1.13 in `241ef43`).
 - Harness rules learnt: `sound:null` scene action (private PipeWire, two null outputs, never the desktop's
   server); each scene's library copy is deleted when the next starts (/tmp is a RAM disk); `@FIX@`/`@OUT@` in
   actions; menus of Qt Widgets and the picker's tabs need real clicks (AT-SPI press does not select a Qt
