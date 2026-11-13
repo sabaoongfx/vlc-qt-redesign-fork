@@ -56,7 +56,31 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## After v0.1.12 (2026-11-12) — CONTINUE FROM HERE
+## 2026-11-13: tests for every feature, then the bugs they found fixed (pushed, `271bfbe603`; not released)
+
+- Harness: 124 scenes + `window.txt` (2, run with an empty `KWINRULES`), checks in `check.py` 13d-13f;
+  last full local run 453/453, window 5/5; Qt unit tests 8/8 (`make -k -C build/modules/gui/qt check`,
+  `QT_QPA_PLATFORM=offscreen`). Findings and their fixes: `redesign/tests/test-findings.md`. Engine tests are
+  only planned: `redesign/tests/ENGINE-TEST-PLAN.md`. Blog post: `what-the-tests-found` (vlc-web `37a1e6b`);
+  it still lists the bugs as open: update it when they ship.
+- Harness rules learnt: `sound:null` scene action (private PipeWire, two null outputs, never the desktop's
+  server); each scene's library copy is deleted when the next starts (/tmp is a RAM disk); `@FIX@`/`@OUT@` in
+  actions; menus of Qt Widgets and the picker's tabs need real clicks (AT-SPI press does not select a Qt
+  dropdown row either); look at the screenshots after every run.
+- CI: the harness runs inside `linux-qt`; its tools (and every Qt package at the same version) are installed
+  BEFORE the build, else VLC's AOT-compiled QML does not load ("compiled ahead of time with an incompatible
+  version of Qt"). Open in CI: no screenshots yet (spectacle errors now logged per scene), SVG plugin added.
+- Core/upstream changes to keep when rebasing: `modules/audio_output/pipewire.c` (reports the device its stream
+  is linked to; a device change restarts the output, WirePlumber ignored the stream's own property update);
+  `modules/gui/qt/dialogs/sout/profile_selector.cpp` (first profile when none saved);
+  `modules/gui/qt/tests/test_ml_model_stubs.cpp`.
+- User decisions today: the tracks picker opens on its button's tab (subtitles / audio button), the audio
+  button opens that picker (no own menu); right-click menu 280 wide, 44px rows; bars of a normal window hide
+  after 10 s and the video fills it; queue rows play on one click; Add to Queue places the playing item; video
+  does not move when the left menu opens. Planned (roadmap): visualizer picker, queue panel Bookmarks/Chapters.
+- The user asked for no local builds unless asked (memory), and tests before fixes.
+
+## After v0.1.12 (2026-11-12)
 
 Pushed, not released (next "what's new" material). CI green on both commits (Linux build, Linux packages, Windows,
 macOS; the macOS run of `a1c8431d9f` needed a re-run for a runner, the one of `e0ef2a0cba` was still running at writing).
