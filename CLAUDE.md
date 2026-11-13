@@ -56,7 +56,15 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## After v0.1.13 (2026-11-13 evening; pushed, not released: next "what's new" material)
+## After v0.1.13 (2026-11-13 evening): RELEASED 2026-11-14 as **v0.1.14** on `bc1566bc92`
+
+v0.1.14: tagged on `bc1566bc92` after all four CI runs passed (user: "when done, do the deed and release when done");
+changelog in `redesign/docs/10-changelog.md`, blog `whats-new-in-0-1-14` (vlc-web). Also in it, after the list below:
+the queue panel tabs + Ctrl+B (`541b803e28`), Home Playlists row + Resume pill on playlist cards (`bc1566bc92`:
+`MediaLib::resumePlaylist` plays the playlist from the video with the latest played date, `playlistStarted` tells
+whether to show the pill; the pill is a MouseArea so the card under it does not also open the playlist; Home opens a
+playlist with `History.push(["playlists","list"], {parentId,title})`: page paths do not start with "mc").
+The list below is what was pushed before it.
 
 All tests first, run locally (tests never go into CI, user decision; memory `tests-local-only`).
 - `712a1d0546` Visualizer row in the side panel's Audio tab (Figma "Audio Visualizer"): Disabled, Spectrometer,

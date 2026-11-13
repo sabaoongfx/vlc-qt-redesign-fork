@@ -2,6 +2,25 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.14 (2026-11-14)
+- **Play queue panel as in the design:** a 400 px card with the tabs **Queue**, **Bookmarks** and
+  **Chapters**. Chapters lists the video's chapters with their start times; a click jumps there.
+  Bookmarks lists your bookmarks with their times down to the millisecond: **+** adds one at the current
+  time, **-** removes the selected one, a click jumps there, a double click renames it. Bookmarks are kept
+  by the library, so a file outside it shows a note instead.
+- **Ctrl+B** opens the queue panel on Bookmarks while a video plays (again to close it).
+- **Home shows your playlists** in a row, like the other rows; a click opens the playlist and See All opens
+  the Playlists page.
+- **Resume on playlists:** hover a playlist you have started and press **Resume** to continue from the video
+  you played last, where you stopped.
+- **Audio visualizer:** a new Visualizer choice in the side panel's Audio tab (Disabled, Spectrometer,
+  Scope, Spectrum, VU Meter) with the design's icons.
+- **Music player as in the design:** a large rounded cover with the blurred cover behind it and one line
+  "title - artist" under it.
+- **Mini player:** a square cover is no longer stretched; it sits in the middle over its own blurred copy.
+- **Fullscreen:** jumping 10 seconds (buttons, keys, the seek bar) no longer draws the time and a bar
+  over the picture.
+
 ## v0.1.13 (2026-11-13)
 - **Videos continue where you left them** without asking: a small "Continued from 00:12:34" note shows
   for 10 seconds with a **Start over** button.
