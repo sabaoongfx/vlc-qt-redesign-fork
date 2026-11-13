@@ -36,19 +36,6 @@ jobs:
             ccache-${{ github.ref_name }}-
             ccache-
 
-      - name: Lint (project rules)
-        run: |
-          # redesign/tests/lint.py: Canvas/Shapes (no Windows Qt support), colour literals in QML, QML files
-          # missing from Makefile.am/meson.build, broken shell scripts; warnings are information
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          command -v python3 >/dev/null || { apt-get update -qq && apt-get install -y -qq python3; }
-          # the diff base (upstream commit the redesign started from); the checkout is shallow
-          git fetch -q --depth=1 origin dd056f2640fc8505993260441a6d185dcd616155
-          python3 redesign/tests/lint.py
-          # the Settings rows: the option list is current, every option exists, SETTINGS-MAP.md matches
-          # (redesign/tests/settings_options.py; the runtime settings scenes need the local harness)
-          python3 redesign/tests/settings_options.py
-
       - name: Restore medialibrary contrib cache
         uses: actions/cache@v4
         with:
@@ -365,32 +352,6 @@ jobs:
       # saved stream is in the library history (the list the Network page shows), a click on a
       # saved stream opens it.
       # Fails the job (unlike the screenshots).
-      - name: Network stream checks
-        run: |
-          DB=/home/shotuser/.local/share/vlc/ml/ml.db
-          fail=0
-          ok() { echo "PASS: $1"; }
-          ko() { echo "::error title=Network check::$1"; fail=1; }
-          echo "--- requests"; cat shots/net-http.log || true
-          if [ ! -f "$DB" ]; then
-            ko "no media library database at $DB"
-          else
-            rows=$(sqlite3 "$DB" "SELECT f.mrl, m.last_played_date FROM File f JOIN Media m ON m.id_media = f.media_id WHERE f.mrl LIKE 'http://127.0.0.1:8765/%'" 2>&1)
-            echo "--- library rows (mrl|last played)"; echo "$rows"
-            if echo "$rows" | grep -q '^http://127.0.0.1:8765/saved.mp4|[0-9]'; then ok "the saved stream is in the history"
-            else ko "the stream saved with the dialog is not in the library history: the Network list would not show it"; fi
-            if echo "$rows" | grep -q '^http://127.0.0.1:8765/played.mp4|[0-9]'; then ok "the played stream is in the history"
-            else ko "the stream played from the dialog is not in the library history"; fi
-          fi
-          a=$(cat shots/net-gets-after-save.txt 2>/dev/null || echo 0)
-          c=$(cat shots/net-gets-after-click.txt 2>/dev/null || echo 0)
-          echo "requests: $a after Save, $c after the click on the list"
-          if [ "${c:-0}" -gt "${a:-0}" ]; then ok "a click on a saved stream plays it"
-          else ko "a click on the first row opened no stream (see net-saved.png, net-clicked.png)"; fi
-          if grep -q 'GET /played.mp4' shots/net-http.log; then ok "Play in the dialog plays at once"
-          else ko "Play in the dialog did not open the stream (see net-dialog.png, net-played.png)"; fi
-          exit $fail
-
       # QML errors do not fail the build: list the warnings the screenshot runs logged (VLC runs at
       # --verbose=1 above, QML warnings are not logged below that). Information only, never fails.
       - name: QML warnings

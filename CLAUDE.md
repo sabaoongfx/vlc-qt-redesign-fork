@@ -68,7 +68,8 @@ The Figma "07 Menus" frames are all built now:
   actions; menus of Qt Widgets and the picker's tabs need real clicks (AT-SPI press does not select a Qt
   dropdown row either); look at the screenshots after every run.
 - Tests run LOCALLY ONLY (user decision 2026-11-13): the harness, window pass, Settings suite and the Qt unit tests
-  were removed from `redesign-build.yml` (CI keeps the build, lint, static Settings checks and its screenshots).
+  were removed from `redesign-build.yml`, then lint and the Network stream checks too (CI keeps the build, its
+  screenshots and the information-only QML warning list; run `redesign/tests/lint.py` and `settings_options.py` locally).
   If they ever go back into CI: install the harness tools (and every Qt package at the same version) BEFORE the build,
   else VLC's AOT-compiled QML does not load ("compiled ahead of time with an incompatible version of Qt"); CI never
   produced harness screenshots (spectacle, cause unknown).
