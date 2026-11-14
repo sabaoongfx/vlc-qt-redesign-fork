@@ -327,10 +327,17 @@ MainViewLoader {
                 // button on hover; it plays the playlist from the video played last, which continues
                 // where it stopped. Asked again each time the pointer comes: it changes while you watch.
                 property bool started: false
+                property real progress: 0
+
+                // the watched share of the playlist under its picture, like a started video
+                progressValue: playlistItem.progress
 
                 function refreshStarted() {
                     if (model.id !== undefined)
-                        MediaLib.playlistStarted(model.id, (value) => { playlistItem.started = value })
+                        MediaLib.playlistProgress(model.id, (isStarted, share) => {
+                            playlistItem.started = isStarted
+                            playlistItem.progress = share
+                        })
                 }
 
                 Component.onCompleted: refreshStarted()

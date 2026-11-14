@@ -189,6 +189,7 @@ Widgets.PageExt {
             rowContextMenu: contextMenu
 
             isMusic: root.isMusic
+            videoPlaceholder: !root.isMusic
 
             displayMarginBeginning: root.displayMarginBeginning
             displayMarginEnd: root.displayMarginEnd

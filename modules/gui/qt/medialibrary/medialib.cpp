@@ -366,13 +366,14 @@ void MediaLib::resumePlaylist(const MLItemId &playlistId, const QStringList &opt
     });
 }
 
-void MediaLib::playlistStarted(const MLItemId &playlistId, QJSValue callback)
+void MediaLib::playlistProgress(const MLItemId &playlistId, QJSValue callback)
 {
     if (!callback.isCallable())
         return;
 
     struct Context {
         bool started = false;
+        double progress = 0.0;
     };
     runOnMLThread<Context>(this,
     //ML thread
@@ -382,16 +383,22 @@ void MediaLib::playlistStarted(const MLItemId &playlistId, QJSValue callback)
         ml_unique_ptr<vlc_ml_media_list_t> list(vlc_ml_list_media_of(ml, &query, VLC_ML_PARENT_PLAYLIST, playlistId.id));
         if (!list)
             return;
+        double done = 0.0;
+        size_t count = 0;
         for (vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>(list))
-            if (m.i_last_played_date > 0)
-            {
+        {
+            ++count;
+            if (m.i_last_played_date > 0 || m.f_progress > 0.0)
                 ctx.started = true;
-                return;
-            }
+            // a video played to the end has its progress reset and its play count raised
+            done += (m.i_playcount > 0) ? 1.0 : std::clamp(m.f_progress, 0.0, 1.0);
+        }
+        if (count > 0)
+            ctx.progress = done / double(count);
     },
     //UI thread
     [callback](quint64, Context& ctx) mutable {
-        callback.call({ctx.started});
+        callback.call({ctx.started, ctx.progress});
     });
 }
 

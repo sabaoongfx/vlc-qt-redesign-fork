@@ -41,6 +41,9 @@ Widgets.TableViewExt {
     //---------------------------------------------------------------------------------------------
     // Private
 
+    // redesign: the playlist lists videos (not songs): rows without a picture get the video tile, not the music note
+    property bool videoPlaceholder: false
+
     property Item _item: null
 
     property bool _before: true
@@ -60,7 +63,7 @@ Widgets.TableViewExt {
             headerDelegate: table.titleHeaderDelegate,
             colDelegate   : table.titleDelegate,
 
-            placeHolder: VLCStyle.noArtAlbumCover
+            placeHolder: videoPlaceholder ? VLCStyle.noArtVideoCover : VLCStyle.noArtAlbumCover
         }
     }]
 
@@ -77,7 +80,7 @@ Widgets.TableViewExt {
             headerDelegate: table.titleHeaderDelegate,
             colDelegate   : table.titleDelegate,
 
-            placeHolder: VLCStyle.noArtAlbumCover
+            placeHolder: videoPlaceholder ? VLCStyle.noArtVideoCover : VLCStyle.noArtAlbumCover
         }
     }, {
         size: 1,

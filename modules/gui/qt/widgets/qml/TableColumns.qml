@@ -132,6 +132,17 @@ Item {
 
                 }
 
+                // redesign: a video the library has not read yet gets the dark tile, as on the grid cards, not the
+                // light music placeholder (the column's placeHolder says it is a video list)
+                VideoPlaceholderTile {
+                    anchors.fill: parent
+
+                    visible: cover.showingFallback && titleDel.colModel.placeHolder === VLCStyle.noArtVideoCover
+                    radius: root.titleCover_radius
+                    title: titleDel.rowModel?.title ?? titleDel.rowModel?.name ?? ""
+                    dark: titleDel.colorContext.palette?.isDark ?? true
+                }
+
                 // redesign: the watched part of a started video along the bottom of its thumbnail,
                 // as on the grid cards (user report: none in the list view)
                 Widgets.VideoProgressBar {

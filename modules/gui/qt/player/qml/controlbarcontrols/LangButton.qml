@@ -65,7 +65,7 @@ Widgets.IconToolButton {
 
     // redesign: accent while the picker or the panel is open (Figma active state)
     color: ((menuLoader.item && menuLoader.item.visible) || (pickerLoader.item && pickerLoader.item.visible))
-           ? colorContext.accent : colorContext.fg.primary
+           ? activeColor : colorContext.fg.primary
 
     // Children
 

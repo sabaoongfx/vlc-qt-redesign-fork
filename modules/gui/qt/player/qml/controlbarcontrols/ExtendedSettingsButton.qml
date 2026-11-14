@@ -46,7 +46,7 @@ Widgets.IconToolButton {
     onClicked: panelLoader.item?.toggle(1)
 
     // accent while its panel is open (Figma active state)
-    color: (panelLoader.item && panelLoader.item.visible) ? colorContext.accent : colorContext.fg.primary
+    color: (panelLoader.item && panelLoader.item.visible) ? activeColor : colorContext.fg.primary
 
     Loader {
         id: panelLoader

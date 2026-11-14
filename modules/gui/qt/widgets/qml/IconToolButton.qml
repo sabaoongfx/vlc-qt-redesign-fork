@@ -87,6 +87,18 @@ T.ToolButton {
 
     // Children
 
+    // redesign: the accent for an active button (the picker or the panel it opens is shown), darkened until it
+    // reads 3:1 on the bar behind: the plain accent was 1.4:1 on the light bar of the Day theme (found by the
+    // visualizer-day scene). The bar is drawn a little darker than its palette colour (translucent over the
+    // stage: #ABAAAA on screen), so the palette colour is asked 3.6:1 to get over 3:1 on screen. In the dark bar
+    // it stays the accent.
+    readonly property color activeColor: VLCStyle.readableOn(theme.accent, barTheme.bg.primary, 3.6)
+
+    readonly property ColorContext barContext : ColorContext {
+        id: barTheme
+        colorSet: ColorContext.Window
+    }
+
     readonly property ColorContext colorContext : ColorContext {
         id: theme
         colorSet: ColorContext.ToolButton

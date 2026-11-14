@@ -172,6 +172,32 @@ def declared_options():
     return found
 
 
+def option_flags():
+    """(volatile names, obsolete names): from every C/C++ source. A volatile option (change_volatile) is never
+    written to vlcrc; an obsolete one (add_obsolete_*) is dropped by Save: both, on the platforms where VLC
+    declares them so, can never keep a value a Settings row gives them"""
+    decl = re.compile(r'\badd_(\w+)\s*\(\s*"([^"]*)"')
+    vol, obs = set(), set()
+    for top in ('src', 'modules', 'lib'):
+        for dirpath, _, files in os.walk(os.path.join(ROOT, top)):
+            for fn in files:
+                if not fn.endswith(('.c', '.cpp', '.h', '.hpp', '.m')):
+                    continue
+                try:
+                    text = open(os.path.join(dirpath, fn), encoding='utf-8', errors='replace').read()
+                except OSError:
+                    continue
+                if 'add_' not in text:
+                    continue
+                decls = [(m.start(), m.group(1), m.group(2)) for m in decl.finditer(text)]
+                for m in re.finditer(r'\bchange_volatile\s*\(', text):
+                    before = [d for d in decls if d[0] < m.start()]
+                    if before:
+                        vol.add(before[-1][2])
+                obs.update(n for _, k, n in decls if k.startswith('obsolete'))
+    return vol, obs
+
+
 def declared_kind(declared, opt):
     """the add_<type> of an option, also through a prefix macro parameter (None: not declared)"""
     if opt in declared:
@@ -229,6 +255,18 @@ def main():
             if opt.startswith('qt:'):
                 continue
             check(declared_kind(declared, opt) is not None, f'{r["page"]} / {r["label"]}: option "{opt}" is not declared anywhere (row dropped at runtime)')
+
+    # 3b. no row that cannot keep a value (Save would drop it: the 2026-11-11 findings): a volatile option is
+    # command-line only (never in vlcrc); one VLC declares obsolete on some platforms (spdif, the HTTP proxy)
+    # needs a platform guard around its row
+    volatile, obsolete = option_flags()
+    for r in rows:
+        for opt in r['options'].split():
+            if opt.startswith('qt:'):
+                continue
+            check(opt not in volatile, f'{r["page"]} / {r["label"]}: "{opt}" is volatile (never written to vlcrc): the row cannot keep its value')
+            if opt in obsolete:
+                check(bool(r['guard']), f'{r["page"]} / {r["label"]}: "{opt}" is obsolete on some platforms, the row needs a platform guard')
 
     # 3. SETTINGS-MAP.md matches
     mapped = map_rows()

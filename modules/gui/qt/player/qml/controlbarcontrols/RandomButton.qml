@@ -27,7 +27,7 @@ Widgets.IconToolButton {
     id: randomBtn
 
     // the on state is shown in the accent colour, as in the icon sheet
-    color: checked ? colorContext.accent : colorContext.fg.primary
+    color: checked ? activeColor : colorContext.fg.primary
     checked: MainPlaylistController.random
     text: VLCIcons.shuffle
     onClicked: MainPlaylistController.toggleRandom()

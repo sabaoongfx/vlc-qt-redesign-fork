@@ -156,8 +156,6 @@ set-general-log-file | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:General 
 set-general-log-file-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 rows:general key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-general-log-details | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 setrow:Log_details=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-general-log-details-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 rows:general key:Escape sleep:0.5 key:ctrl+q sleep:2 term
-set-general-show-minor-warnings | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 press:Advanced_Options sleep:0.6 setrow:Show_minor_warnings=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
-set-general-show-minor-warnings-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 press:Advanced_Options sleep:0.6 rows:general key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-general-log-format | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 press:Advanced_Options sleep:0.6 setrow:Log_format=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-general-log-format-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 press:Advanced_Options sleep:0.6 rows:general key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-general-collect-playback-statistics | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:General sleep:0.8 press:Advanced_Options sleep:0.6 setrow:Collect_playback_statistics=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
@@ -180,10 +178,6 @@ set-network-network-streams | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:N
 set-network-network-streams-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 rows:network key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-network-live-capture | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 setrow:Live_capture=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-network-live-capture-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 rows:network key:Escape sleep:0.5 key:ctrl+q sleep:2 term
-set-network-http-proxy | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 setrow:HTTP_proxy=http://127.0.0.1:3128/ sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
-set-network-http-proxy-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 rows:network key:Escape sleep:0.5 key:ctrl+q sleep:2 term
-set-network-http-proxy-password | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 setrow:HTTP_proxy_password=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
-set-network-http-proxy-password-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 rows:network key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-network-verify-certificates-against-the-system-trust-store | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 setrow:Verify_certificates_against_the_system_trust_store=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-network-verify-certificates-against-the-system-trust-store-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 rows:network key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-network-cipher-preference | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Network sleep:0.8 setrow:Cipher_preference=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
@@ -202,8 +196,6 @@ set-performance-decoding-threads | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 pr
 set-performance-decoding-threads-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 rows:performance key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-performance-drop-frames-when-the-system-can-t-keep-up | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 setrow:Drop_frames_when_the_system_can't_keep_up=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-performance-drop-frames-when-the-system-can-t-keep-up-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 rows:performance key:Escape sleep:0.5 key:ctrl+q sleep:2 term
-set-performance-rescan-plugins-at-the-next-start | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 setrow:Rescan_plugins_at_the_next_start=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
-set-performance-rescan-plugins-at-the-next-start-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 rows:performance key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-performance-preferred-decoders | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 press:Advanced_Options sleep:0.6 setrow:Preferred_decoders=avcodec sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term
 set-performance-preferred-decoders-reload | 2 | same | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 press:Advanced_Options sleep:0.6 rows:performance key:Escape sleep:0.5 key:ctrl+q sleep:2 term
 set-performance-clock-synchronisation | 2 | prefs | | sleep:2 key:ctrl+p sleep:2.5 press:Performance sleep:0.8 press:Advanced_Options sleep:0.6 setrow:Clock_synchronisation=vlctest sleep:0.8 shotwin:changed press:Save sleep:1.5 key:ctrl+q sleep:2 term

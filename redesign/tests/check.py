@@ -945,6 +945,33 @@ if g:
         check('home-playlists', 0 < cards[0][0] - heads[0][0] < 400, f'the card sits under the header ({heads[0][0]} -> {cards[0][0]})')
     check('home-playlists', last_crumb('home-playlists', 'opened') == 'Road_Trip',
           f'a click on the card opens the playlist ({last_crumb("home-playlists", "opened")})')
+# the cover of a video the library has not read yet (a file added to a playlist from outside its folders: user
+# screenshot 2026-11-14, ten rows of a light square with a music note, also for videos) is a dark tile with a video
+# icon in the dark theme, like the grid cards', not the light music placeholder
+gp, tp = geom_rows('pl-new-files', 'a'), img('pl-new-files', 'a')
+if gp and tp:
+    covers = [(x, y, w, h) for n, r, x, y, w, h in gp if n == 'Media cover' and x > 209]
+    if covers:
+        x, y, w, h = covers[0]
+        px = list(pixels(tp.crop((x + 3, y + 3, x + w - 3, y + h - 3))))
+        light = sum(1 for p in px if min(p) > 200) / len(px)
+        check('pl-new-files', light < 0.2, f'the cover of an unread video is not a light tile ({light:.0%} of it is near white)')
+    else:
+        fail('pl-new-files', 'no cover found in the playlist page row')
+
+# progress under a playlist (user request 2026-11-14: "also show progress under playlist"): a playlist you have
+# started shows a thin accent bar under its card's picture, like a started video; the bar is the watched share
+gc, tc = geom_rows('resume-playlist-2', 'hover'), img('resume-playlist-2', 'hover')
+if gc and tc:
+    covers = [(x, y, w, h) for n, r, x, y, w, h in gc if n == 'Media cover' and x > 209]
+    if covers:
+        x, y, w, h = covers[0]
+        strip = tc.crop((x, y + h, x + w, y + h + 8))
+        orange = sum(1 for p in pixels(strip) if p[0] > 100 and p[0] > p[2] + 50 and p[0] >= p[1])
+        check('resume-playlist-2', orange >= 15, f'a started playlist shows its progress under the picture ({orange} accent px in the strip)')
+    else:
+        fail('resume-playlist-2', 'no cover found on the playlist card')
+
 # Resume on a playlist card (user request 2026-11-14: "show a resume button on playlists"): hovering the card of a
 # playlist you have started shows Resume; it plays the playlist from the video played last, which continues where
 # it stopped ("Continued from"); a playlist never played shows none

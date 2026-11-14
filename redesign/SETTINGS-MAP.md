@@ -9,6 +9,10 @@ Rules:
 
 - A row with no matching option is left out, not faked. If the build lacks an option (for example,
   its module is not compiled in), the row is not shown.
+- A row has to be able to keep its value. Options VLC declares volatile (`verbose`, `reset-plugins-cache`:
+  command line only, never written to vlcrc) have no row. Options that are obsolete on some platforms
+  (`spdif`: only Windows, macOS and Android; `http-proxy`, `http-proxy-pwd`: only Windows) have their
+  row inside a platform `#if` (`settings_options.py` checks both).
 - Row controls are written on Save only when the user changed them. Each classic page (Interface,
   Audio, Video, Subtitles, Input & Codecs) stays whole under its page's Advanced Options, with its own
   Save code.
@@ -287,7 +291,6 @@ Figma rows left out (no VLC option, or the option does something else):
 | Log details | `log-verbose` |
 
 *Advanced Options*
-| Show minor warnings | `verbose` |
 | Log format | `logmode` |
 | Collect playback statistics | `stats` |
 
@@ -357,7 +360,6 @@ Figma rows left out (no VLC option, or the option does something else):
 | Row | Option |
 |---|---|
 | Drop frames when the system can't keep up | `drop-late-frames` |
-| Rescan plugins at the next start | `reset-plugins-cache` |
 
 *Advanced Options*
 | Preferred decoders | `codec` |

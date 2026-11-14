@@ -61,9 +61,10 @@ public:
     Q_INVOKABLE void addAndPlayFrom(const QVariantList& itemIdList, int startIndex, const QStringList &options = {});
 
     // redesign: Resume on a playlist card: plays the playlist from the video played last (the core restores
-    // where it stopped); playlistStarted tells (callback(bool)) whether any video of it was played
+    // where it stopped); playlistProgress calls callback(started, progress): whether any video of it was played
+    // and the watched share of the playlist (0 to 1: a finished video counts whole, a started one by its progress)
     Q_INVOKABLE void resumePlaylist(const MLItemId &playlistId, const QStringList &options = {});
-    Q_INVOKABLE void playlistStarted(const MLItemId &playlistId, QJSValue callback);
+    Q_INVOKABLE void playlistProgress(const MLItemId &playlistId, QJSValue callback);
     Q_INVOKABLE void insertIntoPlaylist(size_t index, const QVariantList &itemIds /*QList<MLParentId>*/, const QStringList &options = {});
 
     Q_INVOKABLE void reload();

@@ -14,7 +14,7 @@ Audio	Output	Enable audio	audio	option	0
 Audio	Output	Output module	aout	option	0	
 Audio	Output	Stereo mode	stereo-mode	option	0	
 Audio	Output	Force Dolby Surround	force-dolby-surround	option	0	
-Audio	Output	Use S/PDIF when available	spdif	option	0	
+Audio	Output	Use S/PDIF when available	spdif	option	0	#if defined(__ANDROID__) || defined(__APPLE__) || defined(_WIN32)
 Audio	Volume	Maximum volume	qt-max-volume	option	0	
 Audio	Volume	Volume step	volume-step	option	0	
 Audio	Loudness	Replay gain	audio-replay-gain-mode	option	0	
@@ -80,7 +80,6 @@ General	Startup	Check for updates automatically	qt-updates-notif	option	0
 General	Diagnostics	Save a log	file-logging	option	0	
 General	Diagnostics	Log file	logfile	option	0	
 General	Diagnostics	Log details	log-verbose	option	0	
-General	Diagnostics	Show minor warnings	verbose	option	1	
 General	Diagnostics	Log format	logmode	option	1	
 General	Diagnostics	Collect playback statistics	stats	option	1	
 Privacy	History	Remember the playback position	restore-playback-pos	option	0	
@@ -93,8 +92,8 @@ Network	Buffering	Local files	file-caching	option	0
 Network	Buffering	Discs	disc-caching	option	0	
 Network	Buffering	Network streams	network-caching	option	0	
 Network	Buffering	Live capture	live-caching	option	0	
-Network	Proxy	HTTP proxy	http-proxy	option	0	
-Network	Proxy	HTTP proxy password	http-proxy-pwd	option	0	
+Network	Proxy	HTTP proxy	http-proxy	option	0	#ifdef _WIN32
+Network	Proxy	HTTP proxy password	http-proxy-pwd	option	0	#ifdef _WIN32
 Network	Security	Verify certificates against the system trust store	gnutls-system-trust	option	0	
 Network	Security	Cipher preference	gnutls-priorities	option	0	
 Network	Security	HTTP server address	http-host	option	1	
@@ -104,7 +103,6 @@ Performance	Decoding	Decoder device	dec-dev	option	0
 Performance	Decoding	Skip the H.264 loop filter	avcodec-skiploopfilter	option	0	
 Performance	Decoding	Decoding threads	avcodec-threads	option	0	
 Performance	Smooth Playback	Drop frames when the system can't keep up	drop-late-frames	option	0	
-Performance	Smooth Playback	Rescan plugins at the next start	reset-plugins-cache	option	0	
 Performance	Smooth Playback	Preferred decoders	codec	option	1	
 Performance	Smooth Playback	Clock synchronisation	clock-synchro	option	1	
 Performance	Smooth Playback	Clock jitter	clock-jitter	option	1	

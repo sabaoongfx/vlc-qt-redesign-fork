@@ -56,7 +56,7 @@ Widgets.IconToolButton {
 
     // accent while the picker or the panel it opened is shown
     color: ((pickerLoader.item && pickerLoader.item.visible) || (panelLoader.item && panelLoader.item.visible))
-           ? colorContext.accent : colorContext.fg.primary
+           ? activeColor : colorContext.fg.primary
 
     // Events
 

@@ -1071,7 +1071,11 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             rows.option( qtr( "Output module" ), "aout" );
             rows.option( qtr( "Stereo mode" ), "stereo-mode" );
             rows.option( qtr( "Force Dolby Surround" ), "force-dolby-surround" );
+            /* the option exists where VLC declares it (src/libvlc-module.c); elsewhere it is obsolete and
+             * Save would drop the change */
+#if defined(__ANDROID__) || defined(__APPLE__) || defined(_WIN32)
             rows.option( qtr( "Use S/PDIF when available" ), "spdif" );
+#endif
 
             rows.section( qtr( "Volume" ) );
             rows.option( qtr( "Maximum volume" ), "qt-max-volume" );
@@ -1785,7 +1789,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             rows.option( qtr( "Log details" ), "log-verbose" );
 
             rows.advanced();
-            rows.option( qtr( "Show minor warnings" ), "verbose" );
+            /* "verbose" (Show minor warnings) is command line only: volatile, never written to vlcrc */
             rows.option( qtr( "Log format" ), "logmode" );
             rows.option( qtr( "Collect playback statistics" ), "stats" );
             break;
@@ -1837,9 +1841,12 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
                     if( QSpinBox *spin = rows.last<QSpinBox>() )
                         spin->setSuffix( qtr( " ms" ) );
 
+            /* Windows only: obsolete since 4.0 elsewhere (Save would drop the change), so no empty section */
+#ifdef _WIN32
             rows.section( qtr( "Proxy" ) );
             rows.option( qtr( "HTTP proxy" ), "http-proxy" );
             rows.option( qtr( "HTTP proxy password" ), "http-proxy-pwd" );
+#endif
 
             rows.section( qtr( "Security" ) );
             rows.option( qtr( "Verify certificates against the system trust store" ), "gnutls-system-trust" );
@@ -1864,7 +1871,7 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
 
             rows.section( qtr( "Smooth Playback" ) );
             rows.option( qtr( "Drop frames when the system can't keep up" ), "drop-late-frames" );
-            rows.option( qtr( "Rescan plugins at the next start" ), "reset-plugins-cache" );
+            /* "reset-plugins-cache" (Rescan plugins at the next start) is command line only: volatile */
 
             rows.advanced();
             rows.option( qtr( "Preferred decoders" ), "codec" );

@@ -1551,6 +1551,7 @@ libqml_module_widgets_a_QML = \
 	widgets/qml/PageExt.qml \
 	widgets/qml/ButtonExt.qml \
 	widgets/qml/TableColumns.qml \
+	widgets/qml/VideoPlaceholderTile.qml \
 	widgets/qml/TextFieldExt.qml \
 	widgets/qml/TextToolButton.qml \
 	widgets/qml/TrackDelayButton.qml \
