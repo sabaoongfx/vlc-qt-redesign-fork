@@ -56,6 +56,40 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
+## Working notes after v0.1.15 (2026-11-14; read with the sections below)
+
+- **Release routine** (done three times on 2026-11-13/14; "release when done" / "go for it" from the user authorised
+  that batch only, ask for the next): push the code commit (not `[skip ci]`), wait for all FOUR runs (Redesign build,
+  Windows ~45 min, Linux packages, macOS ~1 h) with a `gh run list` loop (a Monitor `timeout_ms` is at most 3600000 and
+  it expires after 30 min with no event: re-arm it, the watched job is not affected), tag that commit
+  (`git tag -a vX -m ... <sha>`, push the tag), then the `[skip ci]` commit with the changelog (`redesign/docs/10-changelog.md`)
+  and CLAUDE.md, `gh release edit vX --notes-file` (changelog first, then the generated body), and only after the
+  release workflow is green push the blog post (`../vlc-web`: new `blog/whats-new-in-X/` made from the last one,
+  `tools/posts.json` entry, `python3 tools/blog.py`) and check the apt/pacman repos serve it
+  (`.../dists/stable/main/binary-amd64/Packages`, `.../arch/x86_64/vlc-juxtopposed.db`). Next version: v0.1.16.
+- **Harness lessons**: page paths for `History.push` do not start with "mc" (`["playlists"]`, `["playlists","list"]`; the log
+  said "unable to load view mc"); `MLBookmarkModel` is not registered without the media library and Ctrl+B only exists with it
+  (`MLGlobalShortcuts.qml`): scenes for them use kind `fixture`; the Player module must not import `VLC.MediaLibrary`
+  (load by `qrc:///qt/qml/VLC/MediaLibrary/...` url like `CompactLibrary`); `press:Road_Trip` turns the underscore into a
+  space (click by position for names with one); `check.py` blocks that come before `def check` must use `ok`/`fail`;
+  a scene whose geom row has the same name as a list ("Chapters" tab and list) needs the role filter; partial runs skip
+  blocks whose scene is absent; build only when no harness run is going (`make` under a run corrupts it).
+- **Audio track selection** (read in `src/input/es_out.c` `EsOutSelect`, 2026-11-14): `--audio-track-id` / `--audio-track` (default -1)
+  first, then `--audio-language` (default empty: VLC does not follow the system language; Settings has no row for it, only
+  "Default audio track" under Playback and "Preferred language" for subtitles; a row was offered, not answered), then the
+  demuxer's default ES, then the container priority (mkv: forced > default flag > rest, disabled never; with no default flag the
+  first audio track is made default), equal priority = the first one. The v0.1.9 auto-subtitles read the chosen track's language
+  tag, so a wrongly tagged file gets no subtitle.
+- **Episode 0966** (`~/Downloads/One Piece 1999 .../Season 20/[Anime Time] One Piece - 0966 ...mkv`): both audio tracks tagged `eng`,
+  titles "Japanese" (default, 23:57) and "English" (24:04); 0961/0974 have English `eng` first and Japanese `jpn` second (23:50). The
+  user hears English on both; VLC plays two different streams (checked by recording `--audio-track` 0/1 and correlating with the
+  file's streams), so it is the release's tagging, not VLC. Track names are "title - [language]" ("Japanese - [English]").
+- **Audio sync** (user question): audio late = negative delay: `J` (50 ms earlier per press), `K` later; macOS `F`/`G`; the side panel's
+  Audio tab > Synchronization > Audio Track Delay (-10..+10 s, Reset).
+- **Open**: durations "--:--" for unread videos (VLC's unknown), "0 ms" under an empty playlist card; the Settings runtime suite
+  (`settings.txt`, 233 -> fewer scenes) was last run in full on 2026-11-11 (only `set-baseline` after the row changes of 2026-11-14);
+  engine tests only planned; Mac video area unconfirmed on a real Mac; model default is now Sonnet 5.5 (user, `/model`).
+
 ## RELEASED 2026-11-14: **v0.1.15** on `63dc2e29de` (all four CI runs green; user: "once you are done, then go for it")
 
 v0.1.15: progress bar under started playlist cards (`MediaLib::playlistProgress`, `VideoGridItem.progressValue`); dark video tile
