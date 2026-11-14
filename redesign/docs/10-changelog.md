@@ -2,6 +2,17 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.15 (2026-11-14)
+- **Progress under playlists:** a playlist you have started shows a thin bar under its picture with how much of
+  it you have watched.
+- **Videos not read yet** (files added to a playlist from outside your library folders) show a dark tile with
+  a video icon in the playlist's list, like the cards, instead of a light square with a music note.
+- **Day theme:** the active buttons in the player bar (subtitles, audio, queue, repeat, shuffle, extended
+  settings) are a darker orange on the light bar, so you can tell they are on.
+- **Settings:** rows that could never keep their value are gone or shown only where they work: "Show minor
+  warnings" and "Rescan plugins at the next start" (command line only), "Use S/PDIF" (Windows, macOS and
+  Android only) and the HTTP proxy rows (Windows only).
+
 ## v0.1.14 (2026-11-14)
 - **Play queue panel as in the design:** a 400 px card with the tabs **Queue**, **Bookmarks** and
   **Chapters**. Chapters lists the video's chapters with their start times; a click jumps there.

@@ -56,7 +56,17 @@ The Figma "07 Menus" frames are all built now:
   (`automake-1.18: command not found`). `./bootstrap` then `make` fixed it (incremental, a few files rebuilt).
   Shell note: zsh does not split `$VAR` into words in `for n in $N`.
 
-## After v0.1.13 (2026-11-13 evening): RELEASED 2026-11-14 as **v0.1.14** on `bc1566bc92`
+## RELEASED 2026-11-14: **v0.1.15** on `63dc2e29de` (all four CI runs green; user: "once you are done, then go for it")
+
+v0.1.15: progress bar under started playlist cards (`MediaLib::playlistProgress`, `VideoGridItem.progressValue`); dark video tile
+for unread videos in list rows (`widgets/qml/VideoPlaceholderTile.qml`, shared with the grid card; `PlaylistMedia.videoPlaceholder`);
+active bar buttons use `IconToolButton.activeColor` (accent darkened to 3:1 on the bar, asked 3.6:1 on the palette colour because the
+bar is drawn darker than its palette: #ABAAAA on screen); Settings rows that cannot keep a value removed or platform-guarded
+(`verbose`, `reset-plugins-cache` volatile; `spdif`, `http-proxy(-pwd)` `#if`), `settings_options.py` check 3b fails any new one. Last full
+local run: 540 checks, 0 failures; unit tests 8/8. Changelog `redesign/docs/10-changelog.md`, blog `whats-new-in-0-1-15`.
+Known, not fixed: durations "--:--" for unread videos (VLC's "unknown"); "0 ms" under an empty playlist card.
+
+## After v0.1.13 (2026-11-13 evening): v0.1.14 RELEASED 2026-11-14 as **v0.1.14** on `bc1566bc92`
 
 v0.1.14: tagged on `bc1566bc92` after all four CI runs passed (user: "when done, do the deed and release when done");
 changelog in `redesign/docs/10-changelog.md`, blog `whats-new-in-0-1-14` (vlc-web). Also in it, after the list below:
