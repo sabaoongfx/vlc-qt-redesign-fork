@@ -62,6 +62,31 @@ T.Control {
     required property var duration // TODO: Qt 6.2 can not use value type vlcTick
     required property bool preparsed
 
+    // redesign: how much of the video was watched, from the media library (0: not started, not in the
+    // library, or finished), as the progress bar under the thumbnails on Home. Read when the row appears or
+    // is reused, and again when the video stops being the current one (its place has just been saved)
+    property real watchedProgress: 0
+
+    function refreshProgress() {
+        const where = delegate.url
+        if (!MainCtx.mediaLibraryAvailable || !where.toString()) {
+            delegate.watchedProgress = 0
+            return
+        }
+
+        MainCtx.mediaLibrary.mediaProgress(where, (progress) => {
+            if (delegate && delegate.url === where)
+                delegate.watchedProgress = progress
+        })
+    }
+
+    onUrlChanged: refreshProgress()
+    Component.onCompleted: refreshProgress()
+    onIsCurrentChanged: {
+        if (!isCurrent)
+            refreshProgress()
+    }
+
     // Optional
     property var contextMenu
 
@@ -251,6 +276,19 @@ T.Control {
                     visible: (artwork.status === Image.Ready)
                     z: -2
                 }
+            }
+
+            // redesign: the watched part along the bottom of the picture, as on Home
+            Widgets.VideoProgressBar {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+
+                implicitHeight: VLCStyle.dp(3, VLCStyle.scale)
+                radius: VLCStyle.listAlbumCover_radius
+
+                visible: delegate.watchedProgress > 0
+                value: Math.min(Math.max(delegate.watchedProgress, 0), 1)
             }
 
             // redesign: no picture yet (a video the library has not made a thumbnail for): a dark tinted tile
