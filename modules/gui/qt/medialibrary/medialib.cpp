@@ -51,6 +51,19 @@ MediaLib::~MediaLib()
 
 static void convertMLFolderToPlaylistMedias(vlc_medialibrary_t* ml, int64_t folderId, const QStringList &options, QVector<vlc::playlist::Media>& medias, int depth = 0);
 
+// redesign: a video put in the queue that has no thumbnail yet gets one made now. The library only made
+// them for what a grid or list showed, so the queue rows of videos never browsed stayed without a picture
+// (the queue item carries the thumbnail from the library when it is built: it shows next time it is queued)
+static void requestThumbnail(vlc_medialibrary_t* ml, const vlc_ml_media_t& media)
+{
+    if (media.i_type != VLC_ML_MEDIA_TYPE_VIDEO)
+        return;
+
+    const vlc_ml_thumbnail_status_t status = media.thumbnails[VLC_ML_THUMBNAIL_SMALL].i_status;
+    if (status == VLC_ML_THUMBNAIL_STATUS_MISSING || status == VLC_ML_THUMBNAIL_STATUS_FAILURE)
+        vlc_ml_media_generate_thumbnail(ml, media.i_id, VLC_ML_THUMBNAIL_SMALL, 512, 320, .15);
+}
+
 static void convertMLItemToPlaylistMedias(vlc_medialibrary_t* ml, const MLItemId & itemId, const QStringList &options, QVector<vlc::playlist::Media>& medias)
 {
     //invalid item
@@ -76,6 +89,7 @@ static void convertMLItemToPlaylistMedias(vlc_medialibrary_t* ml, const MLItemId
 
         auto mediaRange = ml_range_iterate<vlc_ml_media_t>( media_list );
         std::transform(mediaRange.begin(), mediaRange.end(), std::back_inserter(medias), [&](vlc_ml_media_t& m) {
+            requestThumbnail(ml, m);
             SharedInputItem item(vlc_ml_get_input_item( ml, m.i_id ), false);
             return vlc::playlist::Media(item.get(), options);
         });
@@ -90,13 +104,29 @@ static void convertMLFolderToPlaylistMedias(vlc_medialibrary_t* ml, int64_t fold
     if (depth > 32)
         return;
 
+    // NOTE: videos go by file name, as the page lists them: the library keeps the title it made when a file was
+    //       first scanned (an older scan cut the " - " and the extension out), so a few episodes of a season
+    //       sorted last. Songs go by title (their tag): a folder without a video is listed again that way.
     vlc_ml_query_params_t query = vlc_ml_query_params_create();
-    query.i_sort = VLC_ML_SORTING_ALPHA;
+    query.i_sort = VLC_ML_SORTING_FILENAME;
     ml_unique_ptr<vlc_ml_media_list_t> media_list(vlc_ml_list_media_of( ml, &query, VLC_ML_PARENT_FOLDER, folderId));
+    if (media_list)
+    {
+        bool hasVideo = false;
+        for (const vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>( media_list ))
+            hasVideo = hasVideo || (m.i_type == VLC_ML_MEDIA_TYPE_VIDEO);
+
+        if (!hasVideo)
+        {
+            query.i_sort = VLC_ML_SORTING_ALPHA;
+            media_list.reset(vlc_ml_list_media_of( ml, &query, VLC_ML_PARENT_FOLDER, folderId));
+        }
+    }
     if (media_list)
     {
         for (vlc_ml_media_t& m : ml_range_iterate<vlc_ml_media_t>( media_list ))
         {
+            requestThumbnail(ml, m);
             SharedInputItem item(vlc_ml_get_input_item( ml, m.i_id ), false);
             if (item)
                 medias.push_back(vlc::playlist::Media(item.get(), options));
@@ -438,7 +468,12 @@ void MediaLib::mediaProgress(const QUrl& url, QJSValue callback)
     [mrl](vlc_medialibrary_t* ml, Ctx& ctx){
         ml_unique_ptr<vlc_ml_media_t> media{vlc_ml_get_media_by_mrl(ml, mrl.constData())};
         if (media)
-            ctx.progress = media->f_progress;
+        {
+            // redesign: a video watched to its end starts again (the player ignores such a progress
+            // too), so there is nothing to continue from
+            ctx.progress = vlc_ml_progress_is_finished(media->f_progress, media->i_duration)
+                               ? 0.0 : media->f_progress;
+        }
     },
     //UI thread
     [callback](quint64, Ctx& ctx) mutable {

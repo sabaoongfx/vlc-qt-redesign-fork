@@ -237,12 +237,38 @@ Widgets.PageLoader {
 
             // VideoAll events reimplementation
 
+            // redesign: a video clicked in a folder plays from there with the folder's videos (songs) in the
+            // queue, in the order shown, so Next goes to the next episode (it queued only the clicked one,
+            // and the next click appended another: the queue came out in click order)
+            function playFrom(object) {
+                const wanted = object.id.toString()
+
+                tree.getDataFlat([...Array(tree.count).keys()], (list) => {
+                    const ids = []
+                    let start = 0
+
+                    for (const item of Array.from(list)) {
+                        if (!item.isVideo)
+                            continue
+
+                        if (item.id.toString() === wanted)
+                            start = ids.length
+
+                        ids.push(item.id)
+                    }
+
+                    if (ids.length > 0)
+                        MediaLib.addAndPlayFrom(ids, start)
+                })
+
+                MainCtx.playerView = true
+            }
+
             function onAction(indexes) {
                 const object = tree.getDataAt(indexes[0])
 
                 if (object.isVideo) {
-                    tree.addAndPlay(indexes)
-                    MainCtx.playerView = true
+                    playFrom(object)
 
                     return
                 }
@@ -252,8 +278,7 @@ Widgets.PageLoader {
 
             function onDoubleClick(object) {
                 if (object.isVideo) {
-                    MediaLib.addAndPlay(object.id)
-                    MainCtx.playerView = true
+                    playFrom(object)
 
                     return
                 }

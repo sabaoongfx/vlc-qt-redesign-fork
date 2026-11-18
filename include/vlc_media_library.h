@@ -1334,6 +1334,30 @@ static inline input_item_t* vlc_ml_get_input_item_by_mrl( vlc_medialibrary_t* p_
     return (input_item_t*)vlc_ml_get( p_ml, VLC_ML_GET_INPUT_ITEM_BY_MRL, psz_mrl );
 }
 
+/**
+ * redesign: whether a saved progress (0..1) of a media of this length is "watched to its end".
+ * The same margins as the media library's own end-of-media rule (Media::computePositionType):
+ * 5% under one hour, 4% under two, 3% under three, 2% under four, 1% beyond. The library
+ * resets the progress itself only when it knows the duration; this lets the player and the
+ * interface treat a progress kept without one the same way (an unknown duration uses 5%).
+ *
+ * @param f_progress the saved progress, a fraction of the duration
+ * @param i_duration_ms the duration in milliseconds, 0 or less when unknown
+ */
+static inline bool vlc_ml_progress_is_finished( double f_progress, int64_t i_duration_ms )
+{
+    double margin = 0.05;
+    if ( i_duration_ms >= 4 * 3600 * 1000 )
+        margin = 0.01;
+    else if ( i_duration_ms >= 3 * 3600 * 1000 )
+        margin = 0.02;
+    else if ( i_duration_ms >= 2 * 3600 * 1000 )
+        margin = 0.03;
+    else if ( i_duration_ms >= 3600 * 1000 )
+        margin = 0.04;
+    return f_progress > 1.0 - margin;
+}
+
 static inline vlc_ml_album_t* vlc_ml_get_album( vlc_medialibrary_t* p_ml, int64_t i_album_id )
 {
     return (vlc_ml_album_t*)vlc_ml_get( p_ml, VLC_ML_GET_ALBUM, i_album_id );

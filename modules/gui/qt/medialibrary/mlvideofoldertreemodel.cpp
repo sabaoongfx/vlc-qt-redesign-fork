@@ -344,6 +344,13 @@ MLVideoFolderTreeModel::Loader::load(vlc_medialibrary_t * ml,
         query.b_desc = false;
     }
 
+    // NOTE: Videos "by title" go by file name: the library keeps the title it made when the file was
+    //       first scanned (an older scan cut the " - " and the extension out), so a few episodes of a
+    //       season sorted after all the others and the play order jumped over them. A song's title is
+    //       its tag: songs keep the title sort.
+    if (!m_audio && query.i_sort == VLC_ML_SORTING_ALPHA)
+        query.i_sort = VLC_ML_SORTING_FILENAME;
+
     ml_unique_ptr<vlc_ml_media_list_t> list(m_audio ? vlc_ml_list_audio_of(ml, &query, VLC_ML_PARENT_FOLDER, m_parent.id)
                                                     : vlc_ml_list_video_of(ml, &query, VLC_ML_PARENT_FOLDER, m_parent.id));
 
