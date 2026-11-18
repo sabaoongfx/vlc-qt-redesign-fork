@@ -31,7 +31,7 @@ Playback	Tracks	Default subtitle track	sub-track	option	0
 Playback	Order	Repeat	loop repeat	widget	0	
 Playback	Order	Shuffle	random	option	0	
 Playback	Order	Stop after each item	play-and-stop	option	0	
-Playback	Order	When playback finishes	play-and-exit	widget	0	
+Playback	Order	When playback finishes	play-and-exit pause-at-end	widget	0	
 Playback	Seeking	Seek precisely	input-fast-seek	widget	0	
 Interface	Window	Play video inside the main window	embedded-video	option	0	
 Interface	Window	Resize the window to fit the video	qt-video-autoresize	option	0	

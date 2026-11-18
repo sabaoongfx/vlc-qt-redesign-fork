@@ -1227,14 +1227,20 @@ SPrefsPanel::SPrefsPanel( qt_intf_t *_p_intf, QWidget *_parent,
             }
             rows.option( qtr( "Shuffle" ), "random" );
             rows.option( qtr( "Stop after each item" ), "play-and-stop" );
-            if( QCheckBox *exitBox = rows.hiddenBool( "play-and-exit", panel ) )
+            QCheckBox *exitBox = rows.hiddenBool( "play-and-exit", panel );
+            QCheckBox *pauseBox = rows.hiddenBool( "pause-at-end", panel );
+            if( exitBox && pauseBox )
             {
+                /* the player pauses on the last frame by default (pause-at-end),
+                 * Quit VLC wins over it in the core */
                 QComboBox *finish = new QComboBox;
+                finish->addItem( qtr( "Pause on the last frame" ) );
                 finish->addItem( qtr( "Stop" ) );
                 finish->addItem( qtr( "Quit VLC" ) );
-                finish->setCurrentIndex( exitBox->isChecked() ? 1 : 0 );
-                connect( finish, QOverload<int>::of( &QComboBox::currentIndexChanged ), exitBox, [exitBox]( int i ) {
-                    exitBox->setChecked( i == 1 );
+                finish->setCurrentIndex( exitBox->isChecked() ? 2 : pauseBox->isChecked() ? 0 : 1 );
+                connect( finish, QOverload<int>::of( &QComboBox::currentIndexChanged ), exitBox, [exitBox, pauseBox]( int i ) {
+                    pauseBox->setChecked( i == 0 );
+                    exitBox->setChecked( i == 2 );
                 } );
                 rows.widget( qtr( "When playback finishes" ), qfut( config_FindConfig( "play-and-exit" )->psz_longtext ), finish );
             }

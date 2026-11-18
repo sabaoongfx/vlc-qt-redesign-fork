@@ -1278,6 +1278,12 @@ static const char *const psz_recursive_list_text[] = {
 #define PAP_LONGTEXT N_( \
     "Pause each item in the play queue on the last frame." )
 
+/* redesign */
+#define PAUSE_AT_END_TEXT N_("Pause at the end")
+#define PAUSE_AT_END_LONGTEXT N_( \
+    "Pause on the last frame when the play queue has nothing more to play, " \
+    "instead of stopping. Play then starts the media again." )
+
 #define SP_TEXT N_("Start paused")
 #define SP_LONGTEXT N_( \
     "Pause each item in the play queue on the first frame." )
@@ -2158,6 +2164,8 @@ vlc_module_begin ()
     add_bool( "play-and-stop", false, PAS_TEXT, PAS_LONGTEXT )
         change_safe()
     add_bool( "play-and-pause", false, PAP_TEXT, PAP_LONGTEXT )
+        change_safe()
+    add_bool( "pause-at-end", true, PAUSE_AT_END_TEXT, PAUSE_AT_END_LONGTEXT )
         change_safe()
     add_bool( "start-paused", false, SP_TEXT, SP_LONGTEXT )
     add_bool( "playlist-autostart", true,

@@ -884,8 +884,11 @@ vlc_player_SelectTitleIdx(vlc_player_t *player, size_t index)
 {
     struct vlc_player_input *input = vlc_player_get_input_locked(player);
     if (input)
+    {
+        input->eof_paused = false;
         input_ControlPushHelper(input->thread, INPUT_CONTROL_SET_TITLE,
                                 &(vlc_value_t){ .i_int = index });
+    }
 }
 
 void
@@ -913,6 +916,7 @@ vlc_player_SelectNextTitle(vlc_player_t *player)
     struct vlc_player_input *input = vlc_player_get_input_locked(player);
     if (!input)
         return;
+    input->eof_paused = false;
     int ret = input_ControlPush(input->thread, INPUT_CONTROL_SET_TITLE_NEXT,
                                 NULL);
     if (ret == VLC_SUCCESS)
@@ -925,6 +929,7 @@ vlc_player_SelectPrevTitle(vlc_player_t *player)
     struct vlc_player_input *input = vlc_player_get_input_locked(player);
     if (!input)
         return;
+    input->eof_paused = false;
     int ret = input_ControlPush(input->thread, INPUT_CONTROL_SET_TITLE_PREV,
                                 NULL);
     if (ret == VLC_SUCCESS)
@@ -957,6 +962,7 @@ vlc_player_ChapterTime(struct vlc_player_input *input, size_t index)
 static void
 vlc_player_UpdateChapterSeekState(struct vlc_player_input *input, size_t index)
 {
+    input->eof_paused = false;
     vlc_tick_t time = vlc_player_ChapterTime(input, index);
     if (time < 0)
         return;
@@ -1341,6 +1347,16 @@ vlc_player_SetPause(vlc_player_t *player, bool pause)
     if (!input || !input->started)
         return;
 
+    /* redesign: paused on the last frame by "pause-at-end": Play watches the
+     * media again from the start (the input is at its end, resuming alone
+     * would show nothing) */
+    if (!pause && input->eof_paused)
+    {
+        input->eof_paused = false;
+        vlc_player_input_SeekByPos(input, 0, VLC_PLAYER_SEEK_PRECISE,
+                                   VLC_PLAYER_WHENCE_ABSOLUTE);
+    }
+
     vlc_value_t val = { .i_int = pause ? PAUSE_S : PLAYING_S };
     int ret = input_ControlPushHelper(input->thread, INPUT_CONTROL_SET_STATE,
                                       &val);
@@ -1377,6 +1393,7 @@ vlc_player_PreviousVideoFrame(vlc_player_t *player)
     struct vlc_player_input *input = vlc_player_get_input_locked(player);
     if (!input)
         return;
+    input->eof_paused = false;
     input_ControlPushHelper(input->thread,
                             INPUT_CONTROL_SET_FRAME_PREVIOUS, NULL);
 }

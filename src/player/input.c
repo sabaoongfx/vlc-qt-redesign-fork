@@ -141,6 +141,7 @@ vlc_player_input_SeekByPos(struct vlc_player_input *input, double position,
     else if (position > 1)
         position = 1;
 
+    input->eof_paused = false;
     vlc_player_UpdateTimerSeekState(player, VLC_TICK_INVALID, position);
 
     int ret = input_ControlPush(input->thread, INPUT_CONTROL_SET_POSITION,
@@ -167,6 +168,7 @@ vlc_player_input_SeekByTime(struct vlc_player_input *input, vlc_tick_t time,
     if (time < VLC_TICK_0)
         time = VLC_TICK_0;
 
+    input->eof_paused = false;
     vlc_player_UpdateTimerSeekState(player, time, -1);
 
     int ret = input_ControlPush(input->thread, INPUT_CONTROL_SET_TIME,
@@ -969,6 +971,24 @@ vlc_player_input_FramePreviousStatus(struct vlc_player_input *input, int status)
                                  _("Previous frame error"), status);
 }
 
+/* redesign: pause on the last frame instead of stopping when the queue has
+ * nothing after this media ("pause-at-end"), so the player view stays open.
+ * Only the main player (the play queue's): libvlc media players and other
+ * secondary players keep stopping at the end. "Stop after each item" and
+ * "Quit VLC" (play-and-stop, play-and-exit) are explicit choices and win. */
+static bool
+vlc_player_input_PauseAtEnd(vlc_player_t *player)
+{
+    if (vlc_object_parent(player) !=
+            VLC_OBJECT(vlc_object_instance(player)))
+        return false;
+    if (player->next_media != NULL)
+        return false;
+    return var_InheritBool(player, "pause-at-end")
+        && !var_InheritBool(player, "play-and-stop")
+        && !var_InheritBool(player, "play-and-exit");
+}
+
 static bool
 input_thread_Events(input_thread_t *input_thread,
                     const struct vlc_input_event *event, void *user_data)
@@ -1031,6 +1051,15 @@ input_thread_Events(input_thread_t *input_thread,
                 handled =
                     input_ControlPush(input->thread,
                                       INPUT_CONTROL_RESET_POSITION, NULL) == 0;
+            }
+            else if (vlc_player_input_PauseAtEnd(player))
+            {
+                /* redesign: nothing follows in the queue: keep the last frame
+                 * on screen, paused, instead of stopping (and closing the
+                 * player view) */
+                vlc_player_Pause(player);
+                input->eof_paused = true;
+                handled = true;
             }
             else
                 handled = false;
@@ -1252,6 +1281,7 @@ vlc_player_input_New(vlc_player_t *player, input_item_t *item)
     input->player = player;
     input->started = false;
     input->playing = false;
+    input->eof_paused = false;
 
     input->state = VLC_PLAYER_STATE_STOPPED;
     input->error = VLC_PLAYER_ERROR_NONE;

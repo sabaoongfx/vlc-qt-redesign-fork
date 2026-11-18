@@ -55,6 +55,28 @@ vlc_player_input_RestoreMlStates(struct vlc_player_input* input, bool force_pos)
         return;
     }
 
+    /* redesign: a video watched to its end starts again. The media library
+     * resets the progress at the end only when it knows the duration (same
+     * margins as its Media::computePositionType); without one it keeps ~1.0
+     * and the video resumed on its last frame and ended at once. */
+    float progress = media->f_progress;
+    {
+        vlc_tick_t duration = input_item_GetDuration(item);
+        if (duration <= 0 && media->i_duration > 0)
+            duration = VLC_TICK_FROM_MS(media->i_duration);
+        float margin = 0.05f;
+        if (duration >= VLC_TICK_FROM_SEC(4 * 3600))
+            margin = 0.01f;
+        else if (duration >= VLC_TICK_FROM_SEC(3 * 3600))
+            margin = 0.02f;
+        else if (duration >= VLC_TICK_FROM_SEC(2 * 3600))
+            margin = 0.03f;
+        else if (duration >= VLC_TICK_FROM_SEC(3600))
+            margin = 0.04f;
+        if (progress > 1.f - margin)
+            progress = .0f;
+    }
+
     input->ml.restore = (restore_pos == VLC_PLAYER_RESTORE_PLAYBACK_POS_ALWAYS) ?
                             VLC_RESTOREPOINT_TITLE : VLC_RESTOREPOINT_NONE;
     input->ml.restore_states = restore_states;
@@ -64,13 +86,13 @@ vlc_player_input_RestoreMlStates(struct vlc_player_input* input, bool force_pos)
      */
     if (restore_pos == VLC_PLAYER_RESTORE_PLAYBACK_POS_ALWAYS &&
             input->ml.states.current_title == -1 &&
-            media->f_progress > .0f)
-        input_SetPosition(input->thread, media->f_progress, false);
+            progress > .0f)
+        input_SetPosition(input->thread, progress, false);
     else if (restore_pos == VLC_PLAYER_RESTORE_PLAYBACK_POS_ASK &&
-             media->f_progress > .0f)
+             progress > .0f)
     {
         input->ml.delay_restore = true;
-        input->ml.pos = media->f_progress;
+        input->ml.pos = progress;
     }
 
     vlc_ml_release(media);

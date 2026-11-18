@@ -63,6 +63,10 @@ struct vlc_player_input
     /* Monitor the OPENING_S -> PLAYING_S transition. */
     bool playing;
 
+    /* redesign: paused on the last frame at the end of the queue
+     * ("pause-at-end"); resuming plays the media again from the start */
+    bool eof_paused;
+
     enum vlc_player_state state;
     enum vlc_player_error error;
     float rate;
