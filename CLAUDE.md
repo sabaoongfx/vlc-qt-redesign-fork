@@ -66,7 +66,7 @@ The Figma "07 Menus" frames are all built now:
   and CLAUDE.md, `gh release edit vX --notes-file` (changelog first, then the generated body), and only after the
   release workflow is green push the blog post (`../vlc-web`: new `blog/whats-new-in-X/` made from the last one,
   `tools/posts.json` entry, `python3 tools/blog.py`) and check the apt/pacman repos serve it
-  (`.../dists/stable/main/binary-amd64/Packages`, `.../arch/x86_64/vlc-juxtopposed.db`). Next version: v0.1.16.
+  (`.../dists/stable/main/binary-amd64/Packages`, `.../arch/x86_64/vlc-juxtopposed.db`). Next version: v0.1.17.
 - **Harness lessons**: page paths for `History.push` do not start with "mc" (`["playlists"]`, `["playlists","list"]`; the log
   said "unable to load view mc"); `MLBookmarkModel` is not registered without the media library and Ctrl+B only exists with it
   (`MLGlobalShortcuts.qml`): scenes for them use kind `fixture`; the Player module must not import `VLC.MediaLibrary`
@@ -95,6 +95,17 @@ The Figma "07 Menus" frames are all built now:
 - **Open**: durations "--:--" for unread videos (VLC's unknown), "0 ms" under an empty playlist card; the Settings runtime suite
   (`settings.txt`, 233 -> fewer scenes) was last run in full on 2026-11-11 (only `set-baseline` after the row changes of 2026-11-14);
   engine tests only planned; Mac video area unconfirmed on a real Mac; model default is now Sonnet 5.5 (user, `/model`).
+
+## RELEASED 2026-11-18: **v0.1.16** on `22532df6f8`, WITHOUT the macOS dmg (user: "release without mac")
+
+macOS got no runner on four tries (11-18, runs on `2670002a5e` x3 reruns, then `22532df6f8`); `macos-14` is not supported by
+this account ("configuration 'macos-14-arm64-us-default' is not supported"; the `runner` input in `redesign-macos.yml` stays,
+default macos-15). `redesign-release.yml` now treats the macOS run as optional (warning, no dmg row, notes say so): the tag
+run reads the workflow from the TAGGED commit, so that change had to be pushed and get CI before tagging. Linux packages needed
+two re-runs of the openSUSE install test (zypper could not refresh `Oss`: mirror, not the package). Release has 7 assets.
+Contents: pause-at-end + no resume of a finished video (see "End of playback"). To do: attach the dmg by hand when a macOS run
+finally succeeds (`gh release upload v0.1.16`, SHA256SUMS), the website's macOS card is off until a release has the dmg,
+blog `whats-new-in-0-1-16` (vlc-web) after the release run is fully green (pages job was still queued at writing).
 
 ## RELEASED 2026-11-14: **v0.1.15** on `63dc2e29de` (all four CI runs green; user: "once you are done, then go for it")
 

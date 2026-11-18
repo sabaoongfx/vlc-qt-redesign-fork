@@ -2,6 +2,17 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.16 (2026-11-18)
+- **A video you finished starts again.** Opening a video you watched to the end used to jump to its last
+  frame and close at once. A video you have watched to near its end (the last 5%, less for long films)
+  now starts from the beginning.
+- **The player no longer closes when the last video ends.** It pauses on the last frame and stays open;
+  press Play to watch it again from the start. With more items in the queue it still moves on to the
+  next one. Settings > Playback > **When playback finishes** has the choices **Pause on the last frame**
+  (the default), **Stop** and **Quit VLC**; "Stop after each item" still stops as before.
+- **No Mac download in this release:** GitHub gave the macOS build no machine four times in a row, so
+  `VLC-juxtopposed-arm64.dmg` is missing here. The Mac version comes with the next release.
+
 ## v0.1.15 (2026-11-14)
 - **Progress under playlists:** a playlist you have started shows a thin bar under its picture with how much of
   it you have watched.
