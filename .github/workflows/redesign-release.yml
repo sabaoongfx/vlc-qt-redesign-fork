@@ -38,25 +38,33 @@ jobs:
       - name: Wait for the package builds of this commit
         run: |
           set -euo pipefail
-          # run id of the newest run of workflow $1 for $SHA (waits for it to appear and finish)
+          # run id of the newest run of workflow $1 for $SHA (waits for it to appear and finish);
+          # $2 = optional: a missing or failed run is only a warning (the macOS build, which sometimes gets no runner)
           wait_run() {
+            local level=error
+            [ "${2:-}" = optional ] && level=warning
             local id=""
             for i in $(seq 1 60); do
               id=$(gh run list --workflow "$1" --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
               [ -n "$id" ] && break
               echo "no $1 run for $SHA yet"; sleep 60
             done
-            [ -n "$id" ] || { echo "::error::$1 never ran for $SHA (was the commit pushed to redesign?)"; exit 1; }
+            [ -n "$id" ] || { echo "::$level::$1 never ran for $SHA (was the commit pushed to redesign?)"; exit 1; }
             gh run watch "$id" --interval 120 --exit-status > /dev/null \
-              || { echo "::error::$1 run $id failed"; exit 1; }
+              || { echo "::$level::$1 run $id failed"; exit 1; }
             echo "$id"
           }
           WIN=$(wait_run redesign-windows.yml | tail -1)
           LIN=$(wait_run redesign-linux-packages.yml | tail -1)
-          MAC=$(wait_run redesign-macos.yml | tail -1)
+          # macOS is optional: without a runner (GitHub capacity) the release goes out without the dmg
+          MAC=$(wait_run redesign-macos.yml optional | tail -1) || MAC=""
           gh run download "$WIN" -n vlc-win64-portable -D dl/win
           gh run download "$LIN" -n vlc-linux-packages -D dl/linux
-          gh run download "$MAC" -n vlc-macos-arm64 -D dl/mac
+          if [ -n "$MAC" ]; then
+            gh run download "$MAC" -n vlc-macos-arm64 -D dl/mac
+          else
+            echo "::warning::no macOS build for this commit: the release has no dmg"
+          fi
           ls -laR dl
 
       - name: Name the assets
@@ -74,7 +82,9 @@ jobs:
           copy "$(ls dl/win/*.zip | head -1)" x64-portable.zip
           copy dl/linux/VLC-juxtopposed-x86_64.AppImage x86_64.AppImage
           copy dl/linux/VLC-juxtopposed-x86_64.tar.gz x86_64.tar.gz
-          copy dl/mac/VLC-juxtopposed-arm64.dmg arm64.dmg
+          if [ -f dl/mac/VLC-juxtopposed-arm64.dmg ]; then
+            copy dl/mac/VLC-juxtopposed-arm64.dmg arm64.dmg
+          fi
           # deb, rpm (signed) and Arch package from the tarball, with the tag's version
           extras/package/redesign/get-nfpm.sh "$RUNNER_TEMP/nfpm"
           KEY="$RUNNER_TEMP/packages-key.asc"
@@ -99,6 +109,13 @@ jobs:
           V=${TAG#v}
           PRE=""
           case "$V" in *-*) PRE="--prerelease" ;; esac
+          if [ -f out/VLC-juxtopposed-arm64.dmg ]; then
+            MACROW='| macOS 13+ on Apple silicon | `VLC-juxtopposed-arm64.dmg` |'
+            MACNOTE='The Mac app is not notarized: the first time, macOS blocks it; open System Settings, Privacy & Security, and choose Open Anyway.'
+          else
+            MACROW=''
+            MACNOTE='There is no macOS build in this release (GitHub gave the build no runner); the Mac download comes with a later release.'
+          fi
           cat > notes.md <<EOF
           VLC media player with the redesigned interface by [Juxtopposed](https://www.youtube.com/@juxtopposed),
           ported to VLC's Qt interface. Unofficial build, not made or endorsed by VideoLAN.
@@ -109,12 +126,11 @@ jobs:
           | Linux x86_64, any distribution (glibc 2.39+) | \`VLC-juxtopposed-x86_64.AppImage\` or \`.tar.gz\` |
           | Debian 13, Ubuntu 24.04 and newer | \`VLC-juxtopposed-amd64.deb\` |
           | Fedora 40+, openSUSE Tumbleweed | \`VLC-juxtopposed-x86_64.rpm\` |
-          | macOS 13+ on Apple silicon | \`VLC-juxtopposed-arm64.dmg\` |
+          $MACROW
 
           The Windows builds are not code-signed: SmartScreen asks for confirmation (More info, Run anyway).
           It installs next to VideoLAN's VLC and shares its settings folder.
-          The Mac app is not notarized: the first time, macOS blocks it; open System Settings, Privacy & Security,
-          and choose Open Anyway.
+          $MACNOTE
 
           Check a download: \`sha256sum -c SHA256SUMS --ignore-missing\`, or with the GitHub CLI
           \`gh attestation verify <file> -R $GITHUB_REPOSITORY\` (build provenance, from this release workflow).
