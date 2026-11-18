@@ -567,7 +567,9 @@ input_item_t* MediaToInputItem( const medialibrary::IMedia* media )
                                    ITEM_TYPE_FILE, ITEM_NET_UNKNOWN ),
                 &input_item_Release );
     auto thumbnailStatus = media->thumbnailStatus( medialibrary::ThumbnailSizeType::Thumbnail );
-    if ( thumbnailStatus == medialibrary::ThumbnailStatus::Missing )
+    /* redesign: this tested Missing (upstream, 2018), so a media that had a
+     * thumbnail never got it as artwork: play queue rows kept the placeholder */
+    if ( thumbnailStatus == medialibrary::ThumbnailStatus::Available )
     {
         auto thumbnail = media->thumbnailMrl( medialibrary::ThumbnailSizeType::Thumbnail );
         if ( thumbnail.length() > 0 )
