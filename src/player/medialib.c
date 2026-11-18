@@ -55,18 +55,14 @@ vlc_player_input_RestoreMlStates(struct vlc_player_input* input, bool force_pos)
         return;
     }
 
-    /* redesign: a video watched to its end starts again. The media library
-     * resets the progress at the end only when it knows the duration; without
-     * one it kept ~1.0 and the video resumed on its last frame and ended at
-     * once. */
+    /* redesign: a video watched to its end (100%) starts again. The media
+     * library resets the progress at the end only when it knows the duration;
+     * without one it kept ~1.0 and the video resumed on its last frame and
+     * ended at once. A smaller progress (left at 96% to skip a preview)
+     * resumes there. */
     float progress = media->f_progress;
-    {
-        int64_t duration_ms = media->i_duration;
-        if (duration_ms <= 0)
-            duration_ms = MS_FROM_VLC_TICK(input_item_GetDuration(item));
-        if (vlc_ml_progress_is_finished(progress, duration_ms))
-            progress = .0f;
-    }
+    if (vlc_ml_progress_is_finished(progress))
+        progress = .0f;
 
     input->ml.restore = (restore_pos == VLC_PLAYER_RESTORE_PLAYBACK_POS_ALWAYS) ?
                             VLC_RESTOREPOINT_TITLE : VLC_RESTOREPOINT_NONE;

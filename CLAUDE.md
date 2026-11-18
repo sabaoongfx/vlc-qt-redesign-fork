@@ -90,7 +90,8 @@ The Figma "07 Menus" frames are all built now:
   once): core option `pause-at-end` (default on; `src/player/input.c` INPUT_EVENT_EOF, `player.c` SetPause restarts from 0,
   `input->eof_paused` cleared by seeks/chapters/titles) pauses the main player on the last frame when `next_media` is NULL;
   Settings "When playback finishes" = Pause on the last frame / Stop / Quit VLC. `src/player/medialib.c` ignores a saved
-  progress inside the ML end margin (the ML resets it itself only when it knows the duration). Core changes: keep when
+  progress of 100% only (`vlc_ml_progress_is_finished`, >= 0.999; user 2026-11-19: they stop at ~96% on purpose to skip the next
+  episode's preview, so an end MARGIN must not count as finished; v0.1.16 shipped with the 5%..1% margin). Core changes: keep when
   rebasing. Not built locally, no harness scene yet.
 - **Open**: durations "--:--" for unread videos (VLC's unknown), "0 ms" under an empty playlist card; the Settings runtime suite
   (`settings.txt`, 233 -> fewer scenes) was last run in full on 2026-11-11 (only `set-baseline` after the row changes of 2026-11-14);

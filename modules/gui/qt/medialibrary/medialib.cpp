@@ -469,9 +469,9 @@ void MediaLib::mediaProgress(const QUrl& url, QJSValue callback)
         ml_unique_ptr<vlc_ml_media_t> media{vlc_ml_get_media_by_mrl(ml, mrl.constData())};
         if (media)
         {
-            // redesign: a video watched to its end starts again (the player ignores such a progress
-            // too), so there is nothing to continue from
-            ctx.progress = vlc_ml_progress_is_finished(media->f_progress, media->i_duration)
+            // redesign: a video watched to its end (100%) starts again (the player ignores such a
+            // progress too), so there is nothing to continue from
+            ctx.progress = vlc_ml_progress_is_finished(media->f_progress)
                                ? 0.0 : media->f_progress;
         }
     },
