@@ -7,6 +7,11 @@ on:
   push:
     branches: [redesign]
   workflow_dispatch:
+    inputs:
+      runner:
+        description: "Runner image (try macos-14 when macos-15 gets no runner)"
+        default: macos-15
+        type: string
 
 # a newer push waits for the running build (cancelling it would also skip the contrib cache save)
 concurrency:
@@ -19,7 +24,7 @@ env:
 
 jobs:
   arm64:
-    runs-on: macos-15
+    runs-on: ${{ inputs.runner || 'macos-15' }}
     timeout-minutes: 360
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
