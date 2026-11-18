@@ -86,6 +86,12 @@ The Figma "07 Menus" frames are all built now:
   file's streams), so it is the release's tagging, not VLC. Track names are "title - [language]" ("Japanese - [English]").
 - **Audio sync** (user question): audio late = negative delay: `J` (50 ms earlier per press), `K` later; macOS `F`/`G`; the side panel's
   Audio tab > Synchronization > Audio Track Delay (-10..+10 s, Reset).
+- **End of playback** (`2670002a5e`, 2026-11-18, user report: a video watched to the end resumed on its last frame and closed at
+  once): core option `pause-at-end` (default on; `src/player/input.c` INPUT_EVENT_EOF, `player.c` SetPause restarts from 0,
+  `input->eof_paused` cleared by seeks/chapters/titles) pauses the main player on the last frame when `next_media` is NULL;
+  Settings "When playback finishes" = Pause on the last frame / Stop / Quit VLC. `src/player/medialib.c` ignores a saved
+  progress inside the ML end margin (the ML resets it itself only when it knows the duration). Core changes: keep when
+  rebasing. Not built locally, no harness scene yet.
 - **Open**: durations "--:--" for unread videos (VLC's unknown), "0 ms" under an empty playlist card; the Settings runtime suite
   (`settings.txt`, 233 -> fewer scenes) was last run in full on 2026-11-11 (only `set-baseline` after the row changes of 2026-11-14);
   engine tests only planned; Mac video area unconfirmed on a real Mac; model default is now Sonnet 5.5 (user, `/model`).
