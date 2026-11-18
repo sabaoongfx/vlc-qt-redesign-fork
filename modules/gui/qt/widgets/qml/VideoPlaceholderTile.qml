@@ -27,6 +27,8 @@ Rectangle {
 
     property string title
     property bool dark: true
+    // the icon: a video by default, the music note for a song (the play queue)
+    property string glyph: VLCIcons.topbar_video
 
     readonly property real hue: {
         const s = root.title
@@ -41,7 +43,7 @@ Rectangle {
     IconLabel {
         anchors.centerIn: parent
 
-        text: VLCIcons.topbar_video
+        text: root.glyph
         font.pixelSize: Math.round(parent.height * 0.3)
         color: root.dark ? Qt.hsla(root.hue, 0.30, 0.55, 1) : Qt.hsla(root.hue, 0.30, 0.45, 1) // lint: allow qml-colour (same tile)
     }

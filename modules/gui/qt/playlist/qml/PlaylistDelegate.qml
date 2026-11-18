@@ -253,6 +253,20 @@ T.Control {
                 }
             }
 
+            // redesign: no picture yet (a video the library has not made a thumbnail for): a dark tinted tile
+            // with an icon, as on the library cards, not the light grey placeholder that glared in the dark
+            // theme. A row with an artist or album is a song: the music note.
+            Widgets.VideoPlaceholderTile {
+                anchors.fill: parent
+
+                visible: !statusIcon.visible
+                         && (!delegate.artwork.toString() || artwork.source.toString() === VLCStyle.noArtAlbumCover.toString())
+                radius: VLCStyle.listAlbumCover_radius
+                title: delegate.title
+                dark: theme.palette?.isDark ?? true
+                glyph: (delegate.artist || delegate.album) ? VLCIcons.topbar_music : VLCIcons.topbar_video
+            }
+
             Widgets.IconLabel {
                 id: statusIcon
 

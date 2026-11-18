@@ -64,7 +64,9 @@ Widgets.GridItem {
             return count === 1 ? qsTr("1 video")
                                : count > 1 ? qsTr("%1 videos").arg(count) : qsTr("Folder")
         }
-        return (model?.duration && model.duration.valid()) ? model.duration.formatHMS() : ""
+        // redesign: an empty playlist (or a video of an unknown length) has no duration: no "0 ms"
+        return (model?.duration && model.duration.valid() && model.duration.toMilliseconds() > 0)
+                ? model.duration.formatHMS() : ""
     }
     pictureWidth: audio ? VLCStyle.gridCover_music_width : VLCStyle.gridCover_video_width
     pictureHeight: audio ? VLCStyle.gridCover_music_height : VLCStyle.gridCover_video_height

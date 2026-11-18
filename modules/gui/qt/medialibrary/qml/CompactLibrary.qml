@@ -667,7 +667,7 @@ Rectangle {
                 // the Home sections page has no single count
                 visible: !root._searchOpen && !root._homeRoot
 
-                text: qsTr("%1 items").arg(root._model?.count ?? 0)
+                text: (root._model?.count ?? 0) === 1 ? qsTr("1 item") : qsTr("%1 items").arg(root._model?.count ?? 0)
                 font.pixelSize: VLCStyle.dp(14, VLCStyle.scale)
                 color: root._colors.hint
             }
