@@ -97,6 +97,21 @@ The Figma "07 Menus" frames are all built now:
   (`settings.txt`, 233 -> fewer scenes) was last run in full on 2026-11-11 (only `set-baseline` after the row changes of 2026-11-14);
   engine tests only planned; Mac video area unconfirmed on a real Mac; model default is now Sonnet 5.5 (user, `/model`).
 
+## RELEASED 2026-11-19: **v0.1.17** on `cd3a892392` (all four CI runs green, macOS included; user: "release")
+
+Release run 44456139164 green, 8 assets WITH `VLC-juxtopposed-arm64.dmg` (the v0.1.16 dmg is still missing: not attached
+by hand; the macOS run got a runner this time and rebuilt the contribs). apt serves 0.1.17-1; the pacman `.db` check
+printed nothing (not confirmed). Contents: folder videos queue in file-name order (`MLVideoFolderTreeModel` sorts ALPHA ->
+FILENAME, `VideoFolderTreeDisplay.playFrom`, `MediaLib::addAndPlayFrom`), queue rows get library thumbnails
+(`MediaToInputItem` Available check, `requestThumbnail`), a dark placeholder tile and a progress bar
+(`PlaylistDelegate`, `MediaLib::mediaProgress`), a video restarts only at 100% (`vlc_ml_progress_is_finished`, >= 0.999),
+"0 ms"/"1 item" fixes. Blog `whats-new-in-0-1-17` (vlc-web `3e9343f`). Pitfall met: the privacy hook refuses a Bash call
+that holds the user's email next to a URL/client identity (`git -c user.email=...` plus curl): the repos already have a
+git user, so commit plainly and run curl in its own call.
+Open: Next/Previous always from 0:00 (offered, not answered); the 4.5 GB memory use of the user's VLC (likely glibc
+per-thread arenas; `MALLOC_ARENA_MAX=2` test offered); queue thumbnails do not refresh live (the playlist forwards meta
+changes only for the current item); the v0.1.16 dmg.
+
 ## RELEASED 2026-11-18: **v0.1.16** on `22532df6f8`, WITHOUT the macOS dmg (user: "release without mac")
 
 macOS got no runner on four tries (11-18, runs on `2670002a5e` x3 reruns, then `22532df6f8`); `macos-14` is not supported by
