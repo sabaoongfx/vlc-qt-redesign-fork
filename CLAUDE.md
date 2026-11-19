@@ -66,7 +66,7 @@ The Figma "07 Menus" frames are all built now:
   and CLAUDE.md, `gh release edit vX --notes-file` (changelog first, then the generated body), and only after the
   release workflow is green push the blog post (`../vlc-web`: new `blog/whats-new-in-X/` made from the last one,
   `tools/posts.json` entry, `python3 tools/blog.py`) and check the apt/pacman repos serve it
-  (`.../dists/stable/main/binary-amd64/Packages`, `.../arch/x86_64/vlc-juxtopposed.db`). Next version: v0.1.17.
+  (`.../dists/stable/main/binary-amd64/Packages`, `.../arch/x86_64/vlc-juxtopposed.db`). Next version: v0.1.18.
 - **Harness lessons**: page paths for `History.push` do not start with "mc" (`["playlists"]`, `["playlists","list"]`; the log
   said "unable to load view mc"); `MLBookmarkModel` is not registered without the media library and Ctrl+B only exists with it
   (`MLGlobalShortcuts.qml`): scenes for them use kind `fixture`; the Player module must not import `VLC.MediaLibrary`

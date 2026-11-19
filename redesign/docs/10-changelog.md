@@ -2,6 +2,17 @@
 
 User-facing changes per release. Tags on `redesign`; the release pages on GitHub have the assets.
 
+## v0.1.17 (2026-11-19)
+- **Folders play in order.** Clicking a video in a folder queues the folder's videos by file name and starts at
+  the one you clicked, so Next and Previous follow the episode order (old titles saved in the library no
+  longer scramble it).
+- **Restart only at 100%.** A video starts again from the beginning only when you watched it to the very end;
+  one stopped at 96% resumes where you left it.
+- **Play queue:** rows show the video's thumbnail (they stayed blank before), a dark tile when there is none,
+  and a progress bar under the thumbnail with how much you have watched, like Home.
+- Small fixes: no "0 ms" under an empty playlist, "1 item" instead of "1 items".
+- **Mac download is back** (`VLC-juxtopposed-arm64.dmg`), if the macOS build is green for the tagged commit.
+
 ## v0.1.16 (2026-11-18)
 - **A video you finished starts again.** Opening a video you watched to the end used to jump to its last
   frame and close at once. A video you have watched to near its end (the last 5%, less for long films)
