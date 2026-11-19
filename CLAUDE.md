@@ -100,8 +100,8 @@ The Figma "07 Menus" frames are all built now:
 ## RELEASED 2026-11-19: **v0.1.17** on `cd3a892392` (all four CI runs green, macOS included; user: "release")
 
 Release run 44456139164 green, 8 assets WITH `VLC-juxtopposed-arm64.dmg` (the v0.1.16 dmg is still missing: not attached
-by hand; the macOS run got a runner this time and rebuilt the contribs). apt serves 0.1.17-1; the pacman `.db` check
-printed nothing (not confirmed). Contents: folder videos queue in file-name order (`MLVideoFolderTreeModel` sorts ALPHA ->
+by hand; the macOS run got a runner this time and rebuilt the contribs). apt and pacman serve 0.1.17-1 (pacman `.db` checked
+2026-11-19 with `tar -tzf`). Contents: folder videos queue in file-name order (`MLVideoFolderTreeModel` sorts ALPHA ->
 FILENAME, `VideoFolderTreeDisplay.playFrom`, `MediaLib::addAndPlayFrom`), queue rows get library thumbnails
 (`MediaToInputItem` Available check, `requestThumbnail`), a dark placeholder tile and a progress bar
 (`PlaylistDelegate`, `MediaLib::mediaProgress`), a video restarts only at 100% (`vlc_ml_progress_is_finished`, >= 0.999),
